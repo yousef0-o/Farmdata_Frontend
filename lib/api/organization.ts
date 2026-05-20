@@ -1,0 +1,204 @@
+import { apiRequest, wrapResponse } from './client'
+import type { Company, Project, Section, Barn, Flock, FlockDetail, FlockSummary, PaginatedResponse, ProductionEntry, BreedingEntry, FeedEntry } from '../types'
+
+export const organizationApi = {
+  // Companies
+  listCompanies: () =>
+    apiRequest<PaginatedResponse<Company>>('/companies'),
+  getCompany: (id: number) =>
+    wrapResponse<Company>(apiRequest(`/companies/${id}`)),
+  createCompany: (data: Partial<Company>) =>
+    wrapResponse<Company>(apiRequest('/companies', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    })),
+  updateCompany: (id: number, data: Partial<Company>) =>
+    wrapResponse<Company>(apiRequest(`/companies/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    })),
+  deleteCompany: (id: number) =>
+    apiRequest<void>(`/companies/${id}`, { method: 'DELETE' }),
+
+  // Projects
+  listProjects: () =>
+    apiRequest<PaginatedResponse<Project>>('/projects'),
+  getProject: (id: number) =>
+    wrapResponse<Project>(apiRequest(`/projects/${id}`)),
+  createProject: (data: { company_id: number; project_name: string }) =>
+    wrapResponse<Project>(apiRequest('/projects', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    })),
+  updateProject: (id: number, data: { project_name: string }) =>
+    wrapResponse<Project>(apiRequest(`/projects/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    })),
+  deleteProject: (id: number) =>
+    apiRequest<void>(`/projects/${id}`, { method: 'DELETE' }),
+
+  // Sections
+  getSection: (id: number) =>
+    wrapResponse<Section>(apiRequest(`/sections/${id}`)),
+  createSection: (data: {
+    project_id: number
+    section_name: string
+    section_type: 'production' | 'breeding'
+  }) =>
+    wrapResponse<Section>(apiRequest('/sections', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    })),
+  deleteSection: (id: number) =>
+    apiRequest<void>(`/sections/${id}`, { method: 'DELETE' }),
+
+  // Barns
+  getBarn: (id: number) =>
+    wrapResponse<Barn>(apiRequest(`/barns/${id}`)),
+  createBarn: (data: {
+    section_id: number
+    barn_name: string
+    capacity?: number
+  }) =>
+    wrapResponse<Barn>(apiRequest('/barns', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    })),
+  deleteBarn: (id: number) =>
+    apiRequest<void>(`/barns/${id}`, { method: 'DELETE' }),
+}
+
+export const flockApi = {
+  createFlock: (data: {
+    barn_id: number
+    entry_date: string
+    entry_birds: number
+    chick_unit_cost?: number
+    breed?: string
+    supplier?: string
+  }) =>
+    wrapResponse<Flock>(apiRequest('/flocks', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    })),
+
+  getFlock: (id: number) =>
+    wrapResponse<FlockDetail>(apiRequest(`/flocks/${id}`)),
+
+  updateFlock: (
+    id: number,
+    data: { breed?: string; supplier?: string; chick_unit_cost?: number }
+  ) =>
+    wrapResponse<Flock>(apiRequest(`/flocks/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    })),
+
+  getFlockSummary: (id: number) =>
+    apiRequest<FlockSummary>(`/flocks/${id}/summary`),
+
+  closeFlock: (
+    id: number,
+    data: {
+      close_date: string
+      allocations: { label: string; bird_count: number; value?: number }[]
+    }
+  ) =>
+    wrapResponse<FlockDetail>(apiRequest(`/flocks/${id}/close`, {
+      method: 'POST',
+      body: JSON.stringify(data),
+    })),
+}
+
+export const dailyOpsApi = {
+  // Production entries
+  listProductionEntries: (flockId: number, page = 1) =>
+    apiRequest<PaginatedResponse<ProductionEntry>>(
+      `/flocks/${flockId}/production-entries?page=${page}`
+    ),
+
+  createProductionEntry: (flockId: number, data: {
+    mortality?: number
+    egg_size_jumbo?: number
+    egg_size_xlarge?: number
+    egg_size_large?: number
+    egg_size_medium?: number
+    egg_size_small?: number
+    egg_size_reject?: number
+    feed_quantity_kg: number
+    warehouse_id?: number
+    inventory_item_id?: number
+    ai_observation?: string
+  }) => apiRequest<{ data: { production_entry: ProductionEntry; feed_entry: FeedEntry } }>(
+    `/flocks/${flockId}/production-entries`,
+    { method: 'POST', body: JSON.stringify(data) }
+  ),
+
+  updateProductionEntry: (flockId: number, entryId: number, data: {
+    mortality?: number
+    egg_size_jumbo?: number
+    egg_size_xlarge?: number
+    egg_size_large?: number
+    egg_size_medium?: number
+    egg_size_small?: number
+    egg_size_reject?: number
+    feed_quantity_kg?: number
+    ai_observation?: string
+  }) => apiRequest<{ data: { production_entry: ProductionEntry; feed_entry: FeedEntry } }>(
+    `/flocks/${flockId}/production-entries/${entryId}`,
+    { method: 'PUT', body: JSON.stringify(data) }
+  ),
+
+  deleteProductionEntry: (flockId: number, entryId: number) =>
+    apiRequest<void>(
+      `/flocks/${flockId}/production-entries/${entryId}`,
+      { method: 'DELETE' }
+    ),
+
+  // Breeding entries
+  listBreedingEntries: (flockId: number, page = 1) =>
+    apiRequest<PaginatedResponse<BreedingEntry>>(
+      `/flocks/${flockId}/breeding-entries?page=${page}`
+    ),
+
+  createBreedingEntry: (flockId: number, data: {
+    mortality?: number
+    weight_sample_avg?: number
+    uniformity_pct?: number
+    feed_quantity_kg: number
+    warehouse_id?: number
+    item_id?: number
+    ai_observation?: string
+  }) => apiRequest<{ data: { measurement: BreedingEntry; feed: FeedEntry } }>(
+    `/flocks/${flockId}/breeding-entries`,
+    { method: 'POST', body: JSON.stringify(data) }
+  ),
+
+  updateBreedingEntry: (flockId: number, entryId: number, data: {
+    mortality?: number
+    weight_sample_avg?: number
+    uniformity_pct?: number
+    feed_quantity_kg?: number
+    ai_observation?: string
+  }) => apiRequest<{ data: { measurement: BreedingEntry; feed: FeedEntry } }>(
+    `/flocks/${flockId}/breeding-entries/${entryId}`,
+    { method: 'PUT', body: JSON.stringify(data) }
+  ),
+
+  deleteBreedingEntry: (flockId: number, entryId: number) =>
+    apiRequest<void>(
+      `/flocks/${flockId}/breeding-entries/${entryId}`,
+      { method: 'DELETE' }
+    ),
+
+  getProductionEntry: (flockId: number, entryId: number) =>
+    wrapResponse<ProductionEntry>(
+      apiRequest(`/flocks/${flockId}/production-entries/${entryId}`)
+    ),
+
+  getBreedingEntry: (flockId: number, entryId: number) =>
+    wrapResponse<BreedingEntry>(
+      apiRequest(`/flocks/${flockId}/breeding-entries/${entryId}`)
+    ),
+}
