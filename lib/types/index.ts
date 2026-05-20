@@ -193,3 +193,54 @@ export interface InventoryMovement {
   created_at: string
 }
 
+export interface Asset {
+  id: number
+  asset_code: string
+  name: string
+  name_en?: string
+  category: 'nurseries' | 'incubators' | 'lands' | 'buildings' | 'poultry_houses' | 'cars' | 'equipment' | 'roads'
+  sub_category?: string
+  calculation_type?: string
+  calculated_by?: string
+  calculation_rate: number
+  purchase_value: number
+  book_value: number
+  value_as_of: string
+  location_code?: string
+  location_name?: string
+  cost_center_code?: string
+  cost_center_name?: string
+  asset_account?: string
+  asset_account_name?: string
+  depreciation_ac?: string
+  depreciation_ac_name?: string
+  accumulated_depreciation_ac?: string
+  accumulated_depreciation_ac_name?: string
+  additional_details?: Record<string, any>
+  status: 'active' | 'in_maintenance' | 'disposed' | 'sold'
+  status_label: string
+  depreciation_percentage: number
+  created_at?: string
+  updated_at?: string
+}
+
+export interface AssetStats {
+  total_assets_count: number
+  total_purchase_value: number
+  total_book_value: number
+  total_depreciation: number
+  depreciation_percentage: number
+  assets_by_category: {
+    category: string
+    count: number
+    total_value: number
+  }[]
+  assets_by_location: {
+    location_name: string
+    count: number
+  }[]
+  top_5_by_value: Asset[]
+  top_5_by_depreciation: Asset[]
+}
+
+
