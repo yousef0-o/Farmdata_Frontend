@@ -1,25 +1,181 @@
 @import 'tailwindcss';
 
-@variant dark (&:where(.dark, .dark *));
+@custom-variant dark (&:where(.dark, .dark *));
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #FAF8F5;
+  --foreground: #1F2937;
+  
+  --color-brand-terracotta: #C2410C;
+  --color-brand-olive: #2E4A3F;
+  --color-surface: #ffffff;
+  --color-border: #E5E7EB;
+
+  /* Brand Logo variables */
+  --brand-logo-bg: #FFEFE6;
+  --brand-logo-icon: #C2410C;
+  --brand-logo-text: #1F2937;
+  --brand-logo-sub: #6B7280;
+
+  /* Menu Hover variables */
+  --menu-hover-bg: #F3F4F6;
+  --menu-hover-text: #111827;
+
+  /* Dashboard Heading variables */
+  --dashboard-heading: #111827;
+  --dashboard-subheading: #4B5563;
+
+  /* Quick Link variables */
+  --quick-blue-bg: #eff6ff;
+  --quick-blue-text: #2563eb;
+  --quick-green-bg: #f0fdf4;
+  --quick-green-text: #16a34a;
+  --quick-purple-bg: #faf5ff;
+  --quick-purple-text: #9333ea;
+
+  /* Custom overrides for light mode */
+  --color-white-custom: #ffffff;
+  --color-gray-50-custom: #FAF8F5;
+  --color-gray-100-custom: #F3F4F6;
+  --color-gray-200-custom: #E5E7EB;
+  --color-gray-300-custom: #D1D5DB;
+  --color-gray-400-custom: #9CA3AF;
+  --color-gray-500-custom: #6B7280;
+  --color-gray-600-custom: #4B5563;
+  --color-gray-700-custom: #374151;
+  --color-gray-800-custom: #1F2937;
+  --color-gray-900-custom: #111827;
+  --color-gray-950-custom: #030712;
+
+  --color-emerald-100-custom: #D1FAE5;
+  --color-emerald-600-custom: #059669;
+  --color-emerald-700-custom: #047857;
+
+  --color-amber-100-custom: #FEF3C7;
+  --color-amber-600-custom: #D97706;
+
+  --color-red-100-custom: #FEE2E2;
+  --color-red-600-custom: #DC2626;
 }
 
 .dark {
-  --background: #0a0a0c;
-  --foreground: #f4f4f5;
+  --background: #121614;
+  --foreground: #F3F4F6;
+  
+  --color-brand-terracotta: #E06A3B;
+  --color-brand-olive: #3D6253;
+  --color-surface: #1C221F;
+  --color-border: #2C3531;
+
+  /* Brand Logo variables */
+  --brand-logo-bg: #2E1E1A;
+  --brand-logo-icon: #E06A3B;
+  --brand-logo-text: #ffffff;
+  --brand-logo-sub: #A7B6B0;
+
+  /* Menu Hover variables */
+  --menu-hover-bg: #2C3531;
+  --menu-hover-text: #ffffff;
+
+  /* Dashboard Heading variables */
+  --dashboard-heading: #FAF8F5;
+  --dashboard-subheading: #C4D0CB;
+
+  /* Quick Link variables */
+  --quick-blue-bg: #1e293b;
+  --quick-blue-text: #60a5fa;
+  --quick-green-bg: #14532d;
+  --quick-green-text: #4ade80;
+  --quick-purple-bg: #3b0764;
+  --quick-purple-text: #c084fc;
+
+  /* Custom overrides for dark mode (harmonized slate-green earthy theme) */
+  --color-white-custom: #1C221F; /* bg-white maps to surface card in dark mode */
+  --color-gray-50-custom: #121614; /* bg-gray-50 maps to deep background */
+  --color-gray-100-custom: #222925;
+  --color-gray-200-custom: #2C3531; /* border-gray-200 maps to earthy border */
+  --color-gray-300-custom: #3D4843;
+  --color-gray-400-custom: #6B7A74; /* muted gray-green text */
+  --color-gray-50-custom: #121614;
+  --color-gray-600-custom: #A7B6B0;
+  --color-gray-700-custom: #C4D0CB;
+  --color-gray-800-custom: #D1D5DB; /* light color for high contrast text-gray-800 in dark mode */
+  --color-gray-900-custom: #F3F4F6; /* text-gray-900 maps to foreground */
+  --color-gray-950-custom: #0E1110;
+
+  --color-emerald-100-custom: #182C24; /* moss green badge background */
+  --color-emerald-600-custom: #3D6253; /* olive status text */
+  --color-emerald-700-custom: #4A7563;
+
+  --color-amber-100-custom: #2E2512;
+  --color-amber-600-custom: #E0A93B;
+
+  --color-red-100-custom: #351A15;
+  --color-red-600-custom: #E5573B;
 }
 
-
-@theme inline {
+@theme {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
+  --font-sans: 'Cairo', 'IBM Plex Sans Arabic', sans-serif;
   --font-mono: var(--font-geist-mono);
-  --color-farm-blue: #2c5282;
-  --color-farm-green: #38a169;
+  
+  /* Brand colors */
+  --color-terracotta: var(--color-brand-terracotta);
+  --color-olive: var(--color-brand-olive);
+  --color-surface: var(--color-surface);
+  --color-border: var(--color-border);
+
+  /* Brand Logo colors */
+  --color-brand-logo-bg: var(--brand-logo-bg);
+  --color-brand-logo-icon: var(--brand-logo-icon);
+  --color-brand-logo-text: var(--brand-logo-text);
+  --color-brand-logo-sub: var(--brand-logo-sub);
+
+  /* Menu Hover colors */
+  --color-menu-hover-bg: var(--menu-hover-bg);
+  --color-menu-hover-text: var(--menu-hover-text);
+
+  /* Dashboard Heading colors */
+  --color-dash-heading: var(--dashboard-heading);
+  --color-dash-subheading: var(--dashboard-subheading);
+
+  /* Quick Link colors */
+  --color-quick-blue-bg: var(--quick-blue-bg);
+  --color-quick-blue-text: var(--quick-blue-text);
+  --color-quick-green-bg: var(--quick-green-bg);
+  --color-quick-green-text: var(--quick-green-text);
+  --color-quick-purple-bg: var(--quick-purple-bg);
+  --color-quick-purple-text: var(--quick-purple-text);
+  
+  /* Aliases to adapt existing codebase to new AgTech brand identity */
+  --color-farm-blue: var(--color-brand-terracotta);
+  --color-farm-green: var(--color-brand-olive);
+  
+  /* Standard Tailwind color overrides to instantly repaint all components without modifying files */
+  --color-white: var(--color-white-custom);
+  --color-gray-50: var(--color-gray-50-custom);
+  --color-gray-100: var(--color-gray-100-custom);
+  --color-gray-200: var(--color-gray-200-custom);
+  --color-gray-300: var(--color-gray-300-custom);
+  --color-gray-400: var(--color-gray-400-custom);
+  --color-gray-500: var(--color-gray-500-custom);
+  --color-gray-600: var(--color-gray-600-custom);
+  --color-gray-700: var(--color-gray-700-custom);
+  --color-gray-800: var(--color-gray-800-custom);
+  --color-gray-900: var(--color-gray-900-custom);
+  --color-gray-950: var(--color-gray-950-custom);
+
+  /* Semantic status overrides */
+  --color-emerald-100: var(--color-emerald-100-custom);
+  --color-emerald-600: var(--color-emerald-600-custom);
+  --color-emerald-700: var(--color-emerald-700-custom);
+  
+  --color-amber-100: var(--color-amber-100-custom);
+  --color-amber-600: var(--color-amber-600-custom);
+  
+  --color-red-100: var(--color-red-100-custom);
+  --color-red-600: var(--color-red-600-custom);
 }
 
 body {

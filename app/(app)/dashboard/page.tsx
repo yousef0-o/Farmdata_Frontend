@@ -44,7 +44,7 @@ export default function DashboardPage() {
       {/* Row 1 — Page Header */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">لوحة التحكم</h1>
+          <h1 className="text-2xl font-bold text-dash-heading">لوحة التحكم</h1>
           <p className="text-sm text-gray-500 mt-1">
             مرحباً بك في نظام إدارة مزارع الدواجن
           </p>
@@ -97,7 +97,7 @@ export default function DashboardPage() {
       {/* Row 3 — Active Flocks Table */}
       <div className="space-y-4">
         <div className="flex justify-between items-center">
-          <h2 className="text-lg font-bold text-gray-800">الأقطاع النشطة</h2>
+          <h2 className="text-lg font-bold text-dash-heading">الأقطاع النشطة</h2>
           {!isLoading && stats && stats.flocks.length > 0 && (
             <Link
               href="/flocks"
@@ -112,19 +112,19 @@ export default function DashboardPage() {
 
       {/* Row 4 — Quick Links */}
       <div className="space-y-4">
-        <h2 className="text-lg font-bold text-gray-800">روابط سريعة</h2>
+        <h2 className="text-lg font-bold text-dash-heading">روابط سريعة</h2>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <Link
             href="/companies"
-            className="flex items-center justify-between p-5 bg-white border border-gray-100 rounded-2xl shadow-sm hover:shadow-md transition-all group"
+            className="flex items-center justify-between p-5 bg-surface border border-border rounded-2xl shadow-sm hover:shadow-md transition-all group"
           >
             <div className="flex items-center gap-4">
-              <div className="p-3 bg-blue-50 text-blue-600 rounded-xl group-hover:bg-blue-100 transition-colors">
+              <div className="p-3 bg-quick-blue-bg text-quick-blue-text rounded-xl transition-colors">
                 <PlusCircle className="w-6 h-6" />
               </div>
               <div className="text-right">
                 <p className="font-bold text-gray-900">إضافة شركة جديدة</p>
-                <p className="text-xs text-gray-500 mt-1">إضافة وإدارة الشركات والمنشآت</p>
+                <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">إضافة وإدارة الشركات والمنشآت</p>
               </div>
             </div>
             <span className="text-gray-400 group-hover:translate-x-[-4px] transition-transform">←</span>
@@ -132,15 +132,15 @@ export default function DashboardPage() {
 
           <Link
             href="/warehouses"
-            className="flex items-center justify-between p-5 bg-white border border-gray-100 rounded-2xl shadow-sm hover:shadow-md transition-all group"
+            className="flex items-center justify-between p-5 bg-surface border border-border rounded-2xl shadow-sm hover:shadow-md transition-all group"
           >
             <div className="flex items-center gap-4">
-              <div className="p-3 bg-green-50 text-green-600 rounded-xl group-hover:bg-green-100 transition-colors">
+              <div className="p-3 bg-quick-green-bg text-quick-green-text rounded-xl transition-colors">
                 <Warehouse className="w-6 h-6" />
               </div>
               <div className="text-right">
                 <p className="font-bold text-gray-900">إدارة المستودعات</p>
-                <p className="text-xs text-gray-500 mt-1">عرض ومراقبة أرصدة المخازن</p>
+                <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">عرض ومراقبة أرصدة المخازن</p>
               </div>
             </div>
             <span className="text-gray-400 group-hover:translate-x-[-4px] transition-transform">←</span>
@@ -148,15 +148,15 @@ export default function DashboardPage() {
 
           <Link
             href="/inventory/movements"
-            className="flex items-center justify-between p-5 bg-white border border-gray-100 rounded-2xl shadow-sm hover:shadow-md transition-all group"
+            className="flex items-center justify-between p-5 bg-surface border border-border rounded-2xl shadow-sm hover:shadow-md transition-all group"
           >
             <div className="flex items-center gap-4">
-              <div className="p-3 bg-purple-50 text-purple-600 rounded-xl group-hover:bg-purple-100 transition-colors">
+              <div className="p-3 bg-quick-purple-bg text-quick-purple-text rounded-xl transition-colors">
                 <ArrowLeftRight className="w-6 h-6" />
               </div>
               <div className="text-right">
                 <p className="font-bold text-gray-900">حركة المخزون</p>
-                <p className="text-xs text-gray-500 mt-1">تتبع الوارد والمنصرف من الأعلاف والبيض</p>
+                <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">تتبع الوارد والمنصرف من الأعلاف والبيض</p>
               </div>
             </div>
             <span className="text-gray-400 group-hover:translate-x-[-4px] transition-transform">←</span>

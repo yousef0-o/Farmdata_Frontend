@@ -9,8 +9,8 @@ export default function TopBar() {
   const logoutMutation = useLogout()
 
   return (
-    <header className="h-16 bg-white dark:bg-[#111315] border-b border-gray-200 dark:border-gray-800/60 flex items-center justify-between px-8 sticky top-0 z-40 shrink-0 transition-colors duration-200">
-      <h2 className="text-xl font-bold text-farm-blue dark:text-blue-400">
+    <header className="h-16 bg-surface border-b border-border flex items-center justify-between px-8 sticky top-0 z-40 shrink-0 transition-colors duration-200">
+      <h2 className="text-xl font-bold text-farm-blue dark:text-terracotta">
         نظام إدارة مزارع الدواجن
       </h2>
 

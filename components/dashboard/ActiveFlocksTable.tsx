@@ -48,10 +48,10 @@ export function ActiveFlocksTable({ flocks, loading }: ActiveFlocksTableProps) {
 
   return (
     <div className="space-y-4">
-      <div className="overflow-x-auto border border-gray-100 dark:border-gray-800/60 rounded-2xl bg-white dark:bg-[#111315] shadow-sm">
+      <div className="overflow-x-auto border border-border rounded-2xl bg-surface shadow-sm">
         <table className="w-full text-right border-collapse">
           <thead>
-            <tr className="border-b border-gray-100 dark:border-gray-800/60 bg-gray-50/75 dark:bg-[#16181b] text-xs text-gray-500 dark:text-gray-400 font-bold uppercase tracking-wider">
+            <tr className="border-b border-gray-100 dark:border-gray-200 bg-gray-50/75 dark:bg-gray-950/75 text-xs text-gray-500 dark:text-gray-400 font-bold uppercase tracking-wider">
               <th className="px-6 py-4">القطيع</th>
               <th className="px-6 py-4">العنبر</th>
               <th className="px-6 py-4">النوع</th>
@@ -66,14 +66,14 @@ export function ActiveFlocksTable({ flocks, loading }: ActiveFlocksTableProps) {
               return (
                 <tr
                   key={flock.id}
-                  className="hover:bg-gray-50/50 dark:hover:bg-[#16181b]/50 transition-colors duration-150 cursor-pointer"
+                  className="hover:bg-gray-50/50 dark:hover:bg-gray-950/50 transition-colors duration-150 cursor-pointer"
                 >
-                  <td className="px-6 py-4 font-semibold text-farm-blue dark:text-blue-400">
+                  <td className="px-6 py-4 font-semibold text-farm-blue dark:text-terracotta">
                     <Link href={`/flocks/${flock.id}`} className="hover:underline block">
                       #{flock.id}
                     </Link>
                   </td>
-                  <td className="px-6 py-4 font-medium text-gray-900 dark:text-white">
+                  <td className="px-6 py-4 font-medium text-gray-900">
                     {flock.barn?.barn_name ?? '—'}
                   </td>
                   <td className="px-6 py-4">
