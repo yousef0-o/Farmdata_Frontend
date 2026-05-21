@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState } from 'react'
+import React, { useState, useRef, useCallback } from 'react'
 import { X, Loader2, AlertCircle, ChevronLeft, ChevronRight, Check } from 'lucide-react'
 import type { Customer } from '@/lib/types'
 
@@ -82,26 +82,70 @@ export default function CustomerForm({ editingCustomer, onSubmit, onClose, isPen
   const [form, setForm] = useState<Partial<Customer>>(() => getInitialForm(editingCustomer))
   const [errors, setErrors] = useState<Record<string, string>>({})
 
-  const allErrors = { ...errors, ...serverErrors }
+  // ref دايمًا بيحمل آخر نسخة من form — بيحل مشكلة stale closure في React 18
+  const formRef = useRef(form)
+
+  const updateForm = useCallback((key: keyof Customer, val: any) => {
+    setForm((prev) => {
+      const next = { ...prev, [key]: val }
+      formRef.current = next
+      return next
+    })
+  }, [])
+
+  const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/
+  const PHONE_REGEX = /^[+\d\s\-().]{7,20}$/
 
   const validateStep = (s: number): boolean => {
+    const f = formRef.current
     const errs: Record<string, string> = {}
+
     if (s === 0) {
-      if (!form.customer_code) errs.customer_code = 'كود العميل مطلوب'
-      if (!form.customer_name) errs.customer_name = 'اسم العميل مطلوب'
-      if (!form.customer_type) errs.customer_type = 'نوع العميل مطلوب'
-      if (form.customer_type === 'company' && !form.company_name) {
+      if (!f.customer_code?.trim()) errs.customer_code = 'كود العميل مطلوب'
+      if (!f.customer_name?.trim()) errs.customer_name = 'اسم العميل مطلوب'
+      if (!f.customer_type) errs.customer_type = 'نوع العميل مطلوب'
+      if (f.customer_type === 'company' && !f.company_name?.trim())
         errs.company_name = 'اسم الشركة مطلوب للشركات'
-      }
+
+      if (f.email1 && !EMAIL_REGEX.test(f.email1))
+        errs.email1 = 'صيغة البريد الإلكتروني غير صحيحة'
+      if (f.email2 && !EMAIL_REGEX.test(f.email2))
+        errs.email2 = 'صيغة البريد الإلكتروني غير صحيحة'
+
+      if (f.phone1 && !PHONE_REGEX.test(f.phone1))
+        errs.phone1 = 'صيغة رقم الهاتف غير صحيحة (أرقام ومسافات وشرطات فقط)'
+      if (f.phone2 && !PHONE_REGEX.test(f.phone2))
+        errs.phone2 = 'صيغة رقم الهاتف غير صحيحة (أرقام ومسافات وشرطات فقط)'
+      if (f.fax1 && !PHONE_REGEX.test(f.fax1))
+        errs.fax1 = 'صيغة رقم الفاكس غير صحيحة'
+      if (f.fax2 && !PHONE_REGEX.test(f.fax2))
+        errs.fax2 = 'صيغة رقم الفاكس غير صحيحة'
     }
+
     if (s === 1) {
-      if (form.credit_limit === undefined || form.credit_limit < 0) {
+      if (f.credit_limit === undefined || Number(f.credit_limit) < 0)
         errs.credit_limit = 'يجب إدخال حد ائتمان صحيح (صفر أو أكثر)'
-      }
-      if (form.discount_days === undefined || form.discount_days < 0) {
+      if (f.discount_days === undefined || Number(f.discount_days) < 0)
         errs.discount_days = 'يجب إدخال أيام خصم صحيحة'
-      }
+      if (f.discount_rate !== undefined && (Number(f.discount_rate) < 0 || Number(f.discount_rate) > 100))
+        errs.discount_rate = 'معدل الخصم يجب أن يكون بين 0 و 100'
+      if (f.payment_discount !== undefined && (Number(f.payment_discount) < 0 || Number(f.payment_discount) > 100))
+        errs.payment_discount = 'خصم الدفع السريع يجب أن يكون بين 0 و 100'
+      if (f.guarantee_amount !== undefined && Number(f.guarantee_amount) < 0)
+        errs.guarantee_amount = 'مبلغ الضمان لا يمكن أن يكون سالبًا'
+      if (f.discount_limit !== undefined && Number(f.discount_limit) < 0)
+        errs.discount_limit = 'حد الخصم لا يمكن أن يكون سالبًا'
+
+      if (f.reference1_email && !EMAIL_REGEX.test(f.reference1_email))
+        errs.reference1_email = 'صيغة البريد الإلكتروني غير صحيحة'
+      if (f.reference2_email && !EMAIL_REGEX.test(f.reference2_email))
+        errs.reference2_email = 'صيغة البريد الإلكتروني غير صحيحة'
+      if (f.reference1_phone && !PHONE_REGEX.test(f.reference1_phone))
+        errs.reference1_phone = 'صيغة رقم الهاتف غير صحيحة'
+      if (f.reference2_phone && !PHONE_REGEX.test(f.reference2_phone))
+        errs.reference2_phone = 'صيغة رقم الهاتف غير صحيحة'
     }
+
     setErrors(errs)
     return Object.keys(errs).length === 0
   }
@@ -111,56 +155,53 @@ export default function CustomerForm({ editingCustomer, onSubmit, onClose, isPen
   }
   const handlePrev = () => setStep((s) => Math.max(s - 1, 0))
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
-    if (step < STEPS.length - 1) {
-      handleNext()
-      return
-    }
+  const allErrors = { ...errors, ...serverErrors }
+
+  const handleSubmit = () => {
     if (!validateStep(step)) return
-    // Whitelist and format payload before submitting
+    const f = formRef.current
     const payload: Partial<Customer> = {
-      customer_code: form.customer_code,
-      customer_name: form.customer_name,
-      customer_type: form.customer_type,
-      company_name: form.customer_type === 'company' ? form.company_name : '',
-      email1: form.email1 || null as any,
-      email2: form.email2 || null as any,
-      phone1: form.phone1 || null as any,
-      phone2: form.phone2 || null as any,
-      fax1: form.fax1 || null as any,
-      fax2: form.fax2 || null as any,
-      postal_code: form.postal_code || null as any,
-      country: form.country || null as any,
-      credit_limit: Number(form.credit_limit ?? 0),
-      discount_days: Number(form.discount_days ?? 0),
-      guarantee_amount: Number(form.guarantee_amount ?? 0),
-      discount_rate: Number(form.discount_rate ?? 0),
-      payment_discount: Number(form.payment_discount ?? 0),
-      discount_limit: Number(form.discount_limit ?? 0),
-      tax_number: form.tax_number || null as any,
-      commercial_record: form.commercial_record || null as any,
-      account_code: form.account_code || null as any,
-      account_name: form.account_name || null as any,
-      issue_date: form.issue_date || null as any,
-      salesman_number: form.salesman_number || null as any,
-      salesman_name: form.salesman_name || null as any,
-      sales_area_code: form.sales_area_code || null as any,
-      sales_area_name: form.sales_area_name || null as any,
-      po_box: form.po_box || null as any,
-      district: form.district || null as any,
-      province: form.province || null as any,
-      street_name: form.street_name || null as any,
-      building_number: form.building_number || null as any,
-      customer_address: form.customer_address || null as any,
-      additional_street: form.additional_street || null as any,
-      additional_number: form.additional_number || null as any,
-      reference1: form.reference1 || null as any,
-      reference2: form.reference2 || null as any,
-      reference1_email: form.reference1_email || null as any,
-      reference2_email: form.reference2_email || null as any,
-      reference1_phone: form.reference1_phone || null as any,
-      reference2_phone: form.reference2_phone || null as any,
+      customer_code: f.customer_code,
+      customer_name: f.customer_name,
+      customer_type: f.customer_type,
+      company_name: f.customer_type === 'company' ? f.company_name : '',
+      email1: f.email1 || null as any,
+      email2: f.email2 || null as any,
+      phone1: f.phone1 || null as any,
+      phone2: f.phone2 || null as any,
+      fax1: f.fax1 || null as any,
+      fax2: f.fax2 || null as any,
+      postal_code: f.postal_code || null as any,
+      country: f.country || null as any,
+      credit_limit: Number(f.credit_limit ?? 0),
+      discount_days: Number(f.discount_days ?? 0),
+      guarantee_amount: Number(f.guarantee_amount ?? 0),
+      discount_rate: Number(f.discount_rate ?? 0),
+      payment_discount: Number(f.payment_discount ?? 0),
+      discount_limit: Number(f.discount_limit ?? 0),
+      tax_number: f.tax_number || null as any,
+      commercial_record: f.commercial_record || null as any,
+      account_code: f.account_code || null as any,
+      account_name: f.account_name || null as any,
+      issue_date: f.issue_date || null as any,
+      salesman_number: f.salesman_number || null as any,
+      salesman_name: f.salesman_name || null as any,
+      sales_area_code: f.sales_area_code || null as any,
+      sales_area_name: f.sales_area_name || null as any,
+      po_box: f.po_box || null as any,
+      district: f.district || null as any,
+      province: f.province || null as any,
+      street_name: f.street_name || null as any,
+      building_number: f.building_number || null as any,
+      customer_address: f.customer_address || null as any,
+      additional_street: f.additional_street || null as any,
+      additional_number: f.additional_number || null as any,
+      reference1: f.reference1 || null as any,
+      reference2: f.reference2 || null as any,
+      reference1_email: f.reference1_email || null as any,
+      reference2_email: f.reference2_email || null as any,
+      reference1_phone: f.reference1_phone || null as any,
+      reference2_phone: f.reference2_phone || null as any,
     }
     onSubmit(payload)
   }
@@ -181,7 +222,7 @@ export default function CustomerForm({ editingCustomer, onSubmit, onClose, isPen
         value={(form as any)[key] ?? ''}
         onChange={(e) => {
           const val = opts.type === 'number' ? (e.target.value === '' ? 0 : parseFloat(e.target.value)) : e.target.value
-          setForm({ ...form, [key]: val })
+          updateForm(key, val)
         }}
       />
       {allErrors[key] && <p className="text-xxs text-red-500 mt-1">{allErrors[key]}</p>}
@@ -227,8 +268,8 @@ export default function CustomerForm({ editingCustomer, onSubmit, onClose, isPen
           ))}
         </div>
 
-        {/* Body */}
-        <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto p-6 space-y-6">
+        {/* Body — div بدل form عشان نمنع أي submission عرضي */}
+        <div className="flex-1 overflow-y-auto p-6 space-y-6">
           {allErrors.non_field && (
             <div className="p-4 bg-red-100 border border-red-200 text-red-650 text-sm rounded-xl flex items-center gap-3">
               <AlertCircle className="w-5 h-5 shrink-0 text-red-550" />
@@ -248,7 +289,7 @@ export default function CustomerForm({ editingCustomer, onSubmit, onClose, isPen
                     id="customer_type"
                     className="w-full border border-gray-200 rounded-xl px-4 py-2.5 bg-gray-50 text-gray-900 focus:ring-2 focus:ring-farm-blue focus:outline-none text-sm"
                     value={form.customer_type}
-                    onChange={(e) => setForm({ ...form, customer_type: e.target.value as any })}
+                    onChange={(e) => updateForm('customer_type', e.target.value as any)}
                   >
                     <option value="company">شركة</option>
                     <option value="individual">فرد</option>
@@ -352,7 +393,7 @@ export default function CustomerForm({ editingCustomer, onSubmit, onClose, isPen
                   <ChevronLeft className="w-4 h-4" /> التالي
                 </button>
               ) : (
-                <button type="submit" disabled={isPending}
+                <button type="button" onClick={handleSubmit} disabled={isPending}
                   className="bg-farm-blue hover:bg-blue-800 disabled:opacity-50 text-white px-6 py-2.5 rounded-xl font-semibold text-sm transition-all flex items-center gap-2">
                   {isPending && <Loader2 className="w-4 h-4 animate-spin" />}
                   {editingCustomer ? 'حفظ التعديلات' : 'إضافة العميل'}
@@ -360,7 +401,7 @@ export default function CustomerForm({ editingCustomer, onSubmit, onClose, isPen
               )}
             </div>
           </div>
-        </form>
+        </div>
       </div>
     </div>
   )
