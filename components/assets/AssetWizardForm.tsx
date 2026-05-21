@@ -73,6 +73,10 @@ export default function AssetWizardForm({ editingAsset, onSubmit, onClose, isPen
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
+    if (step < STEPS.length - 1) {
+      handleNext()
+      return
+    }
     if (!validateStep(step)) return
     onSubmit(form)
   }

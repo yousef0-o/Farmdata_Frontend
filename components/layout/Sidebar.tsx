@@ -3,7 +3,7 @@
 import React from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { LayoutDashboard, Building2, Sprout, Warehouse, Layers, ArrowLeftRight, Coins } from 'lucide-react'
+import { LayoutDashboard, Building2, Sprout, Warehouse, Layers, ArrowLeftRight, Coins, Users, Truck } from 'lucide-react'
 import DarkModeToggle from '../ui/DarkModeToggle'
 
 const navItems = [
@@ -26,6 +26,16 @@ const navItems = [
     icon: Coins,
     label: 'الأصول الرأسمالية',
     href: '/assets',
+  },
+  {
+    icon: Users,
+    label: 'العملاء',
+    href: '/customers',
+  },
+  {
+    icon: Truck,
+    label: 'الموردين',
+    href: '/suppliers',
   },
   {
     icon: Warehouse,
