@@ -6,8 +6,8 @@ import type {
 
 export const inventoryApi = {
   // Warehouses
-  listWarehouses: (page = 1) =>
-    apiRequest<PaginatedResponse<Warehouse>>(`/warehouses?page=${page}`),
+  listWarehouses: (page = 1, perPage = 20) =>
+    apiRequest<PaginatedResponse<Warehouse>>(`/warehouses?page=${page}&per_page=${perPage}`),
   getWarehouse: (id: number) =>
     wrapResponse<Warehouse>(apiRequest(`/warehouses/${id}`)),
   createWarehouse: (data: { company_id: number; name: string; code: string; location?: string }) =>
@@ -24,8 +24,8 @@ export const inventoryApi = {
     apiRequest<void>(`/warehouses/${id}`, { method: 'DELETE' }),
 
   // Items
-  listItems: (page = 1) =>
-    apiRequest<PaginatedResponse<Item>>(`/items?page=${page}`),
+  listItems: (page = 1, perPage = 20) =>
+    apiRequest<PaginatedResponse<Item>>(`/items?page=${page}&per_page=${perPage}`),
   getItem: (id: number) =>
     wrapResponse<Item>(apiRequest(`/items/${id}`)),
   createItem: (data: { name: string; unit?: string; category?: string }) =>
@@ -45,6 +45,10 @@ export const inventoryApi = {
   getWarehouseBalances: (warehouseId: number) =>
     wrapResponse<StockBalance[]>(
       apiRequest(`/warehouses/${warehouseId}/balances`)
+    ),
+  getItemBalance: (warehouseId: number, itemId: number) =>
+    apiRequest<{ data: { warehouse_id: number; item_id: number; quantity_on_hand: number } }>(
+      `/warehouses/${warehouseId}/balances/item/${itemId}`
     ),
 
   // Movements ledger
@@ -66,4 +70,15 @@ export const inventoryApi = {
       `/inventory/movements?${params.toString()}`
     )
   },
+  createMovement: (data: {
+    type: 'in' | 'out'
+    warehouse_id: number
+    item_id: number
+    quantity: number
+    unit_cost?: number
+    notes?: string
+  }) => apiRequest<{ data: InventoryMovement }>('/inventory/movements', {
+    method: 'POST',
+    body: JSON.stringify(data),
+  }),
 }

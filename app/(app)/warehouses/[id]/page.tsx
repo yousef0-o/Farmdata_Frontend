@@ -3,12 +3,14 @@
 import React from 'react'
 import { useParams } from 'next/navigation'
 import Link from 'next/link'
-import { Warehouse as WarehouseIcon, MapPin, ArrowLeft, ArrowLeftRight, Loader2, Info } from 'lucide-react'
+import { Warehouse as WarehouseIcon, MapPin, ArrowLeft, ArrowLeftRight, Loader2, Info, Plus } from 'lucide-react'
 import { useWarehouse, useWarehouseBalances } from '@/lib/hooks/useInventory'
+import { CreateMovementDialog } from '@/components/inventory/CreateMovementDialog'
 
 export default function WarehouseDetailPage() {
   const { id } = useParams()
   const warehouseId = Number(id)
+  const [showCreateDialog, setShowCreateDialog] = React.useState(false)
 
   const { data: warehouseData, isLoading: isWarehouseLoading, error: warehouseError } = useWarehouse(warehouseId)
   const { data: balancesData, isLoading: isBalancesLoading, error: balancesError } = useWarehouseBalances(warehouseId)
@@ -68,6 +70,14 @@ export default function WarehouseDetailPage() {
         </div>
 
         <div className="flex gap-3">
+          <button
+            type="button"
+            onClick={() => setShowCreateDialog(true)}
+            className="flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white px-5 py-2.5 rounded-xl transition-all font-medium text-sm"
+          >
+            <Plus className="w-4 h-4" />
+            <span>إضافة حركة لهذا المستودع</span>
+          </button>
           <Link
             href={`/inventory/movements?warehouse_id=${warehouseId}`}
             className="flex items-center gap-2 bg-farm-blue hover:bg-blue-800 text-white px-5 py-2.5 rounded-xl transition-all font-medium text-sm"
@@ -84,6 +94,12 @@ export default function WarehouseDetailPage() {
           </Link>
         </div>
       </div>
+
+      <CreateMovementDialog
+        open={showCreateDialog}
+        onOpenChange={setShowCreateDialog}
+        defaultWarehouseId={warehouseId}
+      />
 
       {/* Stock Balances Section */}
       <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden p-6">

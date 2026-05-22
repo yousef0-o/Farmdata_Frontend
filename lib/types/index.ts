@@ -56,6 +56,7 @@ export interface Flock {
   breed?: string
   supplier?: string
   chick_unit_cost?: string
+  barn?: Barn
 }
 
 export interface PaginatedResponse<T> {
@@ -184,7 +185,9 @@ export interface InventoryMovement {
   id: number
   type: 'in' | 'out'
   warehouse_id: number
+  warehouse_name?: string
   item_id: number
+  item_name?: string
   quantity: number
   unit_cost?: number
   flock_id?: number

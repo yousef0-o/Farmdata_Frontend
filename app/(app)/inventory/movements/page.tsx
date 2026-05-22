@@ -2,10 +2,23 @@
 
 import React, { useState, useMemo } from 'react'
 import { useSearchParams } from 'next/navigation'
-import { ArrowLeftRight, Search, Loader2, Info, RefreshCw } from 'lucide-react'
+import { ArrowLeftRight, Search, Loader2, RefreshCw, Plus } from 'lucide-react'
 import { useInventoryMovements, useWarehouses, useItems } from '@/lib/hooks/useInventory'
 import { MovementTypeBadge } from '@/components/inventory/MovementTypeBadge'
+import { CreateMovementDialog } from '@/components/inventory/CreateMovementDialog'
 import Pagination from '@/components/ui/Pagination'
+import type { InventoryMovement } from '@/lib/types'
+
+const getReferenceLabel = (movement: InventoryMovement) => {
+  if (movement.reversal_of) return `عكس حركة #${movement.reversal_of}`
+  if (movement.reference_type === 'manual') return 'يدوي'
+  if (movement.reference_type === 'feed_consumption_event')
+    return `علف — قطيع #${movement.flock_id ?? '—'}`
+  if (movement.reference_type === 'egg_production_event')
+    return `بيض — قطيع #${movement.flock_id ?? '—'}`
+  if (movement.reference_type) return movement.reference_type
+  return '—'
+}
 
 export default function InventoryMovementsPage() {
   const searchParams = useSearchParams()
@@ -18,6 +31,7 @@ export default function InventoryMovementsPage() {
   const [itemFilter, setItemFilter] = useState<number | undefined>(initialItem)
   const [typeFilter, setTypeFilter] = useState<'in' | 'out' | undefined>(undefined)
   const [page, setPage] = useState(1)
+  const [showCreateDialog, setShowCreateDialog] = useState(false)
 
   // Internal form states
   const [selectedWarehouse, setSelectedWarehouse] = useState<string>(initialWarehouse ? String(initialWarehouse) : '')
@@ -63,7 +77,7 @@ export default function InventoryMovementsPage() {
 
   // Gracefully handle both raw array response and standard PaginatedResponse
   const movementsRaw = data
-  const movements = Array.isArray(movementsRaw) ? movementsRaw : (movementsRaw as any)?.data || []
+  const movements = (Array.isArray(movementsRaw) ? movementsRaw : (movementsRaw as any)?.data || []) as InventoryMovement[]
   const meta = Array.isArray(movementsRaw) ? null : (movementsRaw as any)?.meta
 
   return (
@@ -79,7 +93,17 @@ export default function InventoryMovementsPage() {
             <p className="text-sm text-gray-500 mt-1">دفتر الأستاذ العام لحركات الوارد والصادر بالمستودعات</p>
           </div>
         </div>
+        <button
+          type="button"
+          onClick={() => setShowCreateDialog(true)}
+          className="flex items-center gap-2 bg-farm-blue hover:bg-blue-800 text-white px-5 py-2.5 rounded-xl transition-all font-medium"
+        >
+          <Plus className="w-5 h-5" />
+          <span>إضافة حركة</span>
+        </button>
       </div>
+
+      <CreateMovementDialog open={showCreateDialog} onOpenChange={setShowCreateDialog} />
 
       {/* Filter Bar */}
       <form onSubmit={handleSearch} className="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm space-y-4">
@@ -180,7 +204,7 @@ export default function InventoryMovementsPage() {
                 </tr>
               </thead>
               <tbody>
-                {movements.map((mov: any) => (
+                {movements.map((mov) => (
                   <tr key={mov.id} className="border-b border-gray-100 hover:bg-gray-50/50 transition-colors">
                     <td className="py-3 px-4 text-gray-600 text-xs">
                       {mov.created_at ? new Date(mov.created_at).toLocaleString('ar-EG') : '—'}
@@ -189,26 +213,24 @@ export default function InventoryMovementsPage() {
                       <MovementTypeBadge type={mov.type} />
                     </td>
                     <td className="py-3 px-4 font-medium text-gray-900">
-                      {mov.item?.name || `صنف #${mov.item_id}`}
+                      {mov.item_name || `صنف #${mov.item_id}`}
                     </td>
                     <td className="py-3 px-4 text-gray-600">
-                      {mov.warehouse?.name || `مستودع #${mov.warehouse_id}`}
+                      {mov.warehouse_name || `مستودع #${mov.warehouse_id}`}
                     </td>
                     <td className={`py-3 px-4 font-bold ${mov.type === 'in' ? 'text-green-600' : 'text-red-600'}`}>
                       {mov.type === 'in' ? '+' : '-'} {Number(mov.quantity).toFixed(3)}
                     </td>
                     <td className="py-3 px-4">
-                      {mov.reversal_of ? (
-                        <span className="text-xs bg-amber-50 text-amber-700 border border-amber-200 px-2 py-0.5 rounded-md font-medium">
-                          عكس حركة #{mov.reversal_of}
-                        </span>
-                      ) : mov.reference_type ? (
-                        <span className="text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded-md">
-                          {mov.reference_type} #{mov.reference_id}
-                        </span>
-                      ) : (
-                        <span className="text-gray-400">—</span>
-                      )}
+                      <span className={`text-xs px-2 py-0.5 rounded-md font-medium ${
+                        mov.reversal_of
+                          ? 'bg-amber-50 text-amber-700 border border-amber-200'
+                          : mov.reference_type === 'manual'
+                            ? 'bg-blue-50 text-blue-700 border border-blue-100'
+                            : 'bg-gray-100 text-gray-600'
+                      }`}>
+                        {getReferenceLabel(mov)}
+                      </span>
                     </td>
                     <td className="py-3 px-4 text-gray-500 max-w-xs truncate" title={mov.notes}>
                       {mov.notes || '—'}
