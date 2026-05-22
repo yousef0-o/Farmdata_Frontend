@@ -10,7 +10,7 @@ export const inventoryApi = {
     apiRequest<PaginatedResponse<Warehouse>>(`/warehouses?page=${page}`),
   getWarehouse: (id: number) =>
     wrapResponse<Warehouse>(apiRequest(`/warehouses/${id}`)),
-  createWarehouse: (data: { name: string; location?: string }) =>
+  createWarehouse: (data: { company_id: number; name: string; code: string; location?: string }) =>
     wrapResponse<Warehouse>(apiRequest('/warehouses', {
       method: 'POST',
       body: JSON.stringify(data),

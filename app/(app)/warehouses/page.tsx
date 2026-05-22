@@ -6,10 +6,13 @@ import { Warehouse as WarehouseIcon, Plus, Loader2, MapPin, ArrowLeftRight } fro
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { z } from 'zod'
 import { useWarehouses, useCreateWarehouse } from '@/lib/hooks/useInventory'
+import { organizationApi } from '@/lib/api/organization'
 import Pagination from '@/components/ui/Pagination'
 
 const warehouseSchema = z.object({
+  company_id: z.coerce.number({ message: 'الشركة مطلوبة' }).min(1, 'الشركة مطلوبة'),
   name: z.string().min(1, 'اسم المستودع مطلوب'),
+  code: z.string().min(1, 'رمز المستودع مطلوب'),
   location: z.string().optional(),
 })
 
@@ -17,18 +20,35 @@ export default function WarehousesPage() {
   const queryClient = useQueryClient()
   const [page, setPage] = useState(1)
   const [showCreate, setShowCreate] = useState(false)
+  const [companyId, setCompanyId] = useState('')
   const [name, setName] = useState('')
+  const [code, setCode] = useState('')
   const [location, setLocation] = useState('')
   const [errors, setErrors] = useState<Record<string, string>>({})
 
   const { data, isLoading } = useWarehouses(page)
   const createMutation = useCreateWarehouse()
 
+  // Query Companies for Selection
+  const { data: companiesData, isLoading: isLoadingCompanies } = useQuery({
+    queryKey: ['companies'],
+    queryFn: organizationApi.listCompanies,
+  })
+
+  const companies = companiesData?.data ?? []
+
+  // Auto-select company if there is only one
+  React.useEffect(() => {
+    if (companies.length === 1 && !companyId) {
+      setCompanyId(String(companies[0].id))
+    }
+  }, [companies, companyId])
+
   const handleCreate = (e: React.FormEvent) => {
     e.preventDefault()
     setErrors({})
 
-    const result = warehouseSchema.safeParse({ name, location })
+    const result = warehouseSchema.safeParse({ company_id: companyId, name, code, location })
     if (!result.success) {
       const fieldErrors: Record<string, string> = {}
       result.error.issues.forEach((err) => {
@@ -40,10 +60,16 @@ export default function WarehousesPage() {
     }
 
     createMutation.mutate(
-      { name, location: location || undefined },
+      { 
+        company_id: Number(companyId),
+        name, 
+        code,
+        location: location || undefined 
+      },
       {
         onSuccess: () => {
           setName('')
+          setCode('')
           setLocation('')
           setShowCreate(false)
           setErrors({})
@@ -96,7 +122,27 @@ export default function WarehousesPage() {
 
             <form onSubmit={handleCreate} className="space-y-4">
               <div>
-                <label className="text-sm font-semibold text-gray-700 block mb-1">اسم المستودع</label>
+                <label className="text-sm font-semibold text-gray-700 block mb-1">اختر الشركة <span className="text-red-500">*</span></label>
+                <select
+                  className={`w-full border rounded-xl px-4 py-2.5 bg-gray-50 focus:outline-none focus:ring-2 focus:ring-farm-blue ${
+                    errors.company_id ? 'border-red-500' : 'border-gray-200'
+                  }`}
+                  value={companyId}
+                  onChange={(e) => setCompanyId(e.target.value)}
+                  disabled={isLoadingCompanies || createMutation.isPending}
+                >
+                  <option value="">اختر الشركة...</option>
+                  {companies.map((c: any) => (
+                    <option key={c.id} value={c.id}>
+                      {c.name}
+                    </option>
+                  ))}
+                </select>
+                {errors.company_id && <p className="text-xs text-red-600 mt-1 mr-1">{errors.company_id}</p>}
+              </div>
+
+              <div>
+                <label className="text-sm font-semibold text-gray-700 block mb-1">اسم المستودع <span className="text-red-500">*</span></label>
                 <input
                   type="text"
                   placeholder="مثال: مستودع العلف الرئيسي"
@@ -105,9 +151,25 @@ export default function WarehousesPage() {
                   }`}
                   value={name}
                   onChange={(e) => setName(e.target.value)}
+                  disabled={createMutation.isPending}
                   autoFocus
                 />
                 {errors.name && <p className="text-xs text-red-600 mt-1 mr-1">{errors.name}</p>}
+              </div>
+
+              <div>
+                <label className="text-sm font-semibold text-gray-700 block mb-1">رمز المستودع <span className="text-red-500">*</span></label>
+                <input
+                  type="text"
+                  placeholder="مثال: WH-FEED"
+                  className={`w-full border rounded-xl px-4 py-2.5 bg-gray-50 focus:outline-none focus:ring-2 focus:ring-farm-blue ${
+                    errors.code ? 'border-red-500' : 'border-gray-200'
+                  }`}
+                  value={code}
+                  onChange={(e) => setCode(e.target.value)}
+                  disabled={createMutation.isPending}
+                />
+                {errors.code && <p className="text-xs text-red-600 mt-1 mr-1">{errors.code}</p>}
               </div>
 
               <div>
@@ -118,6 +180,7 @@ export default function WarehousesPage() {
                   className="w-full border border-gray-200 rounded-xl px-4 py-2.5 bg-gray-50 focus:outline-none focus:ring-2 focus:ring-farm-blue"
                   value={location}
                   onChange={(e) => setLocation(e.target.value)}
+                  disabled={createMutation.isPending}
                 />
               </div>
 
@@ -134,6 +197,9 @@ export default function WarehousesPage() {
                   type="button"
                   onClick={() => {
                     setShowCreate(false)
+                    setName('')
+                    setCode('')
+                    setLocation('')
                     setErrors({})
                   }}
                   className="bg-gray-100 hover:bg-gray-200 text-gray-600 px-4 py-2 rounded-xl font-medium transition-all"

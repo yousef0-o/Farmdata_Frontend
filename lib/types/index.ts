@@ -157,7 +157,9 @@ export interface FeedEntry {
 
 export interface Warehouse {
   id: number
+  company_id: number
   name: string
+  code: string
   location?: string
   is_active?: boolean
 }

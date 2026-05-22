@@ -119,6 +119,7 @@ export const dailyOpsApi = {
     ),
 
   createProductionEntry: (flockId: number, data: {
+    record_date: string
     mortality?: number
     egg_size_jumbo?: number
     egg_size_xlarge?: number
@@ -129,6 +130,8 @@ export const dailyOpsApi = {
     feed_quantity_kg: number
     warehouse_id?: number
     inventory_item_id?: number
+    egg_warehouse_id?: number
+    egg_item_id?: number
     ai_observation?: string
   }) => apiRequest<{ data: { production_entry: ProductionEntry; feed_entry: FeedEntry } }>(
     `/flocks/${flockId}/production-entries`,
