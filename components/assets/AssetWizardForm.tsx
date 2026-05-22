@@ -83,10 +83,11 @@ export default function AssetWizardForm({ editingAsset, onSubmit, onClose, isPen
 
   const inp = (key: keyof Asset, label: string, opts: { required?: boolean; type?: string; placeholder?: string; span?: number } = {}) => (
     <div className={opts.span ? `md:col-span-${opts.span}` : ''}>
-      <label className="text-xs font-semibold text-gray-700 block mb-1">
+      <label htmlFor={key} className="text-xs font-semibold text-gray-700 block mb-1">
         {label} {opts.required && <span className="text-red-500">*</span>}
       </label>
       <input
+        id={key}
         type={opts.type || 'text'}
         step={opts.type === 'number' ? '0.01' : undefined}
         placeholder={opts.placeholder}
@@ -250,12 +251,12 @@ export default function AssetWizardForm({ editingAsset, onSubmit, onClose, isPen
                 إلغاء
               </button>
               {step < 2 ? (
-                <button type="button" onClick={handleNext}
+                <button key="next-step-btn" type="button" onClick={handleNext}
                   className="bg-farm-blue hover:bg-blue-800 text-white px-6 py-2.5 rounded-xl font-semibold text-sm transition-all flex items-center gap-2">
                   التالي <ChevronLeft className="w-4 h-4" />
                 </button>
               ) : (
-                <button type="submit" disabled={isPending}
+                <button key="submit-form-btn" type="submit" disabled={isPending}
                   className="bg-farm-blue hover:bg-blue-800 disabled:opacity-50 text-white px-6 py-2.5 rounded-xl font-semibold text-sm transition-all flex items-center gap-2">
                   {isPending && <Loader2 className="w-4 h-4 animate-spin" />}
                   {editingAsset ? 'حفظ التعديلات' : 'إضافة الأصل للموازنة'}
