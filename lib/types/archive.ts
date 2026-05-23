@@ -95,6 +95,7 @@ export interface AccountingAccount {
   name: string
   type: 'asset' | 'liability' | 'equity' | 'revenue' | 'expense'
   is_leaf: boolean
+  is_active?: boolean
   parent?: AccountingAccount
 }
 

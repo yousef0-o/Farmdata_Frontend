@@ -223,6 +223,29 @@ export function useCreateAccountingAccount() {
   })
 }
 
+export function useDeleteAccountingAccount() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: (id: number) => archiveApi.deleteAccountingAccount(id),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['accounting-accounts'] })
+      qc.invalidateQueries({ queryKey: ['record-sheets'] })
+    },
+  })
+}
+
+export function useToggleAccountingAccountStatus() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: ({ id, isActive }: { id: number, isActive: boolean }) =>
+      archiveApi.toggleAccountingAccountStatus(id, isActive),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['accounting-accounts'] })
+      qc.invalidateQueries({ queryKey: ['record-sheets'] })
+    },
+  })
+}
+
 export function useRecordSheets(folderId?: number, status?: 'open' | 'closed') {
   return useQuery({
     queryKey: ['record-sheets', folderId, status],

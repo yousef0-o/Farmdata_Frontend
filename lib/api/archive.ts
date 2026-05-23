@@ -197,6 +197,19 @@ export const archiveApi = {
     })
   },
 
+  deleteAccountingAccount(id: number): Promise<{ message: string }> {
+    return apiRequest<{ message: string }>(`/archive/accounting/accounts/${id}`, {
+      method: 'DELETE',
+    })
+  },
+
+  toggleAccountingAccountStatus(id: number, isActive: boolean): Promise<{ message: string, data: AccountingAccount }> {
+    return apiRequest<{ message: string, data: AccountingAccount }>(`/archive/accounting/accounts/${id}/toggle-status`, {
+      method: 'PATCH',
+      body: JSON.stringify({ is_active: isActive }),
+    })
+  },
+
   listRecordSheets(folderId?: number, status?: 'open' | 'closed'): Promise<{ data: RecordSheet[] }> {
     let url = '/archive/record-sheets'
     const parts: string[] = []

@@ -11,7 +11,9 @@ import {
   useCreateTransaction,
   useAnnualAccountingStats,
   useImportChartOfAccounts,
-  useImportRecordTransactions
+  useImportRecordTransactions,
+  useDeleteAccountingAccount,
+  useToggleAccountingAccountStatus
 } from '@/lib/hooks/useArchive'
 import {
   BookOpen,
@@ -21,6 +23,7 @@ import {
   UserCheck,
   Calendar,
   AlertCircle,
+  AlertTriangle,
   Loader2,
   ListFilter,
   CheckCircle,
@@ -28,7 +31,12 @@ import {
   UploadCloud,
   FileSpreadsheet,
   Info,
-  Check
+  Check,
+  ChevronDown,
+  Search,
+  Trash2,
+  Power,
+  Ban
 } from 'lucide-react'
 
 export default function AccountingPage() {
@@ -38,12 +46,16 @@ export default function AccountingPage() {
   // Accounts Queries/Mutations
   const { data: accountsRes, isLoading: loadingAccounts } = useAccountingAccounts()
   const createAccountMutation = useCreateAccountingAccount()
+  const deleteAccountMutation = useDeleteAccountingAccount()
+  const toggleAccountStatusMutation = useToggleAccountingAccountStatus()
 
   const [newAccCode, setNewAccCode] = useState('')
   const [newAccName, setNewAccName] = useState('')
   const [newAccType, setNewAccType] = useState<'asset' | 'liability' | 'equity' | 'revenue' | 'expense'>('asset')
   const [newAccParentId, setNewAccParentId] = useState<number | null>(null)
   const [accError, setAccError] = useState('')
+  const [deletingAccount, setDeletingAccount] = useState<any | null>(null)
+  const [deleteError, setDeleteError] = useState<string | null>(null)
 
   // Chart of Accounts bulk import mutation and states
   const importCoaMutation = useImportChartOfAccounts()
@@ -96,6 +108,8 @@ export default function AccountingPage() {
     setTxFile(null)
     setTxImportSuccess(null)
     setTxImportError(null)
+    setDeletingAccount(null)
+    setDeleteError(null)
   }, [activeTab])
 
   useEffect(() => {
@@ -113,6 +127,272 @@ export default function AccountingPage() {
   const sheets = sheetsRes?.data ?? []
   const currentSheet = sheetDetailRes?.data
   const matrixData = matrixRes?.data ?? []
+
+  // --- Chart of Accounts Tree States & Helpers ---
+  const [coaSearch, setCoaSearch] = useState('')
+  const [expandedNodes, setExpandedNodes] = useState<Record<number, boolean>>({})
+
+  // Convert flat list into a hierarchical tree
+  const buildAccountTree = (list: any[]) => {
+    const map: Record<number, any> = {}
+    const roots: any[] = []
+
+    list.forEach((item) => {
+      map[item.id] = { ...item, children: [] }
+    })
+
+    list.forEach((item) => {
+      const mapped = map[item.id]
+      if (item.parent_id && map[item.parent_id]) {
+        map[item.parent_id].children.push(mapped)
+      } else {
+        roots.push(mapped)
+      }
+    })
+
+    const sortTree = (nodes: any[]) => {
+      nodes.sort((a, b) => a.code.localeCompare(b.code, undefined, { numeric: true }))
+      nodes.forEach((node) => {
+        if (node.children.length > 0) {
+          sortTree(node.children)
+        }
+      })
+    }
+
+    sortTree(roots)
+    return roots
+  }
+
+  const accountTree = React.useMemo(() => buildAccountTree(accounts), [accounts])
+
+  const matchesSearch = (node: any, query: string): boolean => {
+    if (!query) return true
+    const q = query.toLowerCase()
+    const selfMatch = node.name.toLowerCase().includes(q) || node.code.toLowerCase().includes(q)
+    if (selfMatch) return true
+    return node.children.some((child: any) => matchesSearch(child, query))
+  }
+
+  const getDescendants = (node: any): any[] => {
+    let list: any[] = []
+    if (node.children && node.children.length > 0) {
+      for (const child of node.children) {
+        list.push(child)
+        list = list.concat(getDescendants(child))
+      }
+    }
+    return list
+  }
+
+  const handleExpandAll = () => {
+    const expanded: Record<number, boolean> = {}
+    accounts.forEach((acc: any) => {
+      expanded[acc.id] = true
+    })
+    setExpandedNodes(expanded)
+  }
+
+  const handleCollapseAll = () => {
+    setExpandedNodes({})
+  }
+
+  // Recursive Account Node Renderer
+  const renderAccountNode = (node: any, depth = 0) => {
+    const hasChildren = node.children && node.children.length > 0
+    const isExpanded = !!expandedNodes[node.id] || coaSearch !== ''
+    const isMatched = coaSearch ? (node.name.toLowerCase().includes(coaSearch.toLowerCase()) || node.code.toLowerCase().includes(coaSearch.toLowerCase())) : false
+    const isSelectedParent = newAccParentId === node.id
+
+    const visibleChildren = node.children.filter((child: any) => matchesSearch(child, coaSearch))
+
+    if (coaSearch && !matchesSearch(node, coaSearch)) {
+      return null
+    }
+
+    const typeConfig = {
+      asset: {
+        bg: 'bg-sky-50/40 dark:bg-sky-950/20 border-sky-100/70 dark:border-sky-900/50 hover:bg-sky-100/30 dark:hover:bg-sky-900/20',
+        text: 'text-sky-700 dark:text-sky-400',
+        badge: 'bg-sky-100 text-sky-700 dark:bg-sky-900/40 dark:text-sky-300 border-sky-200/50 dark:border-sky-900/30',
+        label: 'أصول'
+      },
+      liability: {
+        bg: 'bg-rose-50/40 dark:bg-rose-950/20 border-rose-100/70 dark:border-rose-900/50 hover:bg-rose-100/30 dark:hover:bg-rose-900/20',
+        text: 'text-rose-700 dark:text-rose-400',
+        badge: 'bg-rose-100 text-rose-700 dark:bg-rose-900/40 dark:text-rose-300 border-rose-200/50 dark:border-rose-900/30',
+        label: 'خصوم'
+      },
+      equity: {
+        bg: 'bg-amber-50/40 dark:bg-amber-950/20 border-amber-100/70 dark:border-amber-900/50 hover:bg-amber-100/30 dark:hover:bg-amber-900/20',
+        text: 'text-amber-700 dark:text-amber-400',
+        badge: 'bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300 border-amber-200/50 dark:border-amber-900/30',
+        label: 'حقوق ملكية'
+      },
+      revenue: {
+        bg: 'bg-emerald-50/40 dark:bg-emerald-950/20 border-emerald-100/70 dark:border-emerald-900/50 hover:bg-emerald-100/30 dark:hover:bg-emerald-900/20',
+        text: 'text-emerald-700 dark:text-emerald-400',
+        badge: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300 border-emerald-200/50 dark:border-emerald-900/30',
+        label: 'إيرادات'
+      },
+      expense: {
+        bg: 'bg-purple-50/40 dark:bg-purple-950/20 border-purple-100/70 dark:border-purple-900/50 hover:bg-purple-100/30 dark:hover:bg-purple-900/20',
+        text: 'text-purple-700 dark:text-purple-400',
+        badge: 'bg-purple-100 text-purple-700 dark:bg-purple-900/40 dark:text-purple-300 border-purple-200/50 dark:border-purple-900/30',
+        label: 'مصروفات'
+      }
+    }[node.type as 'asset' | 'liability' | 'equity' | 'revenue' | 'expense']
+
+    const toggleExpand = (e: React.MouseEvent) => {
+      e.stopPropagation()
+      setExpandedNodes(prev => ({ ...prev, [node.id]: !prev[node.id] }))
+    }
+
+    const selectAsParent = (e: React.MouseEvent) => {
+      e.stopPropagation()
+      setNewAccParentId(node.id)
+      setNewAccType(node.type)
+      document.querySelector('form')?.scrollIntoView({ behavior: 'smooth' })
+    }
+
+    return (
+      <div key={node.id} className="relative select-none">
+        {/* Branch connector lines */}
+        {depth > 0 && (
+          <div 
+            className="absolute right-0 top-0 bottom-0 border-r-2 border-dashed border-gray-250 dark:border-gray-800" 
+            style={{ 
+              right: `${(depth - 1) * 24 + 18}px`, 
+              width: '2px',
+              top: '-14px',
+              height: hasChildren && isExpanded ? '30px' : 'calc(100% - 12px)'
+            }} 
+          />
+        )}
+        
+        {depth > 0 && (
+          <div 
+            className="absolute border-t-2 border-dashed border-gray-250 dark:border-gray-800" 
+            style={{ 
+              right: `${(depth - 1) * 24 + 18}px`, 
+              width: '12px', 
+              top: '20px' 
+            }} 
+          />
+        )}
+
+        <div
+          onClick={hasChildren ? toggleExpand : undefined}
+          className={`flex items-center justify-between p-3.5 rounded-2xl border transition-all cursor-pointer ${
+            isSelectedParent 
+              ? 'border-farm-blue bg-blue-50/20 dark:bg-blue-950/20 ring-1 ring-farm-blue shadow-sm'
+              : isMatched 
+              ? 'border-yellow-400 bg-yellow-55/20 dark:bg-yellow-950/20 shadow-sm font-bold'
+              : `border-gray-150 dark:border-gray-850 bg-gray-50/40 dark:bg-gray-900/40 ${typeConfig.bg}`
+          } ${node.is_active === false ? 'opacity-60 dark:opacity-55 grayscale-[20%]' : ''}`}
+          style={{ marginRight: `${depth * 24}px` }}
+        >
+          <div className="flex items-center gap-3">
+            {/* Interactive Toggle Button */}
+            {hasChildren ? (
+              <button
+                onClick={toggleExpand}
+                className="p-1 hover:bg-gray-200/50 dark:hover:bg-gray-800/50 rounded-lg text-gray-500 transition-transform duration-200"
+                style={{ transform: isExpanded ? 'rotate(0deg)' : 'rotate(90deg)' }}
+              >
+                <ChevronDown className="w-4 h-4" />
+              </button>
+            ) : (
+              <div className="w-6 h-6 flex items-center justify-center">
+                <div className={`w-1.5 h-1.5 rounded-full ${typeConfig.text} bg-current opacity-60`} />
+              </div>
+            )}
+
+            {/* Folder/Doc Icon */}
+            <div className={`p-1.5 rounded-xl bg-white dark:bg-gray-850 shadow-sm ${typeConfig.text}`}>
+              {hasChildren ? (
+                <FolderOpen className="w-4 h-4" />
+              ) : (
+                <Receipt className="w-4 h-4" />
+              )}
+            </div>
+
+            {/* Info */}
+            <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2">
+              <span className="font-bold font-mono tracking-wide text-gray-450 dark:text-gray-500 text-[11px]">
+                {node.code}
+              </span>
+              <span className={`text-[12px] ${isSelectedParent ? 'text-farm-blue font-bold' : isMatched ? 'text-yellow-600 dark:text-yellow-400 font-bold' : 'text-gray-800 dark:text-gray-200 font-semibold'}`}>
+                {node.name}
+              </span>
+            </div>
+          </div>
+
+          {/* Action badges and controls */}
+          <div className="flex items-center gap-2">
+            {/* Active status badge */}
+            {node.is_active === false && (
+              <span className="px-2.5 py-0.5 rounded-lg text-[10px] font-bold border bg-gray-100 text-gray-500 dark:bg-gray-800 dark:text-gray-400 border-gray-200 dark:border-gray-700">
+                معطّل
+              </span>
+            )}
+
+            {/* Type badge */}
+            <span className={`px-2.5 py-0.5 rounded-lg text-[10px] font-bold border ${typeConfig.badge}`}>
+              {typeConfig.label}
+            </span>
+
+            {/* Quick Add Subaccount Button */}
+            {node.is_leaf !== false && (
+              <button
+                onClick={selectAsParent}
+                title="إضافة حساب فرعي تحت هذا الحساب"
+                className="p-1 hover:bg-farm-blue hover:text-white dark:hover:bg-farm-blue rounded-lg text-gray-400 hover:scale-105 transition-all"
+              >
+                <Plus className="w-3.5 h-3.5" />
+              </button>
+            )}
+
+            {/* Quick Deactivate / Activate Toggle Button */}
+            <button
+              disabled={toggleAccountStatusMutation.isPending}
+              onClick={(e) => {
+                e.stopPropagation()
+                toggleAccountStatusMutation.mutate({ id: node.id, isActive: node.is_active === false })
+              }}
+              title={node.is_active !== false ? 'تعطيل الحساب المالي (تجميد)' : 'تفعيل الحساب المالي (إعادة تنشيط)'}
+              className={`p-1 rounded-lg hover:scale-105 transition-all cursor-pointer ${
+                node.is_active !== false
+                  ? 'hover:bg-amber-500 hover:text-white text-gray-400'
+                  : 'hover:bg-emerald-500 hover:text-white text-emerald-600 dark:text-emerald-400'
+              }`}
+            >
+              <Power className="w-3.5 h-3.5" />
+            </button>
+
+            {/* Quick Delete Account Button */}
+            <button
+              onClick={(e) => {
+                e.stopPropagation()
+                setDeleteError(null)
+                setDeletingAccount(node)
+              }}
+              title="حذف هذا الحساب المالي"
+              className="p-1 hover:bg-rose-500 hover:text-white dark:hover:bg-rose-650 rounded-lg text-gray-400 hover:scale-105 transition-all"
+            >
+              <Trash2 className="w-3.5 h-3.5" />
+            </button>
+          </div>
+        </div>
+
+        {/* Render child nodes recursively */}
+        {hasChildren && isExpanded && (
+          <div className="mt-1.5 space-y-1.5">
+            {visibleChildren.map((child: any) => renderAccountNode(child, depth + 1))}
+          </div>
+        )}
+      </div>
+    )
+  }
 
   // --- Handlers ---
   const handleCreateAccount = async (e: React.FormEvent) => {
@@ -334,84 +614,86 @@ export default function AccountingPage() {
 
       {/* ACCOUNTS TAB CONTENT */}
       {activeTab === 'accounts' && (
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Create Account Form */}
-          <div className="bg-[#ffffff] dark:bg-gray-900 border border-gray-100 dark:border-gray-800 p-6 rounded-2xl shadow-sm h-fit">
-            <h3 className="text-sm font-bold text-gray-800 dark:text-[#ffffff] font-sans flex items-center gap-1">
-              <Coins className="w-4 h-4 text-farm-blue" />
-              <span>إضافة حساب محاسبي جديد</span>
-            </h3>
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
+          {/* Sidebar Column: Create Form & Excel Bulk Import */}
+          <div className="lg:col-span-1 space-y-6">
+            {/* Create Account Form */}
+            <div className="bg-[#ffffff] dark:bg-gray-900 border border-gray-100 dark:border-gray-800 p-6 rounded-2xl shadow-sm h-fit">
+              <h3 className="text-sm font-bold text-gray-800 dark:text-[#ffffff] font-sans flex items-center gap-1">
+                <Coins className="w-4 h-4 text-farm-blue" />
+                <span>إضافة حساب محاسبي جديد</span>
+              </h3>
 
-            <form onSubmit={handleCreateAccount} className="mt-4 space-y-4 text-xs">
-              {accError && (
-                <div className="flex items-center gap-2 p-3 bg-red-50 dark:bg-red-950/20 border border-red-150 text-red-600 rounded-xl">
-                  <AlertCircle className="w-4 h-4" />
-                  <span>{accError}</span>
+              <form onSubmit={handleCreateAccount} className="mt-4 space-y-4 text-xs">
+                {accError && (
+                  <div className="flex items-center gap-2 p-3 bg-red-50 dark:bg-red-950/20 border border-red-150 text-red-600 rounded-xl">
+                    <AlertCircle className="w-4 h-4" />
+                    <span>{accError}</span>
+                  </div>
+                )}
+
+                <div>
+                  <label className="block font-semibold text-gray-600 dark:text-gray-400 mb-1.5">كود الحساب (رقمي فريد)</label>
+                  <input
+                    type="text"
+                    required
+                    placeholder="مثال: 1101"
+                    value={newAccCode}
+                    onChange={(e) => setNewAccCode(e.target.value)}
+                    className="w-full p-2.5 bg-gray-50 dark:bg-gray-850 border border-gray-200 dark:border-gray-850 rounded-xl focus:outline-none dark:text-[#ffffff]"
+                  />
                 </div>
-              )}
 
-              <div>
-                <label className="block font-semibold text-gray-600 dark:text-gray-400 mb-1.5">كود الحساب (رقمي فريد)</label>
-                <input
-                  type="text"
-                  required
-                  placeholder="مثال: 1101"
-                  value={newAccCode}
-                  onChange={(e) => setNewAccCode(e.target.value)}
-                  className="w-full p-2.5 bg-gray-50 dark:bg-gray-850 border border-gray-200 dark:border-gray-850 rounded-xl focus:outline-none dark:text-[#ffffff]"
-                />
-              </div>
+                <div>
+                  <label className="block font-semibold text-gray-600 dark:text-gray-400 mb-1.5">اسم الحساب</label>
+                  <input
+                    type="text"
+                    required
+                    placeholder="مثال: نقدية البنك الأهلي"
+                    value={newAccName}
+                    onChange={(e) => setNewAccName(e.target.value)}
+                    className="w-full p-2.5 bg-gray-50 dark:bg-gray-850 border border-gray-200 dark:border-gray-850 rounded-xl focus:outline-none dark:text-[#ffffff]"
+                  />
+                </div>
 
-              <div>
-                <label className="block font-semibold text-gray-600 dark:text-gray-400 mb-1.5">اسم الحساب</label>
-                <input
-                  type="text"
-                  required
-                  placeholder="مثال: نقدية البنك الأهلي"
-                  value={newAccName}
-                  onChange={(e) => setNewAccName(e.target.value)}
-                  className="w-full p-2.5 bg-gray-50 dark:bg-gray-850 border border-gray-200 dark:border-gray-850 rounded-xl focus:outline-none dark:text-[#ffffff]"
-                />
-              </div>
+                <div>
+                  <label className="block font-semibold text-gray-600 dark:text-gray-400 mb-1.5">نوع التصنيف الرئيسي</label>
+                  <select
+                    value={newAccType}
+                    onChange={(e) => setNewAccType(e.target.value as any)}
+                    className="w-full p-2.5 bg-gray-50 dark:bg-gray-850 border border-gray-200 dark:border-gray-850 rounded-xl focus:outline-none dark:text-[#ffffff]"
+                  >
+                    <option value="asset">الأصول (Assets)</option>
+                    <option value="liability">الخصوم (Liabilities)</option>
+                    <option value="equity">حقوق الملكية (Equity)</option>
+                    <option value="revenue">الإيرادات (Revenues)</option>
+                    <option value="expense">المصروفات (Expenses)</option>
+                  </select>
+                </div>
 
-              <div>
-                <label className="block font-semibold text-gray-600 dark:text-gray-400 mb-1.5">نوع التصنيف الرئيسي</label>
-                <select
-                  value={newAccType}
-                  onChange={(e) => setNewAccType(e.target.value as any)}
-                  className="w-full p-2.5 bg-gray-50 dark:bg-gray-850 border border-gray-200 dark:border-gray-850 rounded-xl focus:outline-none dark:text-[#ffffff]"
+                <div>
+                  <label className="block font-semibold text-gray-600 dark:text-gray-400 mb-1.5">الحساب الأب (إن وجد)</label>
+                  <select
+                    value={newAccParentId ?? ''}
+                    onChange={(e) => setNewAccParentId(e.target.value ? parseInt(e.target.value) : null)}
+                    className="w-full p-2.5 bg-gray-50 dark:bg-gray-850 border border-gray-200 dark:border-gray-850 rounded-xl focus:outline-none dark:text-[#ffffff]"
+                  >
+                    <option value="">حساب رئيسي (بدون أب)</option>
+                    {accounts.filter(acc => acc.is_active !== false).map(acc => (
+                      <option key={acc.id} value={acc.id}>{acc.code} - {acc.name}</option>
+                    ))}
+                  </select>
+                </div>
+
+                <button
+                  type="submit"
+                  disabled={createAccountMutation.isPending}
+                  className="w-full py-2.5 bg-farm-blue text-[#ffffff] font-bold rounded-xl shadow-md hover:bg-opacity-95 disabled:opacity-50 hover:scale-[1.01] transition-all cursor-pointer"
                 >
-                  <option value="asset">الأصول (Assets)</option>
-                  <option value="liability">الخصوم (Liabilities)</option>
-                  <option value="equity">حقوق الملكية (Equity)</option>
-                  <option value="revenue">الإيرادات (Revenues)</option>
-                  <option value="expense">المصروفات (Expenses)</option>
-                </select>
-              </div>
-
-              <div>
-                <label className="block font-semibold text-gray-600 dark:text-gray-400 mb-1.5">الحساب الأب (إن وجد)</label>
-                <select
-                  value={newAccParentId ?? ''}
-                  onChange={(e) => setNewAccParentId(e.target.value ? parseInt(e.target.value) : null)}
-                  className="w-full p-2.5 bg-gray-50 dark:bg-gray-850 border border-gray-200 dark:border-gray-850 rounded-xl focus:outline-none dark:text-[#ffffff]"
-                >
-                  <option value="">حساب رئيسي (بدون أب)</option>
-                  {accounts.map(acc => (
-                    <option key={acc.id} value={acc.id}>{acc.code} - {acc.name}</option>
-                  ))}
-                </select>
-              </div>
-
-              <button
-                type="submit"
-                disabled={createAccountMutation.isPending}
-                className="w-full py-2.5 bg-farm-blue text-[#ffffff] font-bold rounded-xl shadow-md hover:bg-opacity-95 disabled:opacity-50"
-              >
-                {createAccountMutation.isPending ? 'جاري الحفظ...' : 'حفظ الحساب'}
-              </button>
-            </form>
-          </div>
+                  {createAccountMutation.isPending ? 'جاري الحفظ...' : 'حفظ الحساب'}
+                </button>
+              </form>
+            </div>
 
           {/* Chart of Accounts Bulk Import */}
           <div className="bg-[#ffffff] dark:bg-gray-900 border border-gray-100 dark:border-gray-800 p-6 rounded-2xl shadow-sm h-fit mt-6">
@@ -535,44 +817,54 @@ export default function AccountingPage() {
               </div>
             </div>
           </div>
+        </div>
 
-          {/* Accounts List Tree */}
-          <div className="bg-[#ffffff] dark:bg-gray-900 border border-gray-100 dark:border-gray-800 p-6 rounded-2xl shadow-sm lg:col-span-2 space-y-4">
-            <h3 className="text-sm font-bold text-gray-800 dark:text-[#ffffff] font-sans">دليل الحسابات المحاسبي (Chart of Accounts)</h3>
+        {/* Main Column: Interactive Collapsible Tree View of Accounts */}
+          <div className="bg-[#ffffff] dark:bg-gray-900 border border-gray-100 dark:border-gray-800 p-6 rounded-2xl shadow-sm lg:col-span-2 space-y-5">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-gray-50 dark:border-gray-850 pb-4">
+              <div>
+                <h3 className="text-sm font-bold text-gray-800 dark:text-[#ffffff] font-sans">دليل الحسابات المحاسبي (Chart of Accounts)</h3>
+                <p className="text-[10px] text-gray-400 mt-1 leading-relaxed">تصفح الهيكل الشجري التفاعلي للحسابات وتفريعها الهرمي</p>
+              </div>
+
+              {/* Controls */}
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={handleExpandAll}
+                  className="px-3 py-1.5 text-[10px] font-bold text-farm-blue bg-blue-50/70 hover:bg-blue-100 dark:bg-blue-950/30 dark:text-blue-400 border border-blue-100/50 dark:border-blue-900/30 rounded-xl transition-all cursor-pointer hover:scale-102"
+                >
+                  توسيع الكل
+                </button>
+                <button
+                  type="button"
+                  onClick={handleCollapseAll}
+                  className="px-3 py-1.5 text-[10px] font-bold text-gray-500 bg-gray-50 hover:bg-gray-100 dark:bg-gray-850 dark:text-gray-400 border border-gray-200 dark:border-gray-800 rounded-xl transition-all cursor-pointer hover:scale-102"
+                >
+                  طي الكل
+                </button>
+              </div>
+            </div>
+
+            {/* Search filter input */}
+            <div className="relative">
+              <input
+                type="text"
+                placeholder="البحث بكود الحساب أو الاسم..."
+                value={coaSearch}
+                onChange={(e) => setCoaSearch(e.target.value)}
+                className="w-full pl-3 pr-9 py-2.5 bg-gray-50 dark:bg-gray-850 border border-gray-200 dark:border-gray-800 rounded-xl text-xs focus:outline-none dark:text-white"
+              />
+              <Search className="absolute right-3.5 top-3.5 w-4 h-4 text-gray-400" />
+            </div>
             
             {loadingAccounts ? (
               <div className="flex justify-center py-10"><Loader2 className="w-8 h-8 animate-spin text-farm-blue" /></div>
             ) : accounts.length === 0 ? (
               <p className="text-gray-400 text-xs">لا يوجد حسابات مضافة حالياً.</p>
             ) : (
-              <div className="space-y-2 max-h-[500px] overflow-y-auto">
-                {accounts.map((acc) => (
-                  <div
-                    key={acc.id}
-                    className={`p-3 bg-gray-50 dark:bg-gray-800/40 rounded-xl border border-gray-100 dark:border-gray-850 flex items-center justify-between text-xs hover:border-farm-blue transition-all ${
-                      acc.parent_id ? 'mr-6 border-r-2 border-r-farm-blue/60' : 'font-bold'
-                    }`}
-                  >
-                    <div>
-                      <span className="text-gray-400 font-semibold ml-2">[{acc.code}]</span>
-                      <span className="text-gray-850 dark:text-gray-200">{acc.name}</span>
-                    </div>
-
-                    <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${
-                      acc.type === 'asset' ? 'bg-blue-50 text-blue-600' :
-                      acc.type === 'liability' ? 'bg-red-50 text-red-600' :
-                      acc.type === 'equity' ? 'bg-amber-50 text-amber-600' :
-                      acc.type === 'revenue' ? 'bg-emerald-50 text-emerald-600' :
-                      'bg-purple-50 text-purple-600'
-                    }`}>
-                      {acc.type === 'asset' && 'أصول'}
-                      {acc.type === 'liability' && 'خصوم'}
-                      {acc.type === 'equity' && 'حقوق ملكية'}
-                      {acc.type === 'revenue' && 'إيرادات'}
-                      {acc.type === 'expense' && 'مصروفات'}
-                    </span>
-                  </div>
-                ))}
+              <div className="space-y-2 max-h-[600px] overflow-y-auto pr-1">
+                {accountTree.map((node) => renderAccountNode(node))}
               </div>
             )}
           </div>
@@ -655,7 +947,7 @@ export default function AccountingPage() {
                   className="w-full p-2 bg-gray-50 dark:bg-gray-850 border border-gray-250 dark:border-gray-850 rounded-lg focus:outline-none"
                 >
                   <option value="">اختر حساب الربط...</option>
-                  {accounts.map(acc => (
+                  {accounts.filter(acc => acc.is_active !== false).map(acc => (
                     <option key={acc.id} value={acc.id}>{acc.code} - {acc.name}</option>
                   ))}
                 </select>
@@ -824,7 +1116,7 @@ export default function AccountingPage() {
                                   className="w-full p-2 border border-gray-250 dark:border-gray-700 bg-[#ffffff] dark:bg-gray-900 rounded-lg text-xs dark:text-white"
                                 >
                                   <option value="">اختر حساب...</option>
-                                  {accounts.map(acc => (
+                                  {accounts.filter(acc => acc.is_active !== false).map(acc => (
                                     <option key={acc.id} value={acc.id}>{acc.code} - {acc.name}</option>
                                   ))}
                                 </select>
@@ -1044,6 +1336,150 @@ export default function AccountingPage() {
           </div>
         </div>
       )}
+
+      {/* Custom Account Deletion Confirm Modal (Arabic RTL Glassmorphism) */}
+      {deletingAccount && (() => {
+        const descendants = getDescendants(deletingAccount)
+        const hasChildren = descendants.length > 0
+
+        return (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in" dir="rtl">
+            <div className="bg-white dark:bg-gray-900 border border-gray-150 dark:border-gray-800 rounded-3xl shadow-2xl max-w-lg w-full overflow-hidden transform transition-all duration-300 scale-100 flex flex-col">
+              
+              {/* Header */}
+              <div className={`p-6 flex items-center gap-4 ${hasChildren ? 'bg-rose-50 dark:bg-rose-950/20 text-rose-700 dark:text-rose-400 border-b border-rose-100 dark:border-rose-900/30' : 'bg-amber-50 dark:bg-amber-950/20 text-amber-700 dark:text-amber-400 border-b border-amber-100 dark:border-amber-900/30'}`}>
+                <div className={`p-3 rounded-2xl ${hasChildren ? 'bg-rose-100 dark:bg-rose-900/30' : 'bg-amber-100 dark:bg-amber-900/30'}`}>
+                  <AlertTriangle className="w-6 h-6 animate-pulse" />
+                </div>
+                <div>
+                  <h3 className="text-lg font-extrabold font-sans">
+                    {hasChildren ? 'تحذير: حذف حساب رئيسي نشط' : 'تأكيد حذف الحساب المالي'}
+                  </h3>
+                  <p className="text-[12px] opacity-80 mt-0.5">
+                    كود الحساب: {deletingAccount.code} — {deletingAccount.name}
+                  </p>
+                </div>
+              </div>
+
+              {/* Modal Body */}
+              <div className="p-6 space-y-4 overflow-y-auto max-h-[60vh]">
+                {deleteError && (
+                  <div className="space-y-3">
+                    <div className="p-4 bg-rose-50 border border-rose-200/60 rounded-2xl flex items-start gap-3 text-rose-800 text-[12.5px] font-semibold dark:bg-rose-950/40 dark:border-rose-900/40 dark:text-rose-300">
+                      <AlertCircle className="w-4 h-4 mt-0.5 shrink-0" />
+                      <span>{deleteError}</span>
+                    </div>
+
+                    <div className="p-4 bg-amber-50 dark:bg-amber-950/20 border border-amber-200/50 dark:border-amber-900/30 rounded-2xl space-y-3">
+                      <p className="text-[12.5px] text-amber-800 dark:text-amber-300 font-semibold leading-relaxed">
+                        خيارات الحماية البديلة: يمكنك تجميد الحساب المالي لتعطيله بالكامل ومنع أي قيود يومية جديدة عليه وعلى كافة حساباته الفرعية مع الاحتفاظ بكافة سجلاته المالية التاريخية.
+                      </p>
+                      <button
+                        type="button"
+                        disabled={toggleAccountStatusMutation.isPending}
+                        onClick={async () => {
+                          try {
+                            await toggleAccountStatusMutation.mutateAsync({ id: deletingAccount.id, isActive: false })
+                            setDeletingAccount(null)
+                            setDeleteError(null)
+                          } catch (err: any) {
+                            setDeleteError(err?.message || 'تعذر تجميد الحساب المالي.')
+                          }
+                        }}
+                        className="w-full py-2.5 bg-amber-600 hover:bg-amber-700 text-white font-bold rounded-xl text-[12px] flex items-center justify-center gap-2 shadow-md transition-all cursor-pointer hover:scale-[1.01]"
+                      >
+                        {toggleAccountStatusMutation.isPending ? (
+                          <>
+                            <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                            <span>جاري تجميد الحساب وحساباته الفرعية...</span>
+                          </>
+                        ) : (
+                          <>
+                            <Ban className="w-3.5 h-3.5" />
+                            <span>تجميد وتعطيل الحساب وحساباته التابعة 🔒</span>
+                          </>
+                        )}
+                      </button>
+                    </div>
+                  </div>
+                )}
+
+                {hasChildren ? (
+                  <div className="space-y-3">
+                    <p className="text-gray-700 dark:text-gray-300 text-[13.5px] leading-relaxed font-medium">
+                      تنبيه هام: هذا الحساب رئيسي ويحتوي على <span className="text-rose-600 dark:text-rose-400 font-extrabold">{descendants.length}</span> حساب فرعي تابعة له في شجرة الحسابات. 
+                      <span className="font-bold text-rose-700 dark:text-rose-400 block mt-1">تأكيد الحذف سيقوم بحذف هذا الحساب الرئيسي وكافة حساباته الفرعية التالية نهائياً:</span>
+                    </p>
+                    <div className="bg-gray-50 dark:bg-gray-950 rounded-2xl p-4 border border-gray-150 dark:border-gray-850 max-h-48 overflow-y-auto space-y-2">
+                      {descendants.map((child: any) => (
+                        <div key={child.id} className="flex items-center justify-between text-[11.5px] text-gray-600 dark:text-gray-400 bg-white dark:bg-gray-900 p-2 rounded-xl border border-gray-100 dark:border-gray-800">
+                          <span className="font-bold font-mono text-gray-450">{child.code}</span>
+                          <span className="font-semibold">{child.name}</span>
+                          <span className="text-[10px] text-gray-400 px-1.5 py-0.5 bg-gray-100 dark:bg-gray-800 rounded-md">
+                            {child.type === 'asset' ? 'أصول' : child.type === 'liability' ? 'خصوم' : child.type === 'equity' ? 'حقوق ملكية' : child.type === 'revenue' ? 'إيرادات' : 'مصروفات'}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                    <p className="text-[12.5px] text-gray-550 dark:text-gray-450 italic leading-relaxed">
+                      * لن يتم الحذف في حال وجود أي حركات يومية مقيدة تحت هذا الحساب أو أي من حساباته التابعة حفاظاً على سلامة البيانات.
+                    </p>
+                  </div>
+                ) : (
+                  <div className="space-y-2 text-gray-700 dark:text-gray-300 text-[13.5px] leading-relaxed">
+                    <p className="font-semibold">
+                      هل أنت متأكد من رغبتك في حذف هذا الحساب المالي نهائياً من شجرة دليل الحسابات؟
+                    </p>
+                    <div className="bg-amber-50/40 dark:bg-amber-950/10 p-3.5 rounded-2xl border border-amber-200/50 dark:border-amber-900/30 flex items-start gap-2.5 text-amber-800 dark:text-amber-400 text-[12px] font-semibold">
+                      <Info className="w-4 h-4 mt-0.5 shrink-0" />
+                      <span>ملاحظة: هذا الإجراء نهائي ولا يمكن التراجع عنه. لن يتمكن النظام من إتمام الحذف إذا كان الحساب مرتبطاً بقيود يومية أو حركات حسابات نشطة.</span>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Modal Footer */}
+              <div className="p-6 bg-gray-50 dark:bg-gray-950 border-t border-gray-150 dark:border-gray-850 flex items-center justify-end gap-3">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setDeletingAccount(null)
+                    setDeleteError(null)
+                  }}
+                  disabled={deleteAccountMutation.isPending}
+                  className="px-4 py-2.5 bg-white hover:bg-gray-100 dark:bg-gray-900 dark:hover:bg-gray-850 border border-gray-250 dark:border-gray-800 text-gray-700 dark:text-gray-300 font-bold rounded-xl transition-all disabled:opacity-50 text-[13px]"
+                >
+                  إلغاء
+                </button>
+                <button
+                  type="button"
+                  onClick={async () => {
+                    setDeleteError(null)
+                    try {
+                      await deleteAccountMutation.mutateAsync(deletingAccount.id)
+                      setDeletingAccount(null)
+                    } catch (err: any) {
+                      setDeleteError(err?.message || 'تعذر حذف الحساب المالي. يرجى التحقق من عدم وجود حركات يومية مقيدة به.')
+                    }
+                  }}
+                  disabled={deleteAccountMutation.isPending}
+                  className="px-5 py-2.5 bg-rose-600 text-white hover:bg-rose-700 font-bold rounded-xl shadow-lg shadow-rose-600/10 hover:shadow-rose-650/20 transition-all disabled:opacity-50 flex items-center gap-2 text-[13px]"
+                >
+                  {deleteAccountMutation.isPending ? (
+                    <>
+                      <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                      <span>جاري الحذف والتحقق...</span>
+                    </>
+                  ) : (
+                    <span>تأكيد الحذف النهائي</span>
+                  )}
+                </button>
+              </div>
+
+            </div>
+          </div>
+        )
+      })()}
     </div>
   )
 }
