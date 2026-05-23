@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import {
   useAccountingAccounts,
   useCreateAccountingAccount,
@@ -9,7 +9,9 @@ import {
   useRecordSheet,
   useCloseRecordSheet,
   useCreateTransaction,
-  useAnnualAccountingStats
+  useAnnualAccountingStats,
+  useImportChartOfAccounts,
+  useImportRecordTransactions
 } from '@/lib/hooks/useArchive'
 import {
   BookOpen,
@@ -22,7 +24,11 @@ import {
   Loader2,
   ListFilter,
   CheckCircle,
-  FolderOpen
+  FolderOpen,
+  UploadCloud,
+  FileSpreadsheet,
+  Info,
+  Check
 } from 'lucide-react'
 
 export default function AccountingPage() {
@@ -38,6 +44,13 @@ export default function AccountingPage() {
   const [newAccType, setNewAccType] = useState<'asset' | 'liability' | 'equity' | 'revenue' | 'expense'>('asset')
   const [newAccParentId, setNewAccParentId] = useState<number | null>(null)
   const [accError, setAccError] = useState('')
+
+  // Chart of Accounts bulk import mutation and states
+  const importCoaMutation = useImportChartOfAccounts()
+  const [coaFile, setCoaFile] = useState<File | null>(null)
+  const [coaDragActive, setCoaDragActive] = useState(false)
+  const [coaImportSuccess, setCoaImportSuccess] = useState<string | null>(null)
+  const [coaImportError, setCoaImportError] = useState<string | null>(null)
 
   // Sheets Queries/Mutations
   const [sheetFilterStatus, setSheetFilterStatus] = useState<'open' | 'closed' | undefined>(undefined)
@@ -63,6 +76,35 @@ export default function AccountingPage() {
   const [txRef, setTxRef] = useState('')
   const [txAccountId, setTxAccountId] = useState<number>(0)
   const [txError, setTxError] = useState('')
+
+  // Ledger transactions bulk import mutation and states
+  const [entryMode, setEntryMode] = useState<'manual' | 'import'>('manual')
+  const importTxMutation = useImportRecordTransactions(activeSheetId ?? 0)
+  const [txFile, setTxFile] = useState<File | null>(null)
+  const [txDragActive, setTxDragActive] = useState(false)
+  const [txImportSuccess, setTxImportSuccess] = useState<string | null>(null)
+  const [txImportError, setTxImportError] = useState<string | null>(null)
+
+  // Clean stale states on page/tab/sheet change to guarantee E. State Safety
+  useEffect(() => {
+    setAccError('')
+    setSheetError('')
+    setTxError('')
+    setCoaFile(null)
+    setCoaImportSuccess(null)
+    setCoaImportError(null)
+    setTxFile(null)
+    setTxImportSuccess(null)
+    setTxImportError(null)
+  }, [activeTab])
+
+  useEffect(() => {
+    setTxError('')
+    setTxFile(null)
+    setTxImportSuccess(null)
+    setTxImportError(null)
+    setEntryMode('manual')
+  }, [activeSheetId])
 
   // Annual matrix stats query
   const { data: matrixRes, isLoading: loadingMatrix } = useAnnualAccountingStats(selectedYear)
@@ -168,6 +210,10 @@ export default function AccountingPage() {
     { num: 11, name: 'نوفمبر' },
     { num: 12, name: 'ديسمبر' }
   ]
+
+  // Dynamic leaf and auto-distribution helpers for current sheet
+  const isLeafAccount = currentSheet?.account?.is_leaf !== false && !accounts.some(a => a.parent_id === currentSheet?.account_id)
+  const isAutoDistribute = !!(currentSheet?.folder?.meta?.distribute_by_production && currentSheet?.folder?.meta?.company_id)
 
   return (
     <div className="space-y-6" dir="rtl">
@@ -365,6 +411,129 @@ export default function AccountingPage() {
                 {createAccountMutation.isPending ? 'جاري الحفظ...' : 'حفظ الحساب'}
               </button>
             </form>
+          </div>
+
+          {/* Chart of Accounts Bulk Import */}
+          <div className="bg-[#ffffff] dark:bg-gray-900 border border-gray-100 dark:border-gray-800 p-6 rounded-2xl shadow-sm h-fit mt-6">
+            <h3 className="text-sm font-bold text-gray-800 dark:text-[#ffffff] font-sans flex items-center gap-1.5">
+              <FileSpreadsheet className="w-4.5 h-4.5 text-farm-blue" />
+              <span>استيراد دليل الحسابات (دفعة واحدة)</span>
+            </h3>
+            
+            <div className="mt-4 space-y-4 text-xs font-sans">
+              {coaImportSuccess && (
+                <div className="flex items-start gap-2 p-3 bg-emerald-50 dark:bg-emerald-950/20 border border-emerald-150 text-emerald-600 rounded-xl">
+                  <CheckCircle className="w-4 h-4 mt-0.5 flex-shrink-0" />
+                  <div className="space-y-1">
+                    <span className="font-bold">{coaImportSuccess}</span>
+                    <p className="text-[10px] text-emerald-500">تم تحديث شجرة الحسابات تلقائياً وحساب الفروع الهرمية.</p>
+                  </div>
+                </div>
+              )}
+
+              {coaImportError && (
+                <div className="flex items-start gap-2 p-3 bg-red-50 dark:bg-red-950/20 border border-red-150 text-red-600 rounded-xl">
+                  <AlertCircle className="w-4 h-4 mt-0.5 flex-shrink-0" />
+                  <div className="space-y-1">
+                    <span className="font-bold">فشل الاستيراد:</span>
+                    <p className="text-[10px] whitespace-pre-wrap">{coaImportError}</p>
+                  </div>
+                </div>
+              )}
+
+              <div
+                onDragOver={(e) => { e.preventDefault(); setCoaDragActive(true) }}
+                onDragLeave={() => setCoaDragActive(false)}
+                onDrop={(e) => {
+                  e.preventDefault()
+                  setCoaDragActive(false)
+                  if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+                    setCoaFile(e.dataTransfer.files[0])
+                  }
+                }}
+                className={`border-2 border-dashed rounded-2xl p-6 text-center transition-all cursor-pointer ${
+                  coaDragActive
+                    ? 'border-farm-blue bg-blue-50/10'
+                    : coaFile
+                    ? 'border-emerald-500 bg-emerald-50/5'
+                    : 'border-gray-200 dark:border-gray-800 hover:border-farm-blue'
+                }`}
+                onClick={() => document.getElementById('coa-file-input')?.click()}
+              >
+                <input
+                  id="coa-file-input"
+                  type="file"
+                  accept=".xlsx,.xls"
+                  className="hidden"
+                  onChange={(e) => {
+                    if (e.target.files && e.target.files[0]) {
+                      setCoaFile(e.target.files[0])
+                    }
+                  }}
+                />
+                
+                <div className="flex flex-col items-center justify-center space-y-2">
+                  <div className={`p-2.5 rounded-xl ${coaFile ? 'bg-emerald-50 text-emerald-600 dark:bg-emerald-950/30' : 'bg-blue-50 text-farm-blue dark:bg-blue-950/30'}`}>
+                    <UploadCloud className="w-5.5 h-5.5" />
+                  </div>
+                  {coaFile ? (
+                    <div className="space-y-1">
+                      <p className="font-bold text-gray-800 dark:text-gray-200 max-w-[200px] truncate">{coaFile.name}</p>
+                      <p className="text-[10px] text-gray-400">{(coaFile.size / 1024).toFixed(1)} KB</p>
+                    </div>
+                  ) : (
+                    <div className="space-y-1">
+                      <p className="font-bold text-gray-700 dark:text-gray-300">اسحب وأفلت ملف الـ Excel هنا</p>
+                      <p className="text-[10px] text-gray-400">أو اضغط لتصفح الملفات من جهازك</p>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              <div className="flex justify-between gap-2.5">
+                {coaFile && (
+                  <button
+                    type="button"
+                    onClick={() => setCoaFile(null)}
+                    disabled={importCoaMutation.isPending}
+                    className="px-3.5 py-2 bg-gray-50 hover:bg-gray-100 border border-gray-200 dark:bg-gray-850 dark:border-gray-800 text-gray-500 dark:text-gray-300 font-bold rounded-xl transition-all disabled:opacity-50"
+                  >
+                    إلغاء
+                  </button>
+                )}
+                <button
+                  type="button"
+                  onClick={async () => {
+                    if (!coaFile) return
+                    setCoaImportSuccess(null)
+                    setCoaImportError(null)
+                    const fd = new FormData()
+                    fd.append('file', coaFile)
+                    try {
+                      const res = await importCoaMutation.mutateAsync(fd)
+                      setCoaImportSuccess(`تم استيراد دليل الحسابات بنجاح. تمت إضافة ${res.data.inserted_accounts} حساب، وتحديث ${res.data.updated_accounts} حساب من أصل ${res.data.total_rows} صف.`);
+                      setCoaFile(null)
+                    } catch (err: any) {
+                      setCoaImportError(err?.message || 'تعذر معالجة واستيراد الملف. تأكد من مطابقة هيكل البيانات والمسميات.')
+                    }
+                  }}
+                  disabled={!coaFile || importCoaMutation.isPending}
+                  className="flex-1 py-2 bg-farm-blue text-white font-bold rounded-xl shadow-md hover:bg-opacity-95 disabled:opacity-50 flex items-center justify-center gap-1.5 cursor-pointer"
+                >
+                  {importCoaMutation.isPending ? (
+                    <>
+                      <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                      <span>جاري الاستيراد والربط الهرمي...</span>
+                    </>
+                  ) : (
+                    <>
+                      <Check className="w-3.5 h-3.5" />
+                      <span>بدء استيراد دليل الحسابات</span>
+                    </>
+                  )}
+                </button>
+              </div>
+            </div>
           </div>
 
           {/* Accounts List Tree */}
@@ -588,95 +757,286 @@ export default function AccountingPage() {
                   </div>
                 </div>
 
-                {/* Post Transaction Form */}
+                {/* Post Transaction Form or Excel Ingest */}
                 {currentSheet.status === 'open' && (
-                  <div className="p-4 bg-gray-50/50 dark:bg-gray-850/40 border border-gray-150 dark:border-gray-800 rounded-xl space-y-3">
-                    <h4 className="text-xs font-bold text-gray-800 dark:text-[#ffffff] font-sans">تسجيل قيد محاسبي مزدوج (Double-Entry Post)</h4>
-                    {txError && <p className="text-red-500 font-bold text-xs">{txError}</p>}
-                    
-                    <form onSubmit={handlePostTransaction} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 text-xs">
-                      <div>
-                        <label className="block text-[10px] text-gray-400 font-semibold mb-1">الحساب المقابل</label>
-                        <select
-                          required
-                          value={txAccountId}
-                          onChange={(e) => setTxAccountId(parseInt(e.target.value))}
-                          className="w-full p-2 border border-gray-250 dark:border-gray-700 bg-white dark:bg-gray-900 rounded-lg text-xs"
-                        >
-                          <option value="">اختر حساب...</option>
-                          {accounts.map(acc => (
-                            <option key={acc.id} value={acc.id}>{acc.code} - {acc.name}</option>
-                          ))}
-                        </select>
-                      </div>
-
-                      <div>
-                        <label className="block text-[10px] text-gray-400 font-semibold mb-1">البيان / الوصف</label>
-                        <input
-                          type="text"
-                          placeholder="مثال: دفعة فواتير مشتريات الأعلاف"
-                          value={txDesc}
-                          onChange={(e) => setTxDesc(e.target.value)}
-                          className="w-full p-2 border border-gray-250 dark:border-gray-700 bg-white dark:bg-gray-900 rounded-lg text-xs"
-                        />
-                      </div>
-
-                      <div className="flex gap-2">
-                        <div className="w-1/2">
-                          <label className="block text-[10px] text-gray-400 font-semibold mb-1">مدين (+)</label>
-                          <input
-                            type="number"
-                            step="any"
-                            value={txDebit === 0 ? '' : txDebit}
-                            onChange={(e) => setTxDebit(e.target.value === '' ? 0 : parseFloat(e.target.value))}
-                            className="w-full p-2 border border-gray-250 dark:border-gray-700 bg-white dark:bg-gray-900 rounded-lg text-xs font-bold text-emerald-600"
-                          />
-                        </div>
-                        <div className="w-1/2">
-                          <label className="block text-[10px] text-gray-400 font-semibold mb-1">دائن (-)</label>
-                          <input
-                            type="number"
-                            step="any"
-                            value={txCredit === 0 ? '' : txCredit}
-                            onChange={(e) => setTxCredit(e.target.value === '' ? 0 : parseFloat(e.target.value))}
-                            className="w-full p-2 border border-gray-250 dark:border-gray-700 bg-white dark:bg-gray-900 rounded-lg text-xs font-bold text-red-500"
-                          />
-                        </div>
-                      </div>
-
-                      <div>
-                        <label className="block text-[10px] text-gray-400 font-semibold mb-1">تاريخ القيد</label>
-                        <input
-                          type="date"
-                          required
-                          value={txDate}
-                          onChange={(e) => setTxDate(e.target.value)}
-                          className="w-full p-2 border border-gray-250 dark:border-gray-700 bg-white dark:bg-gray-900 rounded-lg text-xs"
-                        />
-                      </div>
-
-                      <div>
-                        <label className="block text-[10px] text-gray-400 font-semibold mb-1">الرقم المرجعي / الفاتورة</label>
-                        <input
-                          type="text"
-                          placeholder="مثال: INV-9821"
-                          value={txRef}
-                          onChange={(e) => setTxRef(e.target.value)}
-                          className="w-full p-2 border border-gray-250 dark:border-gray-700 bg-white dark:bg-gray-900 rounded-lg text-xs"
-                        />
-                      </div>
-
-                      <div className="flex items-end">
+                  <div className="p-5 bg-[#ffffff] dark:bg-gray-900 border border-gray-100 dark:border-gray-800 rounded-2xl space-y-4 shadow-sm">
+                    {/* Horizontal switcher for Manual Post vs Excel Import */}
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-gray-100 dark:border-gray-800 pb-3 gap-2">
+                      <div className="flex items-center gap-1 bg-gray-50 dark:bg-gray-850 p-1 rounded-xl w-fit">
                         <button
-                          type="submit"
-                          disabled={createTxMutation.isPending}
-                          className="w-full py-2 bg-farm-blue text-[#ffffff] font-bold rounded-lg hover:bg-opacity-95 flex items-center justify-center gap-1.5"
+                          type="button"
+                          onClick={() => setEntryMode('manual')}
+                          className={`px-3.5 py-1.5 text-[11px] font-bold rounded-lg transition-all ${
+                            entryMode === 'manual'
+                              ? 'bg-[#ffffff] dark:bg-gray-900 text-farm-blue shadow-sm border border-gray-100 dark:border-gray-800'
+                              : 'text-gray-500 hover:text-gray-750 dark:text-gray-400'
+                          }`}
                         >
-                          {createTxMutation.isPending && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
-                          <span>ترحيل القيد</span>
+                          تسجيل قيد يدوي
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setEntryMode('import')}
+                          className={`px-3.5 py-1.5 text-[11px] font-bold rounded-lg transition-all ${
+                            entryMode === 'import'
+                              ? 'bg-[#ffffff] dark:bg-gray-900 text-farm-blue shadow-sm border border-gray-100 dark:border-gray-800'
+                              : 'text-gray-500 hover:text-gray-750 dark:text-gray-400'
+                          }`}
+                        >
+                          استيراد قيود من Excel
                         </button>
                       </div>
-                    </form>
+
+                      {/* Display warning if auto-distribution is enabled for this sheet's folder */}
+                      {isAutoDistribute && (
+                        <span className="flex items-center gap-1 text-[10px] text-amber-600 bg-amber-50 dark:bg-amber-950/20 dark:text-amber-400 px-2.5 py-1 rounded-lg font-bold border border-amber-100 dark:border-amber-900 animate-pulse">
+                          <AlertCircle className="w-3.5 h-3.5 text-amber-500" />
+                          <span>توزيع تلقائي تناسبي</span>
+                        </span>
+                      )}
+                    </div>
+
+                    {!isLeafAccount ? (
+                      <div className="flex items-start gap-2.5 p-3.5 bg-red-50 dark:bg-red-950/20 border border-red-150 text-red-600 rounded-xl text-xs">
+                        <AlertCircle className="w-4.5 h-4.5 mt-0.5 flex-shrink-0" />
+                        <div>
+                          <span className="font-bold">تنبيه الحساب الرئيسي غير الطرفي:</span>
+                          <p className="text-[10.5px] mt-1 text-red-500/90 leading-relaxed">
+                            لا يمكن تسجيل قيود أو استيراد حركات مالية على الحساب المحاسبي الحالي [{currentSheet.account?.code}] {currentSheet.account?.name} لأنه حساب رئيسي.
+                            التسجيل والتكامل المالي مسموح فقط على الحسابات الفرعية الطرفية (Terminal Leaf Nodes).
+                          </p>
+                        </div>
+                      </div>
+                    ) : (
+                      <>
+                        {/* MANUAL ENTRY */}
+                        {entryMode === 'manual' && (
+                          <div className="space-y-3 font-sans">
+                            {txError && <p className="text-red-500 font-bold text-xs">{txError}</p>}
+                            
+                            <form onSubmit={handlePostTransaction} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 text-xs">
+                              <div>
+                                <label className="block text-[10px] text-gray-400 font-semibold mb-1">الحساب المقابل</label>
+                                <select
+                                  required
+                                  value={txAccountId}
+                                  onChange={(e) => setTxAccountId(parseInt(e.target.value))}
+                                  className="w-full p-2 border border-gray-250 dark:border-gray-700 bg-[#ffffff] dark:bg-gray-900 rounded-lg text-xs dark:text-white"
+                                >
+                                  <option value="">اختر حساب...</option>
+                                  {accounts.map(acc => (
+                                    <option key={acc.id} value={acc.id}>{acc.code} - {acc.name}</option>
+                                  ))}
+                                </select>
+                              </div>
+
+                              <div>
+                                <label className="block text-[10px] text-gray-400 font-semibold mb-1">البيان / الوصف</label>
+                                <input
+                                  type="text"
+                                  placeholder="مثال: دفعة فواتير مشتريات الأعلاف"
+                                  value={txDesc}
+                                  onChange={(e) => setTxDesc(e.target.value)}
+                                  className="w-full p-2 border border-gray-250 dark:border-gray-700 bg-[#ffffff] dark:bg-gray-900 rounded-lg text-xs dark:text-white"
+                                />
+                              </div>
+
+                              <div className="flex gap-2">
+                                <div className="w-1/2">
+                                  <label className="block text-[10px] text-gray-400 font-semibold mb-1">مدين (+)</label>
+                                  <input
+                                    type="number"
+                                    step="any"
+                                    value={txDebit === 0 ? '' : txDebit}
+                                    onChange={(e) => setTxDebit(e.target.value === '' ? 0 : parseFloat(e.target.value))}
+                                    className="w-full p-2 border border-gray-250 dark:border-gray-700 bg-[#ffffff] dark:bg-gray-900 rounded-lg text-xs font-bold text-emerald-600 dark:text-emerald-400"
+                                  />
+                                </div>
+                                <div className="w-1/2">
+                                  <label className="block text-[10px] text-gray-400 font-semibold mb-1">دائن (-)</label>
+                                  <input
+                                    type="number"
+                                    step="any"
+                                    value={txCredit === 0 ? '' : txCredit}
+                                    onChange={(e) => setTxCredit(e.target.value === '' ? 0 : parseFloat(e.target.value))}
+                                    className="w-full p-2 border border-gray-250 dark:border-gray-700 bg-[#ffffff] dark:bg-gray-900 rounded-lg text-xs font-bold text-red-500"
+                                  />
+                                </div>
+                              </div>
+
+                              <div>
+                                <label className="block text-[10px] text-gray-400 font-semibold mb-1">تاريخ القيد</label>
+                                <input
+                                  type="date"
+                                  required
+                                  value={txDate}
+                                  onChange={(e) => setTxDate(e.target.value)}
+                                  className="w-full p-2 border border-gray-250 dark:border-gray-700 bg-[#ffffff] dark:bg-gray-900 rounded-lg text-xs dark:text-white"
+                                />
+                              </div>
+
+                              <div>
+                                <label className="block text-[10px] text-gray-400 font-semibold mb-1">الرقم المرجعي / الفاتورة</label>
+                                <input
+                                  type="text"
+                                  placeholder="مثال: INV-9821"
+                                  value={txRef}
+                                  onChange={(e) => setTxRef(e.target.value)}
+                                  className="w-full p-2 border border-gray-250 dark:border-gray-700 bg-[#ffffff] dark:bg-gray-900 rounded-lg text-xs dark:text-white"
+                                />
+                              </div>
+
+                              <div className="flex items-end">
+                                <button
+                                  type="submit"
+                                  disabled={createTxMutation.isPending}
+                                  className="w-full py-2 bg-farm-blue text-[#ffffff] font-bold rounded-lg hover:bg-opacity-95 flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-50"
+                                >
+                                  {createTxMutation.isPending && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
+                                  <span>ترحيل القيد</span>
+                                </button>
+                              </div>
+                            </form>
+                          </div>
+                        )}
+
+                        {/* EXCEL BULK UPLOAD */}
+                        {entryMode === 'import' && (
+                          <div className="space-y-4 font-sans text-xs">
+                            <div className="space-y-1">
+                              <p className="text-[10px] text-gray-450 leading-relaxed dark:text-gray-400">
+                                قم برفع ورقة عمل قيود اليومية. يجب أن يحتوي الملف على أعمدة باسم (التاريخ، الوصف، مدين، دائن، الحساب المقابل، الرقم المرجعي).
+                              </p>
+                            </div>
+
+                            {txImportSuccess && (
+                              <div className="flex items-start gap-2 p-3 bg-emerald-50 dark:bg-emerald-950/20 border border-emerald-150 text-emerald-600 rounded-xl">
+                                <CheckCircle className="w-4 h-4 mt-0.5 flex-shrink-0" />
+                                <div className="space-y-1">
+                                  <span className="font-bold">{txImportSuccess}</span>
+                                  <p className="text-[10px] text-emerald-500">تم تسجيل كافة المعاملات وتحديث أرصدة الحسابات بنجاح.</p>
+                                </div>
+                              </div>
+                            )}
+
+                            {txImportError && (
+                              <div className="flex items-start gap-2 p-3 bg-red-50 dark:bg-red-950/20 border border-red-150 text-red-600 rounded-xl">
+                                <AlertCircle className="w-4 h-4 mt-0.5 flex-shrink-0" />
+                                <div className="space-y-1">
+                                  <span className="font-bold">فشل الاستيراد:</span>
+                                  <p className="text-[10px] whitespace-pre-wrap">{txImportError}</p>
+                                </div>
+                              </div>
+                            )}
+
+                            {isAutoDistribute && (
+                              <div className="flex items-start gap-2 p-3 bg-amber-50 dark:bg-amber-950/20 border border-amber-150 text-amber-600 dark:text-amber-400 rounded-xl leading-relaxed">
+                                <Info className="w-4 h-4 mt-0.5 flex-shrink-0 text-amber-500" />
+                                <div>
+                                  <span className="font-bold">تنبيه التوزيع التلقائي للمصاريف:</span>
+                                  <p className="text-[10px] mt-0.5 text-amber-500">
+                                    هذا الدفتر مهيأ للتوزيع التلقائي التناسبى (Egg Production Cost Splitting). سيقوم النظام آلياً باحتساب نسب التوزيع لكل مشروع بناءً على أعداد وإنتاج البيض، ثم تقسيم كل معاملة يتم رفعها وحفظها موزعة بين المشاريع النشطة!
+                                  </p>
+                                </div>
+                              </div>
+                            )}
+
+                            <div
+                              onDragOver={(e) => { e.preventDefault(); setTxDragActive(true) }}
+                              onDragLeave={() => setTxDragActive(false)}
+                              onDrop={(e) => {
+                                e.preventDefault()
+                                setTxDragActive(false)
+                                if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+                                  setTxFile(e.dataTransfer.files[0])
+                                }
+                              }}
+                              className={`border-2 border-dashed rounded-2xl p-6 text-center transition-all cursor-pointer ${
+                                txDragActive
+                                  ? 'border-farm-blue bg-blue-50/10'
+                                  : txFile
+                                  ? 'border-emerald-500 bg-emerald-50/5'
+                                  : 'border-gray-250 dark:border-gray-800 hover:border-farm-blue'
+                              }`}
+                              onClick={() => document.getElementById('tx-file-input')?.click()}
+                            >
+                              <input
+                                id="tx-file-input"
+                                type="file"
+                                accept=".xlsx,.xls"
+                                className="hidden"
+                                onChange={(e) => {
+                                  if (e.target.files && e.target.files[0]) {
+                                    setTxFile(e.target.files[0])
+                                  }
+                                }}
+                              />
+                              
+                              <div className="flex flex-col items-center justify-center space-y-2">
+                                <div className={`p-2.5 rounded-xl ${txFile ? 'bg-emerald-50 text-emerald-600 dark:bg-emerald-950/30' : 'bg-emerald-50/10 text-emerald-600 dark:bg-emerald-950/30'}`}>
+                                  <UploadCloud className="w-5.5 h-5.5" />
+                                </div>
+                                {txFile ? (
+                                  <div className="space-y-1">
+                                    <p className="font-bold text-gray-800 dark:text-gray-200 max-w-[200px] truncate mx-auto">{txFile.name}</p>
+                                    <p className="text-[10px] text-gray-400">{(txFile.size / 1024).toFixed(1)} KB</p>
+                                  </div>
+                                ) : (
+                                  <div className="space-y-1">
+                                    <p className="font-bold text-gray-700 dark:text-gray-300">اسحب وأفلت ورقة عمل قيود اليومية هنا</p>
+                                    <p className="text-[10px] text-gray-400 font-medium">أو اضغط لتصفح الملفات من جهازك (.xlsx, .xls)</p>
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+
+                            <div className="flex justify-between gap-2.5">
+                              {txFile && (
+                                <button
+                                  type="button"
+                                  onClick={() => setTxFile(null)}
+                                  disabled={importTxMutation.isPending}
+                                  className="px-3.5 py-2 bg-gray-50 hover:bg-gray-150 border border-gray-250 dark:bg-gray-850 dark:border-gray-800 text-gray-500 dark:text-gray-300 font-bold rounded-xl transition-all disabled:opacity-50"
+                                >
+                                  إلغاء
+                                </button>
+                              )}
+                              <button
+                                type="button"
+                                onClick={async () => {
+                                  if (!txFile || !activeSheetId) return
+                                  setTxImportSuccess(null)
+                                  setTxImportError(null)
+                                  const fd = new FormData()
+                                  fd.append('file', txFile)
+                                  try {
+                                    const res = await importTxMutation.mutateAsync(fd)
+                                    setTxImportSuccess(`تم استيراد قيود المعاملات بنجاح! تم تسجيل ${res.data.inserted_transactions} قيد محاسبي موزون بنجاح من أصل ${res.data.total_rows_read} صف تم معالجته.`);
+                                    setTxFile(null)
+                                  } catch (err: any) {
+                                    setTxImportError(err?.message || 'حدث خطأ أثناء معالجة وقراءة ملف قيود اليومية. يرجى مراجعة هيكل البيانات.')
+                                  }
+                                }}
+                                disabled={!txFile || importTxMutation.isPending}
+                                className="flex-1 py-2 bg-farm-blue text-white font-bold rounded-xl shadow-md hover:bg-opacity-95 disabled:opacity-50 flex items-center justify-center gap-1.5 cursor-pointer"
+                              >
+                                {importTxMutation.isPending ? (
+                                  <>
+                                    <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                                    <span>جاري معالجة وتوزيع الحركات المالية...</span>
+                                  </>
+                                ) : (
+                                  <>
+                                    <Check className="w-3.5 h-3.5" />
+                                    <span>بدء استيراد قيود اليومية</span>
+                                  </>
+                                )}
+                              </button>
+                            </div>
+                          </div>
+                        )}
+                      </>
+                    )}
                   </div>
                 )}
               </div>

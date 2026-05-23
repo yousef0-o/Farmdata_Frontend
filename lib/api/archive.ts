@@ -233,5 +233,22 @@ export const archiveApi = {
 
   getAnnualAccountingStats(year: number): Promise<{ data: any[] }> {
     return apiRequest<{ data: any[] }>(`/archive/accounting/annual-stats/${year}`)
+  },
+
+  importChartOfAccounts(formData: FormData): Promise<{ message: string; data: { total_rows: number; inserted_accounts: number; updated_accounts: number } }> {
+    return apiRequest<{ message: string; data: any }>('/archive/accounting/accounts/import', {
+      method: 'POST',
+      body: formData,
+      headers: {},
+    })
+  },
+
+  importRecordSheetTransactions(sheetId: number, formData: FormData): Promise<{ message: string; data: { total_rows_read: number; inserted_transactions: number } }> {
+    return apiRequest<{ message: string; data: any }>(`/archive/record-sheets/${sheetId}/import`, {
+      method: 'POST',
+      body: formData,
+      headers: {},
+    })
   }
 }
+

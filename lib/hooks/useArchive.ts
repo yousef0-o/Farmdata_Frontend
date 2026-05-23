@@ -277,9 +277,31 @@ export function useAnnualAccountingStats(year: number) {
   })
 }
 
+export function useImportChartOfAccounts() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: archiveApi.importChartOfAccounts,
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['accounting-accounts'] })
+    },
+  })
+}
+
+export function useImportRecordTransactions(sheetId: number) {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: (formData: FormData) => archiveApi.importRecordSheetTransactions(sheetId, formData),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['record-sheet', sheetId] })
+      qc.invalidateQueries({ queryKey: ['record-sheets'] })
+    },
+  })
+}
+
 export function useCompanies() {
   return useQuery({
     queryKey: ['companies-list'],
     queryFn: () => import('../api/organization').then(m => m.organizationApi.listCompanies()),
   })
 }
+

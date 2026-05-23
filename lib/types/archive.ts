@@ -11,6 +11,7 @@ export interface ArchiveNode {
   children_count?: number
   items_count?: number
   children?: ArchiveNode[]
+  meta?: Record<string, any>
 }
 
 export interface SchemaColumn {
@@ -108,6 +109,7 @@ export interface RecordSheet {
   created_by: number
   created_at?: string
   account?: AccountingAccount
+  folder?: ArchiveNode
   transactions?: RecordTransaction[]
   created_by_user?: {
     name: string
