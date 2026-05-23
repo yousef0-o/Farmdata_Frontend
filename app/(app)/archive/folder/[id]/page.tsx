@@ -37,7 +37,12 @@ import {
   ArrowDownToLine,
   Activity,
   CheckCircle,
-  HelpCircle
+  HelpCircle,
+  Edit3,
+  Sliders,
+  TrendingUp,
+  Calendar,
+  Printer
 } from 'lucide-react'
 
 interface PageProps {
@@ -89,13 +94,38 @@ export default function FolderDetailPage({ params }: PageProps) {
   const [selectedRowIds, setSelectedRowIds] = useState<number[]>([])
 
   // Dynamic KPI Stats configs
-  const { data: statsConfigsRes } = useFolderStatsConfigs(folderId)
+  const { data: statsConfigsRes, refetch: refetchStatsConfigs } = useFolderStatsConfigs(folderId)
   const createStatsMutation = useCreateStatsConfig(folderId)
+  
+  // Date range selectors
+  const [dateFrom, setDateFrom] = useState('')
+  const [dateTo, setDateTo] = useState('')
+  const [selectedDateCol, setSelectedDateCol] = useState('')
+
+  // Stats Config Add/Edit Modal States
   const [showStatsModal, setShowStatsModal] = useState(false)
+  const [editingStatsId, setEditingStatsId] = useState<number | null>(null)
+  
   const [statsName, setStatsName] = useState('')
-  const [statsChartType, setStatsChartType] = useState<'card' | 'bar'>('card')
-  const [statsAgg, setStatsAgg] = useState<'count' | 'sum_total' | 'avg'>('count')
+  const [statsChartType, setStatsChartType] = useState<'card' | 'bar' | 'pie' | 'line' | 'table'>('card')
+  const [statsAgg, setStatsAgg] = useState<'count' | 'distinct_count' | 'sum_total' | 'sum_group' | 'avg'>('count')
   const [statsCol, setStatsCol] = useState('')
+  const [statsGroupBy, setStatsGroupBy] = useState('')
+  
+  const [statsThresholdVal, setStatsThresholdVal] = useState('')
+  const [statsThresholdCond, setStatsThresholdCond] = useState('')
+  const [statsThresholdAlert, setStatsThresholdAlert] = useState<'positive' | 'negative'>('negative')
+  const [statsColor, setStatsColor] = useState('#3b82f6')
+
+  // Auto-detect date column
+  useEffect(() => {
+    if (columns.length > 0 && !selectedDateCol) {
+      const dateCol = columns.find(c => c.type === 'date')
+      if (dateCol) {
+        setSelectedDateCol(dateCol.key)
+      }
+    }
+  }, [columns, selectedDateCol])
 
   // Excel mapping pipeline
   const [excelFile, setExcelFile] = useState<File | null>(null)
@@ -279,21 +309,46 @@ export default function FolderDetailPage({ params }: PageProps) {
     }
   }
 
-  // Add Stats Config
-  const handleCreateStatsConfig = async (e: React.FormEvent) => {
+  // Add or Update Stats Config
+  const handleCreateOrUpdateStatsConfig = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!statsName.trim()) return
 
+    const payload = {
+      name: statsName.trim(),
+      chart_type: statsChartType,
+      aggregation: statsAgg,
+      column_key: statsCol || undefined,
+      group_by_key: statsGroupBy || undefined,
+      threshold_value: statsThresholdVal ? parseFloat(statsThresholdVal) : null,
+      threshold_condition: statsThresholdCond || null,
+      threshold_alert_type: statsThresholdAlert,
+      widget_color: statsColor || null,
+    } as any
+
     try {
-      await createStatsMutation.mutateAsync({
-        name: statsName.trim(),
-        chart_type: statsChartType,
-        aggregation: statsAgg,
-        column_key: statsCol || undefined
-      })
+      if (editingStatsId) {
+        await archiveApi.updateStatsConfig(folderId, editingStatsId, payload)
+        alert('تم تعديل البطاقة بنجاح!')
+      } else {
+        await createStatsMutation.mutateAsync(payload)
+      }
       setShowStatsModal(false)
+      setEditingStatsId(null)
+      refetchStatsConfigs()
     } catch (err: any) {
-      alert('فشل إضافة كرت الإحصائية: ' + err?.message)
+      alert('فشل حفظ إعدادات البطاقة: ' + err?.message)
+    }
+  }
+
+  // Delete Stats Config
+  const handleDeleteStatsConfig = async (configId: number) => {
+    if (!confirm('هل أنت متأكد من رغبتك في حذف بطاقة التحليلات هذه؟')) return
+    try {
+      await archiveApi.deleteStatsConfig(folderId, configId)
+      refetchStatsConfigs()
+    } catch (err: any) {
+      alert('حدث خطأ أثناء الحذف: ' + err?.message)
     }
   }
 
@@ -358,23 +413,339 @@ export default function FolderDetailPage({ params }: PageProps) {
     }
   }
 
-  // Stats Card Component for inline calculations
-  const StatsCard = ({ config }: { config: any }) => {
-    const { data: resultRes, isLoading } = useStatsResult(folderId, config.id)
-    if (isLoading) return <div className="h-28 bg-[#ffffff] dark:bg-gray-900 border border-gray-100 dark:border-gray-800 rounded-2xl flex items-center justify-center"><Loader2 className="w-5 h-5 animate-spin text-farm-blue" /></div>
-    const val = resultRes?.results?.value ?? 0
+  // --- Premium SVG Dashboard Chart Components ---
+  const SVGBarChart = ({ labels, values, color = '#3b82f6' }: { labels: string[], values: number[], color?: string }) => {
+    const max = Math.max(...values, 1)
+    return (
+      <div className="w-full flex flex-col justify-end space-y-2 mt-2 font-sans">
+        <div className="flex items-end justify-between h-28 px-1 gap-1.5">
+          {values.map((v, idx) => {
+            const heightPercent = Math.max((v / max) * 100, 5)
+            return (
+              <div key={idx} className="flex-1 flex flex-col items-center group relative h-full justify-end">
+                {/* Tooltip */}
+                <div className="absolute bottom-full mb-1.5 hidden group-hover:flex flex-col items-center z-30">
+                  <div className="bg-gray-900 text-[#ffffff] text-[8px] font-bold px-2 py-1 rounded shadow-lg whitespace-nowrap">
+                    {labels[idx]}: {v.toLocaleString('ar-EG', { maximumFractionDigits: 1 })}
+                  </div>
+                  <div className="w-1.5 h-1.5 bg-gray-900 rotate-45 -mt-1"></div>
+                </div>
+                
+                {/* SVG Bar */}
+                <div 
+                  style={{ height: `${heightPercent}%`, backgroundColor: color }}
+                  className="w-full rounded-t-sm hover:opacity-80 transition-all duration-300 shadow-sm"
+                />
+              </div>
+            )
+          })}
+        </div>
+        
+        {/* X Axis Labels */}
+        <div className="flex justify-between border-t border-gray-100 dark:border-gray-800 pt-1 text-[8px] text-gray-400 font-semibold px-0.5">
+          {labels.map((lbl, idx) => (
+            <span key={idx} className="truncate max-w-[40px] text-center" title={lbl}>{lbl}</span>
+          ))}
+        </div>
+      </div>
+    )
+  }
+
+  const SVGPieChart = ({ labels, values }: { labels: string[], values: number[] }) => {
+    const total = values.reduce((a, b) => a + b, 0)
+    const colors = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899', '#14b8a6']
+    
+    let accumulatedAngle = 0
+    
+    return (
+      <div className="flex items-center justify-between gap-2 mt-2 font-sans">
+        {/* SVG Donut */}
+        <div className="relative w-24 h-24 flex items-center justify-center flex-shrink-0">
+          <svg className="w-full h-full transform -rotate-90" viewBox="0 0 42 42">
+            <circle cx="21" cy="21" r="15.915" fill="transparent" stroke="rgba(229,231,235,0.15)" strokeWidth="3.5" />
+            
+            {values.map((v, idx) => {
+              const percentage = total > 0 ? (v / total) * 100 : 0
+              const strokeDash = `${percentage} ${100 - percentage}`
+              const strokeOffset = 100 - accumulatedAngle + 25
+              accumulatedAngle += percentage
+              
+              return (
+                <circle
+                  key={idx}
+                  cx="21"
+                  cy="21"
+                  r="15.915"
+                  fill="transparent"
+                  stroke={colors[idx % colors.length]}
+                  strokeWidth="3.8"
+                  strokeDasharray={strokeDash}
+                  strokeDashoffset={strokeOffset}
+                  className="transition-all duration-500 ease-out hover:stroke-[4.5] cursor-pointer"
+                />
+              )
+            })}
+          </svg>
+          <div className="absolute flex flex-col items-center text-center">
+            <span className="text-[7.5px] text-gray-400 font-bold">الإجمالي</span>
+            <span className="text-[9.5px] font-bold text-gray-800 dark:text-white truncate max-w-[60px]">
+              {total.toLocaleString('ar-EG', { maximumFractionDigits: 0 })}
+            </span>
+          </div>
+        </div>
+        
+        {/* Legends */}
+        <div className="flex-1 space-y-0.5 max-h-24 overflow-y-auto pr-0.5">
+          {labels.slice(0, 4).map((lbl, idx) => (
+            <div key={idx} className="flex items-center gap-1 text-[8.5px]">
+              <span className="w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ backgroundColor: colors[idx % colors.length] }} />
+              <span className="text-gray-500 dark:text-gray-400 truncate max-w-[65px]" title={lbl}>{lbl}</span>
+              <span className="text-gray-700 dark:text-gray-200 font-semibold mr-auto">
+                {total > 0 ? Math.round((values[idx] / total) * 100) : 0}%
+              </span>
+            </div>
+          ))}
+        </div>
+      </div>
+    )
+  }
+
+  const SVGLineChart = ({ labels, values, color = '#8b5cf6' }: { labels: string[], values: number[], color?: string }) => {
+    const max = Math.max(...values, 1)
+    const min = Math.min(...values, 0)
+    const range = max - min
+    
+    const width = 300
+    const height = 110
+    const padding = 10
+    
+    const points = values.map((v, idx) => {
+      const x = padding + (idx / Math.max(values.length - 1, 1)) * (width - padding * 2)
+      const y = height - padding - ((v - min) / range) * (height - padding * 2)
+      return { x, y, value: v, label: labels[idx] }
+    })
+    
+    // Bezier curve calculations
+    let dPath = ''
+    if (points.length > 0) {
+      dPath = `M ${points[0].x} ${points[0].y}`
+      for (let i = 0; i < points.length - 1; i++) {
+        const p0 = points[i]
+        const p1 = points[i + 1]
+        const cpX1 = p0.x + (p1.x - p0.x) / 3
+        const cpY1 = p0.y
+        const cpX2 = p0.x + 2 * (p1.x - p0.x) / 3
+        const cpY2 = p1.y
+        dPath += ` C ${cpX1} ${cpY1}, ${cpX2} ${cpY2}, ${p1.x} ${p1.y}`
+      }
+    }
+    
+    // Area gradient path
+    const dAreaPath = points.length > 0 
+      ? `${dPath} L ${points[points.length - 1].x} ${height - padding} L ${points[0].x} ${height - padding} Z`
+      : ''
 
     return (
-      <div className="flex items-center justify-between p-6 bg-[#ffffff] dark:bg-gray-900 border border-gray-100 dark:border-gray-800 rounded-2xl shadow-sm">
-        <div>
-          <span className="text-xs text-gray-400 font-semibold">{config.name}</span>
-          <h4 className="text-xl font-bold text-gray-800 dark:text-[#ffffff] font-sans mt-1.5">
-            {typeof val === 'number' ? val.toLocaleString('ar-EG', { maximumFractionDigits: 2 }) : val}
-          </h4>
+      <div className="w-full mt-2 font-sans">
+        <div className="relative w-full h-[110px]">
+          <svg className="w-full h-full overflow-visible" viewBox={`0 0 ${width} ${height}`}>
+            <defs>
+              <linearGradient id={`grad-${color.replace('#', '')}`} x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stopColor={color} stopOpacity="0.25" />
+                <stop offset="100%" stopColor={color} stopOpacity="0.0" />
+              </linearGradient>
+            </defs>
+            
+            {/* Gradient Area */}
+            {dAreaPath && <path d={dAreaPath} fill={`url(#grad-${color.replace('#', '')})`} />}
+            
+            {/* Bezier Path */}
+            {dPath && <path d={dPath} fill="transparent" stroke={color} strokeWidth="2.2" strokeLinecap="round" />}
+            
+            {/* Interactive Points */}
+            {points.map((p, idx) => (
+              <g key={idx} className="group cursor-pointer">
+                <circle cx={p.x} cy={p.y} r="2.5" fill="#ffffff" stroke={color} strokeWidth="1.2" />
+                <circle cx={p.x} cy={p.y} r="6" fill="transparent" className="hover:fill-current hover:text-black/5" />
+                
+                {/* Custom hover tooltip */}
+                <foreignObject x={p.x - 35} y={p.y - 25} width="70" height="20" className="hidden group-hover:block overflow-visible z-30">
+                  <div className="bg-gray-900 text-[#ffffff] text-[7px] font-bold py-0.5 px-1 rounded shadow text-center whitespace-nowrap truncate">
+                    {p.label}: {p.value.toLocaleString('ar-EG', { maximumFractionDigits: 1 })}
+                  </div>
+                </foreignObject>
+              </g>
+            ))}
+          </svg>
         </div>
-        <div className="p-3 bg-brand-logo-bg rounded-xl text-brand-logo-icon">
-          <Activity className="w-5 h-5" />
+        
+        {/* X Axis Labels */}
+        <div className="flex justify-between border-t border-gray-100 dark:border-gray-800 pt-1 text-[8px] text-gray-400 font-semibold px-0.5 mt-0.5">
+          {labels.map((lbl, idx) => (
+            <span key={idx} className="truncate max-w-[40px] text-center" title={lbl}>{lbl}</span>
+          ))}
         </div>
+      </div>
+    )
+  }
+
+  const SVGTableList = ({ labels, values, color = '#10b981' }: { labels: string[], values: number[], color?: string }) => {
+    const max = Math.max(...values, 1)
+    return (
+      <div className="w-full mt-2 space-y-1.5 max-h-32 overflow-y-auto font-sans pr-0.5">
+        {labels.map((lbl, idx) => {
+          const val = values[idx]
+          const percent = (val / max) * 100
+          return (
+            <div key={idx} className="space-y-0.5">
+              <div className="flex justify-between items-center text-[9px] font-bold">
+                <span className="text-gray-600 dark:text-gray-400 truncate max-w-[120px]">{lbl}</span>
+                <span className="text-gray-800 dark:text-gray-200">{val.toLocaleString('ar-EG')}</span>
+              </div>
+              <div className="w-full bg-gray-100 dark:bg-gray-800 h-1 rounded-full overflow-hidden">
+                <div style={{ width: `${percent}%`, backgroundColor: color }} className="h-full rounded-full transition-all duration-500 ease-out" />
+              </div>
+            </div>
+          )
+        })}
+      </div>
+    )
+  }
+
+  // Upgraded Stats Card Component for dynamic, styled layouts
+  const StatsCard = ({ config }: { config: any }) => {
+    const { data: resultRes, isLoading } = useStatsResult(folderId, config.id, {
+      from: dateFrom || undefined,
+      to: dateTo || undefined,
+      column: selectedDateCol || undefined
+    })
+
+    if (isLoading) {
+      return (
+        <div className="h-40 bg-[#ffffff] dark:bg-gray-900 border border-gray-100 dark:border-gray-800 rounded-2xl flex items-center justify-center">
+          <Loader2 className="w-5.5 h-5.5 animate-spin text-farm-blue" />
+        </div>
+      )
+    }
+
+    const resultsData = resultRes?.results as any
+    const val = resultsData?.value ?? 0
+    const isGrouped = resultsData?.type === 'grouped'
+    const labels = resultsData?.labels ?? []
+    const values = resultsData?.values ?? []
+
+    // Alert calculation
+    let isAlertActive = false
+    if (!isGrouped && typeof val === 'number' && config.threshold_value !== undefined && config.threshold_value !== null && config.threshold_condition) {
+      const thVal = config.threshold_value
+      const cond = config.threshold_condition
+      if (cond === 'gt' && val > thVal) isAlertActive = true
+      if (cond === 'lt' && val < thVal) isAlertActive = true
+      if (cond === 'eq' && val === thVal) isAlertActive = true
+    }
+
+    const isPositive = config.threshold_alert_type === 'positive'
+    const customColor = config.widget_color || '#3b82f6'
+
+    // Card styling based on alert status
+    let cardClasses = "bg-[#ffffff] dark:bg-gray-900 border border-gray-100 dark:border-gray-800 rounded-2xl shadow-sm p-5 relative overflow-hidden transition-all duration-300 hover:shadow-md"
+    if (isAlertActive) {
+      if (isPositive) {
+        cardClasses += " border-emerald-500/80 dark:border-emerald-500/50 bg-emerald-50/5 dark:bg-emerald-950/5 shadow-[0_0_15px_rgba(16,185,129,0.05)]"
+      } else {
+        cardClasses += " border-red-500/80 dark:border-red-500/50 bg-red-50/5 dark:bg-red-950/5 shadow-[0_0_15px_rgba(239,68,68,0.05)]"
+      }
+    }
+
+    const handleEditWidget = () => {
+      setEditingStatsId(config.id)
+      setStatsName(config.name)
+      setStatsChartType(config.chart_type)
+      setStatsAgg(config.aggregation)
+      setStatsCol(config.column_key || '')
+      setStatsGroupBy(config.group_by_key || '')
+      setStatsThresholdVal(config.threshold_value?.toString() || '')
+      setStatsThresholdCond(config.threshold_condition || '')
+      setStatsThresholdAlert(config.threshold_alert_type || 'negative')
+      setStatsColor(config.widget_color || '#3b82f6')
+      setShowStatsModal(true)
+    }
+
+    return (
+      <div className={cardClasses}>
+        {/* Header Actions */}
+        <div className="flex items-center justify-between mb-2">
+          <div className="flex items-center gap-1.5 min-w-0">
+            <span className="text-[10.5px] text-gray-500 dark:text-gray-400 font-bold truncate max-w-[130px]" title={config.name}>
+              {config.name}
+            </span>
+            {isAlertActive && (
+              <span className={`flex h-2 w-2 rounded-full relative ${isPositive ? 'bg-emerald-500' : 'bg-red-500'}`}>
+                <span className={`animate-ping absolute inline-flex h-full w-full rounded-full opacity-75 ${isPositive ? 'bg-emerald-400' : 'bg-red-400'}`}></span>
+              </span>
+            )}
+          </div>
+          
+          <div className="flex items-center gap-1.5 opacity-0 hover:opacity-100 focus-within:opacity-100 group-hover:opacity-100 transition-opacity">
+            <button 
+              onClick={handleEditWidget}
+              title="تعديل"
+              className="p-1 hover:bg-gray-50 dark:hover:bg-gray-800 rounded text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition-colors"
+            >
+              <Edit3 className="w-3.5 h-3.5" />
+            </button>
+            <button 
+              onClick={() => handleDeleteStatsConfig(config.id)}
+              title="حذف"
+              className="p-1 hover:bg-red-50 dark:hover:bg-red-950/20 rounded text-gray-400 hover:text-red-500 dark:hover:text-red-400 transition-colors"
+            >
+              <Trash2 className="w-3.5 h-3.5" />
+            </button>
+          </div>
+        </div>
+
+        {/* Card render */}
+        {config.chart_type === 'card' && (
+          <div className="flex items-center justify-between mt-1">
+            <div className="min-w-0">
+              <h4 className="text-xl font-bold text-gray-800 dark:text-white font-sans truncate">
+                {typeof val === 'number' ? val.toLocaleString('ar-EG', { maximumFractionDigits: 1 }) : val}
+              </h4>
+              {config.threshold_value !== undefined && config.threshold_value !== null && (
+                <div className="flex items-center gap-1 text-[8.5px] text-gray-400 mt-1 font-sans">
+                  <span>الحد:</span>
+                  <span className="font-bold">{config.threshold_condition === 'gt' ? '>' : config.threshold_condition === 'lt' ? '<' : '='} {config.threshold_value.toLocaleString('ar-EG')}</span>
+                </div>
+              )}
+            </div>
+            
+            <div className="p-2.5 rounded-xl flex-shrink-0" style={{ backgroundColor: `${customColor}15`, color: customColor }}>
+              <Activity className="w-4.5 h-4.5" />
+            </div>
+          </div>
+        )}
+
+        {isGrouped && config.chart_type === 'bar' && (
+          <SVGBarChart labels={labels} values={values} color={customColor} />
+        )}
+
+        {isGrouped && config.chart_type === 'pie' && (
+          <SVGPieChart labels={labels} values={values} />
+        )}
+
+        {isGrouped && config.chart_type === 'line' && (
+          <SVGLineChart labels={labels} values={values} color={customColor} />
+        )}
+
+        {isGrouped && config.chart_type === 'table' && (
+          <SVGTableList labels={labels} values={values} color={customColor} />
+        )}
+
+        {isGrouped && config.chart_type === 'card' && (
+          <div className="text-[8.5px] text-amber-500 font-semibold mt-1 font-sans">
+            البطاقة لا تدعم بيانات المجموعات، يرجى التعديل لاختيار نوع رسم بياني آخر.
+          </div>
+        )}
       </div>
     )
   }
@@ -432,6 +803,98 @@ export default function FolderDetailPage({ params }: PageProps) {
             <Plus className="w-4 h-4" />
             <span>إضافة سجل مالي</span>
           </button>
+        </div>
+      </div>
+
+      {/* Analytics Dashboard Header & Dynamic Date Filter Bar */}
+      <div className="bg-[#ffffff] dark:bg-gray-900 border border-gray-100 dark:border-gray-800 p-6 rounded-2xl shadow-sm space-y-4 print:hidden">
+        <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-4">
+          <div className="flex items-center gap-2 text-farm-blue">
+            <TrendingUp className="w-5 h-5" />
+            <h3 className="text-sm font-bold font-sans">لوحة المؤشرات الإحصائية والتحليلات البيانية الذكية</h3>
+          </div>
+          
+          <button
+            onClick={() => window.print()}
+            className="flex items-center gap-1.5 px-4 py-2 border border-gray-200 dark:border-gray-800 rounded-xl text-xs font-bold text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-all cursor-pointer"
+          >
+            <Printer className="w-4 h-4" />
+            <span>تصدير كتقرير / طباعة</span>
+          </button>
+        </div>
+
+        <div className="flex flex-wrap items-center gap-4 pt-2 border-t border-gray-50 dark:border-gray-800/40">
+          {/* Quick Date Range Selection */}
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => {
+                const now = new Date()
+                const firstDay = new Date(now.getFullYear(), now.getMonth(), 1).toISOString().split('T')[0]
+                const lastDay = new Date(now.getFullYear(), now.getMonth() + 1, 0).toISOString().split('T')[0]
+                setDateFrom(firstDay)
+                setDateTo(lastDay)
+              }}
+              className="px-3 py-1.5 bg-gray-50 dark:bg-gray-800/50 hover:bg-gray-100 rounded-lg text-[10px] font-bold text-gray-500 dark:text-gray-400 transition-colors"
+            >
+              هذا الشهر
+            </button>
+            <button
+              onClick={() => {
+                const now = new Date()
+                const firstDay = `${now.getFullYear()}-01-01`
+                const lastDay = `${now.getFullYear()}-12-31`
+                setDateFrom(firstDay)
+                setDateTo(lastDay)
+              }}
+              className="px-3 py-1.5 bg-gray-50 dark:bg-gray-800/50 hover:bg-gray-100 rounded-lg text-[10px] font-bold text-gray-500 dark:text-gray-400 transition-colors"
+            >
+              هذه السنة
+            </button>
+            <button
+              onClick={() => {
+                setDateFrom('')
+                setDateTo('')
+              }}
+              className="px-3 py-1.5 bg-gray-50 dark:bg-gray-800/50 hover:bg-gray-100 rounded-lg text-[10px] font-bold text-gray-500 dark:text-gray-400 transition-colors"
+            >
+              كل الأوقات
+            </button>
+          </div>
+
+          {/* Date Picker Inputs */}
+          <div className="flex flex-wrap items-center gap-3 mr-auto min-w-0">
+            <div className="flex items-center gap-2 text-xs">
+              <span className="text-gray-400 dark:text-gray-500 flex-shrink-0">الفلترة بـ:</span>
+              <select
+                value={selectedDateCol}
+                onChange={(e) => setSelectedDateCol(e.target.value)}
+                className="px-3 py-1.5 bg-gray-50 dark:bg-gray-800 border border-gray-100 dark:border-gray-800 rounded-xl text-xs dark:text-[#ffffff] focus:outline-none"
+              >
+                {columns.filter(c => c.type === 'date').map(c => (
+                  <option key={c.key} value={c.key}>{c.label}</option>
+                ))}
+                {columns.filter(c => c.type === 'date').length === 0 && (
+                  <option value="">لا يوجد عمود تاريخ</option>
+                )}
+              </select>
+            </div>
+
+            <div className="flex items-center gap-2">
+              <input
+                type="date"
+                value={dateFrom}
+                onChange={(e) => setDateFrom(e.target.value)}
+                className="px-3 py-1.5 bg-gray-50 dark:bg-gray-800 border border-gray-100 dark:border-gray-800 rounded-xl text-xs dark:text-[#ffffff] focus:outline-none"
+              />
+              <span className="text-gray-300 dark:text-gray-700">إلى</span>
+              <input
+                type="date"
+                value={dateTo}
+                onChange={(e) => setDateTo(e.target.value)}
+                className="px-3 py-1.5 bg-gray-50 dark:bg-gray-800 border border-gray-100 dark:border-gray-800 rounded-xl text-xs dark:text-[#ffffff] focus:outline-none"
+              />
+            </div>
+          </div>
         </div>
       </div>
 
@@ -955,68 +1418,220 @@ export default function FolderDetailPage({ params }: PageProps) {
         </div>
       )}
 
-      {/* Stats Config Add Modal */}
+      {/* Stats Config Add/Edit Modal */}
       {showStatsModal && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50">
-          <div className="bg-[#ffffff] dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl w-full max-w-md p-6 shadow-xl">
-            <h2 className="text-lg font-bold text-gray-900 dark:text-[#ffffff] font-sans">إضافة بطاقة تحليلات جديدة</h2>
+          <div className="bg-[#ffffff] dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl w-full max-w-lg p-6 shadow-xl max-h-[90vh] overflow-y-auto" dir="rtl">
+            <div className="flex justify-between items-center border-b border-gray-150 dark:border-gray-800 pb-3 mb-4">
+              <h2 className="text-base font-bold text-gray-900 dark:text-[#ffffff] font-sans flex items-center gap-2">
+                <Sliders className="w-5 h-5 text-farm-blue" />
+                <span>{editingStatsId ? 'تعديل بطاقة التحليلات والمؤشرات' : 'إضافة بطاقة تحليلات جديدة'}</span>
+              </h2>
+              <button 
+                onClick={() => {
+                  setShowStatsModal(false)
+                  setEditingStatsId(null)
+                }} 
+                className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
 
-            <form onSubmit={handleCreateStatsConfig} className="mt-4 space-y-4">
+            <form onSubmit={handleCreateOrUpdateStatsConfig} className="space-y-4">
+              {/* Widget Name */}
               <div>
-                <label className="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1.5">عنوان البطاقة</label>
+                <label className="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1.5">عنوان المؤشر / البطاقة *</label>
                 <input
                   type="text"
                   required
                   value={statsName}
                   onChange={(e) => setStatsName(e.target.value)}
-                  placeholder="مثال: إجمالي المصروفات"
+                  placeholder="مثال: إجمالي الرواتب، متوسط المبيعات"
                   className="w-full px-4 py-2.5 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl text-sm focus:outline-none dark:text-[#ffffff]"
                 />
               </div>
 
-              <div>
-                <label className="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1.5">نوع التجميع (Aggregation)</label>
-                <select
-                  value={statsAgg}
-                  onChange={(e) => setStatsAgg(e.target.value as any)}
-                  className="w-full px-4 py-2.5 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl text-sm dark:text-[#ffffff]"
-                >
-                  <option value="count">عدد السجلات (Count)</option>
-                  <option value="sum_total">مجموع القيم (Sum)</option>
-                  <option value="avg">متوسط القيم (Average)</option>
-                </select>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                {/* Visual Chart Type */}
+                <div>
+                  <label className="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1.5">طريقة العرض البياني</label>
+                  <select
+                    value={statsChartType}
+                    onChange={(e) => setStatsChartType(e.target.value as any)}
+                    className="w-full px-4 py-2.5 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl text-sm dark:text-[#ffffff]"
+                  >
+                    <option value="card">بطاقة رقمية بسيطة (KPI Card)</option>
+                    <option value="bar">رسم بياني أعمدة (Bar Chart)</option>
+                    <option value="pie">رسم بياني دائري (Donut/Pie Chart)</option>
+                    <option value="line">منحنى خطي زمني (Line Chart)</option>
+                    <option value="table">جدول ترتيب مقارن (List Table)</option>
+                  </select>
+                </div>
+
+                {/* Aggregation Function */}
+                <div>
+                  <label className="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1.5">نوع التجميع (Aggregation)</label>
+                  <select
+                    value={statsAgg}
+                    onChange={(e) => setStatsAgg(e.target.value as any)}
+                    className="w-full px-4 py-2.5 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl text-sm dark:text-[#ffffff]"
+                  >
+                    <option value="count">عدد السجلات الإجمالي (Count)</option>
+                    <option value="distinct_count">عدد فريد للقيم (Distinct Count)</option>
+                    <option value="sum_total">مجموع الحقل المختار (Sum)</option>
+                    <option value="sum_group">تجميع مجموع مجموعات (Sum Grouped)</option>
+                    <option value="avg">المتوسط الحسابي للقيم (Average)</option>
+                  </select>
+                </div>
               </div>
 
+              {/* Target Column selector */}
               {statsAgg !== 'count' && (
                 <div>
-                  <label className="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1.5">الحقل المستهدف للعملية</label>
+                  <label className="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1.5">الحقل المستهدف للحساب</label>
                   <select
                     value={statsCol}
                     required
                     onChange={(e) => setStatsCol(e.target.value)}
                     className="w-full px-4 py-2.5 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl text-sm dark:text-[#ffffff]"
                   >
-                    <option value="">اختر حقل البيانات المالي...</option>
-                    {columns.filter(c => c.type === 'number').map(col => (
+                    <option value="">اختر حقل البيانات العددي...</option>
+                    {columns.filter(c => c.type === 'number' || c.type === 'select' || c.type === 'text').map(col => (
                       <option key={col.key} value={col.key}>{col.label}</option>
                     ))}
                   </select>
                 </div>
               )}
 
-              <div className="flex items-center justify-end gap-3 pt-4 border-t border-gray-100 dark:border-gray-800">
+              {/* Group By selector (for charts) */}
+              {(statsChartType !== 'card' || statsAgg === 'sum_group' || statsAgg === 'distinct_count') && (
+                <div>
+                  <label className="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1.5">حقل تصنيف المجموعات (Group By)</label>
+                  <select
+                    value={statsGroupBy}
+                    required
+                    onChange={(e) => setStatsGroupBy(e.target.value)}
+                    className="w-full px-4 py-2.5 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl text-sm dark:text-[#ffffff]"
+                  >
+                    <option value="">اختر حقل التصنيف (تاريخ، نص، خيار)...</option>
+                    {columns.map(col => (
+                      <option key={col.key} value={col.key}>{col.label}</option>
+                    ))}
+                  </select>
+                  <span className="text-[10px] text-gray-400 mt-1 block">
+                    يتم تقسيم الرسم البياني وتوزيعه ديناميكياً بناءً على هذا الحقل المختار.
+                  </span>
+                </div>
+              )}
+
+              {/* KPI Threshold Alert Rules */}
+              <div className="border-t border-gray-150 dark:border-gray-800 pt-3">
+                <h4 className="text-xs font-bold text-gray-800 dark:text-gray-200 mb-2 flex items-center gap-1">
+                  <AlertCircle className="w-4 h-4 text-amber-500" />
+                  <span>عتبة التنبيه الذكي (KPI Threshold Alerts)</span>
+                </h4>
+                
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                  <div>
+                    <label className="block text-[10px] font-semibold text-gray-500 dark:text-gray-400 mb-1">الشرط</label>
+                    <select
+                      value={statsThresholdCond}
+                      onChange={(e) => setStatsThresholdCond(e.target.value)}
+                      className="w-full px-3 py-2 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-xs dark:text-[#ffffff]"
+                    >
+                      <option value="">بدون تنبيه</option>
+                      <option value="gt">أكبر من (&gt;)</option>
+                      <option value="lt">أصغر من (&lt;)</option>
+                      <option value="eq">يساوي (=)</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-[10px] font-semibold text-gray-500 dark:text-gray-400 mb-1">العتبة المستهدفة</label>
+                    <input
+                      type="number"
+                      step="any"
+                      value={statsThresholdVal}
+                      onChange={(e) => setStatsThresholdVal(e.target.value)}
+                      placeholder="مثال: 5000"
+                      disabled={!statsThresholdCond}
+                      className="w-full px-3 py-2 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-xs focus:outline-none disabled:opacity-50 dark:text-[#ffffff]"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-[10px] font-semibold text-gray-500 dark:text-gray-400 mb-1">نوع التوهج والإنذار</label>
+                    <select
+                      value={statsThresholdAlert}
+                      onChange={(e) => setStatsThresholdAlert(e.target.value as any)}
+                      disabled={!statsThresholdCond}
+                      className="w-full px-3 py-2 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-xs disabled:opacity-50 dark:text-[#ffffff]"
+                    >
+                      <option value="negative">سلبي / إنذار (أحمر متوهج)</option>
+                      <option value="positive">إيجابي / نجاح (أخضر متوهج)</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+
+              {/* Accent Widget Color Picker */}
+              <div className="border-t border-gray-150 dark:border-gray-800 pt-3">
+                <label className="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1.5">اللون الرئيسي للبطاقة والرسم البياني</label>
+                <div className="flex flex-wrap items-center gap-3">
+                  {[
+                    { hex: '#3b82f6', label: 'أزرق' },
+                    { hex: '#10b981', label: 'أخضر' },
+                    { hex: '#f59e0b', label: 'برتقالي' },
+                    { hex: '#ef4444', label: 'أحمر' },
+                    { hex: '#8b5cf6', label: 'بنفسجي' },
+                    { hex: '#ec4899', label: 'وردي' },
+                    { hex: '#6366f1', label: 'نيلي' }
+                  ].map((colorObj) => (
+                    <button
+                      key={colorObj.hex}
+                      type="button"
+                      onClick={() => setStatsColor(colorObj.hex)}
+                      className={`w-7 h-7 rounded-full flex items-center justify-center transition-all ${
+                        statsColor === colorObj.hex ? 'scale-110 ring-2 ring-offset-2 ring-farm-blue' : 'opacity-85 hover:opacity-100'
+                      }`}
+                      style={{ backgroundColor: colorObj.hex }}
+                      title={colorObj.label}
+                    >
+                      {statsColor === colorObj.hex && <CheckCircle className="w-3.5 h-3.5 text-[#ffffff]" />}
+                    </button>
+                  ))}
+                  
+                  {/* Custom color input */}
+                  <div className="flex items-center gap-1.5 border border-gray-200 dark:border-gray-700 rounded-lg p-1 mr-auto bg-gray-50 dark:bg-gray-800">
+                    <input
+                      type="color"
+                      value={statsColor}
+                      onChange={(e) => setStatsColor(e.target.value)}
+                      className="w-6 h-6 border-0 bg-transparent cursor-pointer rounded"
+                    />
+                    <span className="text-[10px] text-gray-500 font-mono font-bold dark:text-gray-400">{statsColor.toUpperCase()}</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Action Buttons */}
+              <div className="flex items-center justify-end gap-3 pt-4 border-t border-gray-150 dark:border-gray-800 mt-6">
                 <button
                   type="button"
-                  onClick={() => setShowStatsModal(false)}
-                  className="px-4 py-2 text-xs font-semibold text-gray-500 hover:bg-gray-50 rounded-lg"
+                  onClick={() => {
+                    setShowStatsModal(false)
+                    setEditingStatsId(null)
+                  }}
+                  className="px-4 py-2 text-xs font-semibold text-gray-500 hover:bg-gray-50 dark:hover:bg-gray-800 rounded-xl"
                 >
                   إلغاء
                 </button>
                 <button
                   type="submit"
-                  className="px-5 py-2 bg-farm-blue text-[#ffffff] font-bold text-xs rounded-lg hover:bg-opacity-90"
+                  className="px-5 py-2.5 bg-farm-blue text-[#ffffff] font-bold text-xs rounded-xl hover:bg-opacity-95 shadow-md active:scale-95 transition-all"
                 >
-                  إضافة الآن
+                  {editingStatsId ? 'حفظ التعديلات' : 'إضافة إلى اللوحة'}
                 </button>
               </div>
             </form>

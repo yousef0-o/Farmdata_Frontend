@@ -69,6 +69,10 @@ export interface ArchiveStatsConfig {
   group_by_key?: string
   filters?: Record<string, any>
   sort_order?: number
+  threshold_value?: number
+  threshold_condition?: 'gt' | 'lt' | 'eq'
+  threshold_alert_type?: 'positive' | 'negative'
+  widget_color?: string
   created_at?: string
 }
 

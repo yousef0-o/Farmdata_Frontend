@@ -187,10 +187,10 @@ export function useCreateStatsConfig(folderId: number) {
   })
 }
 
-export function useStatsResult(folderId: number, configId: number) {
+export function useStatsResult(folderId: number, configId: number, dateFilters?: { from?: string; to?: string; column?: string }) {
   return useQuery({
-    queryKey: ['archive-stats-result', folderId, configId],
-    queryFn: () => archiveApi.getStatsResult(folderId, configId),
+    queryKey: ['archive-stats-result', folderId, configId, dateFilters],
+    queryFn: () => archiveApi.getStatsResult(folderId, configId, dateFilters),
     enabled: folderId > 0 && configId > 0,
   })
 }

@@ -126,8 +126,16 @@ export const archiveApi = {
     })
   },
 
-  getStatsResult(folderId: number, configId: number): Promise<{ config: ArchiveStatsConfig; results: { value: number; labels?: string[]; series?: number[] } }> {
-    return apiRequest<{ config: ArchiveStatsConfig; results: any }>(`/archive/folders/${folderId}/stats-configs/${configId}`)
+  getStatsResult(folderId: number, configId: number, dateFilters?: { from?: string; to?: string; column?: string }): Promise<{ config: ArchiveStatsConfig; results: { value: number; labels?: string[]; values?: number[] } }> {
+    let url = `/archive/folders/${folderId}/stats-configs/${configId}`
+    if (dateFilters?.from || dateFilters?.to) {
+      const parts: string[] = []
+      if (dateFilters.from) parts.push(`date_from=${dateFilters.from}`)
+      if (dateFilters.to) parts.push(`date_to=${dateFilters.to}`)
+      if (dateFilters.column) parts.push(`date_column=${dateFilters.column}`)
+      url += `?${parts.join('&')}`
+    }
+    return apiRequest<{ config: ArchiveStatsConfig; results: any }>(url)
   },
 
   updateStatsConfig(folderId: number, configId: number, data: Partial<ArchiveStatsConfig>): Promise<{ data: ArchiveStatsConfig }> {

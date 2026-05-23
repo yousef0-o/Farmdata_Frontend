@@ -70,7 +70,10 @@ export default function Sidebar() {
 
   function isActive(href: string) {
     if (href === '/dashboard') return pathname === '/dashboard'
-    return pathname.startsWith(href)
+    if (href === '/archive') {
+      return pathname === '/archive' || pathname.startsWith('/archive/folder')
+    }
+    return pathname === href || pathname.startsWith(href + '/')
   }
 
   return (
