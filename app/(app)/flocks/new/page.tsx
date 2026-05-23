@@ -110,9 +110,9 @@ export default function CreateFlockPage() {
             {barn?.barn_name ?? 'العنبر'}
           </Link>
           <span>/</span>
-          <span className="text-gray-900 font-medium">إضافة قطيع</span>
+          <span className="text-gray-900 font-medium">إضافة فوج</span>
         </div>
-        <h1 className="text-2xl font-bold text-gray-900">إضافة قطيع جديد</h1>
+        <h1 className="text-2xl font-bold text-gray-900">إضافة فوج جديد</h1>
       </div>
 
       {/* Barn info */}
@@ -124,7 +124,7 @@ export default function CreateFlockPage() {
               <p className="text-lg font-bold text-gray-900">{barn.barn_name}</p>
             </div>
             <div>
-              <p className="text-sm text-gray-500">نوع القطيع</p>
+              <p className="text-sm text-gray-500">نوع الفوج</p>
               <FlockTypeBadge type={barn.barn_type} />
             </div>
           </div>
@@ -138,7 +138,7 @@ export default function CreateFlockPage() {
             <AlertCircle className="w-5 h-5 mt-0.5 flex-shrink-0" />
             <p className="text-sm">
               {(createFlock.error as { message?: string })?.message ??
-                'حدث خطأ أثناء إنشاء القطيع'}
+                'حدث خطأ أثناء إنشاء الفوج'}
             </p>
           </div>
         )}
@@ -229,7 +229,7 @@ export default function CreateFlockPage() {
             {createFlock.isPending && (
               <Loader2 className="w-4 h-4 animate-spin" />
             )}
-            إنشاء القطيع
+            إنشاء الفوج
           </button>
         </div>
       </form>

@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react'
 import Link from 'next/link'
-import { Loader2, Search, Sprout, ArrowLeft } from 'lucide-react'
+import { Loader2, Search, Bird, ArrowLeft } from 'lucide-react'
 import { useFlocks } from '@/lib/hooks/useFlock'
 import { FlockStatusBadge } from '@/components/flock/FlockStatusBadge'
 import { FlockTypeBadge } from '@/components/flock/FlockTypeBadge'
@@ -37,11 +37,11 @@ export default function FlocksListPage() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
-            <Sprout className="w-7 h-7 text-farm-green" />
-            إدارة الأقطاع
+            <Bird className="w-7 h-7 text-farm-green" />
+            إدارة الأفواج
           </h1>
           <p className="text-sm text-gray-500 mt-1">
-            عرض وتصفية جميع أقطاع الدواجن النشطة والمكتملة والملغاة.
+            عرض وتصفية جميع أفواج الدواجن النشطة والمكتملة والملغاة.
           </p>
         </div>
       </div>
@@ -53,7 +53,7 @@ export default function FlocksListPage() {
       >
         <div className="w-full sm:w-64 space-y-1.5">
           <label htmlFor="status-select" className="text-xs font-bold text-gray-700">
-            حالة القطيع
+            حالة الفوج
           </label>
           <select
             id="status-select"
@@ -92,7 +92,7 @@ export default function FlocksListPage() {
           </div>
         ) : isError ? (
           <div className="p-12 text-center">
-            <p className="text-red-500 font-medium mb-3">حدث خطأ أثناء تحميل الأقطاع.</p>
+            <p className="text-red-500 font-medium mb-3">حدث خطأ أثناء تحميل الأفواج.</p>
             <button
               onClick={() => refetch()}
               className="px-4 py-2 border border-gray-200 rounded-xl text-sm hover:bg-gray-50"
@@ -102,9 +102,9 @@ export default function FlocksListPage() {
           </div>
         ) : !flocks || flocks.length === 0 ? (
           <div className="p-16 text-center text-gray-500">
-            <Sprout className="w-12 h-12 text-gray-300 mx-auto mb-3" />
-            <p className="font-semibold text-lg text-gray-700 mb-1">لا توجد أقطاع</p>
-            <p className="text-sm text-gray-400">لم يتم العثور على أي أقطاع مطابقة لمعايير البحث.</p>
+            <Bird className="w-12 h-12 text-gray-300 mx-auto mb-3" />
+            <p className="font-semibold text-lg text-gray-700 mb-1">لا توجد أفواج</p>
+            <p className="text-sm text-gray-400">لم يتم العثور على أي أفواج مطابقة لمعايير البحث.</p>
           </div>
         ) : (
           <>
@@ -112,7 +112,7 @@ export default function FlocksListPage() {
               <table className="w-full text-right text-sm">
                 <thead>
                   <tr className="border-b border-gray-200 text-gray-500 font-medium bg-gray-50/50">
-                    <th className="py-3.5 px-4">رقم القطيع</th>
+                    <th className="py-3.5 px-4">رقم الفوج</th>
                     <th className="py-3.5 px-4">العنبر</th>
                     <th className="py-3.5 px-4">القسم</th>
                     <th className="py-3.5 px-4">النوع</th>

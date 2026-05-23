@@ -33,7 +33,7 @@ export default function FlockDetailPage() {
 
   if (!flock) {
     return (
-      <div className="text-center py-20 text-gray-500">القطيع غير موجود.</div>
+      <div className="text-center py-20 text-gray-500">الفوج غير موجود.</div>
     )
   }
 
@@ -70,13 +70,13 @@ export default function FlockDetailPage() {
           )}
           <span>/</span>
           <span className="text-gray-900 font-medium">
-            {isProduction ? 'قطيع إنتاج' : 'قطيع تربية'} #{flockId}
+            {isProduction ? 'فوج إنتاج' : 'فوج تربية'} #{flockId}
           </span>
         </div>
 
         <div className="flex items-center gap-3 mt-2">
           <h1 className="text-2xl font-bold text-gray-900">
-            {isProduction ? 'قطيع إنتاج' : 'قطيع تربية'}
+            {isProduction ? 'فوج إنتاج' : 'فوج تربية'}
           </h1>
           <FlockStatusBadge status={flock.status} />
           <FlockTypeBadge type={flock.flock_type} />
@@ -161,13 +161,13 @@ export default function FlockDetailPage() {
             onClick={() => setShowCloseDialog(true)}
             className="flex items-center gap-2 bg-farm-blue hover:bg-blue-800 text-white px-5 py-2.5 rounded-xl transition-all font-medium"
           >
-            إغلاق القطيع
+            إغلاق الفوج
           </button>
           <Link
             href={`/flocks/${flockId}/edit`}
             className="flex items-center gap-2 border border-gray-300 hover:bg-gray-50 text-gray-700 px-5 py-2.5 rounded-xl transition-all font-medium"
           >
-            تعديل بيانات القطيع
+            تعديل بيانات الفوج
           </Link>
         </div>
       )}

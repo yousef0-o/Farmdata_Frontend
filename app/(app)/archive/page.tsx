@@ -6,7 +6,8 @@ import {
   useNodeChildren,
   useNodeBreadcrumb,
   useCreateNode,
-  useDeleteNode
+  useDeleteNode,
+  useCompanies
 } from '@/lib/hooks/useArchive'
 import {
   Building2,
@@ -29,12 +30,15 @@ export default function ArchivePage() {
   const [newNodeType, setNewNodeType] = useState<'institution' | 'year' | 'folder'>('institution')
   const [newNodeName, setNewNodeName] = useState('')
   const [newNodeDesc, setNewNodeDesc] = useState('')
+  const [distributeByProduction, setDistributeByProduction] = useState(false)
+  const [companyId, setCompanyId] = useState('')
   const [formError, setFormError] = useState('')
 
   // Queries
   const { data: rootNodesRes, isLoading: loadingRoot, error: rootError } = useArchiveNodes(currentNodeId ? undefined : undefined)
   const { data: childrenRes, isLoading: loadingChildren } = useNodeChildren(currentNodeId ?? 0)
   const { data: breadcrumbRes } = useNodeBreadcrumb(currentNodeId ?? 0)
+  const { data: companiesList } = useCompanies()
 
   // Mutations
   const createNodeMutation = useCreateNode()
@@ -65,6 +69,8 @@ export default function ArchivePage() {
     setNewNodeType(getCurrentAllowedType())
     setNewNodeName('')
     setNewNodeDesc('')
+    setDistributeByProduction(false)
+    setCompanyId('')
     setFormError('')
     setShowAddModal(true)
   }
@@ -81,8 +87,12 @@ export default function ArchivePage() {
         parent_id: currentNodeId ?? null,
         type: newNodeType,
         name: newNodeName.trim(),
-        description: newNodeDesc.trim() || undefined
-      })
+        description: newNodeDesc.trim() || undefined,
+        meta: newNodeType === 'folder' ? {
+          distribute_by_production: distributeByProduction,
+          company_id: distributeByProduction && companyId ? parseInt(companyId) : null
+        } : undefined
+      } as any)
       setShowAddModal(false)
     } catch (err: any) {
       setFormError(err?.message || 'حدث خطأ أثناء إضافة العنصر')
@@ -114,8 +124,8 @@ export default function ArchivePage() {
       {/* Top Header Card */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-[#ffffff] dark:bg-gray-900 p-6 rounded-2xl border border-gray-100 dark:border-gray-800 shadow-sm">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-[#ffffff] font-sans">أرشيف المستندات والملفات</h1>
-          <p className="text-gray-500 dark:text-gray-400 text-sm mt-1">إدارة شجرة المؤسسات والسنوات المالية والمجلدات المخصصة</p>
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-[#ffffff] font-sans">الأرشيف</h1>
+          <p className="text-gray-500 dark:text-gray-400 text-sm mt-1">تنظيم المستندات في مجلدات حسب الشركات والسنوات المالية.</p>
         </div>
         
         <button
@@ -125,9 +135,9 @@ export default function ArchivePage() {
         >
           <Plus className="w-4 h-4" />
           <span>
-            {getCurrentAllowedType() === 'institution' && 'إضافة مؤسسة جديدة'}
-            {getCurrentAllowedType() === 'year' && 'إضافة سنة مالية'}
-            {getCurrentAllowedType() === 'folder' && 'إضافة مجلد جديد'}
+            {getCurrentAllowedType() === 'institution' && 'إضافة شركة'}
+            {getCurrentAllowedType() === 'year' && 'إضافة سنة'}
+            {getCurrentAllowedType() === 'folder' && 'مجلد جديد'}
           </span>
         </button>
       </div>
@@ -161,7 +171,7 @@ export default function ArchivePage() {
         <div className="relative w-full md:w-80">
           <input
             type="text"
-            placeholder="بحث في العناصر..."
+            placeholder="اسم المجلد أو الشركة..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             className="w-full pl-4 pr-10 py-2.5 bg-[#ffffff] dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-farm-blue focus:border-transparent dark:text-[#ffffff]"
@@ -188,12 +198,12 @@ export default function ArchivePage() {
       ) : filteredNodes.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-20 bg-[#ffffff] dark:bg-gray-900 border border-dashed border-gray-200 dark:border-gray-800 rounded-2xl">
           <FolderOpen className="w-12 h-12 text-gray-300 dark:text-gray-700" />
-          <span className="text-gray-500 dark:text-gray-400 text-sm mt-3 font-semibold">لا يوجد عناصر هنا حالياً</span>
+          <span className="text-gray-500 dark:text-gray-400 text-sm mt-3 font-semibold">المجلد فارغ</span>
           <button
             onClick={handleAddClick}
             className="mt-4 px-4 py-2 bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-700 dark:text-[#ffffff] text-xs font-bold rounded-lg transition-all"
           >
-            إضافة عنصر أول الآن
+            أضف ملفاً أو مجلداً للبدء
           </button>
         </div>
       ) : (
@@ -269,9 +279,9 @@ export default function ArchivePage() {
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50 animate-fade-in">
           <div className="bg-[#ffffff] dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl w-full max-w-md p-6 shadow-xl" onClick={(e) => e.stopPropagation()}>
             <h2 className="text-lg font-bold text-gray-900 dark:text-[#ffffff] font-sans">
-              {newNodeType === 'institution' && 'إنشاء مؤسسة جديدة'}
-              {newNodeType === 'year' && 'إضافة سنة أرشيفية'}
-              {newNodeType === 'folder' && 'إنشاء مجلد مستندات جديد'}
+              {newNodeType === 'institution' && 'إضافة شركة'}
+              {newNodeType === 'year' && 'إضافة سنة'}
+              {newNodeType === 'folder' && 'مجلد جديد'}
             </h2>
 
             <form onSubmit={handleCreateNode} className="mt-4 space-y-4">
@@ -313,6 +323,42 @@ export default function ArchivePage() {
                 </div>
               )}
 
+              {newNodeType === 'folder' && (
+                <div className="space-y-4 p-4 bg-gray-50 dark:bg-gray-800/40 rounded-2xl border border-gray-150 dark:border-gray-750">
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="checkbox"
+                      id="distributeByProduction"
+                      checked={distributeByProduction}
+                      onChange={(e) => setDistributeByProduction(e.target.checked)}
+                      className="rounded border-gray-300 text-farm-blue focus:ring-farm-blue w-4 h-4 cursor-pointer"
+                    />
+                    <label htmlFor="distributeByProduction" className="text-xs font-bold text-gray-700 dark:text-gray-300 cursor-pointer">
+                      توزيع التكاليف ديناميكياً بناءً على إنتاج البيض للمشاريع
+                    </label>
+                  </div>
+
+                  {distributeByProduction && (
+                    <div className="space-y-1.5 animate-fade-in">
+                      <label className="block text-xs font-semibold text-gray-650 dark:text-gray-350">
+                        الشركة المستهدفة للتوزيع <span className="text-red-500">*</span>
+                      </label>
+                      <select
+                        required={distributeByProduction}
+                        value={companyId}
+                        onChange={(e) => setCompanyId(e.target.value)}
+                        className="w-full px-4 py-2.5 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-farm-blue dark:text-[#ffffff]"
+                      >
+                        <option value="">-- اختر الشركة --</option>
+                        {companiesList?.data?.map((comp: any) => (
+                          <option key={comp.id} value={comp.id}>{comp.company_name}</option>
+                        ))}
+                      </select>
+                    </div>
+                  )}
+                </div>
+              )}
+
               <div className="flex items-center justify-end gap-3 pt-4 border-t border-gray-100 dark:border-gray-800">
                 <button
                   type="button"
@@ -327,7 +373,7 @@ export default function ArchivePage() {
                   className="flex items-center gap-2 px-5 py-2 bg-farm-blue text-[#ffffff] font-bold text-xs rounded-lg hover:bg-opacity-90 active:scale-[0.98] disabled:opacity-50 transition-all"
                 >
                   {createNodeMutation.isPending && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
-                  <span>حفظ العنصر</span>
+                  <span>حفظ</span>
                 </button>
               </div>
             </form>
@@ -344,7 +390,7 @@ export default function ArchivePage() {
                 <Trash2 className="w-6 h-6" />
               </div>
               <div>
-                <h3 className="text-base font-bold text-gray-900 dark:text-[#ffffff] font-sans">تأكيد الحذف النهائي</h3>
+                <h3 className="text-base font-bold text-gray-900 dark:text-[#ffffff] font-sans">حذف نهائي</h3>
                 <p className="text-[11px] text-gray-400 mt-0.5">سيتم إزالة العنصر وكافة البيانات المرتبطة به</p>
               </div>
             </div>
@@ -380,7 +426,7 @@ export default function ArchivePage() {
                 className="flex items-center gap-2 px-5 py-2 bg-red-600 hover:bg-red-700 text-[#ffffff] font-bold text-xs rounded-lg transition-all shadow disabled:opacity-50"
               >
                 {deleteNodeMutation.isPending && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
-                <span>تأكيد الحذف النهائي</span>
+                <span>حذف نهائي</span>
               </button>
             </div>
           </div>

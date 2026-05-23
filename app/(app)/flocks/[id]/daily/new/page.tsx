@@ -28,7 +28,7 @@ export default function DailyEntryNewPage() {
 
   if (!flock) {
     return (
-      <div className="text-center py-20 text-gray-500">القطيع غير موجود.</div>
+      <div className="text-center py-20 text-gray-500">الفوج غير موجود.</div>
     )
   }
 
@@ -56,7 +56,7 @@ export default function DailyEntryNewPage() {
           )}
           <span>/</span>
           <Link href={`/flocks/${flockId}`} className="hover:text-gray-700">
-            {isProduction ? 'قطيع إنتاج' : 'قطيع تربية'} #{flockId}
+            {isProduction ? 'فوج إنتاج' : 'فوج تربية'} #{flockId}
           </Link>
           <span>/</span>
           <span className="text-gray-900 font-medium">تسجيل يومي</span>
@@ -74,7 +74,7 @@ export default function DailyEntryNewPage() {
         <div className="bg-white rounded-2xl p-8 border border-gray-100 shadow-sm text-center">
           <AlertCircle className="w-12 h-12 text-gray-300 mx-auto mb-4" />
           <p className="text-gray-600 text-lg font-medium">
-            القطيع مغلق ولا يمكن إضافة تسجيلات جديدة
+            الفوج مغلق ولا يمكن إضافة تسجيلات جديدة
           </p>
         </div>
       ) : isProduction ? (

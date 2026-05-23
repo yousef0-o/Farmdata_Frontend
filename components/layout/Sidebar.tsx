@@ -3,7 +3,7 @@
 import React from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { LayoutDashboard, Building2, Sprout, Warehouse, Layers, ArrowLeftRight, Coins, Users, Truck, FolderArchive, BookOpen, ShieldCheck } from 'lucide-react'
+import { LayoutDashboard, Building2, Sprout, Warehouse, Layers, ArrowLeftRight, Coins, Users, Truck, FolderArchive, BookOpen, ShieldCheck, DollarSign, Bird } from 'lucide-react'
 import DarkModeToggle from '../ui/DarkModeToggle'
 import { useMe } from '@/lib/hooks/useAuth'
 
@@ -21,26 +21,32 @@ const navItems = [
     permission: 'view-companies',
   },
   {
-    icon: Sprout,
-    label: 'الأقطاع',
+    icon: Bird,
+    label: 'الأفواج',
     href: '/flocks',
     permission: 'view-flocks',
   },
   {
     icon: FolderArchive,
-    label: 'أرشيف المستندات',
+    label: 'الأرشيف',
     href: '/archive',
     permission: 'view-archive',
   },
   {
     icon: BookOpen,
-    label: 'الدفاتر المحاسبية',
+    label: 'دفتر الأستاذ',
     href: '/archive/accounting',
     permission: 'view-accounting',
   },
   {
+    icon: DollarSign,
+    label: 'الفواتير',
+    href: '/financial/invoices',
+    permission: 'view-accounting',
+  },
+  {
     icon: Coins,
-    label: 'الأصول الرأسمالية',
+    label: 'الأصول',
     href: '/assets',
     permission: 'view-assets',
   },
@@ -52,7 +58,7 @@ const navItems = [
   },
   {
     icon: Truck,
-    label: 'الموردين',
+    label: 'الموردون',
     href: '/suppliers',
     permission: 'view-suppliers',
   },
@@ -70,13 +76,13 @@ const navItems = [
   },
   {
     icon: ArrowLeftRight,
-    label: 'حركة المخزون',
+    label: 'حركات المخزون',
     href: '/inventory/movements',
     permission: 'view-movements',
   },
   {
     icon: ShieldCheck,
-    label: 'فريق العمل',
+    label: 'المستخدمون',
     href: '/team',
     permission: 'view-team',
   },

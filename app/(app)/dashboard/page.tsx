@@ -1,7 +1,7 @@
 'use client'
 
 import React from 'react'
-import { Sprout, Building2, Egg, TrendingUp, ArrowLeftRight, Warehouse, PlusCircle, AlertCircle, RefreshCw } from 'lucide-react'
+import { Bird, Building2, Egg, TrendingUp, ArrowLeftRight, Warehouse, PlusCircle, AlertCircle, RefreshCw } from 'lucide-react'
 import { useDashboardStats } from '@/lib/hooks/useDashboard'
 import { StatCard } from '@/components/dashboard/StatCard'
 import { ActiveFlocksTable } from '@/components/dashboard/ActiveFlocksTable'
@@ -67,10 +67,10 @@ export default function DashboardPage() {
         ) : (
           <>
             <StatCard
-              title="الأقطاع النشطة"
+              title="الأفواج النشطة"
               value={stats?.activeFlockCount ?? 0}
-              subtitle="قطيع نشط حالياً"
-              icon={<Sprout className="w-6 h-6 text-green-600" />}
+              subtitle="فوج نشط حالياً"
+              icon={<Bird className="w-6 h-6 text-green-600" />}
             />
             <StatCard
               title="إجمالي الشركات"
@@ -97,13 +97,13 @@ export default function DashboardPage() {
       {/* Row 3 — Active Flocks Table */}
       <div className="space-y-4">
         <div className="flex justify-between items-center">
-          <h2 className="text-lg font-bold text-dash-heading">الأقطاع النشطة</h2>
+          <h2 className="text-lg font-bold text-dash-heading">الأفواج النشطة</h2>
           {!isLoading && stats && stats.flocks.length > 0 && (
             <Link
               href="/flocks"
               className="text-sm font-semibold text-farm-blue hover:underline"
             >
-              عرض جميع القطعان
+              عرض جميع الأفواج
             </Link>
           )}
         </div>

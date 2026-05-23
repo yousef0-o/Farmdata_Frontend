@@ -137,7 +137,7 @@ export default function ProductionEntryEditPage() {
           className="inline-flex items-center gap-2 px-5 py-2.5 bg-farm-blue text-white rounded-xl hover:bg-farm-blue/90 font-medium transition-colors"
         >
           <ArrowLeft className="w-4 h-4" />
-          العودة للقطيع
+          العودة للفوج
         </button>
       </div>
     )
@@ -169,7 +169,7 @@ export default function ProductionEntryEditPage() {
           )}
           <span>/</span>
           <Link href={`/flocks/${flockId}`} className="hover:text-gray-700">
-            قطيع إنتاج #{flockId}
+            فوج إنتاج #{flockId}
           </Link>
           <span>/</span>
           <span className="text-gray-900 font-medium">تعديل تسجيل يومي</span>
@@ -193,7 +193,7 @@ export default function ProductionEntryEditPage() {
       {flock.status !== 'active' && (
         <div className="bg-amber-50 border-r-4 border-amber-500 text-amber-800 p-4 rounded-md text-sm flex items-start gap-2">
           <AlertCircle className="w-5 h-5 flex-shrink-0" />
-          <p>هذا القطيع غير نشط. التعديل متاح فقط للأغراض التدقيقية وتجنب الإجراءات التلقائية.</p>
+          <p>هذا الفوج غير نشط. التعديل متاح فقط للأغراض التدقيقية وتجنب الإجراءات التلقائية.</p>
         </div>
       )}
 
@@ -358,7 +358,7 @@ export default function ProductionEntryEditPage() {
               className={ic('ai_observation')}
               value={aiObs}
               onChange={(e) => setAiObs(e.target.value)}
-              placeholder="ملاحظات حول حالة القطيع الصحية أو أي ملاحظات تشغيلية..."
+              placeholder="ملاحظات حول حالة الفوج الصحية أو أي ملاحظات تشغيلية..."
             />
             {errors.ai_observation && <p className="text-xs text-red-600 mt-1 mr-1">{errors.ai_observation}</p>}
           </div>

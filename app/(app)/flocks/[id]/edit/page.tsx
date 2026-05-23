@@ -84,14 +84,14 @@ export default function EditFlockMetadataPage() {
     return (
       <div className="max-w-md mx-auto my-12 bg-white rounded-2xl p-8 border border-gray-200 shadow-sm text-center" dir="rtl">
         <AlertCircle className="w-16 h-16 text-red-500 mx-auto mb-4" />
-        <h2 className="text-xl font-bold text-gray-900 mb-2">القطيع غير موجود</h2>
-        <p className="text-gray-600 mb-6">نأسف، لم نتمكن من العثور على القطيع المطلوب أو أنك تحاول الوصول لبيانات غير صحيحة.</p>
+        <h2 className="text-xl font-bold text-gray-900 mb-2">الفوج غير موجود</h2>
+        <p className="text-gray-600 mb-6">نأسف، لم نتمكن من العثور على الفوج المطلوب أو أنك تحاول الوصول لبيانات غير صحيحة.</p>
         <button
           onClick={() => router.push('/flocks')}
           className="inline-flex items-center gap-2 px-5 py-2.5 bg-farm-blue text-white rounded-xl hover:bg-farm-blue/90 font-medium transition-colors"
         >
           <ArrowLeft className="w-4 h-4" />
-          العودة لقائمة الأقطاع
+          العودة لقائمة الأفواج
         </button>
       </div>
     )
@@ -123,14 +123,14 @@ export default function EditFlockMetadataPage() {
           )}
           <span>/</span>
           <Link href={`/flocks/${flockId}`} className="hover:text-gray-700">
-            قطيع #{flockId}
+            فوج #{flockId}
           </Link>
           <span>/</span>
-          <span className="text-gray-900 font-medium">تعديل بيانات القطيع</span>
+          <span className="text-gray-900 font-medium">تعديل بيانات الفوج</span>
         </div>
 
         <div className="flex items-center gap-3 mt-2">
-          <h1 className="text-2xl font-bold text-gray-900 font-outfit">تعديل بيانات القطيع #{flockId}</h1>
+          <h1 className="text-2xl font-bold text-gray-900 font-outfit">تعديل بيانات الفوج #{flockId}</h1>
           <FlockStatusBadge status={flock.status} />
           <FlockTypeBadge type={flock.flock_type} />
         </div>
@@ -141,7 +141,7 @@ export default function EditFlockMetadataPage() {
         <h3 className="text-sm font-bold text-gray-800 mb-3 border-b pb-2 border-gray-100">معلومات غير قابلة للتعديل</h3>
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
           <div>
-            <p className="text-xs text-gray-500 mb-1">نوع القطيع</p>
+            <p className="text-xs text-gray-500 mb-1">نوع الفوج</p>
             <FlockTypeBadge type={flock.flock_type} />
           </div>
           <div>

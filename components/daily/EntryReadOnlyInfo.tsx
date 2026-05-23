@@ -20,7 +20,7 @@ export function EntryReadOnlyInfo({
         <p className="font-bold text-gray-900">{recordDate}</p>
       </div>
       <div>
-        <p className="text-gray-500 font-semibold mb-1">عمر القطيع</p>
+        <p className="text-gray-500 font-semibold mb-1">عمر الفوج</p>
         <p className="font-bold text-gray-900">{ageDays} يوم</p>
       </div>
       <div>

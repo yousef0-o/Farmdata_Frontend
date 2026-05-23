@@ -276,3 +276,10 @@ export function useAnnualAccountingStats(year: number) {
     enabled: year > 0,
   })
 }
+
+export function useCompanies() {
+  return useQuery({
+    queryKey: ['companies-list'],
+    queryFn: () => import('../api/organization').then(m => m.organizationApi.listCompanies()),
+  })
+}

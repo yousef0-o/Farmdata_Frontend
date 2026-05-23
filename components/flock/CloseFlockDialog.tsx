@@ -113,7 +113,7 @@ export default function CloseFlockDialog({
       <div className="bg-white rounded-2xl shadow-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto p-6" dir="rtl">
         {/* Header */}
         <div className="flex items-center justify-between mb-6">
-          <h2 className="text-xl font-bold text-gray-900">إغلاق القطيع</h2>
+          <h2 className="text-xl font-bold text-gray-900">إغلاق الفوج</h2>
           <button
             onClick={() => onOpenChange(false)}
             className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
@@ -127,7 +127,7 @@ export default function CloseFlockDialog({
             <AlertCircle className="w-5 h-5 mt-0.5 flex-shrink-0" />
             <p className="text-sm">
               {(closeFlock.error as { message?: string })?.message ??
-                'حدث خطأ أثناء إغلاق القطيع'}
+                'حدث خطأ أثناء إغلاق الفوج'}
             </p>
           </div>
         )}
