@@ -3,70 +3,89 @@
 import React from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { LayoutDashboard, Building2, Sprout, Warehouse, Layers, ArrowLeftRight, Coins, Users, Truck, FolderArchive, BookOpen } from 'lucide-react'
+import { LayoutDashboard, Building2, Sprout, Warehouse, Layers, ArrowLeftRight, Coins, Users, Truck, FolderArchive, BookOpen, ShieldCheck } from 'lucide-react'
 import DarkModeToggle from '../ui/DarkModeToggle'
+import { useMe } from '@/lib/hooks/useAuth'
 
 const navItems = [
   {
     icon: LayoutDashboard,
     label: 'الرئيسية',
     href: '/dashboard',
+    permission: null,
   },
   {
     icon: Building2,
     label: 'الشركات',
     href: '/companies',
+    permission: 'view-companies',
   },
   {
     icon: Sprout,
     label: 'الأقطاع',
     href: '/flocks',
+    permission: 'view-flocks',
   },
   {
     icon: FolderArchive,
     label: 'أرشيف المستندات',
     href: '/archive',
+    permission: 'view-archive',
   },
   {
     icon: BookOpen,
     label: 'الدفاتر المحاسبية',
     href: '/archive/accounting',
+    permission: 'view-accounting',
   },
   {
     icon: Coins,
     label: 'الأصول الرأسمالية',
     href: '/assets',
+    permission: 'view-assets',
   },
   {
     icon: Users,
     label: 'العملاء',
     href: '/customers',
+    permission: 'view-customers',
   },
   {
     icon: Truck,
     label: 'الموردين',
     href: '/suppliers',
+    permission: 'view-suppliers',
   },
   {
     icon: Warehouse,
     label: 'المستودعات',
     href: '/warehouses',
+    permission: 'view-warehouses',
   },
   {
     icon: Layers,
     label: 'الأصناف',
     href: '/items',
+    permission: 'view-items',
   },
   {
     icon: ArrowLeftRight,
     label: 'حركة المخزون',
     href: '/inventory/movements',
+    permission: 'view-movements',
+  },
+  {
+    icon: ShieldCheck,
+    label: 'فريق العمل',
+    href: '/team',
+    permission: 'view-team',
   },
 ]
 
 
 export default function Sidebar() {
   const pathname = usePathname()
+  const { data: user } = useMe()
 
   function isActive(href: string) {
     if (href === '/dashboard') return pathname === '/dashboard'
@@ -74,6 +93,20 @@ export default function Sidebar() {
       return pathname === '/archive' || pathname.startsWith('/archive/folder')
     }
     return pathname === href || pathname.startsWith(href + '/')
+  }
+
+  function hasPermission(permission: string | null) {
+    if (!user) return false
+    // Admins and Managers bypass standard checks
+    const isAdmin = user.roles.some((role) =>
+      ['super_admin', 'admin', 'manager'].includes(role)
+    ) || user.email === 'admin@farmdata.com'
+
+    if (isAdmin) return true
+    if (!permission) return true
+
+    // Check custom permissions list
+    return user.permissions?.includes(permission) || false
   }
 
   return (
@@ -93,23 +126,25 @@ export default function Sidebar() {
 
       {/* Navigation */}
       <nav className="flex-1 overflow-y-auto py-6 px-4 space-y-1">
-        {navItems.map((item) => {
-          const active = isActive(item.href)
-          return (
-            <Link
-              key={item.href}
-              href={item.href}
-              className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 ${
-                active
-                  ? 'bg-farm-blue text-[#ffffff] shadow-sm'
-                  : 'text-gray-600 dark:text-gray-700 hover:bg-menu-hover-bg hover:text-menu-hover-text'
-              }`}
-            >
-              <item.icon className={`w-5 h-5 ${active ? 'text-[#ffffff]' : ''}`} />
-              <span className="font-medium text-sm">{item.label}</span>
-            </Link>
-          )
-        })}
+        {navItems
+          .filter((item) => hasPermission(item.permission))
+          .map((item) => {
+            const active = isActive(item.href)
+            return (
+              <Link
+                key={item.href}
+                href={item.href}
+                className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 ${
+                  active
+                    ? 'bg-farm-blue text-[#ffffff] shadow-sm'
+                    : 'text-gray-600 dark:text-gray-700 hover:bg-menu-hover-bg hover:text-menu-hover-text'
+                }`}
+              >
+                <item.icon className={`w-5 h-5 ${active ? 'text-[#ffffff]' : ''}`} />
+                <span className="font-medium text-sm">{item.label}</span>
+              </Link>
+            )
+          })}
       </nav>
 
       {/* Theme Toggle Button */}
@@ -126,4 +161,3 @@ export default function Sidebar() {
     </aside>
   )
 }
-

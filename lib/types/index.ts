@@ -2,7 +2,10 @@ export interface User {
   id: number
   name: string
   email: string
+  phone?: string
+  is_active?: boolean
   roles: string[]
+  permissions?: string[]
   created_at: string
 }
 
