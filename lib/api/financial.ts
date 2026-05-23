@@ -46,6 +46,41 @@ export interface Invoice {
   }>
 }
 
+export interface OpeningBalanceLine {
+  account_id: number
+  debit_amount: number
+  credit_amount: number
+  description?: string
+}
+
+export interface OpeningBalancePayload {
+  balance_date: string
+  description?: string
+  lines: OpeningBalanceLine[]
+}
+
+export interface OpeningBalanceResponseLine {
+  id: number
+  account_id: number
+  account_code: string
+  account_name: string
+  balance_date: string
+  debit_amount: number
+  credit_amount: number
+  description?: string
+}
+
+export interface OpeningBalancesResponse {
+  data: OpeningBalanceResponseLine[]
+  totals: {
+    total_debits: number
+    total_credits: number
+    difference: number
+    is_balanced: boolean
+  }
+  balance_date: string
+}
+
 export const financialApi = {
   listInvoices(type: 'sales' | 'purchase', search?: string, page = 1): Promise<any> {
     let url = `/financial/invoices?type=${type}&page=${page}`
@@ -65,6 +100,26 @@ export const financialApi = {
   deleteInvoice(id: number, type: 'sales' | 'purchase'): Promise<{ success: boolean; message: string }> {
     return apiRequest<{ success: boolean; message: string }>(`/financial/invoices/${id}?type=${type}`, {
       method: 'DELETE',
+    })
+  },
+
+  listOpeningBalances(balanceDate?: string): Promise<OpeningBalancesResponse> {
+    const url = balanceDate ? `/accounting/opening-balances?balance_date=${balanceDate}` : '/accounting/opening-balances'
+    return apiRequest<OpeningBalancesResponse>(url)
+  },
+
+  saveOpeningBalances(data: OpeningBalancePayload): Promise<{ success: boolean; message: string; data: any }> {
+    return apiRequest<{ success: boolean; message: string; data: any }>('/accounting/opening-balances', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    })
+  },
+
+  importOpeningBalances(formData: FormData): Promise<{ success: boolean; message: string; data: any }> {
+    return apiRequest<{ success: boolean; message: string; data: any }>('/accounting/opening-balances/import', {
+      method: 'POST',
+      body: formData,
+      headers: {},
     })
   }
 }

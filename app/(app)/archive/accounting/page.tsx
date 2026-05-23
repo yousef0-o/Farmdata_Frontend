@@ -937,14 +937,14 @@ export default function AccountingPage() {
                   placeholder="عنوان السجل (مثال: دفاتر يناير 2026)"
                   value={newSheetTitle}
                   onChange={(e) => setNewSheetTitle(e.target.value)}
-                  className="w-full p-2 bg-gray-50 dark:bg-gray-850 border border-gray-250 dark:border-gray-850 rounded-lg focus:outline-none"
+                  className="w-full p-2 bg-gray-50 dark:bg-gray-850 border border-gray-250 dark:border-gray-850 rounded-lg focus:outline-none dark:text-white"
                 />
 
                 <select
                   required
                   value={newSheetAccountId}
                   onChange={(e) => setNewSheetAccountId(parseInt(e.target.value))}
-                  className="w-full p-2 bg-gray-50 dark:bg-gray-850 border border-gray-250 dark:border-gray-850 rounded-lg focus:outline-none"
+                  className="w-full p-2 bg-gray-50 dark:bg-gray-850 border border-gray-250 dark:border-gray-850 rounded-lg focus:outline-none dark:text-white"
                 >
                   <option value="">اختر حساب الربط...</option>
                   {accounts.filter(acc => acc.is_active !== false).map(acc => (
@@ -958,14 +958,14 @@ export default function AccountingPage() {
                     required
                     value={newSheetStart}
                     onChange={(e) => setNewSheetStart(e.target.value)}
-                    className="w-1/2 p-2 bg-gray-50 dark:bg-gray-850 border border-gray-250 dark:border-gray-850 rounded-lg text-[10px]"
+                    className="w-1/2 p-2 bg-gray-50 dark:bg-gray-850 border border-gray-250 dark:border-gray-850 rounded-lg text-[10px] dark:text-white"
                   />
                   <input
                     type="date"
                     required
                     value={newSheetEnd}
                     onChange={(e) => setNewSheetEnd(e.target.value)}
-                    className="w-1/2 p-2 bg-gray-50 dark:bg-gray-850 border border-gray-250 dark:border-gray-850 rounded-lg text-[10px]"
+                    className="w-1/2 p-2 bg-gray-50 dark:bg-gray-850 border border-gray-250 dark:border-gray-850 rounded-lg text-[10px] dark:text-white"
                   />
                 </div>
 

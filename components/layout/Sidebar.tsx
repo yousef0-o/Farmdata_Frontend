@@ -46,6 +46,12 @@ const navItems = [
   },
   {
     icon: Coins,
+    label: 'الأرصدة الافتتاحية',
+    href: '/financial/opening-balances',
+    permission: 'view-accounting',
+  },
+  {
+    icon: Coins,
     label: 'الأصول',
     href: '/assets',
     permission: 'view-assets',
