@@ -34,6 +34,8 @@ import {
   AlertCircle,
   X,
   Eye,
+  EyeOff,
+  Link2,
   ArrowDownToLine,
   Activity,
   CheckCircle,
@@ -76,6 +78,7 @@ export default function FolderDetailPage({ params }: PageProps) {
   const items = itemsRes?.data ?? []
   const schema = schemaRes?.data
   const columns = schema?.columns ?? []
+  const visibleColumns = columns.filter(col => col.is_shown !== false)
 
   // Dynamic Row Drawer
   const [selectedItem, setSelectedItem] = useState<any | null>(null)
@@ -89,6 +92,50 @@ export default function FolderDetailPage({ params }: PageProps) {
   const [editingItem, setEditingItem] = useState<any | null>(null)
   const [itemFormValues, setItemFormValues] = useState<Record<string, any>>({})
   const [itemFormError, setItemFormError] = useState('')
+
+  // Client-side real-time formula evaluator
+  useEffect(() => {
+    let hasChanges = false
+    const computedValues = { ...itemFormValues }
+
+    columns.forEach(col => {
+      if (col.formula) {
+        const formula = col.formula
+        const matches = formula.match(/\[([a-zA-Z0-9_]+)\]/g) || []
+        let expr = formula
+
+        matches.forEach((placeholder: string) => {
+          const colKey = placeholder.slice(1, -1)
+          const val = parseFloat(computedValues[colKey]) || 0
+          expr = expr.replaceAll(placeholder, String(val))
+        })
+
+        // Strict whitelist: digits, standard operators, parentheses, dot, spaces
+        const cleanExpr = expr.replace(/[^0-9\+\-\*\/\(\)\.\s]/g, '')
+
+        let result = 0
+        if (cleanExpr.trim()) {
+          try {
+            result = new Function(`return ${cleanExpr}`)()
+            if (isNaN(result) || !isFinite(result)) {
+              result = 0
+            }
+          } catch (e) {
+            result = 0
+          }
+        }
+
+        if (computedValues[col.key] !== result) {
+          computedValues[col.key] = result
+          hasChanges = true
+        }
+      }
+    })
+
+    if (hasChanges) {
+      setItemFormValues(computedValues)
+    }
+  }, [itemFormValues, columns])
 
   // Multi-Select Bulk state
   const [selectedRowIds, setSelectedRowIds] = useState<number[]>([])
@@ -184,7 +231,24 @@ export default function FolderDetailPage({ params }: PageProps) {
   const handleAddColumn = () => {
     setSchemaColumns([
       ...schemaColumns,
-      { key: `col_${Date.now()}`, label: 'عمود جديد', type: 'text', required: false, searchable: true }
+      {
+        key: `col_${Date.now()}`,
+        label: 'حقل جديد',
+        label_ar: 'حقل جديد',
+        label_en: 'New Field',
+        type: 'text',
+        required: false,
+        searchable: true,
+        is_group_by: false,
+        is_sum: false,
+        is_shown: true,
+        is_attachment_key: false,
+        validation: 'none',
+        validation_pattern: '',
+        validation_min: '',
+        validation_max: '',
+        formula: ''
+      }
     ])
   }
 
@@ -193,8 +257,18 @@ export default function FolderDetailPage({ params }: PageProps) {
   }
 
   const handleUpdateColumnField = (index: number, field: string, value: any) => {
-    const updated = [...schemaColumns]
-    updated[index] = { ...updated[index], [field]: value }
+    let updated = [...schemaColumns]
+    if (field === 'is_attachment_key' && value === true) {
+      updated = updated.map((col, idx) => ({
+        ...col,
+        is_attachment_key: idx === index
+      }))
+    } else {
+      updated[index] = { ...updated[index], [field]: value }
+    }
+    if (field === 'label_ar') {
+      updated[index].label = value
+    }
     setSchemaColumns(updated)
   }
 
@@ -1009,69 +1083,231 @@ export default function FolderDetailPage({ params }: PageProps) {
 
           <div className="space-y-3">
             {schemaColumns.map((col, index) => (
-              <div key={col.key || index} className="flex flex-wrap items-center gap-3 p-3 bg-[#ffffff] dark:bg-gray-900 border border-gray-100 dark:border-gray-850 rounded-xl text-xs shadow-sm">
-                <div className="w-full sm:w-40">
-                  <label className="block text-[10px] text-gray-400 font-semibold mb-1">اسم الحقل (العربي)</label>
-                  <input
-                    type="text"
-                    value={col.label}
-                    onChange={(e) => handleUpdateColumnField(index, 'label', e.target.value)}
-                    className="w-full p-2 border border-gray-200 dark:border-gray-850 bg-gray-50 dark:bg-gray-800 rounded-lg focus:outline-none dark:text-[#ffffff]"
-                  />
+              <div key={col.key || index} className="space-y-3.5 p-4 bg-[#ffffff] dark:bg-gray-900 border border-gray-150 dark:border-gray-800 rounded-2xl text-xs shadow-sm">
+                
+                {/* Row 1: Key Metadata Fields */}
+                <div className="flex flex-wrap items-center gap-3">
+                  <div className="w-full sm:w-48">
+                    <label className="block text-[10px] text-gray-400 font-semibold mb-1">اسم الحقل بالعربية</label>
+                    <input
+                      type="text"
+                      value={col.label_ar || col.label || ''}
+                      onChange={(e) => {
+                        handleUpdateColumnField(index, 'label_ar', e.target.value)
+                        handleUpdateColumnField(index, 'label', e.target.value)
+                      }}
+                      placeholder="مثال: قيمة المبيعات"
+                      className="w-full p-2 border border-gray-250 dark:border-gray-800 bg-gray-50 dark:bg-gray-850 rounded-xl focus:outline-none focus:ring-1 focus:ring-amber-500 dark:text-[#ffffff]"
+                    />
+                  </div>
+
+                  <div className="w-full sm:w-48">
+                    <label className="block text-[10px] text-gray-400 font-semibold mb-1">اسم الحقل بالإنجليزية</label>
+                    <input
+                      type="text"
+                      value={col.label_en || ''}
+                      onChange={(e) => handleUpdateColumnField(index, 'label_en', e.target.value)}
+                      placeholder="Example: Sales Amount"
+                      className="w-full p-2 border border-gray-250 dark:border-gray-880 bg-gray-50 dark:bg-gray-850 rounded-xl focus:outline-none focus:ring-1 focus:ring-amber-500 dark:text-[#ffffff]"
+                    />
+                  </div>
+
+                  <div className="w-full sm:w-40">
+                    <label className="block text-[10px] text-gray-400 font-semibold mb-1">المعرف البرمجي (لاتيني)</label>
+                    <input
+                      type="text"
+                      value={col.key}
+                      onChange={(e) => handleUpdateColumnField(index, 'key', e.target.value)}
+                      placeholder="example_key"
+                      className="w-full p-2 border border-gray-250 dark:border-gray-880 bg-gray-50 dark:bg-gray-850 rounded-xl focus:outline-none focus:ring-1 focus:ring-amber-500 dark:text-[#ffffff]"
+                    />
+                  </div>
+
+                  <div className="w-full sm:w-36">
+                    <label className="block text-[10px] text-gray-400 font-semibold mb-1">نوع البيانات</label>
+                    <select
+                      value={col.type}
+                      onChange={(e) => handleUpdateColumnField(index, 'type', e.target.value)}
+                      className="w-full p-2 border border-gray-250 dark:border-gray-880 bg-gray-50 dark:bg-gray-850 rounded-xl focus:outline-none focus:ring-1 focus:ring-amber-500 dark:text-[#ffffff]"
+                    >
+                      <option value="text">نص (Text)</option>
+                      <option value="number">رقم (Number)</option>
+                      <option value="date">تاريخ (Date)</option>
+                      <option value="select">قائمة خيارات (Select)</option>
+                      <option value="boolean">منطقي (صح/خطأ)</option>
+                    </select>
+                  </div>
                 </div>
 
-                <div className="w-full sm:w-40">
-                  <label className="block text-[10px] text-gray-400 font-semibold mb-1">المعرف البرمجي (لاتيني)</label>
-                  <input
-                    type="text"
-                    value={col.key}
-                    onChange={(e) => handleUpdateColumnField(index, 'key', e.target.value)}
-                    className="w-full p-2 border border-gray-200 dark:border-gray-850 bg-gray-50 dark:bg-gray-800 rounded-lg focus:outline-none dark:text-[#ffffff]"
-                  />
+                {/* Row 2: Select options or Formulas or Validations */}
+                <div className="flex flex-wrap items-center gap-3">
+                  {col.type === 'select' && (
+                    <div className="w-full sm:w-64">
+                      <label className="block text-[10px] text-gray-400 font-semibold mb-1">الخيارات المتاحة (مفصولة بفاصلة)</label>
+                      <input
+                        type="text"
+                        placeholder="خيار1, خيار2, خيار3"
+                        value={Array.isArray(col.options) ? col.options.join(',') : ''}
+                        onChange={(e) => handleUpdateColumnField(index, 'options', e.target.value.split(',').map(s => s.trim()).filter(Boolean))}
+                        className="w-full p-2 border border-gray-250 dark:border-gray-880 bg-gray-50 dark:bg-gray-850 rounded-xl focus:outline-none focus:ring-1 focus:ring-amber-500 dark:text-[#ffffff]"
+                      />
+                    </div>
+                  )}
+
+                  {col.type === 'number' && (
+                    <div className="w-full sm:w-64">
+                      <label className="block text-[10px] text-gray-400 font-semibold mb-1">معادلة حسابية (اختياري، مثل: [qty] * [price])</label>
+                      <input
+                        type="text"
+                        placeholder="[qty] * [price]"
+                        value={col.formula || ''}
+                        onChange={(e) => handleUpdateColumnField(index, 'formula', e.target.value)}
+                        className="w-full p-2 border border-gray-250 dark:border-gray-880 bg-gray-50 dark:bg-gray-855 rounded-xl focus:outline-none focus:ring-1 focus:ring-amber-500 dark:text-[#ffffff] text-left ltr"
+                      />
+                    </div>
+                  )}
+
+                  {col.type !== 'boolean' && col.type !== 'select' && !col.formula && (
+                    <>
+                      <div className="w-full sm:w-40">
+                        <label className="block text-[10px] text-gray-400 font-semibold mb-1">قاعدة التحقق من المدخلات</label>
+                        <select
+                          value={col.validation || 'none'}
+                          onChange={(e) => handleUpdateColumnField(index, 'validation', e.target.value)}
+                          className="w-full p-2 border border-gray-250 dark:border-gray-880 bg-gray-50 dark:bg-gray-855 rounded-xl focus:outline-none focus:ring-1 focus:ring-amber-500 dark:text-[#ffffff]"
+                        >
+                          <option value="none">بدون قيود</option>
+                          <option value="email">بريد إلكتروني (Email)</option>
+                          <option value="phone">رقم هاتف (Phone)</option>
+                          <option value="regex">تعبير منتظم مخصص (RegEx)</option>
+                        </select>
+                      </div>
+
+                      {col.validation === 'regex' && (
+                        <div className="w-full sm:w-48">
+                          <label className="block text-[10px] text-gray-400 font-semibold mb-1">تنسيق التعبير المنتظم (Pattern)</label>
+                          <input
+                            type="text"
+                            placeholder="^[A-Z]{3}-\d+$"
+                            value={col.validation_pattern || ''}
+                            onChange={(e) => handleUpdateColumnField(index, 'validation_pattern', e.target.value)}
+                            className="w-full p-2 border border-gray-255 dark:border-gray-880 bg-gray-50 dark:bg-gray-855 rounded-xl focus:outline-none focus:ring-1 focus:ring-amber-500 dark:text-[#ffffff] text-left ltr"
+                          />
+                        </div>
+                      )}
+
+                      <div className="w-full sm:w-28">
+                        <label className="block text-[10px] text-gray-400 font-semibold mb-1">
+                          {col.type === 'number' ? 'الحد الأدنى للقيمة' : 'الحد الأدنى للحروف'}
+                        </label>
+                        <input
+                          type="number"
+                          value={col.validation_min !== undefined ? col.validation_min : ''}
+                          onChange={(e) => handleUpdateColumnField(index, 'validation_min', e.target.value === '' ? '' : parseFloat(e.target.value))}
+                          className="w-full p-2 border border-gray-250 dark:border-gray-880 bg-gray-50 dark:bg-gray-855 rounded-xl focus:outline-none focus:ring-1 focus:ring-amber-500 dark:text-[#ffffff]"
+                        />
+                      </div>
+
+                      <div className="w-full sm:w-28">
+                        <label className="block text-[10px] text-gray-400 font-semibold mb-1">
+                          {col.type === 'number' ? 'الحد الأقصى للقيمة' : 'الحد الأقصى للحروف'}
+                        </label>
+                        <input
+                          type="number"
+                          value={col.validation_max !== undefined ? col.validation_max : ''}
+                          onChange={(e) => handleUpdateColumnField(index, 'validation_max', e.target.value === '' ? '' : parseFloat(e.target.value))}
+                          className="w-full p-2 border border-gray-250 dark:border-gray-880 bg-gray-50 dark:bg-gray-855 rounded-xl focus:outline-none focus:ring-1 focus:ring-amber-500 dark:text-[#ffffff]"
+                        />
+                      </div>
+                    </>
+                  )}
                 </div>
 
-                <div className="w-full sm:w-32">
-                  <label className="block text-[10px] text-gray-400 font-semibold mb-1">نوع البيانات</label>
-                  <select
-                    value={col.type}
-                    onChange={(e) => handleUpdateColumnField(index, 'type', e.target.value)}
-                    className="w-full p-2 border border-gray-200 dark:border-gray-850 bg-gray-50 dark:bg-gray-800 rounded-lg focus:outline-none dark:text-[#ffffff]"
+                {/* Row 3: Action Buttons & Configurations */}
+                <div className="flex flex-wrap items-center justify-between pt-2.5 border-t border-gray-100 dark:border-gray-800/60">
+                  <div className="flex flex-wrap items-center gap-4">
+                    <label className="flex items-center gap-1.5 cursor-pointer font-semibold text-gray-600 dark:text-gray-300">
+                      <input
+                        type="checkbox"
+                        checked={!!col.required}
+                        onChange={(e) => handleUpdateColumnField(index, 'required', e.target.checked)}
+                        className="rounded border-gray-300 dark:border-gray-700 text-amber-600 focus:ring-amber-500 focus:ring-offset-0 bg-transparent"
+                      />
+                      <span>إجباري</span>
+                    </label>
+
+                    <label className="flex items-center gap-1.5 cursor-pointer font-semibold text-gray-600 dark:text-gray-300">
+                      <input
+                        type="checkbox"
+                        checked={!!col.searchable}
+                        onChange={(e) => handleUpdateColumnField(index, 'searchable', e.target.checked)}
+                        className="rounded border-gray-300 dark:border-gray-700 text-amber-600 focus:ring-amber-500 focus:ring-offset-0 bg-transparent"
+                      />
+                      <span>قابل للبحث</span>
+                    </label>
+
+                    <label className="flex items-center gap-1.5 cursor-pointer font-semibold text-gray-600 dark:text-gray-300">
+                      <input
+                        type="checkbox"
+                        checked={!!col.is_group_by}
+                        onChange={(e) => handleUpdateColumnField(index, 'is_group_by', e.target.checked)}
+                        className="rounded border-gray-300 dark:border-gray-700 text-amber-600 focus:ring-amber-500 focus:ring-offset-0 bg-transparent"
+                      />
+                      <span>تجميع حسب</span>
+                    </label>
+
+                    {col.type === 'number' && (
+                      <label className="flex items-center gap-1.5 cursor-pointer font-semibold text-gray-600 dark:text-gray-300">
+                        <input
+                          type="checkbox"
+                          checked={!!col.is_sum}
+                          onChange={(e) => handleUpdateColumnField(index, 'is_sum', e.target.checked)}
+                          className="rounded border-gray-300 dark:border-gray-700 text-amber-600 focus:ring-amber-500 focus:ring-offset-0 bg-transparent"
+                        />
+                        <span>جمع القيم</span>
+                      </label>
+                    )}
+
+                    {/* Visible Toggle Purple Eye */}
+                    <button
+                      type="button"
+                      onClick={() => handleUpdateColumnField(index, 'is_shown', col.is_shown !== false ? false : true)}
+                      className={`flex items-center gap-1 px-2.5 py-1 rounded-lg border text-[10px] font-bold transition-all ${
+                        col.is_shown !== false
+                          ? 'bg-purple-50 text-purple-600 border-purple-200/50 dark:bg-purple-950/20 dark:text-purple-400 dark:border-purple-900/30'
+                          : 'bg-gray-50 text-gray-400 border-gray-200/50 dark:bg-gray-800 dark:text-gray-500 dark:border-gray-700/50'
+                      }`}
+                      title="إظهار/إخفاء الحقل في الجدول"
+                    >
+                      {col.is_shown !== false ? <Eye className="w-3.5 h-3.5" /> : <EyeOff className="w-3.5 h-3.5" />}
+                      <span>{col.is_shown !== false ? 'مرئي في الجدول' : 'مخفي في الجدول'}</span>
+                    </button>
+
+                    {/* Attachment Key Radio Orange Link */}
+                    <button
+                      type="button"
+                      onClick={() => handleUpdateColumnField(index, 'is_attachment_key', !col.is_attachment_key)}
+                      className={`flex items-center gap-1 px-2.5 py-1 rounded-lg border text-[10px] font-bold transition-all ${
+                        col.is_attachment_key
+                          ? 'bg-orange-50 text-orange-600 border-orange-200/50 dark:bg-orange-950/20 dark:text-orange-400 dark:border-orange-900/30 font-bold shadow-sm'
+                          : 'bg-gray-50 text-gray-400 border-gray-200/50 dark:bg-gray-800 dark:text-gray-500 dark:border-gray-700/50'
+                      }`}
+                      title="تحديد كـ مفتاح ربط للمرفقات المشتركة بين الصفوف"
+                    >
+                      <Link2 className="w-3.5 h-3.5" />
+                      <span>{col.is_attachment_key ? 'مفتاح المرفقات المشتركة' : 'ربط بالمرفقات'}</span>
+                    </button>
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={() => handleRemoveColumn(index)}
+                    className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-950/30 rounded-xl transition-colors"
                   >
-                    <option value="text">نص (Text)</option>
-                    <option value="number">رقم (Number)</option>
-                    <option value="date">تاريخ (Date)</option>
-                    <option value="select">قائمة خيارات (Select)</option>
-                  </select>
+                    <Trash2 className="w-4 h-4" />
+                  </button>
                 </div>
 
-                <div className="flex items-center gap-4 pt-4 sm:pt-0">
-                  <label className="flex items-center gap-1 cursor-pointer">
-                    <input
-                      type="checkbox"
-                      checked={!!col.required}
-                      onChange={(e) => handleUpdateColumnField(index, 'required', e.target.checked)}
-                      className="rounded text-amber-600 focus:ring-amber-500"
-                    />
-                    <span>إجباري</span>
-                  </label>
-                  <label className="flex items-center gap-1 cursor-pointer">
-                    <input
-                      type="checkbox"
-                      checked={!!col.searchable}
-                      onChange={(e) => handleUpdateColumnField(index, 'searchable', e.target.checked)}
-                      className="rounded text-amber-600 focus:ring-amber-500"
-                    />
-                    <span>قابل للبحث</span>
-                  </label>
-                </div>
-
-                <button
-                  type="button"
-                  onClick={() => handleRemoveColumn(index)}
-                  className="sm:mr-auto p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
-                >
-                  <Trash2 className="w-4 h-4" />
-                </button>
               </div>
             ))}
           </div>
@@ -1159,7 +1395,7 @@ export default function FolderDetailPage({ params }: PageProps) {
                       className="rounded text-farm-blue"
                     />
                   </th>
-                  {columns.map((col) => (
+                  {visibleColumns.map((col) => (
                     <th key={col.key} className="p-4 font-sans font-semibold text-gray-600 dark:text-gray-300">
                       {col.label}
                     </th>
@@ -1193,7 +1429,7 @@ export default function FolderDetailPage({ params }: PageProps) {
                       />
                     </td>
 
-                    {columns.map((col) => {
+                    {visibleColumns.map((col) => {
                       const val = item.data?.[col.key]
                       return (
                         <td key={col.key} className="p-4 font-medium dark:text-gray-200">
@@ -1360,7 +1596,12 @@ export default function FolderDetailPage({ params }: PageProps) {
                       {col.label} {col.required && <span className="text-red-500">*</span>}
                     </label>
 
-                    {col.type === 'number' ? (
+                    {col.formula ? (
+                      <div className="w-full px-4 py-2.5 bg-amber-50/30 dark:bg-amber-950/10 border border-amber-200/40 dark:border-amber-900/20 rounded-xl text-sm font-semibold text-amber-700 dark:text-amber-400 flex items-center justify-between">
+                        <span>{typeof itemFormValues[col.key] === 'number' ? itemFormValues[col.key].toLocaleString('ar-EG') : '0'}</span>
+                        <span className="text-[10px] bg-amber-100 dark:bg-amber-900/40 px-2 py-0.5 rounded-full font-sans">معادلة حسابية</span>
+                      </div>
+                    ) : col.type === 'number' ? (
                       <input
                         type="number"
                         step="any"
@@ -1383,6 +1624,16 @@ export default function FolderDetailPage({ params }: PageProps) {
                       >
                         <option value="">اختر خيار...</option>
                         {col.options?.map(opt => <option key={opt} value={opt}>{opt}</option>)}
+                      </select>
+                    ) : col.type === 'boolean' ? (
+                      <select
+                        value={itemFormValues[col.key] === true ? 'true' : itemFormValues[col.key] === false ? 'false' : ''}
+                        onChange={(e) => setItemFormValues({ ...itemFormValues, [col.key]: e.target.value === '' ? '' : e.target.value === 'true' })}
+                        className="w-full px-4 py-2.5 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl text-sm focus:ring-2 focus:ring-farm-blue dark:text-[#ffffff]"
+                      >
+                        <option value="">اختر...</option>
+                        <option value="true">نعم</option>
+                        <option value="false">لا</option>
                       </select>
                     ) : (
                       <input

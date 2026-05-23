@@ -16,10 +16,21 @@ export interface ArchiveNode {
 export interface SchemaColumn {
   key: string
   label: string
-  type: 'text' | 'number' | 'date' | 'select'
+  label_ar?: string
+  label_en?: string
+  type: 'text' | 'number' | 'date' | 'select' | 'boolean'
   options?: string[]
   required?: boolean
   searchable?: boolean
+  is_group_by?: boolean
+  is_sum?: boolean
+  is_shown?: boolean
+  is_attachment_key?: boolean
+  validation?: string
+  validation_pattern?: string
+  validation_min?: number | string
+  validation_max?: number | string
+  formula?: string
 }
 
 export interface ArchiveFolderSchema {
