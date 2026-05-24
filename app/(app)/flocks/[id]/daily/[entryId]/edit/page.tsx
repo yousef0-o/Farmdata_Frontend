@@ -3,22 +3,17 @@
 import React, { useState, useEffect, useMemo } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { Loader2, AlertCircle, ArrowLeft } from 'lucide-react'
+import { Loader2, AlertCircle, ArrowLeft, Egg } from 'lucide-react'
 import { z } from 'zod'
 import { useFlock } from '@/lib/hooks/useFlock'
 import { useProductionEntry, useUpdateProductionEntry } from '@/lib/hooks/useDailyOps'
+import { useItems } from '@/lib/hooks/useInventory'
 import { FlockStatusBadge } from '@/components/flock/FlockStatusBadge'
 import { FlockTypeBadge } from '@/components/flock/FlockTypeBadge'
 import { EntryReadOnlyInfo } from '@/components/daily/EntryReadOnlyInfo'
 
 const productionEntrySchema = z.object({
   mortality:        z.coerce.number().int().min(0).default(0),
-  egg_size_jumbo:   z.coerce.number().int().min(0).default(0),
-  egg_size_xlarge:  z.coerce.number().int().min(0).default(0),
-  egg_size_large:   z.coerce.number().int().min(0).default(0),
-  egg_size_medium:  z.coerce.number().int().min(0).default(0),
-  egg_size_small:   z.coerce.number().int().min(0).default(0),
-  egg_size_reject:  z.coerce.number().int().min(0).default(0),
   feed_quantity_kg: z.coerce.number().min(0.001, 'كمية العلف مطلوبة'),
   ai_observation:   z.string().optional(),
 })
@@ -32,42 +27,46 @@ export default function ProductionEntryEditPage() {
   const { data: flockData, isLoading: isFlockLoading } = useFlock(flockId)
   const { data: entryData, isLoading: isEntryLoading, error: entryError } = useProductionEntry(flockId, entryIdNum)
   const updateEntry = useUpdateProductionEntry(flockId)
+  const { data: itemsData, isLoading: isLoadingItems } = useItems()
 
   const flock = flockData?.data
   const entry = entryData?.data
 
+  const items = Array.isArray(itemsData) ? itemsData : (itemsData as any)?.data || []
+  const eggItems = useMemo(() => {
+    return items.filter((it: any) => it.category === 'بيض منتج')
+  }, [items])
+
   // Form states
   const [mortality, setMortality] = useState('')
-  const [eggJumbo, setEggJumbo] = useState('')
-  const [eggXlarge, setEggXlarge] = useState('')
-  const [eggLarge, setEggLarge] = useState('')
-  const [eggMedium, setEggMedium] = useState('')
-  const [eggSmall, setEggSmall] = useState('')
-  const [eggReject, setEggReject] = useState('')
+  const [eggQuantities, setEggQuantities] = useState<Record<number, string>>({})
   const [feedQty, setFeedQty] = useState('')
   const [aiObs, setAiObs] = useState('')
   const [errors, setErrors] = useState<Record<string, string>>({})
+
+  const setEggQty = (itemId: number, value: string) => {
+    setEggQuantities(prev => ({ ...prev, [itemId]: value }))
+  }
 
   // Prefill form
   useEffect(() => {
     if (entry) {
       setMortality(entry.mortality?.toString() ?? '')
-      setEggJumbo(entry.egg_size_jumbo?.toString() ?? '')
-      setEggXlarge(entry.egg_size_xlarge?.toString() ?? '')
-      setEggLarge(entry.egg_size_large?.toString() ?? '')
-      setEggMedium(entry.egg_size_medium?.toString() ?? '')
-      setEggSmall(entry.egg_size_small?.toString() ?? '')
-      setEggReject(entry.egg_size_reject?.toString() ?? '')
       setFeedQty(entry.feed_quantity_kg?.toString() ?? '')
       setAiObs(entry.ai_observation ?? '')
+      if (Array.isArray(entry.egg_items) && entry.egg_items.length > 0) {
+        const q: Record<number, string> = {}
+        entry.egg_items.forEach((ei: any) => {
+          q[ei.item_id] = ei.quantity?.toString() ?? ''
+        })
+        setEggQuantities(q)
+      }
     }
   }, [entry])
 
   const totalEggs = useMemo(() => {
-    return (Number(eggJumbo) || 0) + (Number(eggXlarge) || 0) +
-      (Number(eggLarge) || 0) + (Number(eggMedium) || 0) +
-      (Number(eggSmall) || 0) + (Number(eggReject) || 0)
-  }, [eggJumbo, eggXlarge, eggLarge, eggMedium, eggSmall, eggReject])
+    return Object.values(eggQuantities).reduce((sum, val) => sum + (Number(val) || 0), 0)
+  }, [eggQuantities])
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
@@ -75,12 +74,6 @@ export default function ProductionEntryEditPage() {
 
     const result = productionEntrySchema.safeParse({
       mortality,
-      egg_size_jumbo: eggJumbo,
-      egg_size_xlarge: eggXlarge,
-      egg_size_large: eggLarge,
-      egg_size_medium: eggMedium,
-      egg_size_small: eggSmall,
-      egg_size_reject: eggReject,
       feed_quantity_kg: feedQty,
       ai_observation: aiObs || undefined,
     })
@@ -95,20 +88,23 @@ export default function ProductionEntryEditPage() {
       return
     }
 
+    // Build egg_items array
+    const eggItemsPayload = eggItems
+      .map((item: any) => ({
+        item_id: item.id,
+        quantity: Number(eggQuantities[item.id] || 0),
+      }))
+      .filter((ei: { item_id: number; quantity: number }) => ei.quantity > 0)
+
     const d = result.data
     updateEntry.mutate({
       entryId: entryIdNum,
       data: {
         mortality: d.mortality,
-        egg_size_jumbo: d.egg_size_jumbo,
-        egg_size_xlarge: d.egg_size_xlarge,
-        egg_size_large: d.egg_size_large,
-        egg_size_medium: d.egg_size_medium,
-        egg_size_small: d.egg_size_small,
-        egg_size_reject: d.egg_size_reject,
+        egg_items: eggItemsPayload,
         feed_quantity_kg: d.feed_quantity_kg,
         ai_observation: d.ai_observation,
-      },
+      } as any,
     }, {
       onSuccess: () => {
         router.push(`/flocks/${flockId}`)
@@ -233,99 +229,55 @@ export default function ProductionEntryEditPage() {
           </div>
         </div>
 
-        {/* البيض */}
+        {/* البيض — ديناميكي */}
         <div>
-          <h3 className="text-sm font-bold text-gray-800 mb-3 border-b pb-2 border-gray-100">البيض (حسب الحجم)</h3>
-          <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-            <div>
-              <label htmlFor="egg_size_jumbo" className="text-sm font-semibold text-gray-700 block mb-1">جامبو (Jumbo)</label>
-              <input
-                id="egg_size_jumbo"
-                type="number"
-                min="0"
-                className={ic('egg_size_jumbo')}
-                value={eggJumbo}
-                onChange={(e) => setEggJumbo(e.target.value)}
-                placeholder="0"
-              />
-              {errors.egg_size_jumbo && <p className="text-xs text-red-600 mt-1 mr-1">{errors.egg_size_jumbo}</p>}
+          <h3 className="text-sm font-bold text-gray-800 mb-3 border-b pb-2 border-gray-100">إنتاج البيض</h3>
+          
+          {/* Show previous total from legacy data */}
+          {entry.total_eggs > 0 && totalEggs === 0 && (
+            <div className="mb-4 p-3 bg-blue-50 border border-blue-100 rounded-xl text-sm text-blue-700">
+              <p className="font-semibold">الإجمالي السابق: {entry.total_eggs.toLocaleString()} بيضة</p>
+              <p className="mt-1 text-xs">يرجى إعادة توزيع الكميات على الأصناف أدناه.</p>
             </div>
+          )}
 
-            <div>
-              <label htmlFor="egg_size_xlarge" className="text-sm font-semibold text-gray-700 block mb-1">كبير جداً (X-Large)</label>
-              <input
-                id="egg_size_xlarge"
-                type="number"
-                min="0"
-                className={ic('egg_size_xlarge')}
-                value={eggXlarge}
-                onChange={(e) => setEggXlarge(e.target.value)}
-                placeholder="0"
-              />
-              {errors.egg_size_xlarge && <p className="text-xs text-red-600 mt-1 mr-1">{errors.egg_size_xlarge}</p>}
+          {isLoadingItems ? (
+            <div className="flex items-center justify-center py-6">
+              <Loader2 className="w-5 h-5 animate-spin text-gray-400" />
+              <span className="text-sm text-gray-400 mr-2">جاري تحميل الأصناف...</span>
             </div>
-
-            <div>
-              <label htmlFor="egg_size_large" className="text-sm font-semibold text-gray-700 block mb-1">كبير (Large)</label>
-              <input
-                id="egg_size_large"
-                type="number"
-                min="0"
-                className={ic('egg_size_large')}
-                value={eggLarge}
-                onChange={(e) => setEggLarge(e.target.value)}
-                placeholder="0"
-              />
-              {errors.egg_size_large && <p className="text-xs text-red-600 mt-1 mr-1">{errors.egg_size_large}</p>}
+          ) : eggItems.length === 0 ? (
+            <div className="p-4 bg-amber-50 border border-amber-200 rounded-xl text-sm text-amber-700">
+              <p className="font-semibold">لا توجد أصناف بيض مُعرّفة</p>
+              <p className="mt-1">يرجى إضافة أصناف من فئة "بيض منتج" في صفحة الأصناف أولاً.</p>
             </div>
+          ) : (
+            <>
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                {eggItems.map((item: any) => (
+                  <div key={item.id}>
+                    <label className="text-sm font-semibold text-gray-700 block mb-1 flex items-center gap-1.5">
+                      <Egg className="w-3.5 h-3.5 text-amber-500" />
+                      {item.name}
+                    </label>
+                    <input 
+                      type="number" 
+                      min="0" 
+                      className="w-full border border-gray-200 rounded-xl px-4 py-2.5 bg-gray-50 focus:outline-none focus:ring-2 focus:ring-farm-blue transition-all"
+                      value={eggQuantities[item.id] || ''} 
+                      onChange={(e) => setEggQty(item.id, e.target.value)} 
+                      placeholder="0" 
+                    />
+                  </div>
+                ))}
+              </div>
 
-            <div>
-              <label htmlFor="egg_size_medium" className="text-sm font-semibold text-gray-700 block mb-1">وسط (Medium)</label>
-              <input
-                id="egg_size_medium"
-                type="number"
-                min="0"
-                className={ic('egg_size_medium')}
-                value={eggMedium}
-                onChange={(e) => setEggMedium(e.target.value)}
-                placeholder="0"
-              />
-              {errors.egg_size_medium && <p className="text-xs text-red-600 mt-1 mr-1">{errors.egg_size_medium}</p>}
-            </div>
-
-            <div>
-              <label htmlFor="egg_size_small" className="text-sm font-semibold text-gray-700 block mb-1">صغير (Small)</label>
-              <input
-                id="egg_size_small"
-                type="number"
-                min="0"
-                className={ic('egg_size_small')}
-                value={eggSmall}
-                onChange={(e) => setEggSmall(e.target.value)}
-                placeholder="0"
-              />
-              {errors.egg_size_small && <p className="text-xs text-red-600 mt-1 mr-1">{errors.egg_size_small}</p>}
-            </div>
-
-            <div>
-              <label htmlFor="egg_size_reject" className="text-sm font-semibold text-gray-700 block mb-1">مرفوض (Reject)</label>
-              <input
-                id="egg_size_reject"
-                type="number"
-                min="0"
-                className={ic('egg_size_reject')}
-                value={eggReject}
-                onChange={(e) => setEggReject(e.target.value)}
-                placeholder="0"
-              />
-              {errors.egg_size_reject && <p className="text-xs text-red-600 mt-1 mr-1">{errors.egg_size_reject}</p>}
-            </div>
-          </div>
-
-          <div className="mt-4 p-3 bg-gray-50 rounded-xl flex items-center justify-between text-sm">
-            <span className="font-semibold text-gray-600">إجمالي البيض المحسوب:</span>
-            <span className="font-bold text-gray-950 text-lg">{totalEggs.toLocaleString('en-US')} بيضة</span>
-          </div>
+              <div className="mt-4 p-3 bg-gray-50 rounded-xl flex items-center justify-between text-sm">
+                <span className="font-semibold text-gray-600">إجمالي البيض المحسوب:</span>
+                <span className="font-bold text-gray-950 text-lg">{totalEggs.toLocaleString('en-US')} بيضة</span>
+              </div>
+            </>
+          )}
         </div>
 
         {/* استهلاك العلف */}

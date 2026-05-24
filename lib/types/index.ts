@@ -131,9 +131,9 @@ export interface ProductionEntry {
   total_eggs: number
   production_rate: number   // PERCENT (0-100)
   operational_target: number
-  standard_target: number
   ai_observation?: string
   feed_quantity_kg?: number
+  egg_items?: { item_id: number; quantity: number }[]
 }
 
 export interface BreedingEntry {

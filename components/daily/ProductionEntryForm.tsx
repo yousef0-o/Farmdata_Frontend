@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useState, useMemo } from 'react'
-import { Loader2, AlertCircle } from 'lucide-react'
+import { Loader2, AlertCircle, Egg } from 'lucide-react'
 import { z } from 'zod'
 import { useCreateProductionEntry } from '@/lib/hooks/useDailyOps'
 import { useWarehouses, useItems } from '@/lib/hooks/useInventory'
@@ -15,17 +15,10 @@ interface ProductionEntryFormProps {
 const productionEntrySchema = z.object({
   record_date:      z.string().min(1, 'تاريخ السجل مطلوب'),
   mortality:        z.coerce.number({ message: 'يجب إدخال رقم صحيح' }).int('يجب أن يكون عدداً صحيحاً').min(0, 'لا يمكن أن يكون سالباً').default(0),
-  egg_size_jumbo:   z.coerce.number({ message: 'يجب إدخال رقم صحيح' }).int('يجب أن يكون عدداً صحيحاً').min(0, 'لا يمكن أن يكون سالباً').default(0),
-  egg_size_xlarge:  z.coerce.number({ message: 'يجب إدخال رقم صحيح' }).int('يجب أن يكون عدداً صحيحاً').min(0, 'لا يمكن أن يكون سالباً').default(0),
-  egg_size_large:   z.coerce.number({ message: 'يجب إدخال رقم صحيح' }).int('يجب أن يكون عدداً صحيحاً').min(0, 'لا يمكن أن يكون سالباً').default(0),
-  egg_size_medium:  z.coerce.number({ message: 'يجب إدخال رقم صحيح' }).int('يجب أن يكون عدداً صحيحاً').min(0, 'لا يمكن أن يكون سالباً').default(0),
-  egg_size_small:   z.coerce.number({ message: 'يجب إدخال رقم صحيح' }).int('يجب أن يكون عدداً صحيحاً').min(0, 'لا يمكن أن يكون سالباً').default(0),
-  egg_size_reject:  z.coerce.number({ message: 'يجب إدخال رقم صحيح' }).int('يجب أن يكون عدداً صحيحاً').min(0, 'لا يمكن أن يكون سالباً').default(0),
   feed_quantity_kg: z.coerce.number({ message: 'يجب إدخال رقم' }).min(0.001, 'كمية العلف مطلوبة ويجب أن تكون أكبر من صفر'),
   warehouse_id:     z.coerce.number({ message: 'مستودع العلف مطلوب' }).min(1, 'مستودع العلف مطلوب'),
   inventory_item_id: z.coerce.number({ message: 'صنف العلف مطلوب' }).min(1, 'صنف العلف مطلوب'),
   egg_warehouse_id:  z.preprocess((val) => (val === '' ? undefined : val), z.coerce.number().optional()),
-  egg_item_id:       z.preprocess((val) => (val === '' ? undefined : val), z.coerce.number().optional()),
   ai_observation:   z.string().optional(),
 })
 
@@ -39,31 +32,36 @@ export default function ProductionEntryForm({ flockId, onSuccess, onCancel }: Pr
   const warehouses = Array.isArray(warehousesData) ? warehousesData : (warehousesData as any)?.data || []
   const items = Array.isArray(itemsData) ? itemsData : (itemsData as any)?.data || []
 
+  const eggItems = useMemo(() => {
+    return items.filter((it: any) => it.category === 'بيض منتج')
+  }, [items])
+
+  const feedItems = useMemo(() => {
+    return items.filter((it: any) => it.category === 'أعلاف')
+  }, [items])
+
   // Component Form States
   const [recordDate, setRecordDate] = useState(() => new Date().toISOString().split('T')[0])
   const [mortality, setMortality] = useState('')
-  const [eggJumbo, setEggJumbo] = useState('')
-  const [eggXlarge, setEggXlarge] = useState('')
-  const [eggLarge, setEggLarge] = useState('')
-  const [eggMedium, setEggMedium] = useState('')
-  const [eggSmall, setEggSmall] = useState('')
-  const [eggReject, setEggReject] = useState('')
-  
+
+  // Dynamic egg quantities: { [itemId]: quantityString }
+  const [eggQuantities, setEggQuantities] = useState<Record<number, string>>({})
+  const [eggWarehouseId, setEggWarehouseId] = useState('')
+
   const [feedQty, setFeedQty] = useState('')
   const [warehouseId, setWarehouseId] = useState('')
   const [inventoryItemId, setInventoryItemId] = useState('')
-  
-  const [eggWarehouseId, setEggWarehouseId] = useState('')
-  const [eggItemId, setEggItemId] = useState('')
-  
+
   const [aiObs, setAiObs] = useState('')
   const [errors, setErrors] = useState<Record<string, string>>({})
 
+  const setEggQty = (itemId: number, value: string) => {
+    setEggQuantities(prev => ({ ...prev, [itemId]: value }))
+  }
+
   const totalEggs = useMemo(() => {
-    return (Number(eggJumbo) || 0) + (Number(eggXlarge) || 0) +
-      (Number(eggLarge) || 0) + (Number(eggMedium) || 0) +
-      (Number(eggSmall) || 0) + (Number(eggReject) || 0)
-  }, [eggJumbo, eggXlarge, eggLarge, eggMedium, eggSmall, eggReject])
+    return Object.values(eggQuantities).reduce((sum, val) => sum + (Number(val) || 0), 0)
+  }, [eggQuantities])
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
@@ -72,17 +70,10 @@ export default function ProductionEntryForm({ flockId, onSuccess, onCancel }: Pr
     const result = productionEntrySchema.safeParse({
       record_date: recordDate,
       mortality, 
-      egg_size_jumbo: eggJumbo, 
-      egg_size_xlarge: eggXlarge,
-      egg_size_large: eggLarge, 
-      egg_size_medium: eggMedium,
-      egg_size_small: eggSmall, 
-      egg_size_reject: eggReject,
       feed_quantity_kg: feedQty, 
       warehouse_id: warehouseId,
       inventory_item_id: inventoryItemId,
       egg_warehouse_id: eggWarehouseId,
-      egg_item_id: eggItemId,
       ai_observation: aiObs || undefined,
     })
 
@@ -96,23 +87,25 @@ export default function ProductionEntryForm({ flockId, onSuccess, onCancel }: Pr
       return
     }
 
+    // Build egg_items array from quantities
+    const eggItemsPayload = eggItems
+      .map((item: any) => ({
+        item_id: item.id,
+        quantity: Number(eggQuantities[item.id] || 0),
+      }))
+      .filter((ei: { item_id: number; quantity: number }) => ei.quantity > 0)
+
     const d = result.data
     createEntry.mutate({
       record_date: d.record_date,
       mortality: d.mortality, 
-      egg_size_jumbo: d.egg_size_jumbo,
-      egg_size_xlarge: d.egg_size_xlarge, 
-      egg_size_large: d.egg_size_large,
-      egg_size_medium: d.egg_size_medium, 
-      egg_size_small: d.egg_size_small,
-      egg_size_reject: d.egg_size_reject, 
+      egg_items: eggItemsPayload,
       feed_quantity_kg: d.feed_quantity_kg,
       warehouse_id: d.warehouse_id,
       inventory_item_id: d.inventory_item_id,
       egg_warehouse_id: d.egg_warehouse_id ?? undefined,
-      egg_item_id: d.egg_item_id ?? undefined,
       ai_observation: d.ai_observation,
-    }, { onSuccess: () => onSuccess() })
+    } as any, { onSuccess: () => onSuccess() })
   }
 
   const ic = (f: string) =>
@@ -169,79 +162,75 @@ export default function ProductionEntryForm({ flockId, onSuccess, onCancel }: Pr
         {errors.mortality && <p className="text-xs text-red-600 mt-1 mr-1">{errors.mortality}</p>}
       </div>
 
-      {/* البيض */}
+      {/* البيض — ديناميكي من أصناف المخزون */}
       <div>
-        <h3 className="text-sm font-bold text-gray-800 mb-3">البيض (حسب الحجم)</h3>
-        <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-          {([
-            ['كبير جداً', eggJumbo, setEggJumbo, 'egg_size_jumbo'],
-            ['كبير XL', eggXlarge, setEggXlarge, 'egg_size_xlarge'],
-            ['كبير', eggLarge, setEggLarge, 'egg_size_large'],
-            ['متوسط', eggMedium, setEggMedium, 'egg_size_medium'],
-            ['صغير', eggSmall, setEggSmall, 'egg_size_small'],
-            ['مرفوض', eggReject, setEggReject, 'egg_size_reject'],
-          ] as [string, string, React.Dispatch<React.SetStateAction<string>>, string][]).map(([lbl, val, setter, key]) => (
-            <div key={key}>
-              <label className="text-sm font-semibold text-gray-700 block mb-1">{lbl}</label>
-              <input 
-                type="number" 
-                min="0" 
-                className={ic(key)} 
-                value={val} 
-                onChange={(e) => setter(e.target.value)} 
-                placeholder="0" 
-                disabled={createEntry.isPending}
-              />
-              {errors[key] && <p className="text-xs text-red-600 mt-1 mr-1">{errors[key]}</p>}
-            </div>
-          ))}
-        </div>
-        <div className="mt-3 p-3 bg-farm-blue/5 rounded-xl text-sm font-medium text-farm-blue flex justify-between items-center">
-          <span>إجمالي البيض:</span>
-          <span className="font-bold text-lg">{totalEggs.toLocaleString()}</span>
-        </div>
-
-        {/* تخزين المخزون للبيض - اختياري */}
-        <div className="mt-4 p-4 bg-gray-50/50 rounded-2xl border border-gray-100/80 space-y-4">
-          <h4 className="text-xs font-bold text-gray-700">تخزين إنتاج البيض في المستودع (اختياري)</h4>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label className="text-xs font-semibold text-gray-600 block mb-1">مستودع البيض</label>
-              <select
-                className={ic('egg_warehouse_id')}
-                value={eggWarehouseId}
-                onChange={(e) => setEggWarehouseId(e.target.value)}
-                disabled={isLoadingWarehouses || createEntry.isPending}
-              >
-                <option value="">لا يوجد تخزين تلقائي</option>
-                {warehouses.map((wh: any) => (
-                  <option key={wh.id} value={wh.id}>
-                    {wh.name}
-                  </option>
-                ))}
-              </select>
-              {errors.egg_warehouse_id && <p className="text-xs text-red-600 mt-1 mr-1">{errors.egg_warehouse_id}</p>}
-            </div>
-
-            <div>
-              <label className="text-xs font-semibold text-gray-600 block mb-1">صنف البيض</label>
-              <select
-                className={ic('egg_item_id')}
-                value={eggItemId}
-                onChange={(e) => setEggItemId(e.target.value)}
-                disabled={isLoadingItems || createEntry.isPending}
-              >
-                <option value="">لا يوجد تخزين تلقائي</option>
-                {items.map((it: any) => (
-                  <option key={it.id} value={it.id}>
-                    {it.name}
-                  </option>
-                ))}
-              </select>
-              {errors.egg_item_id && <p className="text-xs text-red-600 mt-1 mr-1">{errors.egg_item_id}</p>}
-            </div>
+        <h3 className="text-sm font-bold text-gray-800 mb-3">إنتاج البيض</h3>
+        
+        {isLoadingItems ? (
+          <div className="flex items-center justify-center py-6">
+            <Loader2 className="w-5 h-5 animate-spin text-gray-400" />
+            <span className="text-sm text-gray-400 mr-2">جاري تحميل الأصناف...</span>
           </div>
-        </div>
+        ) : eggItems.length === 0 ? (
+          <div className="p-4 bg-amber-50 border border-amber-200 rounded-xl text-sm text-amber-700">
+            <p className="font-semibold">لا توجد أصناف بيض مُعرّفة</p>
+            <p className="mt-1">يرجى إضافة أصناف من فئة "بيض منتج" في صفحة الأصناف أولاً.</p>
+          </div>
+        ) : (
+          <>
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+              {eggItems.map((item: any) => (
+                <div key={item.id}>
+                  <label className="text-sm font-semibold text-gray-700 block mb-1 flex items-center gap-1.5">
+                    <Egg className="w-3.5 h-3.5 text-amber-500" />
+                    {item.name}
+                  </label>
+                  <input 
+                    type="number" 
+                    min="0" 
+                    className="w-full border border-gray-200 rounded-xl px-4 py-2.5 bg-gray-50 focus:outline-none focus:ring-2 focus:ring-farm-blue disabled:opacity-60 transition-all"
+                    value={eggQuantities[item.id] || ''} 
+                    onChange={(e) => setEggQty(item.id, e.target.value)} 
+                    placeholder="0" 
+                    disabled={createEntry.isPending}
+                  />
+                </div>
+              ))}
+            </div>
+
+            <div className="mt-3 p-3 bg-farm-blue/5 rounded-xl text-sm font-medium text-farm-blue flex justify-between items-center">
+              <span>إجمالي البيض:</span>
+              <span className="font-bold text-lg">{totalEggs.toLocaleString()}</span>
+            </div>
+
+            {/* تخزين المخزون للبيض */}
+            <div className="mt-4 p-4 bg-gray-50/50 rounded-2xl border border-gray-100/80 space-y-4">
+              <h4 className="text-xs font-bold text-gray-700">مستودع تخزين إنتاج البيض (اختياري)</h4>
+              <div>
+                <label className="text-xs font-semibold text-gray-600 block mb-1">مستودع البيض</label>
+                <select
+                  className={ic('egg_warehouse_id')}
+                  value={eggWarehouseId}
+                  onChange={(e) => setEggWarehouseId(e.target.value)}
+                  disabled={isLoadingWarehouses || createEntry.isPending}
+                >
+                  <option value="">لا يوجد تخزين تلقائي</option>
+                  {warehouses.map((wh: any) => (
+                    <option key={wh.id} value={wh.id}>
+                      {wh.name}
+                    </option>
+                  ))}
+                </select>
+                {errors.egg_warehouse_id && <p className="text-xs text-red-600 mt-1 mr-1">{errors.egg_warehouse_id}</p>}
+              </div>
+              {eggWarehouseId && (
+                <p className="text-xs text-emerald-600 bg-emerald-50 p-2 rounded-lg">
+                  ✓ عند الحفظ سيتم إضافة كمية كل صنف بيض تلقائياً كحركة وارد في المستودع المختار.
+                </p>
+              )}
+            </div>
+          </>
+        )}
       </div>
 
       {/* العلف */}
@@ -279,7 +268,7 @@ export default function ProductionEntryForm({ flockId, onSuccess, onCancel }: Pr
               disabled={isLoadingItems || createEntry.isPending}
             >
               <option value="">اختر الصنف...</option>
-              {items.map((it: any) => (
+              {feedItems.map((it: any) => (
                 <option key={it.id} value={it.id}>
                   {it.name}
                 </option>

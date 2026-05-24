@@ -11,7 +11,7 @@ import Pagination from '@/components/ui/Pagination'
 const itemSchema = z.object({
   name: z.string().min(1, 'اسم الصنف مطلوب'),
   unit: z.string().optional(),
-  category: z.string().optional(),
+  category: z.string().min(1, 'الفئة مطلوبة'),
 })
 
 export default function ItemsPage() {
@@ -58,7 +58,7 @@ export default function ItemsPage() {
       {
         name,
         unit: unit || 'كجم',
-        category: category || 'عام',
+        category: category,
         // Backend specific required fields
         code: randomCode,
         company_id: 1, // Fallback company
@@ -120,7 +120,7 @@ export default function ItemsPage() {
 
             <form onSubmit={handleCreate} className="space-y-4">
               <div>
-                <label className="text-sm font-semibold text-gray-700 block mb-1">اسم الصنف</label>
+                <label className="text-sm font-semibold text-gray-700 block mb-1">اسم الصنف <span className="text-red-500">*</span></label>
                 <input
                   type="text"
                   placeholder="مثال: علف بادي 23%"
@@ -146,14 +146,21 @@ export default function ItemsPage() {
               </div>
 
               <div>
-                <label className="text-sm font-semibold text-gray-700 block mb-1">الفئة (اختياري)</label>
-                <input
-                  type="text"
-                  placeholder="مثال: أعلاف، بيض، أدوية"
-                  className="w-full border border-gray-200 rounded-xl px-4 py-2.5 bg-gray-50 focus:outline-none focus:ring-2 focus:ring-farm-blue"
+                <label className="text-sm font-semibold text-gray-700 block mb-1">الفئة <span className="text-red-500">*</span></label>
+                <select
+                  className={`w-full border rounded-xl px-4 py-2.5 bg-gray-50 focus:outline-none focus:ring-2 focus:ring-farm-blue ${
+                    errors.category ? 'border-red-500' : 'border-gray-200'
+                  }`}
                   value={category}
                   onChange={(e) => setCategory(e.target.value)}
-                />
+                >
+                  <option value="">اختر الفئة...</option>
+                  <option value="بيض منتج">بيض منتج</option>
+                  <option value="أعلاف">أعلاف</option>
+                  <option value="أدوية">أدوية</option>
+                  <option value="أخرى">أخرى</option>
+                </select>
+                {errors.category && <p className="text-xs text-red-600 mt-1 mr-1">{errors.category}</p>}
               </div>
 
               <div className="flex gap-3 justify-end pt-2">

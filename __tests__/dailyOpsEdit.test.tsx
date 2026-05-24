@@ -41,6 +41,20 @@ vi.mock('@/lib/hooks/useDailyOps', () => ({
   }),
 }))
 
+// Mock useItems hook for dynamic egg items
+vi.mock('@/lib/hooks/useInventory', () => ({
+  useItems: () => ({
+    data: {
+      data: [
+        { id: 10, name: 'طبق بيض جامبو', category: 'بيض منتج' },
+        { id: 11, name: 'طبق بيض كبير', category: 'بيض منتج' },
+        { id: 20, name: 'علف إنتاجي', category: 'أعلاف' },
+      ],
+    },
+    isLoading: false,
+  }),
+}))
+
 describe('ProductionEntryEditPage', () => {
   beforeEach(() => {
     vi.clearAllMocks()
@@ -67,12 +81,7 @@ describe('ProductionEntryEditPage', () => {
         bird_count: 980,
         age_days: 10,
         mortality: 2,
-        egg_size_jumbo: 100,
-        egg_size_xlarge: 200,
-        egg_size_large: 300,
-        egg_size_medium: 150,
-        egg_size_small: 50,
-        egg_size_reject: 10,
+        total_eggs: 810,
         feed_quantity_kg: 120.5,
         ai_observation: 'ملاحظة ممتازة',
       },
@@ -113,8 +122,9 @@ describe('ProductionEntryEditPage', () => {
     const feedInput = screen.getByLabelText('كمية العلف المستهلكة (كجم)') as HTMLInputElement
     expect(feedInput.value).toBe('120.5')
 
-    const jumboInput = screen.getByLabelText('جامبو (Jumbo)') as HTMLInputElement
-    expect(jumboInput.value).toBe('100')
+    // Verify dynamic egg items are rendered
+    expect(screen.getByText('طبق بيض جامبو')).toBeInTheDocument()
+    expect(screen.getByText('طبق بيض كبير')).toBeInTheDocument()
 
     const commentInput = screen.getByLabelText('ملاحظة أو تعليق') as HTMLInputElement
     expect(commentInput.value).toBe('ملاحظة ممتازة')
@@ -132,7 +142,7 @@ describe('ProductionEntryEditPage', () => {
           data: expect.objectContaining({
             mortality: 5,
             feed_quantity_kg: 120.5,
-            egg_size_jumbo: 100,
+            egg_items: [],
           }),
         }),
         expect.any(Object)
