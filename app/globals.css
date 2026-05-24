@@ -3,13 +3,13 @@
 @custom-variant dark (&:where(.dark, .dark *));
 
 :root {
-  --background: #FAF8F5;
-  --foreground: #1F2937;
+  --background: #FAF9F6; /* Luxury Warm Sand Beige */
+  --foreground: #1A1916; /* Warm Obsidian Text */
   
-  --color-brand-terracotta: #C2410C;
-  --color-brand-olive: #2E4A3F;
+  --color-brand-terracotta: #C2410C; /* Warm Rust Terracotta Orange */
+  --color-brand-olive: #1C3B2B; /* Deep British Racing Olive */
   --color-surface: #ffffff;
-  --color-border-custom: #94A3B8;
+  --color-border-custom: #E5E2DA; /* Elegant Warm Sand Border */
 
   /* Brand Logo variables */
   --brand-logo-bg: #FFEFE6;
@@ -18,12 +18,12 @@
   --brand-logo-sub: #6B7280;
 
   /* Menu Hover variables */
-  --menu-hover-bg: #F3F4F6;
-  --menu-hover-text: #111827;
+  --menu-hover-bg: #F5F3EE;
+  --menu-hover-text: #C2410C;
 
   /* Dashboard Heading variables */
-  --dashboard-heading: #111827;
-  --dashboard-subheading: #4B5563;
+  --dashboard-heading: #1A1916;
+  --dashboard-subheading: #5C5950;
 
   /* Quick Link variables */
   --quick-blue-bg: #eff6ff;
@@ -33,19 +33,19 @@
   --quick-purple-bg: #faf5ff;
   --quick-purple-text: #9333ea;
 
-  /* Custom overrides for light mode */
+  /* Premium sand-gray palette to replace standard Tailwind grays */
   --color-white-custom: #ffffff;
-  --color-gray-50-custom: #FAF8F5;
-  --color-gray-100-custom: #E2E8F0;
-  --color-gray-200-custom: #CBD5E1;
-  --color-gray-300-custom: #94A3B8;
-  --color-gray-400-custom: #64748B;
-  --color-gray-500-custom: #475569;
-  --color-gray-600-custom: #334155;
-  --color-gray-700-custom: #1E293B;
-  --color-gray-800-custom: #0F172A;
-  --color-gray-900-custom: #020617;
-  --color-gray-950-custom: #020617;
+  --color-gray-50-custom: #FAF9F6;
+  --color-gray-100-custom: #F5F3EE;
+  --color-gray-200-custom: #E5E2DA;
+  --color-gray-300-custom: #C7C3B7;
+  --color-gray-400-custom: #9E9A8E;
+  --color-gray-500-custom: #7A766B;
+  --color-gray-600-custom: #5C5950;
+  --color-gray-700-custom: #424039;
+  --color-gray-800-custom: #2B2A25;
+  --color-gray-900-custom: #1A1916;
+  --color-gray-950-custom: #0F0E0C;
 
   --color-emerald-100-custom: #D1FAE5;
   --color-emerald-600-custom: #059669;
@@ -59,56 +59,56 @@
 }
 
 .dark {
-  --background: #121614;
-  --foreground: #F3F4F6;
+  --background: #0A0F0D; /* Premium Deep Obsidian Olive / Forest Slate-Black */
+  --foreground: #E6EBE8; /* Clean Warm White text */
   
-  --color-brand-terracotta: #E06A3B;
-  --color-brand-olive: #3D6253;
-  --color-surface: #1C221F;
-  --color-border-custom: #3E4C47;
+  --color-brand-terracotta: #E25822; /* Vibrant Glowing Amber-Orange */
+  --color-brand-olive: #345C47; /* Sage Olive Accent */
+  --color-surface: #141A17; /* Velvet Organic Dark Green-Black */
+  --color-border-custom: #212B26; /* Deep Clay Border */
 
   /* Brand Logo variables */
   --brand-logo-bg: #2E1E1A;
-  --brand-logo-icon: #E06A3B;
+  --brand-logo-icon: #E25822;
   --brand-logo-text: #ffffff;
-  --brand-logo-sub: #A7B6B0;
+  --brand-logo-sub: #8FA397;
 
   /* Menu Hover variables */
-  --menu-hover-bg: #2C3531;
-  --menu-hover-text: #ffffff;
+  --menu-hover-bg: #1B2420;
+  --menu-hover-text: #E25822;
 
   /* Dashboard Heading variables */
-  --dashboard-heading: #FAF8F5;
-  --dashboard-subheading: #C4D0CB;
+  --dashboard-heading: #FAF9F6;
+  --dashboard-subheading: #8FA397;
 
   /* Quick Link variables */
-  --quick-blue-bg: #1e293b;
+  --quick-blue-bg: #1A283B;
   --quick-blue-text: #60a5fa;
-  --quick-green-bg: #14532d;
+  --quick-green-bg: #143424;
   --quick-green-text: #4ade80;
-  --quick-purple-bg: #3b0764;
+  --quick-purple-bg: #2C1642;
   --quick-purple-text: #c084fc;
 
-  /* Custom overrides for dark mode (harmonized slate-green earthy theme) */
-  --color-white-custom: #1C221F; /* bg-white maps to surface card in dark mode */
-  --color-gray-50-custom: #121614; /* bg-gray-50 maps to deep background */
-  --color-gray-100-custom: #222925;
-  --color-gray-200-custom: #3E4C47;
-  --color-gray-300-custom: #4E5E57;
-  --color-gray-400-custom: #6E7F78;
-  --color-gray-500-custom: #8E9E98;
-  --color-gray-600-custom: #A7B6B0;
-  --color-gray-700-custom: #C4D0CB;
-  --color-gray-800-custom: #D1D5DB; /* light color for high contrast text-gray-800 in dark mode */
-  --color-gray-900-custom: #F3F4F6; /* text-gray-900 maps to foreground */
-  --color-gray-950-custom: #0E1110;
+  /* Harmonized obsidian-green earthy palette */
+  --color-white-custom: #141A17;
+  --color-gray-50-custom: #0A0F0D;
+  --color-gray-100-custom: #141A17;
+  --color-gray-200-custom: #212B26;
+  --color-gray-300-custom: #2D3B34;
+  --color-gray-400-custom: #4A5E54;
+  --color-gray-500-custom: #6D8579;
+  --color-gray-600-custom: #8FA397;
+  --color-gray-700-custom: #B1C0B6;
+  --color-gray-800-custom: #D4DDD8;
+  --color-gray-900-custom: #E6EBE8;
+  --color-gray-950-custom: #050807;
 
-  --color-emerald-100-custom: #182C24; /* moss green badge background */
-  --color-emerald-600-custom: #3D6253; /* olive status text */
-  --color-emerald-700-custom: #4A7563;
+  --color-emerald-100-custom: #182C24;
+  --color-emerald-600-custom: #345C47;
+  --color-emerald-700-custom: #427258;
 
   --color-amber-100-custom: #2E2512;
-  --color-amber-600-custom: #E0A93B;
+  --color-amber-600-custom: #E2A622;
 
   --color-red-100-custom: #351A15;
   --color-red-600-custom: #E5573B;
@@ -117,8 +117,9 @@
 @theme {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: 'Cairo', 'IBM Plex Sans Arabic', sans-serif;
-  --font-mono: var(--font-geist-mono);
+  --font-sans: var(--font-sans), sans-serif;
+  --font-display: var(--font-display), sans-serif;
+  --font-mono: var(--font-mono), monospace;
   
   /* Brand colors */
   --color-terracotta: var(--color-brand-terracotta);
@@ -218,7 +219,8 @@
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: var(--font-sans, Arial, Helvetica, sans-serif);
+  font-family: var(--font-sans), Arial, Helvetica, sans-serif;
+  transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 /* Global Default Border High-Contrast Overrides */
@@ -246,30 +248,123 @@ body {
   border-bottom-color: var(--color-border-custom);
 }
 
-/* 
- * Force high visibility of all default/gray borders in light mode 
- * while keeping colored validation states, transparent states, and agricultural brand highlights intact.
- */
+/* Elegant border rendering for light mode cards and lists */
 html:not(.dark) .border:not([class*="border-red-"]):not([class*="border-green-"]):not([class*="border-emerald-"]):not([class*="border-farm-"]):not([class*="border-blue-"]):not([class*="border-transparent"]):not([class*="border-amber-"]):not([class*="border-rose-"]) {
-  border-color: #94A3B8 !important;
+  border-color: var(--color-border-custom) !important;
 }
 html:not(.dark) .border-t:not([class*="border-red-"]):not([class*="border-green-"]):not([class*="border-emerald-"]):not([class*="border-farm-"]):not([class*="border-blue-"]):not([class*="border-transparent"]):not([class*="border-amber-"]):not([class*="border-rose-"]) {
-  border-top-color: #94A3B8 !important;
+  border-top-color: var(--color-border-custom) !important;
 }
 html:not(.dark) .border-b:not([class*="border-red-"]):not([class*="border-green-"]):not([class*="border-emerald-"]):not([class*="border-farm-"]):not([class*="border-blue-"]):not([class*="border-transparent"]):not([class*="border-amber-"]):not([class*="border-rose-"]) {
-  border-bottom-color: #94A3B8 !important;
+  border-bottom-color: var(--color-border-custom) !important;
 }
 html:not(.dark) .border-l:not([class*="border-red-"]):not([class*="border-green-"]):not([class*="border-emerald-"]):not([class*="border-farm-"]):not([class*="border-blue-"]):not([class*="border-transparent"]):not([class*="border-amber-"]):not([class*="border-rose-"]) {
-  border-left-color: #94A3B8 !important;
+  border-left-color: var(--color-border-custom) !important;
 }
 html:not(.dark) .border-r:not([class*="border-red-"]):not([class*="border-green-"]):not([class*="border-emerald-"]):not([class*="border-farm-"]):not([class*="border-blue-"]):not([class*="border-transparent"]):not([class*="border-amber-"]):not([class*="border-rose-"]) {
-  border-right-color: #94A3B8 !important;
+  border-right-color: var(--color-border-custom) !important;
 }
 html:not(.dark) .border-x:not([class*="border-red-"]):not([class*="border-green-"]):not([class*="border-emerald-"]):not([class*="border-farm-"]):not([class*="border-blue-"]):not([class*="border-transparent"]):not([class*="border-amber-"]):not([class*="border-rose-"]) {
-  border-left-color: #94A3B8 !important;
-  border-right-color: #94A3B8 !important;
+  border-left-color: var(--color-border-custom) !important;
+  border-right-color: var(--color-border-custom) !important;
 }
 html:not(.dark) .border-y:not([class*="border-red-"]):not([class*="border-green-"]):not([class*="border-emerald-"]):not([class*="border-farm-"]):not([class*="border-blue-"]):not([class*="border-transparent"]):not([class*="border-amber-"]):not([class*="border-rose-"]) {
-  border-top-color: #94A3B8 !important;
-  border-bottom-color: #94A3B8 !important;
+  border-top-color: var(--color-border-custom) !important;
+  border-bottom-color: var(--color-border-custom) !important;
+}
+
+/* Staggered entrance animations */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes pulseGlowing {
+  0%, 100% {
+    box-shadow: 0 0 0 0 rgba(194, 65, 12, 0.4);
+  }
+  50% {
+    box-shadow: 0 0 16px 4px rgba(194, 65, 12, 0.2);
+  }
+}
+
+@keyframes darkPulseGlowing {
+  0%, 100% {
+    box-shadow: 0 0 0 0 rgba(226, 88, 34, 0.4);
+  }
+  50% {
+    box-shadow: 0 0 20px 6px rgba(226, 88, 34, 0.2);
+  }
+}
+
+/* Entry Animation Utility */
+.animate-fade-in-up {
+  animation: fadeInUp 0.75s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* Staggered entry animation delays */
+.delay-100 { animation-delay: 100ms; }
+.delay-200 { animation-delay: 200ms; }
+.delay-300 { animation-delay: 300ms; }
+.delay-400 { animation-delay: 400ms; }
+.delay-500 { animation-delay: 500ms; }
+
+.animate-pulse-glowing {
+  animation: pulseGlowing 2s infinite ease-in-out;
+}
+.dark .animate-pulse-glowing {
+  animation: darkPulseGlowing 2s infinite ease-in-out;
+}
+
+/* Luxury double geometric borders */
+.border-double-luxury {
+  border-style: double;
+  border-width: 4px;
+}
+
+/* Custom premium transitions */
+.transition-premium {
+  transition-property: all;
+  transition-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
+  transition-duration: 350ms;
+}
+
+/* Premium styled scrollbars */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--color-brand-terracotta);
+  border-radius: 9999px;
+  opacity: 0.5;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-brand-olive);
+}
+
+/* Premium background ambient mesh for Dark Mode */
+.dark body {
+  background-image: 
+    radial-gradient(at 0% 0%, rgba(226, 88, 34, 0.04) 0px, transparent 40%),
+    radial-gradient(at 100% 0%, rgba(52, 92, 71, 0.06) 0px, transparent 50%),
+    radial-gradient(at 50% 100%, rgba(20, 26, 23, 0.4) 0px, transparent 60%);
+  background-attachment: fixed;
+}
+
+/* Premium ambient light mode subtle overlay grid */
+html:not(.dark) body {
+  background-image: 
+    radial-gradient(at 0% 0%, rgba(194, 65, 12, 0.02) 0px, transparent 40%),
+    radial-gradient(at 100% 0%, rgba(28, 59, 43, 0.03) 0px, transparent 50%);
+  background-attachment: fixed;
 }

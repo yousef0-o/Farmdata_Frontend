@@ -1,16 +1,23 @@
 import type { Metadata } from 'next'
-import { Geist, Geist_Mono } from 'next/font/google'
+import { Reem_Kufi, IBM_Plex_Sans_Arabic, Space_Grotesk } from 'next/font/google'
 import './globals.css'
 import { Providers } from './providers'
 
-const geistSans = Geist({
-  variable: '--font-geist-sans',
-  subsets: ['latin'],
+const reemKufi = Reem_Kufi({
+  variable: '--font-display',
+  subsets: ['arabic'],
 })
 
-const geistMono = Geist_Mono({
-  variable: '--font-geist-mono',
+const ibmPlexSansArabic = IBM_Plex_Sans_Arabic({
+  variable: '--font-sans',
+  subsets: ['arabic'],
+  weight: ['300', '400', '500', '600', '700'],
+})
+
+const spaceGrotesk = Space_Grotesk({
+  variable: '--font-mono',
   subsets: ['latin'],
+  weight: ['400', '500', '600', '700'],
 })
 
 export const metadata: Metadata = {
@@ -27,7 +34,7 @@ export default function RootLayout({
     <html
       lang="ar"
       dir="rtl"
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+      className={`${ibmPlexSansArabic.variable} ${reemKufi.variable} ${spaceGrotesk.variable} h-full antialiased`}
       suppressHydrationWarning
     >
       <body
