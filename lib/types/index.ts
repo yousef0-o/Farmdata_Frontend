@@ -389,3 +389,40 @@ export interface FlockMedicalRecord {
   medications: FlockMedication[]
 }
 
+export interface EntityStatistics {
+  level: 'projects' | 'project' | 'section' | 'barn'
+  section_type: 'production' | 'breeding' | null
+  breeding_stats: {
+    entry_birds: number
+    exit_birds: number
+    mortality_breeding: number
+    mortality_value: number
+    chick_cost: number
+    feed_cost: number
+    vet_cost: number
+    other_cost: number
+    total_value: number
+    mortality_rate: number
+  }
+  production_stats: {
+    cartons_produced: number
+    total_eggs: number
+    feed_consumed_ton: number
+    mortality_production: number
+    mortality_value: number
+    average_production_rate: number
+    mortality_rate: number
+  }
+  annual_production: {
+    year: number
+    month: number
+    cartons: number
+  }[]
+  ledger_summary: {
+    total_debit: number
+    total_credit: number
+    net_balance: number
+  }
+  flock_count: number
+}
+

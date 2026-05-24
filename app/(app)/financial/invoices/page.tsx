@@ -24,6 +24,7 @@ import { useCustomers } from '@/lib/hooks/useCustomers'
 import { useSuppliers } from '@/lib/hooks/useSuppliers'
 import type { Invoice, InvoicePayload, InvoiceItemPayload } from '@/lib/api/financial'
 import type { Item, Warehouse, Customer, Supplier } from '@/lib/types'
+import SaudiRiyalIcon from '@/components/icons/SaudiRiyalIcon'
 
 interface FormItem {
   item_id: string
@@ -231,7 +232,7 @@ export default function InvoicesPage() {
           <div className="space-y-1">
             <p className="text-sm font-medium text-gray-400">قيمة الفواتير</p>
             <p className="text-xl font-extrabold text-gray-900 mt-0.5">
-              {invoices.reduce((sum: number, inv: Invoice) => sum + parseFloat(inv.total_amount || '0'), 0).toLocaleString('ar-SA', { style: 'currency', currency: 'SAR' })}
+              {invoices.reduce((sum: number, inv: Invoice) => sum + parseFloat(inv.total_amount || '0'), 0).toLocaleString('ar-SA')} <SaudiRiyalIcon size={18} className="text-emerald-700 inline-block align-middle ml-1" />
             </p>
           </div>
           <div className="p-3 bg-farm-blue/10 text-farm-blue rounded-xl">
@@ -243,7 +244,7 @@ export default function InvoicesPage() {
           <div className="space-y-1">
             <p className="text-sm font-medium text-gray-400">ضريبة القيمة المضافة</p>
             <p className="text-xl font-extrabold text-gray-900 mt-0.5">
-              {invoices.reduce((sum: number, inv: Invoice) => sum + parseFloat(inv.tax_amount || '0'), 0).toLocaleString('ar-SA', { style: 'currency', currency: 'SAR' })}
+              {invoices.reduce((sum: number, inv: Invoice) => sum + parseFloat(inv.tax_amount || '0'), 0).toLocaleString('ar-SA')} <SaudiRiyalIcon size={18} className="text-emerald-700 inline-block align-middle ml-1" />
             </p>
           </div>
           <div className="p-3 bg-farm-blue/10 text-farm-blue rounded-xl">
@@ -333,9 +334,9 @@ export default function InvoicesPage() {
                       {activeTab === 'sales' ? (inv.customer?.customer_name || 'عميل مجهول') : (inv.supplier?.supplier_name || 'مورد مجهول')}
                     </td>
                     <td className="py-4 px-6">{inv.warehouse?.name || 'مستودع مجهول'}</td>
-                    <td className="py-4 px-6 font-bold">{parseFloat(inv.tax_amount).toLocaleString('ar-SA', { style: 'currency', currency: 'SAR' })}</td>
+                    <td className="py-4 px-6 font-bold">{parseFloat(inv.tax_amount).toLocaleString('ar-SA')} <SaudiRiyalIcon size={14} className="text-emerald-700 inline-block align-middle ml-1" /></td>
                     <td className="py-4 px-6 font-bold text-gray-900">
-                      {parseFloat(inv.total_amount).toLocaleString('ar-SA', { style: 'currency', currency: 'SAR' })}
+                      {parseFloat(inv.total_amount).toLocaleString('ar-SA')} <SaudiRiyalIcon size={14} className="text-emerald-700 inline-block align-middle ml-1" />
                     </td>
                     <td className="py-4 px-6">
                       <div className="flex items-center justify-center gap-2">
@@ -593,7 +594,7 @@ export default function InvoicesPage() {
                               />
                             </td>
                             <td className="p-3 font-mono font-bold text-gray-900">
-                              {(qty * price).toLocaleString('ar-SA', { style: 'currency', currency: 'SAR' })}
+                              {(qty * price).toLocaleString('ar-SA')} <SaudiRiyalIcon size={14} className="text-emerald-700 inline-block align-middle ml-1" />
                             </td>
                             <td className="p-3">
                               <div className="flex items-center justify-center">
@@ -620,20 +621,20 @@ export default function InvoicesPage() {
                   <div>
                     <span className="text-gray-400">الإجمالي الفرعي: </span>
                     <span className="font-mono font-bold text-gray-900 dark:text-white">
-                      {calculatedSubtotal.toLocaleString('ar-SA', { style: 'currency', currency: 'SAR' })}
+                      {calculatedSubtotal.toLocaleString('ar-SA')} <SaudiRiyalIcon size={14} className="text-emerald-700 inline-block align-middle ml-1" />
                     </span>
                   </div>
                   <div>
                     <span className="text-gray-400">الضريبة (15%): </span>
                     <span className="font-mono font-bold text-gray-900 dark:text-white">
-                      {calculatedTax.toLocaleString('ar-SA', { style: 'currency', currency: 'SAR' })}
+                      {calculatedTax.toLocaleString('ar-SA')} <SaudiRiyalIcon size={14} className="text-emerald-700 inline-block align-middle ml-1" />
                     </span>
                   </div>
                 </div>
                 <div className="text-md">
                   <span className="text-gray-500 font-semibold">الإجمالي النهائي المستحق: </span>
                   <span className="font-mono font-black text-farm-blue text-lg">
-                    {calculatedTotal.toLocaleString('ar-SA', { style: 'currency', currency: 'SAR' })}
+                    {calculatedTotal.toLocaleString('ar-SA')} <SaudiRiyalIcon size={16} className="text-emerald-700 inline-block align-middle ml-1" />
                   </span>
                 </div>
               </div>
@@ -756,9 +757,9 @@ export default function InvoicesPage() {
                           <tr key={item.id} className="text-sm text-gray-700 dark:text-gray-300">
                             <td className="p-3 font-semibold">{item.item?.name || 'صنف مجهول'}</td>
                             <td className="p-3 font-mono">{parseFloat(item.quantity).toLocaleString('en-US')}</td>
-                            <td className="p-3 font-mono">{parseFloat(item.unit_price).toLocaleString('ar-SA', { style: 'currency', currency: 'SAR' })}</td>
+                            <td className="p-3 font-mono">{parseFloat(item.unit_price).toLocaleString('ar-SA')} <SaudiRiyalIcon size={14} className="text-emerald-700 inline-block align-middle ml-1" /></td>
                             <td className="p-3 font-mono font-bold text-gray-900">
-                              {parseFloat(item.total).toLocaleString('ar-SA', { style: 'currency', currency: 'SAR' })}
+                              {parseFloat(item.total).toLocaleString('ar-SA')} <SaudiRiyalIcon size={14} className="text-emerald-700 inline-block align-middle ml-1" />
                             </td>
                           </tr>
                         ))
@@ -777,19 +778,19 @@ export default function InvoicesPage() {
                 <div className="space-y-1">
                   <span className="text-xs text-gray-400 block font-bold">المجموع الفرعي الخالي من الضريبة</span>
                   <span className="text-lg font-mono font-bold text-gray-900">
-                    {(parseFloat(selectedInvoice.total_amount) - parseFloat(selectedInvoice.tax_amount)).toLocaleString('ar-SA', { style: 'currency', currency: 'SAR' })}
+                    {(parseFloat(selectedInvoice.total_amount) - parseFloat(selectedInvoice.tax_amount)).toLocaleString('ar-SA')} <SaudiRiyalIcon size={16} className="text-emerald-700 inline-block align-middle ml-1" />
                   </span>
                 </div>
                 <div className="space-y-1">
                   <span className="text-xs text-gray-400 block font-bold">قيمة ضريبة القيمة المضافة (15%)</span>
                   <span className="text-lg font-mono font-bold text-gray-900">
-                    {parseFloat(selectedInvoice.tax_amount).toLocaleString('ar-SA', { style: 'currency', currency: 'SAR' })}
+                    {parseFloat(selectedInvoice.tax_amount).toLocaleString('ar-SA')} <SaudiRiyalIcon size={16} className="text-emerald-700 inline-block align-middle ml-1" />
                   </span>
                 </div>
                 <div className="space-y-1">
                   <span className="text-xs text-gray-400 block font-bold">الإجمالي المالي النهائي الموثق</span>
                   <span className="text-xl font-mono font-black text-farm-blue">
-                    {parseFloat(selectedInvoice.total_amount).toLocaleString('ar-SA', { style: 'currency', currency: 'SAR' })}
+                    {parseFloat(selectedInvoice.total_amount).toLocaleString('ar-SA')} <SaudiRiyalIcon size={18} className="text-emerald-700 inline-block align-middle ml-1" />
                   </span>
                 </div>
               </div>

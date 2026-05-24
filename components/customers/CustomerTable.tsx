@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { Users, Edit3, Trash2, ShieldAlert } from 'lucide-react'
 import CustomerTypeBadge from './CustomerTypeBadge'
 import CustomerStatusBadge from './CustomerStatusBadge'
+import SaudiRiyalIcon from '@/components/icons/SaudiRiyalIcon'
 import Pagination from '@/components/ui/Pagination'
 import type { Customer } from '@/lib/types'
 
@@ -131,10 +132,10 @@ export default function CustomerTable({
                 <td className="py-4 px-4"><CustomerTypeBadge type={customer.customer_type} /></td>
                 <td className="py-4 px-4 text-gray-600 text-xs">{customer.phone1 || '—'}</td>
                 <td className="py-4 px-4 font-semibold text-gray-900">
-                  {customer.credit_limit === 0 ? 'بلا حد' : `${customer.credit_limit.toLocaleString('en-US')} ريال`}
+                  {customer.credit_limit === 0 ? 'بلا حد' : <span>{customer.credit_limit.toLocaleString('en-US')} <SaudiRiyalIcon size={14} className="text-emerald-700 inline-block align-middle" /></span>}
                 </td>
                 <td className={`py-4 px-4 font-semibold ${customer.current_balance >= 0 ? 'text-emerald-700' : 'text-red-650'}`}>
-                  {customer.current_balance.toLocaleString('en-US')} ريال
+                  {customer.current_balance.toLocaleString('en-US')} <SaudiRiyalIcon size={14} className="text-emerald-700 inline-block align-middle" />
                 </td>
                 <td className="py-4 px-4"><CustomerStatusBadge isSuspended={customer.is_suspended} /></td>
                 <td className="py-4 px-6 text-left">

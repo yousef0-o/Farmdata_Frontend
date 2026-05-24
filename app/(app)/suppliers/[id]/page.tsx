@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { ArrowRight, Loader2, Building2, MapPin, Calendar, DollarSign, Phone, Users } from 'lucide-react'
 import { useSupplier } from '@/lib/hooks/useSuppliers'
 import SupplierStatusBadge from '@/components/suppliers/SupplierStatusBadge'
+import SaudiRiyalIcon from '@/components/icons/SaudiRiyalIcon'
 
 export default function SupplierDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params)
@@ -40,11 +41,11 @@ export default function SupplierDetailPage({ params }: { params: Promise<{ id: s
     {
       title: 'البيانات المالية والائتمان', icon: DollarSign,
       fields: [
-        { label: 'الحد الائتماني', value: supplier.credit_limit === 0 ? 'بلا حد' : `${supplier.credit_limit.toLocaleString('en-US')} ريال` },
+        { label: 'الحد الائتماني', value: supplier.credit_limit === 0 ? 'بلا حد' : <span>{supplier.credit_limit.toLocaleString('en-US')} <SaudiRiyalIcon size={14} className="text-emerald-700 inline-block align-middle ml-1" /></span> },
         { label: 'أيام الخصم المسموح بها', value: `${supplier.discount_days} يوم` },
-        { label: 'مبلغ الضمان المودع', value: `${supplier.guarantee_amount.toLocaleString('en-US')} ريال` },
+        { label: 'مبلغ الضمان المودع', value: <span>{supplier.guarantee_amount.toLocaleString('en-US')} <SaudiRiyalIcon size={14} className="text-emerald-700 inline-block align-middle ml-1" /></span> },
         { label: 'معدل الخصم (%)', value: `${supplier.discount_rate}%` },
-        { label: 'الرصيد الحالي المستحق', value: `${supplier.current_balance.toLocaleString('en-US')} ريال` },
+        { label: 'الرصيد الحالي المستحق', value: <span>{supplier.current_balance.toLocaleString('en-US')} <SaudiRiyalIcon size={14} className="text-emerald-700 inline-block align-middle ml-1" /></span> },
         { label: 'الرقم الضريبي', value: supplier.tax_number || '—' },
         { label: 'كود الحساب المالي', value: supplier.account_code || '—' },
         { label: 'اسم الحساب المالي', value: supplier.account_name || '—' },

@@ -6,6 +6,7 @@ import { ArrowRight, Edit3, Loader2, Building2, MapPin, Calendar, DollarSign } f
 import { useAsset } from '@/lib/hooks/useAssets'
 import AssetTypeBadge from '@/components/assets/AssetTypeBadge'
 import AssetStatusBadge from '@/components/assets/AssetStatusBadge'
+import SaudiRiyalIcon from '@/components/icons/SaudiRiyalIcon'
 
 export default function AssetDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params)
@@ -44,9 +45,9 @@ export default function AssetDetailPage({ params }: { params: Promise<{ id: stri
     {
       title: 'البيانات المالية', icon: DollarSign,
       fields: [
-        { label: 'قيمة الشراء', value: `${asset.purchase_value.toLocaleString('en-US')} ريال` },
-        { label: 'القيمة الدفترية', value: `${asset.book_value.toLocaleString('en-US')} ريال` },
-        { label: 'معدل الإهلاك', value: `${asset.calculation_rate.toLocaleString('en-US')} ريال` },
+        { label: 'قيمة الشراء', value: <span>{asset.purchase_value.toLocaleString('en-US')} <SaudiRiyalIcon size={14} className="text-emerald-700 inline-block align-middle ml-1" /></span> },
+        { label: 'القيمة الدفترية', value: <span>{asset.book_value.toLocaleString('en-US')} <SaudiRiyalIcon size={14} className="text-emerald-700 inline-block align-middle ml-1" /></span> },
+        { label: 'معدل الإهلاك', value: <span>{asset.calculation_rate.toLocaleString('en-US')} <SaudiRiyalIcon size={14} className="text-emerald-700 inline-block align-middle ml-1" /></span> },
         { label: 'نسبة الإهلاك', value: `${asset.depreciation_percentage}%` },
         { label: 'تاريخ القيمة', value: asset.value_as_of || '—' },
       ],

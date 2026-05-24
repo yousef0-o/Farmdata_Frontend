@@ -9,7 +9,7 @@
   --color-brand-terracotta: #C2410C;
   --color-brand-olive: #2E4A3F;
   --color-surface: #ffffff;
-  --color-border: #E5E7EB;
+  --color-border-custom: #94A3B8;
 
   /* Brand Logo variables */
   --brand-logo-bg: #FFEFE6;
@@ -36,16 +36,16 @@
   /* Custom overrides for light mode */
   --color-white-custom: #ffffff;
   --color-gray-50-custom: #FAF8F5;
-  --color-gray-100-custom: #F3F4F6;
-  --color-gray-200-custom: #E5E7EB;
-  --color-gray-300-custom: #D1D5DB;
-  --color-gray-400-custom: #9CA3AF;
-  --color-gray-500-custom: #6B7280;
-  --color-gray-600-custom: #4B5563;
-  --color-gray-700-custom: #374151;
-  --color-gray-800-custom: #1F2937;
-  --color-gray-900-custom: #111827;
-  --color-gray-950-custom: #030712;
+  --color-gray-100-custom: #E2E8F0;
+  --color-gray-200-custom: #CBD5E1;
+  --color-gray-300-custom: #94A3B8;
+  --color-gray-400-custom: #64748B;
+  --color-gray-500-custom: #475569;
+  --color-gray-600-custom: #334155;
+  --color-gray-700-custom: #1E293B;
+  --color-gray-800-custom: #0F172A;
+  --color-gray-900-custom: #020617;
+  --color-gray-950-custom: #020617;
 
   --color-emerald-100-custom: #D1FAE5;
   --color-emerald-600-custom: #059669;
@@ -65,7 +65,7 @@
   --color-brand-terracotta: #E06A3B;
   --color-brand-olive: #3D6253;
   --color-surface: #1C221F;
-  --color-border: #2C3531;
+  --color-border-custom: #3E4C47;
 
   /* Brand Logo variables */
   --brand-logo-bg: #2E1E1A;
@@ -93,9 +93,9 @@
   --color-white-custom: #1C221F; /* bg-white maps to surface card in dark mode */
   --color-gray-50-custom: #121614; /* bg-gray-50 maps to deep background */
   --color-gray-100-custom: #222925;
-  --color-gray-200-custom: #2C3531; /* border-gray-200 maps to earthy border */
-  --color-gray-300-custom: #3D4843;
-  --color-gray-400-custom: #6B7A74; /* muted gray-green text */
+  --color-gray-200-custom: #3E4C47;
+  --color-gray-300-custom: #4E5E57;
+  --color-gray-400-custom: #6E7F78;
   --color-gray-500-custom: #8E9E98;
   --color-gray-600-custom: #A7B6B0;
   --color-gray-700-custom: #C4D0CB;
@@ -124,7 +124,7 @@
   --color-terracotta: var(--color-brand-terracotta);
   --color-olive: var(--color-brand-olive);
   --color-surface: var(--color-surface);
-  --color-border: var(--color-border);
+  --color-border: var(--color-border-custom);
 
   /* Brand Logo colors */
   --color-brand-logo-bg: var(--brand-logo-bg);
@@ -166,6 +166,43 @@
   --color-gray-900: var(--color-gray-900-custom);
   --color-gray-950: var(--color-gray-950-custom);
 
+  /* Alias all standard slate, zinc and neutral colors to our custom high-contrast grays */
+  --color-slate-50: var(--color-gray-50-custom);
+  --color-slate-100: var(--color-gray-100-custom);
+  --color-slate-200: var(--color-gray-200-custom);
+  --color-slate-300: var(--color-gray-300-custom);
+  --color-slate-400: var(--color-gray-400-custom);
+  --color-slate-500: var(--color-gray-500-custom);
+  --color-slate-600: var(--color-gray-600-custom);
+  --color-slate-700: var(--color-gray-700-custom);
+  --color-slate-800: var(--color-gray-800-custom);
+  --color-slate-900: var(--color-gray-900-custom);
+  --color-slate-950: var(--color-gray-950-custom);
+
+  --color-neutral-50: var(--color-gray-50-custom);
+  --color-neutral-100: var(--color-gray-100-custom);
+  --color-neutral-200: var(--color-gray-200-custom);
+  --color-neutral-300: var(--color-gray-300-custom);
+  --color-neutral-400: var(--color-gray-400-custom);
+  --color-neutral-500: var(--color-gray-500-custom);
+  --color-neutral-600: var(--color-gray-600-custom);
+  --color-neutral-700: var(--color-gray-700-custom);
+  --color-neutral-800: var(--color-gray-800-custom);
+  --color-neutral-900: var(--color-gray-900-custom);
+  --color-neutral-950: var(--color-gray-950-custom);
+
+  --color-zinc-50: var(--color-gray-50-custom);
+  --color-zinc-100: var(--color-gray-100-custom);
+  --color-zinc-200: var(--color-gray-200-custom);
+  --color-zinc-300: var(--color-gray-300-custom);
+  --color-zinc-400: var(--color-gray-400-custom);
+  --color-zinc-500: var(--color-gray-500-custom);
+  --color-zinc-600: var(--color-gray-600-custom);
+  --color-zinc-700: var(--color-gray-700-custom);
+  --color-zinc-800: var(--color-gray-800-custom);
+  --color-zinc-900: var(--color-gray-900-custom);
+  --color-zinc-950: var(--color-gray-950-custom);
+
   /* Semantic status overrides */
   --color-emerald-100: var(--color-emerald-100-custom);
   --color-emerald-600: var(--color-emerald-600-custom);
@@ -182,4 +219,57 @@ body {
   background: var(--background);
   color: var(--foreground);
   font-family: var(--font-sans, Arial, Helvetica, sans-serif);
+}
+
+/* Global Default Border High-Contrast Overrides */
+.border {
+  border-color: var(--color-border-custom);
+}
+.border-t {
+  border-top-color: var(--color-border-custom);
+}
+.border-b {
+  border-bottom-color: var(--color-border-custom);
+}
+.border-l {
+  border-left-color: var(--color-border-custom);
+}
+.border-r {
+  border-right-color: var(--color-border-custom);
+}
+.border-x {
+  border-left-color: var(--color-border-custom);
+  border-right-color: var(--color-border-custom);
+}
+.border-y {
+  border-top-color: var(--color-border-custom);
+  border-bottom-color: var(--color-border-custom);
+}
+
+/* 
+ * Force high visibility of all default/gray borders in light mode 
+ * while keeping colored validation states, transparent states, and agricultural brand highlights intact.
+ */
+html:not(.dark) .border:not([class*="border-red-"]):not([class*="border-green-"]):not([class*="border-emerald-"]):not([class*="border-farm-"]):not([class*="border-blue-"]):not([class*="border-transparent"]):not([class*="border-amber-"]):not([class*="border-rose-"]) {
+  border-color: #94A3B8 !important;
+}
+html:not(.dark) .border-t:not([class*="border-red-"]):not([class*="border-green-"]):not([class*="border-emerald-"]):not([class*="border-farm-"]):not([class*="border-blue-"]):not([class*="border-transparent"]):not([class*="border-amber-"]):not([class*="border-rose-"]) {
+  border-top-color: #94A3B8 !important;
+}
+html:not(.dark) .border-b:not([class*="border-red-"]):not([class*="border-green-"]):not([class*="border-emerald-"]):not([class*="border-farm-"]):not([class*="border-blue-"]):not([class*="border-transparent"]):not([class*="border-amber-"]):not([class*="border-rose-"]) {
+  border-bottom-color: #94A3B8 !important;
+}
+html:not(.dark) .border-l:not([class*="border-red-"]):not([class*="border-green-"]):not([class*="border-emerald-"]):not([class*="border-farm-"]):not([class*="border-blue-"]):not([class*="border-transparent"]):not([class*="border-amber-"]):not([class*="border-rose-"]) {
+  border-left-color: #94A3B8 !important;
+}
+html:not(.dark) .border-r:not([class*="border-red-"]):not([class*="border-green-"]):not([class*="border-emerald-"]):not([class*="border-farm-"]):not([class*="border-blue-"]):not([class*="border-transparent"]):not([class*="border-amber-"]):not([class*="border-rose-"]) {
+  border-right-color: #94A3B8 !important;
+}
+html:not(.dark) .border-x:not([class*="border-red-"]):not([class*="border-green-"]):not([class*="border-emerald-"]):not([class*="border-farm-"]):not([class*="border-blue-"]):not([class*="border-transparent"]):not([class*="border-amber-"]):not([class*="border-rose-"]) {
+  border-left-color: #94A3B8 !important;
+  border-right-color: #94A3B8 !important;
+}
+html:not(.dark) .border-y:not([class*="border-red-"]):not([class*="border-green-"]):not([class*="border-emerald-"]):not([class*="border-farm-"]):not([class*="border-blue-"]):not([class*="border-transparent"]):not([class*="border-amber-"]):not([class*="border-rose-"]) {
+  border-top-color: #94A3B8 !important;
+  border-bottom-color: #94A3B8 !important;
 }

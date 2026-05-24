@@ -4,6 +4,7 @@ import React from 'react'
 import Link from 'next/link'
 import { Truck, Edit3, Trash2, ShieldAlert } from 'lucide-react'
 import SupplierStatusBadge from './SupplierStatusBadge'
+import SaudiRiyalIcon from '@/components/icons/SaudiRiyalIcon'
 import Pagination from '@/components/ui/Pagination'
 import type { Supplier } from '@/lib/types'
 
@@ -125,10 +126,10 @@ export default function SupplierTable({
                 </td>
                 <td className="py-4 px-4 text-gray-600 text-xs">{supplier.phone1 || '—'}</td>
                 <td className="py-4 px-4 font-semibold text-gray-900">
-                  {supplier.credit_limit === 0 ? 'بلا حد' : `${supplier.credit_limit.toLocaleString('en-US')} ريال`}
+                  {supplier.credit_limit === 0 ? 'بلا حد' : <span>{supplier.credit_limit.toLocaleString('en-US')} <SaudiRiyalIcon size={14} className="text-emerald-700 inline-block align-middle" /></span>}
                 </td>
                 <td className={`py-4 px-4 font-semibold ${supplier.current_balance >= 0 ? 'text-emerald-700' : 'text-red-650'}`}>
-                  {supplier.current_balance.toLocaleString('en-US')} ريال
+                  {supplier.current_balance.toLocaleString('en-US')} <SaudiRiyalIcon size={14} className="text-emerald-700 inline-block align-middle" />
                 </td>
                 <td className="py-4 px-4"><SupplierStatusBadge isSuspended={supplier.is_suspended} /></td>
                 <td className="py-4 px-6 text-left">

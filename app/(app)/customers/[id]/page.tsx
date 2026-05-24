@@ -6,6 +6,7 @@ import { ArrowRight, Loader2, Building2, MapPin, Calendar, DollarSign, Phone, Us
 import { useCustomer } from '@/lib/hooks/useCustomers'
 import CustomerTypeBadge from '@/components/customers/CustomerTypeBadge'
 import CustomerStatusBadge from '@/components/customers/CustomerStatusBadge'
+import SaudiRiyalIcon from '@/components/icons/SaudiRiyalIcon'
 
 export default function CustomerDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params)
@@ -43,13 +44,13 @@ export default function CustomerDetailPage({ params }: { params: Promise<{ id: s
     {
       title: 'البيانات المالية والائتمان', icon: DollarSign,
       fields: [
-        { label: 'الحد الائتماني', value: customer.credit_limit === 0 ? 'بلا حد' : `${customer.credit_limit.toLocaleString('en-US')} ريال` },
+        { label: 'الحد الائتماني', value: customer.credit_limit === 0 ? 'بلا حد' : <span>{customer.credit_limit.toLocaleString('en-US')} <SaudiRiyalIcon size={14} className="text-emerald-700 inline-block align-middle" /></span> },
         { label: 'أيام الخصم المسموح بها', value: `${customer.discount_days} يوم` },
-        { label: 'مبلغ الضمان المودع', value: `${customer.guarantee_amount.toLocaleString('en-US')} ريال` },
+        { label: 'مبلغ الضمان المودع', value: <span>{customer.guarantee_amount.toLocaleString('en-US')} <SaudiRiyalIcon size={14} className="text-emerald-700 inline-block align-middle" /></span> },
         { label: 'معدل الخصم (%)', value: `${customer.discount_rate}%` },
         { label: 'خصم الدفع السريع (%)', value: `${customer.payment_discount}%` },
-        { label: 'حد الخصم الأقصى', value: `${customer.discount_limit.toLocaleString('en-US')} ريال` },
-        { label: 'الرصيد الحالي المستحق', value: `${customer.current_balance.toLocaleString('en-US')} ريال` },
+        { label: 'حد الخصم الأقصى', value: <span>{customer.discount_limit.toLocaleString('en-US')} <SaudiRiyalIcon size={14} className="text-emerald-700 inline-block align-middle" /></span> },
+        { label: 'الرصيد الحالي المستحق', value: <span>{customer.current_balance.toLocaleString('en-US')} <SaudiRiyalIcon size={14} className="text-emerald-700 inline-block align-middle" /></span> },
         { label: 'الرقم الضريبي', value: customer.tax_number || '—' },
         { label: 'السجل التجاري', value: customer.commercial_record || '—' },
         { label: 'كود الحساب المالي', value: customer.account_code || '—' },

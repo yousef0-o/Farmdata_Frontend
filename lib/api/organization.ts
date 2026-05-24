@@ -1,5 +1,5 @@
 import { apiRequest, wrapResponse } from './client'
-import type { Company, Project, Section, Barn, Flock, FlockDetail, FlockSummary, PaginatedResponse, ProductionEntry, BreedingEntry, FeedEntry } from '../types'
+import type { Company, Project, Section, Barn, Flock, FlockDetail, FlockSummary, PaginatedResponse, ProductionEntry, BreedingEntry, FeedEntry, EntityStatistics } from '../types'
 
 export const organizationApi = {
   // Companies
@@ -67,6 +67,16 @@ export const organizationApi = {
     })),
   deleteBarn: (id: number) =>
     apiRequest<void>(`/barns/${id}`, { method: 'DELETE' }),
+
+  // Statistics
+  getCompanyStatistics: (id: number) =>
+    apiRequest<EntityStatistics>(`/companies/${id}/statistics`),
+  getProjectStatistics: (id: number) =>
+    apiRequest<EntityStatistics>(`/projects/${id}/statistics`),
+  getSectionStatistics: (id: number) =>
+    apiRequest<EntityStatistics>(`/sections/${id}/statistics`),
+  getBarnStatistics: (id: number) =>
+    apiRequest<EntityStatistics>(`/barns/${id}/statistics`),
 }
 
 export const flockApi = {

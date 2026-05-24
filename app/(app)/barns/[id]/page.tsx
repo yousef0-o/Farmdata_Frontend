@@ -3,11 +3,15 @@
 import React, { useState } from 'react'
 import Link from 'next/link'
 import { useParams } from 'next/navigation'
-import { Sprout, Loader2, ChevronRight, DollarSign, Plus, Trash2, Calendar, FileText, X } from 'lucide-react'
+import { Sprout, Loader2, ChevronRight, DollarSign, Plus, Trash2, Calendar, FileText, X, BarChart3 } from 'lucide-react'
 import { useQuery } from '@tanstack/react-query'
 import { organizationApi } from '@/lib/api/organization'
 import { useBarnExpenses, useCreateBarnExpense, useDeleteBarnExpense } from '@/lib/hooks/useExpenses'
 import type { Flock } from '@/lib/types'
+import UnifiedStatsCards from '@/components/statistics/UnifiedStatsCards'
+import AnnualProductionTable from '@/components/statistics/AnnualProductionTable'
+import LedgerSummaryCard from '@/components/statistics/LedgerSummaryCard'
+import SaudiRiyalIcon from '@/components/icons/SaudiRiyalIcon'
 
 const typeLabels: Record<string, string> = {
   production: 'إنتاج',
@@ -30,7 +34,7 @@ export default function BarnDetailPage() {
   const { id } = useParams()
   const barnId = Number(id)
 
-  const [activeTab, setActiveTab] = useState<'flocks' | 'expenses'>('flocks')
+  const [activeTab, setActiveTab] = useState<'flocks' | 'expenses' | 'statistics'>('flocks')
   const [showAddModal, setShowAddModal] = useState(false)
 
   // Form states
@@ -45,11 +49,18 @@ export default function BarnDetailPage() {
     queryFn: () => organizationApi.getBarn(barnId),
   })
 
+  const { data: statsRes, isLoading: isStatsLoading } = useQuery({
+    queryKey: ['barn-statistics', barnId],
+    queryFn: () => organizationApi.getBarnStatistics(barnId),
+    enabled: activeTab === 'statistics',
+  })
+
   const { data: expensesData, isLoading: isExpensesLoading } = useBarnExpenses(barnId)
   const createExpenseMutation = useCreateBarnExpense(barnId)
   const deleteExpenseMutation = useDeleteBarnExpense(barnId)
 
   const barn = data?.data
+  const stats = statsRes
 
   if (isLoading) {
     return (
@@ -140,7 +151,7 @@ export default function BarnDetailPage() {
       </div>
 
       {/* Tabs Switcher */}
-      <div className="flex border-b border-gray-200">
+      <div className="flex border-b-2 border-slate-300">
         <button
           onClick={() => setActiveTab('flocks')}
           className={`pb-4 px-6 font-semibold text-sm transition-all border-b-2 ${
@@ -160,6 +171,17 @@ export default function BarnDetailPage() {
           }`}
         >
           سجل مصروفات الحظيرة
+        </button>
+        <button
+          onClick={() => setActiveTab('statistics')}
+          className={`pb-4 px-6 font-semibold text-sm transition-all border-b-2 flex items-center gap-2 ${
+            activeTab === 'statistics'
+              ? 'border-farm-green text-farm-green'
+              : 'border-transparent text-gray-500 hover:text-gray-700'
+          }`}
+        >
+          <BarChart3 className="w-4 h-4" />
+          <span>التقرير الإحصائي والمالي للحظيرة</span>
         </button>
       </div>
 
@@ -250,7 +272,7 @@ export default function BarnDetailPage() {
             </div>
           ) : expenses.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-20 bg-white rounded-3xl border border-dashed border-gray-200">
-              <DollarSign className="w-16 h-16 text-gray-300 mb-4" />
+              <SaudiRiyalIcon size={56} className="text-emerald-700 mb-4" />
               <h3 className="text-xl font-semibold text-gray-600">لا توجد مصروفات مسجلة</h3>
               <p className="text-gray-500 mt-2">سجل أول مصروف لهذه الحظيرة الآن.</p>
             </div>
@@ -283,7 +305,7 @@ export default function BarnDetailPage() {
                           </span>
                         </td>
                         <td className="py-4 px-6 font-bold text-gray-900">
-                          {Number(exp.amount).toLocaleString('ar-EG', { style: 'currency', currency: 'SAR' })}
+                          {Number(exp.amount).toLocaleString('ar-EG')} <SaudiRiyalIcon size={16} className="text-emerald-700 inline-block align-middle ml-1" />
                         </td>
                         <td className="py-4 px-6 text-sm text-gray-500 max-w-xs truncate">
                           {exp.description || '-'}
@@ -311,6 +333,30 @@ export default function BarnDetailPage() {
         </div>
       )}
 
+      {/* Statistics view */}
+      {activeTab === 'statistics' && (
+        <div className="space-y-8">
+          {isStatsLoading ? (
+            <div className="flex justify-center py-20">
+              <Loader2 className="w-10 h-10 text-farm-green animate-spin" />
+            </div>
+          ) : stats ? (
+            <>
+              {/* Unified Stats Cards */}
+              <UnifiedStatsCards stats={stats} />
+
+              {/* Ledger Summary */}
+              <LedgerSummaryCard ledger={stats.ledger_summary} />
+
+              {/* Annual Production */}
+              <AnnualProductionTable data={stats.annual_production} />
+            </>
+          ) : (
+            <div className="text-center py-10 text-slate-500">فشل في تحميل التقارير الإحصائية للحظيرة.</div>
+          )}
+        </div>
+      )}
+
       {/* Add Modal */}
       {showAddModal && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
@@ -323,8 +369,8 @@ export default function BarnDetailPage() {
             </button>
 
             <div className="flex items-center gap-3">
-              <div className="p-3 bg-blue-50 text-blue-600 rounded-2xl">
-                <DollarSign className="w-6 h-6" />
+              <div className="p-3 bg-emerald-50 text-emerald-700 rounded-2xl border border-emerald-200">
+                <SaudiRiyalIcon size={24} className="text-emerald-700" />
               </div>
               <div>
                 <h3 className="text-lg font-bold text-gray-900">إضافة مصروف حظيرة جديد</h3>
@@ -354,7 +400,7 @@ export default function BarnDetailPage() {
               </div>
 
               <div className="space-y-2">
-                <label className="text-sm font-semibold text-gray-700 block">المبلغ (SAR)</label>
+                <label className="text-sm font-semibold text-gray-700 flex items-center gap-1">المبلغ (<SaudiRiyalIcon size={14} className="text-emerald-700" />)</label>
                 <input
                   type="number"
                   step="0.01"

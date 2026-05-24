@@ -3,6 +3,7 @@
 import React from 'react'
 import { Truck, CheckCircle2, CreditCard, Coins } from 'lucide-react'
 import type { SupplierStats } from '@/lib/types'
+import SaudiRiyalIcon from '@/components/icons/SaudiRiyalIcon'
 
 interface SupplierStatCardsProps {
   stats: SupplierStats | undefined
@@ -57,7 +58,7 @@ export default function SupplierStatCards({ stats }: SupplierStatCardsProps) {
           <div className="space-y-2">
             <span className="text-xs font-semibold text-gray-500 block">إجمالي الحد الائتماني</span>
             <span className="text-2xl font-bold text-gray-900 block">
-              {totalCreditLimit.toLocaleString('en-US')} <span className="text-xs font-normal text-gray-500">ريال</span>
+              {totalCreditLimit.toLocaleString('en-US')} <SaudiRiyalIcon size={18} className="text-emerald-700 inline-block align-middle ml-1" />
             </span>
             <span className="text-xxs text-gray-400 font-medium">المبالغ غير المحدودة غير مشمولة</span>
           </div>
@@ -73,7 +74,7 @@ export default function SupplierStatCards({ stats }: SupplierStatCardsProps) {
           <div className="space-y-2">
             <span className="text-xs font-semibold text-gray-500 block">إجمالي أرصدة الموردين</span>
             <span className={`text-2xl font-bold block ${totalBalance >= 0 ? 'text-gray-900' : 'text-red-650'}`}>
-              {totalBalance.toLocaleString('en-US')} <span className="text-xs font-normal text-gray-500">ريال</span>
+              {totalBalance.toLocaleString('en-US')} <SaudiRiyalIcon size={18} className="text-emerald-700 inline-block align-middle ml-1" />
             </span>
             <span className="text-xxs text-gray-400 font-medium">صافي مدين (+) / دائن (-)</span>
           </div>

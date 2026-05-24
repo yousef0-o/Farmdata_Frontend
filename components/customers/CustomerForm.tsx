@@ -3,6 +3,7 @@
 import React, { useState, useRef, useCallback } from 'react'
 import { X, Loader2, AlertCircle, ChevronLeft, ChevronRight, Check } from 'lucide-react'
 import type { Customer } from '@/lib/types'
+import SaudiRiyalIcon from '@/components/icons/SaudiRiyalIcon'
 
 interface CustomerFormProps {
   editingCustomer: Customer | null
@@ -206,9 +207,9 @@ export default function CustomerForm({ editingCustomer, onSubmit, onClose, isPen
     onSubmit(payload)
   }
 
-  const inp = (key: keyof Customer, label: string, opts: { required?: boolean; type?: string; placeholder?: string; span?: number } = {}) => (
+  const inp = (key: keyof Customer, label: React.ReactNode, opts: { required?: boolean; type?: string; placeholder?: string; span?: number } = {}) => (
     <div className={opts.span ? `md:col-span-${opts.span}` : ''}>
-      <label htmlFor={key} className="text-xs font-semibold text-gray-700 block mb-1">
+      <label htmlFor={key} className="text-xs font-semibold text-gray-700 flex items-center gap-1 mb-1">
         {label} {opts.required && <span className="text-red-500">*</span>}
       </label>
       <input
@@ -329,7 +330,7 @@ export default function CustomerForm({ editingCustomer, onSubmit, onClose, isPen
               <div>
                 <h3 className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3">البيانات المالية وحسابات الأستاذ</h3>
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                  {inp('credit_limit', 'الحد الائتماني (ريال)', { type: 'number' })}
+                  {inp('credit_limit', <span className="flex items-center gap-0.5">الحد الائتماني (<SaudiRiyalIcon size={12} className="text-emerald-700" />)</span>, { type: 'number' })}
                   {inp('discount_days', 'أيام الخصم المسموح بها', { type: 'number' })}
                   {inp('guarantee_amount', 'مبلغ الضمان', { type: 'number' })}
                   {inp('discount_rate', 'معدل الخصم (%)', { type: 'number' })}

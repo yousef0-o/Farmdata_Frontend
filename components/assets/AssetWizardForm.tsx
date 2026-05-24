@@ -3,6 +3,7 @@
 import React, { useState } from 'react'
 import { X, Loader2, AlertCircle, ChevronLeft, ChevronRight, Check } from 'lucide-react'
 import AssetPolymorphicFields from './AssetPolymorphicFields'
+import SaudiRiyalIcon from '@/components/icons/SaudiRiyalIcon'
 import { CATEGORY_CONFIG } from './AssetTypeBadge'
 import { STATUS_CONFIG } from './AssetStatusBadge'
 import type { Asset } from '@/lib/types'
@@ -81,9 +82,9 @@ export default function AssetWizardForm({ editingAsset, onSubmit, onClose, isPen
     onSubmit(form)
   }
 
-  const inp = (key: keyof Asset, label: string, opts: { required?: boolean; type?: string; placeholder?: string; span?: number } = {}) => (
+  const inp = (key: keyof Asset, label: React.ReactNode, opts: { required?: boolean; type?: string; placeholder?: string; span?: number } = {}) => (
     <div className={opts.span ? `md:col-span-${opts.span}` : ''}>
-      <label htmlFor={key} className="text-xs font-semibold text-gray-700 block mb-1">
+      <label htmlFor={key} className="text-xs font-semibold text-gray-700 flex items-center gap-1 mb-1">
         {label} {opts.required && <span className="text-red-500">*</span>}
       </label>
       <input
@@ -194,7 +195,7 @@ export default function AssetWizardForm({ editingAsset, onSubmit, onClose, isPen
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                   {inp('purchase_value', 'قيمة الشراء', { required: true, type: 'number' })}
                   {inp('book_value', 'القيمة الدفترية المتبقية', { required: true, type: 'number' })}
-                  {inp('calculation_rate', 'معدل الإهلاك السنوي (ريال)', { required: true, type: 'number' })}
+                  {inp('calculation_rate', <span className="flex items-center gap-0.5">معدل الإهلاك السنوي (<SaudiRiyalIcon size={12} className="text-emerald-700" />)</span>, { required: true, type: 'number' })}
                   {inp('value_as_of', 'تاريخ القيمة الختامي', { type: 'date' })}
                 </div>
               </div>

@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { Package, Edit3, Trash2 } from 'lucide-react'
 import AssetTypeBadge from './AssetTypeBadge'
 import AssetStatusBadge from './AssetStatusBadge'
+import SaudiRiyalIcon from '@/components/icons/SaudiRiyalIcon'
 import Pagination from '@/components/ui/Pagination'
 import type { Asset } from '@/lib/types'
 
@@ -130,10 +131,10 @@ export default function AssetTable({
                 <td className="py-4 px-4"><AssetTypeBadge category={asset.category} /></td>
                 <td className="py-4 px-4 text-gray-600 text-xs">{asset.location_name || '—'}</td>
                 <td className="py-4 px-4 font-semibold text-gray-900">
-                  {asset.purchase_value.toLocaleString('en-US')} ريال
+                  {asset.purchase_value.toLocaleString('en-US')} <SaudiRiyalIcon size={14} className="text-emerald-700 inline-block align-middle ml-1" />
                 </td>
                 <td className="py-4 px-4 font-semibold text-farm-blue">
-                  {asset.book_value.toLocaleString('en-US')} ريال
+                  {asset.book_value.toLocaleString('en-US')} <SaudiRiyalIcon size={14} className="text-emerald-700 inline-block align-middle ml-1" />
                 </td>
                 <td className="py-4 px-4"><AssetStatusBadge status={asset.status} /></td>
                 <td className="py-4 px-6 text-left">

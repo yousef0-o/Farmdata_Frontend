@@ -12,6 +12,7 @@ import CloseFlockDialog from '@/components/flock/CloseFlockDialog'
 import ProductionEntriesTable from '@/components/daily/ProductionEntriesTable'
 import BreedingEntriesTable from '@/components/daily/BreedingEntriesTable'
 import MedicalRecordsTable from '@/components/medical/MedicalRecordsTable'
+import SaudiRiyalIcon from '@/components/icons/SaudiRiyalIcon'
 
 export default function FlockDetailPage() {
   const { id } = useParams()
@@ -293,7 +294,7 @@ export default function FlockDetailPage() {
               </div>
             ) : expenses.length === 0 ? (
               <div className="flex flex-col items-center justify-center py-20 bg-white rounded-2xl border border-dashed border-gray-200">
-                <DollarSign className="w-12 h-12 text-gray-305 mb-3" />
+                <SaudiRiyalIcon size={48} className="text-emerald-700 mb-3" />
                 <h3 className="text-base font-semibold text-gray-600">لا توجد مصروفات نثرية مسجلة للفوج</h3>
               </div>
             ) : (
@@ -325,7 +326,7 @@ export default function FlockDetailPage() {
                             </span>
                           </td>
                           <td className="py-4 px-6 font-bold text-gray-900">
-                            {Number(exp.amount).toLocaleString('ar-EG', { style: 'currency', currency: 'SAR' })}
+                            {Number(exp.amount).toLocaleString('ar-EG')} <SaudiRiyalIcon size={16} className="text-emerald-700 inline-block align-middle ml-1" />
                           </td>
                           <td className="py-4 px-6 text-sm text-gray-500 max-w-xs truncate">
                             {exp.description || '-'}
@@ -413,8 +414,8 @@ export default function FlockDetailPage() {
             </button>
 
             <div className="flex items-center gap-3">
-              <div className="p-3 bg-blue-50 text-blue-600 rounded-2xl">
-                <DollarSign className="w-6 h-6" />
+              <div className="p-3 bg-emerald-50 text-emerald-700 rounded-2xl border border-emerald-200">
+                <SaudiRiyalIcon size={24} className="text-emerald-700" />
               </div>
               <div>
                 <h3 className="text-lg font-bold text-gray-900">إضافة مصروف للفوج جديد</h3>
@@ -444,7 +445,7 @@ export default function FlockDetailPage() {
               </div>
 
               <div className="space-y-2">
-                <label className="text-sm font-semibold text-gray-700 block">المبلغ (SAR)</label>
+                <label className="text-sm font-semibold text-gray-700 flex items-center gap-1">المبلغ (<SaudiRiyalIcon size={14} className="text-emerald-700" />)</label>
                 <input
                   type="number"
                   step="0.01"

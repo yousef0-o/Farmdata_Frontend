@@ -3,6 +3,7 @@
 import React from 'react'
 import { Layers, DollarSign, Building2, TrendingDown } from 'lucide-react'
 import type { AssetStats } from '@/lib/types'
+import SaudiRiyalIcon from '@/components/icons/SaudiRiyalIcon'
 
 interface AssetStatCardsProps {
   stats: AssetStats | undefined
@@ -36,7 +37,7 @@ export default function AssetStatCards({ stats }: AssetStatCardsProps) {
           <div className="space-y-2">
             <span className="text-xs font-semibold text-gray-500 block">قيمة الشراء</span>
             <span className="text-2xl font-bold text-gray-900 block">
-              {purchaseVal.toLocaleString('en-US')} <span className="text-xs font-normal text-gray-500">ريال</span>
+              {purchaseVal.toLocaleString('en-US')} <SaudiRiyalIcon size={18} className="text-emerald-700 inline-block align-middle ml-1" />
             </span>
           </div>
           <div className="p-3 bg-quick-blue-bg text-quick-blue-text rounded-xl">
@@ -51,7 +52,7 @@ export default function AssetStatCards({ stats }: AssetStatCardsProps) {
           <div className="space-y-2">
             <span className="text-xs font-semibold text-gray-500 block">القيمة الدفترية</span>
             <span className="text-2xl font-bold text-gray-900 block">
-              {bookVal.toLocaleString('en-US')} <span className="text-xs font-normal text-gray-500">ريال</span>
+              {bookVal.toLocaleString('en-US')} <SaudiRiyalIcon size={18} className="text-emerald-700 inline-block align-middle ml-1" />
             </span>
             <span className="text-xxs text-red-500 dark:text-red-400 font-medium">{trendVsPurchase}% مقابل الشراء</span>
           </div>
@@ -67,7 +68,7 @@ export default function AssetStatCards({ stats }: AssetStatCardsProps) {
           <div className="space-y-2">
             <span className="text-xs font-semibold text-gray-500 block">إجمالي الإهلاك</span>
             <span className="text-2xl font-bold text-red-650 dark:text-red-400 block">
-              {(stats?.total_depreciation ?? 0).toLocaleString('en-US')} <span className="text-xs font-normal text-gray-500">ريال</span>
+              {(stats?.total_depreciation ?? 0).toLocaleString('en-US')} <SaudiRiyalIcon size={18} className="text-emerald-700 inline-block align-middle ml-1" />
             </span>
             <span className="text-xxs text-red-500 dark:text-red-400 font-medium flex items-center gap-1">
               <TrendingDown className="w-3 h-3" />
