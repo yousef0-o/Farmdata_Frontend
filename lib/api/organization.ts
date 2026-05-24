@@ -205,3 +205,59 @@ export const dailyOpsApi = {
       apiRequest(`/flocks/${flockId}/breeding-entries/${entryId}`)
     ),
 }
+
+export interface ExpenseRecord {
+  id: number
+  expense_date: string
+  amount: number
+  category: string
+  description?: string
+  created_by?: number
+  created_at: string
+  creator?: {
+    id: number
+    name: string
+  }
+}
+
+export const expensesApi = {
+  // Barn Expenses
+  listBarnExpenses: (barnId: number) =>
+    apiRequest<{ data: ExpenseRecord[] }>(`/barns/${barnId}/expenses`),
+  
+  createBarnExpense: (barnId: number, data: {
+    expense_date: string
+    amount: number
+    category: string
+    description?: string
+  }) =>
+    apiRequest<{ data: ExpenseRecord }>(`/barns/${barnId}/expenses`, {
+      method: 'POST',
+      body: JSON.stringify(data),
+    }),
+
+  deleteBarnExpense: (barnId: number, expenseId: number) =>
+    apiRequest<void>(`/barns/${barnId}/expenses/${expenseId}`, {
+      method: 'DELETE',
+    }),
+
+  // Flock Expenses
+  listFlockExpenses: (flockId: number) =>
+    apiRequest<{ data: ExpenseRecord[] }>(`/flocks/${flockId}/expenses`),
+
+  createFlockExpense: (flockId: number, data: {
+    expense_date: string
+    amount: number
+    category: string
+    description?: string
+  }) =>
+    apiRequest<{ data: ExpenseRecord }>(`/flocks/${flockId}/expenses`, {
+      method: 'POST',
+      body: JSON.stringify(data),
+    }),
+
+  deleteFlockExpense: (flockId: number, expenseId: number) =>
+    apiRequest<void>(`/flocks/${flockId}/expenses/${expenseId}`, {
+      method: 'DELETE',
+    }),
+}

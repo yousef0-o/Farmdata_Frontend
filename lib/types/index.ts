@@ -359,3 +359,33 @@ export interface SupplierStats {
   total_balance: number
 }
 export * from './archive'
+
+export interface FlockMedication {
+  id: number
+  flock_medical_record_id: number
+  warehouse_id?: number
+  warehouse_name?: string
+  inventory_item_id?: number
+  inventory_item_name?: string
+  quantity?: number
+  medicine_name: string
+  dosage?: string
+  method_of_administration?: string
+}
+
+export interface FlockMedicalRecord {
+  id: number
+  flock_id: number
+  record_date: string
+  clinical_signs?: string
+  diagnosis?: string
+  severity: 'low' | 'medium' | 'high'
+  veterinarian?: string
+  notes?: string
+  created_by?: {
+    id: number
+    name: string
+  }
+  medications: FlockMedication[]
+}
+
