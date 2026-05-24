@@ -2,9 +2,9 @@ import type { Flock } from '@/lib/types'
 
 export function FlockStatusBadge({ status }: { status: Flock['status'] }) {
   const map: Record<string, { label: string; className: string }> = {
-    active: { label: 'نشط', className: 'bg-green-100 text-green-700' },
-    completed: { label: 'مكتمل', className: 'bg-gray-100 text-gray-700' },
-    cancelled: { label: 'ملغي', className: 'bg-red-100 text-red-700' },
+    active: { label: 'نشط', className: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-400' },
+    completed: { label: 'مكتمل', className: 'bg-gray-100 text-gray-700 dark:bg-gray-800/40 dark:text-gray-400' },
+    cancelled: { label: 'ملغي', className: 'bg-red-100 text-red-600 dark:bg-red-950/40 dark:text-red-400' },
   }
   const { label, className } = map[status] ?? {
     label: status,

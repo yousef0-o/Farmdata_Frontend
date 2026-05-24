@@ -31,7 +31,7 @@ export default function RootLayout({
       suppressHydrationWarning
     >
       <body
-        className="min-h-full bg-gray-50 dark:bg-gray-950 text-gray-900 dark:text-gray-100"
+        className="min-h-full bg-gray-50 dark:bg-gray-950 text-gray-900"
         suppressHydrationWarning
       >
         <Providers>{children}</Providers>

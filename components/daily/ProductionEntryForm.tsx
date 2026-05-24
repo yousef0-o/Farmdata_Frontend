@@ -337,7 +337,7 @@ export default function ProductionEntryForm({ flockId, onSuccess, onCancel }: Pr
         <button 
           type="submit" 
           disabled={createEntry.isPending || isLoadingWarehouses || isLoadingItems} 
-          className="px-6 py-2 bg-farm-green hover:bg-green-700 text-white rounded-xl font-medium transition-colors disabled:opacity-50 flex items-center gap-2"
+          className="px-6 py-2 bg-farm-green hover:bg-farm-green/90 text-white rounded-xl font-medium transition-colors disabled:opacity-50 flex items-center gap-2"
         >
           {createEntry.isPending && <Loader2 className="w-4 h-4 animate-spin" />}
           حفظ التسجيل اليومي

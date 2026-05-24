@@ -66,7 +66,7 @@ describe('FlocksListPage', () => {
 
   it('renders flocks list page layout and table successfully', () => {
     render(<FlocksListPage />)
-    expect(screen.getByText('إدارة الأقطاع')).toBeInTheDocument()
+    expect(screen.getByText('إدارة الأفواج')).toBeInTheDocument()
     expect(screen.getByText('#101')).toBeInTheDocument()
     expect(screen.getByText('عنبر 1')).toBeInTheDocument()
     expect(screen.getByText('القسم الأول')).toBeInTheDocument()
@@ -74,7 +74,7 @@ describe('FlocksListPage', () => {
 
   it('triggers search filter when clicking search button', async () => {
     render(<FlocksListPage />)
-    const select = screen.getByLabelText('حالة القطيع')
+    const select = screen.getByLabelText('حالة الفوج')
     fireEvent.change(select, { target: { value: 'completed' } })
 
     const searchButton = screen.getByRole('button', { name: /بحث/i })
@@ -109,7 +109,7 @@ describe('EditFlockMetadataPage', () => {
     render(<EditFlockMetadataPage />)
 
     // Verify header and read-only params
-    expect(screen.getByText('تعديل بيانات القطيع #101')).toBeInTheDocument()
+    expect(screen.getByText(/تعديل بيانات الفوج #\s*101/)).toBeInTheDocument()
     expect(screen.getByText('1,200')).toBeInTheDocument()
     expect(screen.getByText('2026-05-10')).toBeInTheDocument()
 

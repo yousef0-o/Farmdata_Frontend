@@ -60,7 +60,7 @@ export function ActiveFlocksTable({ flocks, loading }: ActiveFlocksTableProps) {
               <th className="px-6 py-4">الحالة</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-gray-100 dark:divide-gray-800/40 text-sm text-gray-700 dark:text-gray-300">
+          <tbody className="divide-y divide-gray-100 dark:divide-gray-800/40 text-sm text-gray-700">
             {displayedFlocks.map((flock) => {
               const days = calculateDays(flock.entry_date)
               return (
@@ -99,7 +99,7 @@ export function ActiveFlocksTable({ flocks, loading }: ActiveFlocksTableProps) {
         <div className="text-left">
           <Link
             href="/flocks"
-            className="text-xs font-bold text-farm-blue hover:text-blue-800 transition-colors duration-200"
+            className="text-xs font-bold text-farm-blue hover:text-farm-blue/80 transition-colors duration-200"
           >
             عرض الكل ({flocks.length}) ←
           </Link>

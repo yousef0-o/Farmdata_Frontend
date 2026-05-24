@@ -21,10 +21,10 @@ export function StatCard({
     <div className="bg-surface p-6 rounded-2xl shadow-sm border border-border flex flex-col justify-between relative overflow-hidden transition-all duration-200 hover:shadow-md">
       <div className="flex items-start justify-between">
         <div className="space-y-1">
-          <p className="text-3xl font-extrabold text-gray-900 dark:text-[#ffffff] leading-tight">
+          <p className="text-3xl font-extrabold text-gray-900 leading-tight">
             {value}
           </p>
-          <p className="text-sm font-semibold text-gray-500 dark:text-gray-700">{title}</p>
+          <p className="text-sm font-semibold text-gray-500 dark:text-gray-400">{title}</p>
         </div>
         {icon && (
           <div className="p-3 bg-gray-50 dark:bg-gray-950 rounded-xl text-gray-400 dark:text-gray-500">
@@ -38,7 +38,7 @@ export function StatCard({
           {trend && trend !== 'neutral' && (
             <span
               className={`font-bold flex items-center ${
-                trend === 'up' ? 'text-green-600' : 'text-red-600'
+                trend === 'up' ? 'text-emerald-600' : 'text-red-600'
               }`}
             >
               {trend === 'up' ? '↑' : '↓'} {trendValue}

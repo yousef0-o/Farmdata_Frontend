@@ -66,7 +66,7 @@ export default function AssetImportDropzone({ onImport, isPending, onClose }: As
             <button
               type="submit"
               disabled={!file || isPending}
-              className="flex-1 bg-farm-blue hover:bg-blue-800 disabled:opacity-50 text-white py-2.5 rounded-xl font-semibold text-sm transition-all flex items-center justify-center gap-2"
+              className="flex-1 bg-farm-blue hover:bg-farm-blue/90 disabled:opacity-50 text-white py-2.5 rounded-xl font-semibold text-sm transition-all flex items-center justify-center gap-2"
             >
               {isPending && <Loader2 className="w-4 h-4 animate-spin" />}
               <span>بدء الاستيراد</span>
@@ -74,7 +74,7 @@ export default function AssetImportDropzone({ onImport, isPending, onClose }: As
             <button
               type="button"
               onClick={() => { onClose(); setFile(null) }}
-              className="bg-gray-100 hover:bg-gray-250 text-gray-600 px-4 py-2.5 rounded-xl font-semibold text-xs transition-all"
+              className="bg-gray-100 hover:bg-gray-200 text-gray-600 px-4 py-2.5 rounded-xl font-semibold text-xs transition-all"
             >
               إلغاء
             </button>

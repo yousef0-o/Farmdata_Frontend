@@ -192,13 +192,13 @@ export default function InvoicesPage() {
   return (
     <div className="space-y-6 text-right" dir="rtl">
       {/* Top Header Card */}
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-[#ffffff] dark:bg-gray-900 p-6 rounded-2xl border border-gray-100 dark:border-gray-800 shadow-sm">
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-white p-6 rounded-2xl border border-gray-200 shadow-sm">
         <div className="flex items-center gap-4 text-right">
           <div className="p-3 bg-farm-blue/10 text-farm-blue rounded-xl">
             <DollarSign className="w-6 h-6" />
           </div>
           <div>
-            <h1 className="text-2xl font-bold text-gray-900 dark:text-white">الفواتير</h1>
+            <h1 className="text-2xl font-bold text-gray-900">الفواتير</h1>
             <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
               إنشاء فواتير البيع والشراء ومتابعة الأثر المخزني والمالي.
             </p>
@@ -206,7 +206,7 @@ export default function InvoicesPage() {
         </div>
         <button
           onClick={() => setShowCreateModal(true)}
-          className="flex items-center gap-2 bg-farm-blue hover:bg-blue-800 text-[#ffffff] px-5 py-3 rounded-xl transition-all font-semibold text-sm shadow-sm hover:scale-[1.01]"
+          className="flex items-center gap-2 bg-farm-blue hover:bg-farm-blue/90 text-white px-5 py-3 rounded-xl transition-all font-semibold text-sm shadow-sm hover:scale-[1.01]"
         >
           <Plus className="w-5 h-5" />
           <span>فاتورة جديدة</span>
@@ -215,10 +215,10 @@ export default function InvoicesPage() {
 
       {/* Metrics Row */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div className="bg-[#ffffff] dark:bg-gray-900 p-6 rounded-2xl border border-gray-100 dark:border-gray-800 shadow-sm flex items-center justify-between">
+        <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-sm flex items-center justify-between">
           <div className="space-y-1">
             <p className="text-sm font-medium text-gray-400">عدد الفواتير</p>
-            <p className="text-xl font-extrabold text-gray-900 dark:text-white mt-0.5">
+            <p className="text-xl font-extrabold text-gray-900 mt-0.5">
               {invoices.length} فواتير
             </p>
           </div>
@@ -227,10 +227,10 @@ export default function InvoicesPage() {
           </div>
         </div>
 
-        <div className="bg-[#ffffff] dark:bg-gray-900 p-6 rounded-2xl border border-gray-100 dark:border-gray-800 shadow-sm flex items-center justify-between">
+        <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-sm flex items-center justify-between">
           <div className="space-y-1">
             <p className="text-sm font-medium text-gray-400">قيمة الفواتير</p>
-            <p className="text-xl font-extrabold text-gray-900 dark:text-white mt-0.5">
+            <p className="text-xl font-extrabold text-gray-900 mt-0.5">
               {invoices.reduce((sum: number, inv: Invoice) => sum + parseFloat(inv.total_amount || '0'), 0).toLocaleString('ar-SA', { style: 'currency', currency: 'SAR' })}
             </p>
           </div>
@@ -239,10 +239,10 @@ export default function InvoicesPage() {
           </div>
         </div>
 
-        <div className="bg-[#ffffff] dark:bg-gray-900 p-6 rounded-2xl border border-gray-100 dark:border-gray-800 shadow-sm flex items-center justify-between">
+        <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-sm flex items-center justify-between">
           <div className="space-y-1">
             <p className="text-sm font-medium text-gray-400">ضريبة القيمة المضافة</p>
-            <p className="text-xl font-extrabold text-gray-900 dark:text-white mt-0.5">
+            <p className="text-xl font-extrabold text-gray-900 mt-0.5">
               {invoices.reduce((sum: number, inv: Invoice) => sum + parseFloat(inv.tax_amount || '0'), 0).toLocaleString('ar-SA', { style: 'currency', currency: 'SAR' })}
             </p>
           </div>
@@ -253,16 +253,16 @@ export default function InvoicesPage() {
       </div>
 
       {/* Navigation Tabs and Search Toolbar */}
-      <div className="bg-[#ffffff] dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 shadow-sm overflow-hidden">
-        <div className="p-6 border-b border-gray-150 dark:border-gray-800 flex flex-col md:flex-row gap-4 items-center justify-between">
+      <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
+        <div className="p-6 border-b border-gray-200 flex flex-col md:flex-row gap-4 items-center justify-between">
           {/* Tabs */}
-          <div className="flex bg-gray-50 dark:bg-gray-950 p-1.5 rounded-xl border border-gray-100 dark:border-gray-800">
+          <div className="flex bg-gray-50 p-1.5 rounded-xl border border-gray-200">
             <button
               onClick={() => { setActiveTab('sales'); setPage(1) }}
               className={`px-5 py-2.5 rounded-lg text-sm font-bold transition-all duration-200 ${
                 activeTab === 'sales'
-                  ? 'bg-farm-blue text-[#ffffff] shadow-sm'
-                  : 'text-gray-500 hover:text-gray-900 dark:hover:text-white'
+                  ? 'bg-farm-blue text-white shadow-sm'
+                  : 'text-gray-500 hover:text-gray-900'
               }`}
             >
               فواتير المبيعات
@@ -271,8 +271,8 @@ export default function InvoicesPage() {
               onClick={() => { setActiveTab('purchase'); setPage(1) }}
               className={`px-5 py-2.5 rounded-lg text-sm font-bold transition-all duration-200 ${
                 activeTab === 'purchase'
-                  ? 'bg-farm-blue text-[#ffffff] shadow-sm'
-                  : 'text-gray-500 hover:text-gray-900 dark:hover:text-white'
+                  ? 'bg-farm-blue text-white shadow-sm'
+                  : 'text-gray-500 hover:text-gray-900'
               }`}
             >
               فواتير المشتريات
@@ -285,7 +285,7 @@ export default function InvoicesPage() {
             <input
               type="text"
               placeholder="رقم الفاتورة أو اسم العميل..."
-              className="w-full pl-4 pr-10 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-950 text-gray-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-farm-blue"
+              className="w-full pl-4 pr-10 py-2.5 rounded-xl border border-gray-200 bg-gray-50 text-gray-900 text-sm focus:outline-none focus:ring-2 focus:ring-farm-blue"
               value={search}
               onChange={(e) => { setSearch(e.target.value); setPage(1) }}
             />
@@ -301,12 +301,12 @@ export default function InvoicesPage() {
             </div>
           ) : invoices.length === 0 ? (
             <div className="p-12 text-center flex flex-col items-center justify-center gap-4">
-              <div className="w-16 h-16 bg-gray-50 dark:bg-gray-950 rounded-full flex items-center justify-center border border-gray-100 dark:border-gray-800">
+              <div className="w-16 h-16 bg-gray-50 rounded-full flex items-center justify-center border border-gray-200">
                 <FileText className="w-8 h-8 text-gray-400" />
               </div>
               <div>
-                <h3 className="font-bold text-gray-800 dark:text-white">لا توجد فواتير</h3>
-                <p className="text-sm text-gray-500 dark:text-gray-400 mt-1 max-w-sm">
+                <h3 className="font-bold text-gray-900">لا توجد فواتير</h3>
+                <p className="text-sm text-gray-500 mt-1 max-w-sm">
                   ابدأ بإنشاء فاتورة جديدة من الزر أعلاه.
                 </p>
               </div>
@@ -314,7 +314,7 @@ export default function InvoicesPage() {
           ) : (
             <table className="w-full text-right border-collapse">
               <thead>
-                <tr className="bg-gray-50 dark:bg-gray-950 border-b border-gray-100 dark:border-gray-800 text-xs font-bold text-gray-500 dark:text-gray-400">
+                <tr className="bg-gray-50 border-b border-gray-200 text-xs font-bold text-gray-500">
                   <th className="py-4 px-6">رقم الفاتورة</th>
                   <th className="py-4 px-6">التاريخ</th>
                   <th className="py-4 px-6">{activeTab === 'sales' ? 'العميل' : 'المورد'}</th>
@@ -324,9 +324,9 @@ export default function InvoicesPage() {
                   <th className="py-4 px-6 text-center">خيارات</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-gray-100 dark:divide-gray-850">
+              <tbody className="divide-y divide-gray-250">
                 {invoices.map((inv: Invoice) => (
-                  <tr key={inv.id} className="hover:bg-gray-50/50 dark:hover:bg-gray-950/20 text-sm text-gray-700 dark:text-gray-300">
+                  <tr key={inv.id} className="hover:bg-gray-100/30 text-sm text-gray-700">
                     <td className="py-4 px-6 font-mono font-bold text-farm-blue">{inv.invoice_number}</td>
                     <td className="py-4 px-6">{inv.invoice_date}</td>
                     <td className="py-4 px-6">
@@ -334,7 +334,7 @@ export default function InvoicesPage() {
                     </td>
                     <td className="py-4 px-6">{inv.warehouse?.name || 'مستودع مجهول'}</td>
                     <td className="py-4 px-6 font-bold">{parseFloat(inv.tax_amount).toLocaleString('ar-SA', { style: 'currency', currency: 'SAR' })}</td>
-                    <td className="py-4 px-6 font-bold text-gray-900 dark:text-white">
+                    <td className="py-4 px-6 font-bold text-gray-900">
                       {parseFloat(inv.total_amount).toLocaleString('ar-SA', { style: 'currency', currency: 'SAR' })}
                     </td>
                     <td className="py-4 px-6">
@@ -364,7 +364,7 @@ export default function InvoicesPage() {
 
         {/* Pagination */}
         {meta && meta.last_page > 1 && (
-          <div className="p-6 border-t border-gray-100 dark:border-gray-800 flex justify-between items-center bg-gray-50 dark:bg-gray-950">
+          <div className="p-6 border-t border-gray-200 flex justify-between items-center bg-gray-50">
             <span className="text-xs text-gray-500">
               صفحة {meta.current_page} من {meta.last_page}
             </span>
@@ -372,14 +372,14 @@ export default function InvoicesPage() {
               <button
                 onClick={() => setPage(prev => Math.max(prev - 1, 1))}
                 disabled={meta.current_page === 1}
-                className="px-4 py-2 text-xs font-semibold bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-lg disabled:opacity-50"
+                className="px-4 py-2 text-xs font-semibold bg-white border border-gray-200 rounded-lg disabled:opacity-50"
               >
                 السابق
               </button>
               <button
                 onClick={() => setPage(prev => Math.min(prev + 1, meta.last_page))}
                 disabled={meta.current_page === meta.last_page}
-                className="px-4 py-2 text-xs font-semibold bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-lg disabled:opacity-50"
+                className="px-4 py-2 text-xs font-semibold bg-white border border-gray-200 rounded-lg disabled:opacity-50"
               >
                 التالي
               </button>
@@ -391,20 +391,20 @@ export default function InvoicesPage() {
       {/* CREATE MODAL */}
       {showCreateModal && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-[#ffffff] dark:bg-gray-900 rounded-3xl w-full max-w-4xl shadow-2xl border border-gray-100 dark:border-gray-800 flex flex-col max-h-[90vh]">
+          <div className="bg-white rounded-3xl w-full max-w-4xl shadow-2xl border border-gray-200 flex flex-col max-h-[90vh]">
             {/* Header */}
-            <div className="p-6 border-b border-gray-100 dark:border-gray-800 flex justify-between items-center">
+            <div className="p-6 border-b border-gray-200 flex justify-between items-center">
               <div className="flex items-center gap-3">
                 <div className="p-2 bg-farm-blue/10 text-farm-blue rounded-xl">
                   <Plus className="w-5 h-5" />
                 </div>
-                <h3 className="text-lg font-bold text-gray-900 dark:text-white">
+                <h3 className="text-lg font-bold text-gray-900">
                   إنشاء فاتورة {activeTab === 'sales' ? 'مبيعات' : 'مشتريات'}
                 </h3>
               </div>
               <button
                 onClick={() => setShowCreateModal(false)}
-                className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full transition-all text-gray-400 hover:text-gray-600"
+                className="p-2 hover:bg-gray-100 rounded-full transition-all text-gray-400 hover:text-gray-600"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -413,7 +413,7 @@ export default function InvoicesPage() {
             {/* Scrollable Form Body */}
             <form onSubmit={handleSubmitInvoice} className="flex-1 overflow-y-auto p-6 space-y-6">
               {formErrors.form && (
-                <div className="p-4 bg-red-50 dark:bg-red-950/20 border border-red-100 dark:border-red-900 text-red-700 dark:text-red-400 rounded-2xl flex items-center gap-3">
+                <div className="p-4 bg-red-100 border border-red-200 text-red-700 rounded-2xl flex items-center gap-3">
                   <Info className="w-5 h-5 text-red-500 shrink-0" />
                   <p className="text-sm font-semibold">{formErrors.form}</p>
                 </div>
@@ -426,8 +426,8 @@ export default function InvoicesPage() {
                   <input
                     type="text"
                     required
-                    className={`w-full border rounded-xl px-4 py-2.5 bg-gray-50 dark:bg-gray-950 text-gray-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-farm-blue ${
-                      formErrors.invoice_number ? 'border-red-500' : 'border-gray-200 dark:border-gray-800'
+                    className={`w-full border rounded-xl px-4 py-2.5 bg-gray-50 text-gray-900 text-sm focus:outline-none focus:ring-2 focus:ring-farm-blue ${
+                      formErrors.invoice_number ? 'border-red-500' : 'border-gray-200'
                     }`}
                     value={invoiceNumber}
                     onChange={(e) => setInvoiceNumber(e.target.value)}
@@ -441,8 +441,8 @@ export default function InvoicesPage() {
                   <input
                     type="date"
                     required
-                    className={`w-full border rounded-xl px-4 py-2.5 bg-gray-50 dark:bg-gray-950 text-gray-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-farm-blue ${
-                      formErrors.invoice_date ? 'border-red-500' : 'border-gray-200 dark:border-gray-800'
+                    className={`w-full border rounded-xl px-4 py-2.5 bg-gray-50 text-gray-900 text-sm focus:outline-none focus:ring-2 focus:ring-farm-blue ${
+                      formErrors.invoice_date ? 'border-red-500' : 'border-gray-200'
                     }`}
                     value={invoiceDate}
                     onChange={(e) => setInvoiceDate(e.target.value)}
@@ -454,7 +454,7 @@ export default function InvoicesPage() {
                   <label className="block text-xs font-bold text-gray-500 dark:text-gray-400 mb-2">تاريخ الاستحقاق</label>
                   <input
                     type="date"
-                    className="w-full border border-gray-200 dark:border-gray-800 rounded-xl px-4 py-2.5 bg-gray-50 dark:bg-gray-950 text-gray-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-farm-blue"
+                    className="w-full border border-gray-200 rounded-xl px-4 py-2.5 bg-gray-50 text-gray-900 text-sm focus:outline-none focus:ring-2 focus:ring-farm-blue"
                     value={dueDate}
                     onChange={(e) => setDueDate(e.target.value)}
                   />
@@ -467,8 +467,8 @@ export default function InvoicesPage() {
                   <label className="block text-xs font-bold text-gray-500 dark:text-gray-400 mb-2">المستودع المحاسبي المولد للحركة *</label>
                   <select
                     required
-                    className={`w-full border rounded-xl px-4 py-2.5 bg-gray-50 dark:bg-gray-950 text-gray-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-farm-blue ${
-                      formErrors.warehouse_id ? 'border-red-500' : 'border-gray-200 dark:border-gray-800'
+                    className={`w-full border rounded-xl px-4 py-2.5 bg-gray-50 text-gray-900 text-sm focus:outline-none focus:ring-2 focus:ring-farm-blue ${
+                      formErrors.warehouse_id ? 'border-red-500' : 'border-gray-200'
                     }`}
                     value={warehouseId}
                     onChange={(e) => setWarehouseId(e.target.value)}
@@ -488,8 +488,8 @@ export default function InvoicesPage() {
                   {activeTab === 'sales' ? (
                     <select
                       required
-                      className={`w-full border rounded-xl px-4 py-2.5 bg-gray-50 dark:bg-gray-950 text-gray-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-farm-blue ${
-                        formErrors.customer_id ? 'border-red-500' : 'border-gray-200 dark:border-gray-800'
+                      className={`w-full border rounded-xl px-4 py-2.5 bg-gray-50 text-gray-900 text-sm focus:outline-none focus:ring-2 focus:ring-farm-blue ${
+                        formErrors.customer_id ? 'border-red-500' : 'border-gray-200'
                       }`}
                       value={customerId}
                       onChange={(e) => setCustomerId(e.target.value)}
@@ -502,8 +502,8 @@ export default function InvoicesPage() {
                   ) : (
                     <select
                       required
-                      className={`w-full border rounded-xl px-4 py-2.5 bg-gray-50 dark:bg-gray-950 text-gray-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-farm-blue ${
-                        formErrors.supplier_id ? 'border-red-500' : 'border-gray-200 dark:border-gray-800'
+                      className={`w-full border rounded-xl px-4 py-2.5 bg-gray-50 text-gray-900 text-sm focus:outline-none focus:ring-2 focus:ring-farm-blue ${
+                        formErrors.supplier_id ? 'border-red-500' : 'border-gray-200'
                       }`}
                       value={supplierId}
                       onChange={(e) => setSupplierId(e.target.value)}
@@ -525,7 +525,7 @@ export default function InvoicesPage() {
               {/* Items Detail Grid */}
               <div className="space-y-4">
                 <div className="flex justify-between items-center">
-                  <h4 className="text-sm font-bold text-gray-800 dark:text-white">أصناف الفاتورة وحركات المخازن</h4>
+                  <h4 className="text-sm font-bold text-gray-900">أصناف الفاتورة وحركات المخازن</h4>
                   <button
                     type="button"
                     onClick={handleAddItemRow}
@@ -538,10 +538,10 @@ export default function InvoicesPage() {
 
                 {formErrors.items && <p className="text-xs text-red-500">{formErrors.items}</p>}
 
-                <div className="border border-gray-150 dark:border-gray-800 rounded-2xl overflow-hidden">
+                <div className="border border-gray-200 rounded-2xl overflow-hidden">
                   <table className="w-full text-right border-collapse">
                     <thead>
-                      <tr className="bg-gray-50 dark:bg-gray-950 border-b border-gray-150 dark:border-gray-800 text-xs font-bold text-gray-500 dark:text-gray-400">
+                      <tr className="bg-gray-50 border-b border-gray-200 text-xs font-bold text-gray-500">
                         <th className="py-3 px-4 w-1/2">الصنف</th>
                         <th className="py-3 px-4">الكمية</th>
                         <th className="py-3 px-4">سعر الوحدة</th>
@@ -549,7 +549,7 @@ export default function InvoicesPage() {
                         <th className="py-3 px-4 text-center">حذف</th>
                       </tr>
                     </thead>
-                    <tbody className="divide-y divide-gray-100 dark:divide-gray-850">
+                    <tbody className="divide-y divide-gray-250">
                       {formItems.map((item, index) => {
                         const qty = parseFloat(item.quantity) || 0
                         const price = parseFloat(item.unit_price) || 0
@@ -558,7 +558,7 @@ export default function InvoicesPage() {
                             <td className="p-3">
                               <select
                                 required
-                                className="w-full border border-gray-200 dark:border-gray-800 rounded-lg px-2.5 py-1.5 text-xs bg-gray-50 dark:bg-gray-950 text-gray-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-farm-blue"
+                                className="w-full border border-gray-200 rounded-lg px-2.5 py-1.5 text-xs bg-gray-50 text-gray-900 focus:outline-none focus:ring-1 focus:ring-farm-blue"
                                 value={item.item_id}
                                 onChange={(e) => handleItemChange(index, 'item_id', e.target.value)}
                               >
@@ -574,7 +574,7 @@ export default function InvoicesPage() {
                                 required
                                 min="0.01"
                                 step="any"
-                                className="w-24 border border-gray-200 dark:border-gray-800 rounded-lg px-2.5 py-1.5 text-xs bg-gray-50 dark:bg-gray-950 text-gray-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-farm-blue"
+                                className="w-24 border border-gray-200 rounded-lg px-2.5 py-1.5 text-xs bg-gray-50 text-gray-900 focus:outline-none focus:ring-1 focus:ring-farm-blue"
                                 value={item.quantity}
                                 onChange={(e) => handleItemChange(index, 'quantity', e.target.value)}
                                 placeholder="1"
@@ -586,13 +586,13 @@ export default function InvoicesPage() {
                                 required
                                 min="0"
                                 step="any"
-                                className="w-28 border border-gray-200 dark:border-gray-800 rounded-lg px-2.5 py-1.5 text-xs bg-gray-50 dark:bg-gray-950 text-gray-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-farm-blue"
+                                className="w-28 border border-gray-200 rounded-lg px-2.5 py-1.5 text-xs bg-gray-50 text-gray-900 focus:outline-none focus:ring-1 focus:ring-farm-blue"
                                 value={item.unit_price}
                                 onChange={(e) => handleItemChange(index, 'unit_price', e.target.value)}
                                 placeholder="0.00"
                               />
                             </td>
-                            <td className="p-3 font-mono font-bold text-gray-900 dark:text-white">
+                            <td className="p-3 font-mono font-bold text-gray-900">
                               {(qty * price).toLocaleString('ar-SA', { style: 'currency', currency: 'SAR' })}
                             </td>
                             <td className="p-3">
@@ -600,7 +600,7 @@ export default function InvoicesPage() {
                                 <button
                                   type="button"
                                   onClick={() => handleRemoveItemRow(index)}
-                                  className="p-1.5 text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-950/10 rounded-md transition-colors"
+                                  className="p-1.5 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-md transition-colors"
                                 >
                                   <Trash2 className="w-4 h-4" />
                                 </button>
@@ -615,7 +615,7 @@ export default function InvoicesPage() {
               </div>
 
               {/* Form aggregates totals */}
-              <div className="p-4 bg-gray-50 dark:bg-gray-950 rounded-2xl border border-gray-100 dark:border-gray-800 flex justify-between items-center flex-wrap gap-4">
+              <div className="p-4 bg-gray-50 rounded-2xl border border-gray-200 flex justify-between items-center flex-wrap gap-4">
                 <div className="flex gap-6 text-sm">
                   <div>
                     <span className="text-gray-400">الإجمالي الفرعي: </span>
@@ -642,7 +642,7 @@ export default function InvoicesPage() {
               <div>
                 <label className="block text-xs font-bold text-gray-500 dark:text-gray-400 mb-2">ملاحظات الفاتورة</label>
                 <textarea
-                  className="w-full border border-gray-200 dark:border-gray-800 rounded-xl px-4 py-2.5 bg-gray-50 dark:bg-gray-950 text-gray-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-farm-blue h-20"
+                  className="w-full border border-gray-200 rounded-xl px-4 py-2.5 bg-gray-50 text-gray-900 text-sm focus:outline-none focus:ring-2 focus:ring-farm-blue h-20"
                   value={notes}
                   onChange={(e) => setNotes(e.target.value)}
                   placeholder="اكتب أي شروط أو تفاصيل إضافية متعلقة بالربط المالي أو التسليم..."
@@ -650,18 +650,18 @@ export default function InvoicesPage() {
               </div>
 
               {/* Action Buttons */}
-              <div className="flex justify-end gap-3 pt-4 border-t border-gray-100 dark:border-gray-800">
+              <div className="flex justify-end gap-3 pt-4 border-t border-gray-200">
                 <button
                   type="button"
                   onClick={() => setShowCreateModal(false)}
-                  className="px-5 py-2.5 text-sm font-semibold border border-gray-250 dark:border-gray-800 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-500 transition-colors"
+                  className="px-5 py-2.5 text-sm font-semibold border border-gray-250 rounded-xl hover:bg-gray-100 text-gray-500 transition-colors"
                 >
                   إلغاء
                 </button>
                 <button
                   type="submit"
                   disabled={createInvoiceMutation.isPending}
-                  className="px-5 py-2.5 text-sm font-bold bg-farm-blue hover:bg-blue-800 text-[#ffffff] rounded-xl transition-all shadow-sm flex items-center gap-2 hover:scale-[1.01] disabled:opacity-50"
+                  className="px-5 py-2.5 text-sm font-bold bg-farm-blue hover:bg-farm-blue/90 text-white rounded-xl transition-all shadow-sm flex items-center gap-2 hover:scale-[1.01] disabled:opacity-50"
                 >
                   {createInvoiceMutation.isPending ? (
                     <>
@@ -681,15 +681,15 @@ export default function InvoicesPage() {
       {/* VIEW DETAILS MODAL */}
       {showDetailsModal && selectedInvoice && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-[#ffffff] dark:bg-gray-900 rounded-3xl w-full max-w-4xl shadow-2xl border border-gray-100 dark:border-gray-800 flex flex-col max-h-[90vh]">
+          <div className="bg-white rounded-3xl w-full max-w-4xl shadow-2xl border border-gray-200 flex flex-col max-h-[90vh]">
             {/* Header */}
-            <div className="p-6 border-b border-gray-100 dark:border-gray-800 flex justify-between items-center">
+            <div className="p-6 border-b border-gray-200 flex justify-between items-center">
               <div className="flex items-center gap-3">
                 <div className="p-2 bg-farm-blue/10 text-farm-blue rounded-xl">
                   <FileText className="w-5 h-5" />
                 </div>
                 <div>
-                  <h3 className="text-lg font-bold text-gray-900 dark:text-white">
+                  <h3 className="text-lg font-bold text-gray-900">
                     تفاصيل الفاتورة: {selectedInvoice.invoice_number}
                   </h3>
                   <span className="inline-flex items-center gap-1 text-xs text-farm-blue font-semibold mt-0.5">
@@ -700,7 +700,7 @@ export default function InvoicesPage() {
               </div>
               <button
                 onClick={() => setShowDetailsModal(false)}
-                className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full transition-all text-gray-400 hover:text-gray-600"
+                className="p-2 hover:bg-gray-100 rounded-full transition-all text-gray-400 hover:text-gray-600"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -708,30 +708,30 @@ export default function InvoicesPage() {
 
             {/* Content Details */}
             <div className="flex-1 overflow-y-auto p-6 space-y-6">
-              <div className="grid grid-cols-1 md:grid-cols-4 gap-6 bg-gray-50 dark:bg-gray-950 p-6 rounded-2xl border border-gray-100 dark:border-gray-800 text-sm">
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-6 bg-gray-50 p-6 rounded-2xl border border-gray-200 text-sm">
                 <div>
                   <span className="block text-xs text-gray-450 mb-1 flex items-center gap-1 font-bold">
                     <Calendar className="w-3.5 h-3.5" /> تاريخ الترحيل
                   </span>
-                  <span className="font-bold text-gray-850 dark:text-white">{selectedInvoice.invoice_date}</span>
+                  <span className="font-bold text-gray-900">{selectedInvoice.invoice_date}</span>
                 </div>
                 <div>
                   <span className="block text-xs text-gray-450 mb-1 flex items-center gap-1 font-bold">
                     <Calendar className="w-3.5 h-3.5" /> تاريخ الاستحقاق
                   </span>
-                  <span className="font-bold text-gray-850 dark:text-white">{selectedInvoice.due_date || 'غير محدد'}</span>
+                  <span className="font-bold text-gray-900">{selectedInvoice.due_date || 'غير محدد'}</span>
                 </div>
                 <div>
                   <span className="block text-xs text-gray-450 mb-1 flex items-center gap-1 font-bold">
                     <WarehouseIcon className="w-3.5 h-3.5" /> المستودع المعتمد
                   </span>
-                  <span className="font-bold text-gray-850 dark:text-white">{selectedInvoice.warehouse?.name || 'مستودع مجهول'}</span>
+                  <span className="font-bold text-gray-900">{selectedInvoice.warehouse?.name || 'مستودع مجهول'}</span>
                 </div>
                 <div>
                   <span className="block text-xs text-gray-450 mb-1 flex items-center gap-1 font-bold">
                     <UserIcon className="w-3.5 h-3.5" /> {activeTab === 'sales' ? 'العميل المدين' : 'المورد الدائن'}
                   </span>
-                  <span className="font-bold text-gray-850 dark:text-white">
+                  <span className="font-bold text-gray-900">
                     {activeTab === 'sales' ? (selectedInvoice.customer?.customer_name || 'مجهول') : (selectedInvoice.supplier?.supplier_name || 'مجهول')}
                   </span>
                 </div>
@@ -739,25 +739,25 @@ export default function InvoicesPage() {
 
               {/* Items Grid */}
               <div className="space-y-3">
-                <h4 className="text-sm font-bold text-gray-800 dark:text-white">الأصناف الملحقة والقيود المخزنية</h4>
-                <div className="border border-gray-150 dark:border-gray-800 rounded-2xl overflow-hidden">
+                <h4 className="text-sm font-bold text-gray-900">الأصناف الملحقة والقيود المخزنية</h4>
+                <div className="border border-gray-200 rounded-2xl overflow-hidden">
                   <table className="w-full text-right border-collapse">
                     <thead>
-                      <tr className="bg-gray-50 dark:bg-gray-950 border-b border-gray-150 dark:border-gray-800 text-xs font-bold text-gray-500 dark:text-gray-400">
+                      <tr className="bg-gray-50 border-b border-gray-200 text-xs font-bold text-gray-500">
                         <th className="py-3 px-4 w-1/2">الصنف</th>
                         <th className="py-3 px-4">الكمية</th>
                         <th className="py-3 px-4">سعر الوحدة</th>
                         <th className="py-3 px-4">الإجمالي</th>
                       </tr>
                     </thead>
-                    <tbody className="divide-y divide-gray-100 dark:divide-gray-850">
+                    <tbody className="divide-y divide-gray-250">
                       {selectedInvoice.items && selectedInvoice.items.length > 0 ? (
                         selectedInvoice.items.map((item) => (
                           <tr key={item.id} className="text-sm text-gray-700 dark:text-gray-300">
                             <td className="p-3 font-semibold">{item.item?.name || 'صنف مجهول'}</td>
                             <td className="p-3 font-mono">{parseFloat(item.quantity).toLocaleString('en-US')}</td>
                             <td className="p-3 font-mono">{parseFloat(item.unit_price).toLocaleString('ar-SA', { style: 'currency', currency: 'SAR' })}</td>
-                            <td className="p-3 font-mono font-bold text-gray-900 dark:text-white">
+                            <td className="p-3 font-mono font-bold text-gray-900">
                               {parseFloat(item.total).toLocaleString('ar-SA', { style: 'currency', currency: 'SAR' })}
                             </td>
                           </tr>
@@ -773,16 +773,16 @@ export default function InvoicesPage() {
               </div>
 
               {/* Aggregates Summary */}
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 bg-gray-50 dark:bg-gray-950 p-6 rounded-2xl border border-gray-100 dark:border-gray-800">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 bg-gray-50 p-6 rounded-2xl border border-gray-200">
                 <div className="space-y-1">
                   <span className="text-xs text-gray-400 block font-bold">المجموع الفرعي الخالي من الضريبة</span>
-                  <span className="text-lg font-mono font-bold text-gray-900 dark:text-white">
+                  <span className="text-lg font-mono font-bold text-gray-900">
                     {(parseFloat(selectedInvoice.total_amount) - parseFloat(selectedInvoice.tax_amount)).toLocaleString('ar-SA', { style: 'currency', currency: 'SAR' })}
                   </span>
                 </div>
                 <div className="space-y-1">
                   <span className="text-xs text-gray-400 block font-bold">قيمة ضريبة القيمة المضافة (15%)</span>
-                  <span className="text-lg font-mono font-bold text-gray-900 dark:text-white">
+                  <span className="text-lg font-mono font-bold text-gray-900">
                     {parseFloat(selectedInvoice.tax_amount).toLocaleString('ar-SA', { style: 'currency', currency: 'SAR' })}
                   </span>
                 </div>
@@ -796,21 +796,21 @@ export default function InvoicesPage() {
 
               {/* Notes */}
               {selectedInvoice.notes && (
-                <div className="p-4 bg-blue-50/50 dark:bg-blue-950/10 rounded-2xl border border-blue-100/30">
-                  <span className="block text-xs font-bold text-blue-800 dark:text-blue-450 mb-1 flex items-center gap-1">
+                <div className="p-4 bg-blue-50/50 rounded-2xl border border-blue-100/30">
+                  <span className="block text-xs font-bold text-blue-800 mb-1 flex items-center gap-1">
                     <Info className="w-3.5 h-3.5" /> ملاحظات أو شروط إضافية
                   </span>
-                  <p className="text-sm text-blue-900 dark:text-blue-200 mt-1">{selectedInvoice.notes}</p>
+                  <p className="text-sm text-blue-900 mt-1">{selectedInvoice.notes}</p>
                 </div>
               )}
             </div>
 
             {/* Footer */}
-            <div className="p-6 border-t border-gray-100 dark:border-gray-800 flex justify-end">
+            <div className="p-6 border-t border-gray-200 flex justify-end">
               <button
                 type="button"
                 onClick={() => setShowDetailsModal(false)}
-                className="px-6 py-2.5 text-sm font-semibold bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-xl transition-all"
+                className="px-6 py-2.5 text-sm font-semibold bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-xl transition-all"
               >
                 إغلاق
               </button>

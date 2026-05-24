@@ -216,7 +216,7 @@ export default function SupplierForm({ editingSupplier, onSubmit, onClose, isPen
             </h2>
             <p className="text-xs text-gray-400 mt-0.5">الخطوة {step + 1} من {STEPS.length} — {STEPS[step].label}</p>
           </div>
-          <button onClick={onClose} className="p-2 hover:bg-gray-250 rounded-full transition-all text-gray-400">
+          <button onClick={onClose} className="p-2 hover:bg-gray-200 rounded-full transition-all text-gray-400">
             <X className="w-5 h-5" />
           </button>
         </div>
@@ -232,14 +232,14 @@ export default function SupplierForm({ editingSupplier, onSubmit, onClose, isPen
                   i === step
                     ? 'bg-farm-blue text-white'
                     : i < step
-                    ? 'bg-emerald-100 text-emerald-700 cursor-pointer'
-                    : 'bg-gray-100 text-gray-500'
+                    ? 'bg-emerald-100 text-emerald-700 cursor-pointer dark:bg-emerald-950/40 dark:text-emerald-400'
+                    : 'bg-gray-100 text-gray-500 dark:text-gray-400'
                 }`}
               >
                 {i < step ? <Check className="w-3.5 h-3.5" /> : <span>{i + 1}</span>}
                 {s.label}
               </button>
-              {i < STEPS.length - 1 && <div className="w-6 h-px bg-gray-250" />}
+              {i < STEPS.length - 1 && <div className="w-6 h-px bg-gray-200" />}
             </React.Fragment>
           ))}
         </div>
@@ -247,8 +247,8 @@ export default function SupplierForm({ editingSupplier, onSubmit, onClose, isPen
         {/* Body — div بدل form عشان نمنع أي submission عرضي */}
         <div className="flex-1 overflow-y-auto p-6 space-y-6">
           {allErrors.non_field && (
-            <div className="p-4 bg-red-100 border border-red-200 text-red-650 text-sm rounded-xl flex items-center gap-3">
-              <AlertCircle className="w-5 h-5 shrink-0 text-red-550" />
+            <div className="p-4 bg-red-100 border border-red-200 text-red-650 dark:bg-red-950/20 dark:border-red-900/30 dark:text-red-400 text-sm rounded-xl flex items-center gap-3">
+              <AlertCircle className="w-5 h-5 shrink-0 text-red-600 dark:text-red-400" />
               <span>{allErrors.non_field}</span>
             </div>
           )}
@@ -334,17 +334,17 @@ export default function SupplierForm({ editingSupplier, onSubmit, onClose, isPen
             </div>
             <div className="flex gap-3">
               <button type="button" onClick={onClose}
-                className="bg-gray-100 hover:bg-gray-250 text-gray-600 px-5 py-2.5 rounded-xl font-semibold text-sm transition-all">
+                className="bg-gray-100 hover:bg-gray-200 text-gray-600 px-5 py-2.5 rounded-xl font-semibold text-sm transition-all">
                 إلغاء
               </button>
               {step < STEPS.length - 1 ? (
                 <button type="button" onClick={handleNext}
-                  className="bg-farm-blue hover:bg-blue-800 text-white px-6 py-2.5 rounded-xl font-semibold text-sm transition-all flex items-center gap-2">
+                  className="bg-farm-blue hover:bg-farm-blue/90 text-white px-6 py-2.5 rounded-xl font-semibold text-sm transition-all flex items-center gap-2">
                   <ChevronLeft className="w-4 h-4" /> التالي
                 </button>
               ) : (
                 <button type="button" onClick={handleSubmit} disabled={isPending}
-                  className="bg-farm-blue hover:bg-blue-800 disabled:opacity-50 text-white px-6 py-2.5 rounded-xl font-semibold text-sm transition-all flex items-center gap-2">
+                  className="bg-farm-blue hover:bg-farm-blue/90 disabled:opacity-50 text-white px-6 py-2.5 rounded-xl font-semibold text-sm transition-all flex items-center gap-2">
                   {isPending && <Loader2 className="w-4 h-4 animate-spin" />}
                   {editingSupplier ? 'حفظ التعديلات' : 'إضافة المورد'}
                 </button>

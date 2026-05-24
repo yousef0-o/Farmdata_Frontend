@@ -92,7 +92,7 @@ describe('ProductionEntryEditPage', () => {
     mockEntryError = true
     render(<ProductionEntryEditPage />)
     expect(screen.getByText('التسجيل غير موجود')).toBeInTheDocument()
-    expect(screen.getByText('العودة للقطيع')).toBeInTheDocument()
+    expect(screen.getByText('العودة للفوج')).toBeInTheDocument()
   })
 
   it('pre-fills form inputs and handles form submission successfully', async () => {

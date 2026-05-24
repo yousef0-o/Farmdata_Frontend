@@ -127,7 +127,7 @@ export default function BreedingEntryForm({ flockId, onSuccess, onCancel }: Bree
       {/* Actions */}
       <div className="flex gap-3 justify-end pt-4 border-t border-gray-100">
         <button type="button" onClick={onCancel} className="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-600 rounded-xl font-medium transition-colors">إلغاء</button>
-        <button type="submit" disabled={createEntry.isPending} className="px-6 py-2 bg-farm-green hover:bg-green-700 text-white rounded-xl font-medium transition-colors disabled:opacity-50 flex items-center gap-2">
+        <button type="submit" disabled={createEntry.isPending} className="px-6 py-2 bg-farm-green hover:bg-farm-green/90 text-white rounded-xl font-medium transition-colors disabled:opacity-50 flex items-center gap-2">
           {createEntry.isPending && <Loader2 className="w-4 h-4 animate-spin" />}
           حفظ التسجيل اليومي
         </button>

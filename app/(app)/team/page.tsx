@@ -130,7 +130,7 @@ export default function TeamPage() {
     <PermissionGuard permission="view-team">
       <div className="space-y-6" dir="rtl">
         {/* Header Widget */}
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center p-6 bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 shadow-sm gap-4">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center p-6 bg-white rounded-2xl border border-gray-200 shadow-sm gap-4">
           <div className="flex items-center gap-4">
             <div className="p-3 bg-farm-blue/10 text-farm-blue rounded-xl">
               <Users className="w-6 h-6" />
@@ -153,7 +153,7 @@ export default function TeamPage() {
         </div>
 
         {/* Filter / Search Bar */}
-        <div className="flex items-center gap-3 p-4 bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 shadow-sm">
+        <div className="flex items-center gap-3 p-4 bg-white rounded-2xl border border-gray-200 shadow-sm">
           <div className="relative flex-1">
             <Search className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
             <input
@@ -164,13 +164,13 @@ export default function TeamPage() {
                 setPage(1)
               }}
               placeholder="ابحث باسم الموظف أو البريد الإلكتروني..."
-              className="w-full pl-4 pr-12 py-3 bg-gray-50 dark:bg-gray-950 border border-gray-100 dark:border-gray-800 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-farm-blue/20"
+              className="w-full pl-4 pr-12 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-farm-blue/20"
             />
           </div>
         </div>
 
         {/* Team Grid Table */}
-        <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 overflow-hidden shadow-sm">
+        <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden shadow-sm">
           {isLoading ? (
             <div className="flex flex-col items-center justify-center py-20 gap-3">
               <div className="w-10 h-10 border-4 border-farm-blue border-t-transparent rounded-full animate-spin" />
@@ -185,7 +185,7 @@ export default function TeamPage() {
             <div className="overflow-x-auto">
               <table className="w-full border-collapse text-right">
                 <thead>
-                  <tr className="bg-gray-50 dark:bg-gray-900/50 border-b border-gray-100 dark:border-gray-800">
+                  <tr className="bg-gray-50/50 border-b border-gray-200">
                     <th className="p-4 text-xs font-bold text-gray-500 dark:text-gray-400">الاسم / البريد الإلكتروني</th>
                     <th className="p-4 text-xs font-bold text-gray-500 dark:text-gray-400">رقم الهاتف</th>
                     <th className="p-4 text-xs font-bold text-gray-500 dark:text-gray-400">الدور الافتراضي</th>
@@ -200,7 +200,7 @@ export default function TeamPage() {
                     return (
                       <tr
                         key={user.id}
-                        className="hover:bg-gray-50/50 dark:hover:bg-gray-900/20 transition-all"
+                        className="hover:bg-gray-100/30 transition-all"
                       >
                         <td className="p-4">
                           <div className="flex flex-col">
@@ -278,7 +278,7 @@ export default function TeamPage() {
 
           {/* Pagination Controls */}
           {response?.meta && response.meta.last_page > 1 && (
-            <div className="p-4 bg-gray-50 dark:bg-gray-900/50 border-t border-gray-100 dark:border-gray-800 flex items-center justify-between">
+            <div className="p-4 bg-gray-50 border-t border-gray-200 flex items-center justify-between">
               <span className="text-xs text-gray-400 dark:text-gray-500 font-sans">
                 الصفحة {page} من {response.meta.last_page} (إجمالي {response.meta.total} موظف)
               </span>
@@ -287,14 +287,14 @@ export default function TeamPage() {
                 <button
                   onClick={() => setPage((p) => Math.max(1, p - 1))}
                   disabled={page === 1}
-                  className="p-2 rounded-lg border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-950 disabled:opacity-40 transition-all"
+                  className="p-2 rounded-lg border border-gray-200 bg-white disabled:opacity-40 transition-all"
                 >
                   <ChevronRight className="w-4 h-4" />
                 </button>
                 <button
                   onClick={() => setPage((p) => Math.min(response.meta!.last_page, p + 1))}
                   disabled={page === response.meta.last_page}
-                  className="p-2 rounded-lg border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-950 disabled:opacity-40 transition-all"
+                  className="p-2 rounded-lg border border-gray-200 bg-white disabled:opacity-40 transition-all"
                 >
                   <ChevronLeft className="w-4 h-4" />
                 </button>
@@ -306,9 +306,9 @@ export default function TeamPage() {
         {/* Create/Edit Slide-over Modal Dialog */}
         {showModal && (
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs transition-all">
-            <div className="w-full max-w-4xl max-h-[90vh] bg-white dark:bg-gray-950 rounded-2xl shadow-xl border border-gray-100 dark:border-gray-900 flex flex-col overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+            <div className="w-full max-w-4xl max-h-[90vh] bg-white rounded-2xl shadow-xl border border-gray-200 flex flex-col overflow-hidden animate-in fade-in zoom-in-95 duration-200">
               {/* Modal Header */}
-              <div className="p-6 border-b border-gray-100 dark:border-gray-900 flex justify-between items-center bg-gray-50 dark:bg-gray-900/40">
+              <div className="p-6 border-b border-gray-200 flex justify-between items-center bg-gray-50">
                 <div className="flex items-center gap-3">
                   <div className="p-2 bg-farm-blue/10 text-farm-blue rounded-lg">
                     <ShieldCheck className="w-5 h-5" />
@@ -325,7 +325,7 @@ export default function TeamPage() {
 
                 <button
                   onClick={() => setShowModal(false)}
-                  className="p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-900 transition-all"
+                  className="p-2 text-gray-400 hover:text-gray-600 rounded-lg hover:bg-gray-100 transition-all"
                 >
                   <X className="w-5 h-5" />
                 </button>
@@ -348,7 +348,7 @@ export default function TeamPage() {
         {/* Delete Confirmation Alert Modal */}
         {deletingUser && (
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs">
-            <div className="w-full max-w-md bg-white dark:bg-gray-950 border border-gray-100 dark:border-gray-900 rounded-2xl p-6 shadow-xl text-center space-y-4">
+            <div className="w-full max-w-md bg-white border border-gray-200 rounded-2xl p-6 shadow-xl text-center space-y-4">
               <div className="p-3 bg-red-500/10 text-red-500 rounded-full w-14 h-14 flex items-center justify-center mx-auto">
                 <AlertTriangle className="w-8 h-8" />
               </div>
@@ -364,7 +364,7 @@ export default function TeamPage() {
               <div className="flex items-center gap-3 pt-2">
                 <button
                   onClick={() => setDeletingUser(null)}
-                  className="flex-1 px-4 py-3 rounded-xl border border-gray-200 dark:border-gray-800 text-sm font-semibold text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-900 transition-all"
+                  className="flex-1 px-4 py-3 rounded-xl border border-gray-200 text-sm font-semibold text-gray-500 hover:bg-gray-50 transition-all"
                 >
                   إلغاء
                 </button>

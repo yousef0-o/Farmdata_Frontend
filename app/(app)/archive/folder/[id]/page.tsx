@@ -516,7 +516,7 @@ export default function FolderDetailPage({ params }: PageProps) {
         </div>
         
         {/* X Axis Labels */}
-        <div className="flex justify-between border-t border-gray-100 dark:border-gray-800 pt-1 text-[8px] text-gray-400 font-semibold px-0.5">
+        <div className="flex justify-between border-t border-gray-100 pt-1 text-[8px] text-gray-400 font-semibold px-0.5">
           {labels.map((lbl, idx) => (
             <span key={idx} className="truncate max-w-[40px] text-center" title={lbl}>{lbl}</span>
           ))}
@@ -562,7 +562,7 @@ export default function FolderDetailPage({ params }: PageProps) {
           </svg>
           <div className="absolute flex flex-col items-center text-center">
             <span className="text-[7.5px] text-gray-400 font-bold">الإجمالي</span>
-            <span className="text-[9.5px] font-bold text-gray-800 dark:text-white truncate max-w-[60px]">
+            <span className="text-[9.5px] font-bold text-gray-800 truncate max-w-[60px]">
               {total.toLocaleString('ar-EG', { maximumFractionDigits: 0 })}
             </span>
           </div>
@@ -573,8 +573,8 @@ export default function FolderDetailPage({ params }: PageProps) {
           {labels.slice(0, 4).map((lbl, idx) => (
             <div key={idx} className="flex items-center gap-1 text-[8.5px]">
               <span className="w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ backgroundColor: colors[idx % colors.length] }} />
-              <span className="text-gray-500 dark:text-gray-400 truncate max-w-[65px]" title={lbl}>{lbl}</span>
-              <span className="text-gray-700 dark:text-gray-200 font-semibold mr-auto">
+              <span className="text-gray-500 truncate max-w-[65px]" title={lbl}>{lbl}</span>
+              <span className="text-gray-700 font-semibold mr-auto">
                 {total > 0 ? Math.round((values[idx] / total) * 100) : 0}%
               </span>
             </div>
@@ -654,7 +654,7 @@ export default function FolderDetailPage({ params }: PageProps) {
         </div>
         
         {/* X Axis Labels */}
-        <div className="flex justify-between border-t border-gray-100 dark:border-gray-800 pt-1 text-[8px] text-gray-400 font-semibold px-0.5 mt-0.5">
+        <div className="flex justify-between border-t border-gray-100 pt-1 text-[8px] text-gray-400 font-semibold px-0.5 mt-0.5">
           {labels.map((lbl, idx) => (
             <span key={idx} className="truncate max-w-[40px] text-center" title={lbl}>{lbl}</span>
           ))}
@@ -673,10 +673,10 @@ export default function FolderDetailPage({ params }: PageProps) {
           return (
             <div key={idx} className="space-y-0.5">
               <div className="flex justify-between items-center text-[9px] font-bold">
-                <span className="text-gray-600 dark:text-gray-400 truncate max-w-[120px]">{lbl}</span>
-                <span className="text-gray-800 dark:text-gray-200">{val.toLocaleString('ar-EG')}</span>
+                <span className="text-gray-600 truncate max-w-[120px]">{lbl}</span>
+                <span className="text-gray-800">{val.toLocaleString('ar-EG')}</span>
               </div>
-              <div className="w-full bg-gray-100 dark:bg-gray-800 h-1 rounded-full overflow-hidden">
+              <div className="w-full bg-gray-100 h-1 rounded-full overflow-hidden">
                 <div style={{ width: `${percent}%`, backgroundColor: color }} className="h-full rounded-full transition-all duration-500 ease-out" />
               </div>
             </div>
@@ -696,7 +696,7 @@ export default function FolderDetailPage({ params }: PageProps) {
 
     if (isLoading) {
       return (
-        <div className="h-40 bg-[#ffffff] dark:bg-gray-900 border border-gray-100 dark:border-gray-800 rounded-2xl flex items-center justify-center">
+        <div className="h-40 bg-white border border-gray-200 rounded-2xl flex items-center justify-center">
           <Loader2 className="w-5.5 h-5.5 animate-spin text-farm-blue" />
         </div>
       )
@@ -722,12 +722,12 @@ export default function FolderDetailPage({ params }: PageProps) {
     const customColor = config.widget_color || '#3b82f6'
 
     // Card styling based on alert status
-    let cardClasses = "bg-[#ffffff] dark:bg-gray-900 border border-gray-100 dark:border-gray-800 rounded-2xl shadow-sm p-5 relative overflow-hidden transition-all duration-300 hover:shadow-md"
+    let cardClasses = "bg-white border border-gray-200 rounded-2xl shadow-sm p-5 relative overflow-hidden transition-all duration-300 hover:shadow-md"
     if (isAlertActive) {
       if (isPositive) {
-        cardClasses += " border-emerald-500/80 dark:border-emerald-500/50 bg-emerald-50/5 dark:bg-emerald-950/5 shadow-[0_0_15px_rgba(16,185,129,0.05)]"
+        cardClasses += " border-emerald-500/80 bg-emerald-50/5 shadow-[0_0_15px_rgba(16,185,129,0.05)]"
       } else {
-        cardClasses += " border-red-500/80 dark:border-red-500/50 bg-red-50/5 dark:bg-red-950/5 shadow-[0_0_15px_rgba(239,68,68,0.05)]"
+        cardClasses += " border-red-500/80 bg-red-50/5 shadow-[0_0_15px_rgba(239,68,68,0.05)]"
       }
     }
 
@@ -750,7 +750,7 @@ export default function FolderDetailPage({ params }: PageProps) {
         {/* Header Actions */}
         <div className="flex items-center justify-between mb-2">
           <div className="flex items-center gap-1.5 min-w-0">
-            <span className="text-[10.5px] text-gray-500 dark:text-gray-400 font-bold truncate max-w-[130px]" title={config.name}>
+            <span className="text-[10.5px] text-gray-500 font-bold truncate max-w-[130px]" title={config.name}>
               {config.name}
             </span>
             {isAlertActive && (
@@ -764,14 +764,14 @@ export default function FolderDetailPage({ params }: PageProps) {
             <button 
               onClick={handleEditWidget}
               title="تعديل"
-              className="p-1 hover:bg-gray-50 dark:hover:bg-gray-800 rounded text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition-colors"
+              className="p-1 hover:bg-gray-50 rounded text-gray-400 hover:text-gray-650 transition-colors"
             >
               <Edit3 className="w-3.5 h-3.5" />
             </button>
             <button 
               onClick={() => handleDeleteStatsConfig(config.id)}
               title="حذف"
-              className="p-1 hover:bg-red-50 dark:hover:bg-red-950/20 rounded text-gray-400 hover:text-red-500 dark:hover:text-red-400 transition-colors"
+              className="p-1 hover:bg-red-50 rounded text-gray-400 hover:text-red-500 transition-colors"
             >
               <Trash2 className="w-3.5 h-3.5" />
             </button>
@@ -782,7 +782,7 @@ export default function FolderDetailPage({ params }: PageProps) {
         {config.chart_type === 'card' && (
           <div className="flex items-center justify-between mt-1">
             <div className="min-w-0">
-              <h4 className="text-xl font-bold text-gray-800 dark:text-white font-sans truncate">
+              <h4 className="text-xl font-bold text-gray-900 font-sans truncate">
                 {typeof val === 'number' ? val.toLocaleString('ar-EG', { maximumFractionDigits: 1 }) : val}
               </h4>
               {config.threshold_value !== undefined && config.threshold_value !== null && (
@@ -827,7 +827,7 @@ export default function FolderDetailPage({ params }: PageProps) {
   return (
     <div className="space-y-6" dir="rtl">
       {/* Breadcrumb Header */}
-      <div className="flex flex-wrap items-center gap-2 text-xs text-gray-500 dark:text-gray-400">
+      <div className="flex flex-wrap items-center gap-2 text-xs text-gray-500">
         <Link href="/archive" className="hover:text-farm-blue font-semibold">الأرشيف الرئيسي</Link>
         {breadcrumbs.map((crumb) => (
           <React.Fragment key={crumb.id}>
@@ -842,16 +842,16 @@ export default function FolderDetailPage({ params }: PageProps) {
       </div>
 
       {/* Title block */}
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-[#ffffff] dark:bg-gray-900 p-6 rounded-2xl border border-gray-100 dark:border-gray-800 shadow-sm">
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-white p-6 rounded-2xl border border-gray-200 shadow-sm">
         <div className="flex items-center gap-3">
-          <div className="p-3.5 bg-emerald-50 dark:bg-emerald-950/30 text-emerald-600 rounded-2xl shadow-sm">
+          <div className="p-3.5 bg-emerald-50 text-emerald-600 rounded-2xl shadow-sm">
             <Folder className="w-7 h-7" />
           </div>
           <div>
-            <h1 className="text-xl font-bold text-gray-900 dark:text-[#ffffff] font-sans">
+            <h1 className="text-xl font-bold text-gray-900 font-sans">
               {folderRes?.data?.name ?? 'سجلات المجلد المالي'}
             </h1>
-            <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">تخصيص الحقول، استيراد جداول البيانات، والمعالجة بالذكاء الاصطناعي</p>
+            <p className="text-xs text-gray-500 mt-1">تخصيص الحقول، استيراد جداول البيانات، والمعالجة بالذكاء الاصطناعي</p>
           </div>
         </div>
 
@@ -861,8 +861,8 @@ export default function FolderDetailPage({ params }: PageProps) {
             onClick={() => setIsEditingSchema(!isEditingSchema)}
             className={`flex items-center gap-1.5 px-4 py-2.5 rounded-xl border font-semibold text-xs transition-all active:scale-[0.98] ${
               isEditingSchema
-                ? 'bg-amber-50 dark:bg-amber-950/30 text-amber-600 border-amber-200 dark:border-amber-900'
-                : 'bg-[#ffffff] dark:bg-gray-900 text-gray-600 dark:text-gray-300 border-gray-200 dark:border-gray-800 hover:bg-gray-50'
+                ? 'bg-amber-50 text-amber-600 border-amber-200'
+                : 'bg-white text-gray-600 border-gray-200 hover:bg-gray-50'
             }`}
           >
             <Settings className="w-4 h-4 animate-spin-slow" />
@@ -872,7 +872,7 @@ export default function FolderDetailPage({ params }: PageProps) {
           {/* Add item */}
           <button
             onClick={() => handleOpenItemForm()}
-            className="flex items-center gap-1.5 px-4 py-2.5 bg-farm-blue text-[#ffffff] font-bold text-xs rounded-xl shadow-md hover:bg-opacity-90 active:scale-[0.98] transition-all"
+            className="flex items-center gap-1.5 px-4 py-2.5 bg-farm-blue text-white font-bold text-xs rounded-xl shadow-md hover:bg-opacity-90 active:scale-[0.98] transition-all"
           >
             <Plus className="w-4 h-4" />
             <span>إضافة سجل مالي</span>
@@ -881,7 +881,7 @@ export default function FolderDetailPage({ params }: PageProps) {
       </div>
 
       {/* Analytics Dashboard Header & Dynamic Date Filter Bar */}
-      <div className="bg-[#ffffff] dark:bg-gray-900 border border-gray-100 dark:border-gray-800 p-6 rounded-2xl shadow-sm space-y-4 print:hidden">
+      <div className="bg-white border border-gray-200 p-6 rounded-2xl shadow-sm space-y-4 print:hidden">
         <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-4">
           <div className="flex items-center gap-2 text-farm-blue">
             <TrendingUp className="w-5 h-5" />
@@ -890,14 +890,14 @@ export default function FolderDetailPage({ params }: PageProps) {
           
           <button
             onClick={() => window.print()}
-            className="flex items-center gap-1.5 px-4 py-2 border border-gray-200 dark:border-gray-800 rounded-xl text-xs font-bold text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-all cursor-pointer"
+            className="flex items-center gap-1.5 px-4 py-2 border border-gray-200 rounded-xl text-xs font-bold text-gray-650 hover:bg-gray-50 transition-all cursor-pointer"
           >
             <Printer className="w-4 h-4" />
             <span>تصدير كتقرير / طباعة</span>
           </button>
         </div>
 
-        <div className="flex flex-wrap items-center gap-4 pt-2 border-t border-gray-50 dark:border-gray-800/40">
+        <div className="flex flex-wrap items-center gap-4 pt-2 border-t border-gray-250">
           {/* Quick Date Range Selection */}
           <div className="flex items-center gap-2">
             <button
@@ -908,7 +908,7 @@ export default function FolderDetailPage({ params }: PageProps) {
                 setDateFrom(firstDay)
                 setDateTo(lastDay)
               }}
-              className="px-3 py-1.5 bg-gray-50 dark:bg-gray-800/50 hover:bg-gray-100 rounded-lg text-[10px] font-bold text-gray-500 dark:text-gray-400 transition-colors"
+              className="px-3 py-1.5 bg-gray-50 hover:bg-gray-100 rounded-lg text-[10px] font-bold text-gray-500 transition-colors"
             >
               هذا الشهر
             </button>
@@ -920,7 +920,7 @@ export default function FolderDetailPage({ params }: PageProps) {
                 setDateFrom(firstDay)
                 setDateTo(lastDay)
               }}
-              className="px-3 py-1.5 bg-gray-50 dark:bg-gray-800/50 hover:bg-gray-100 rounded-lg text-[10px] font-bold text-gray-500 dark:text-gray-400 transition-colors"
+              className="px-3 py-1.5 bg-gray-50 hover:bg-gray-100 rounded-lg text-[10px] font-bold text-gray-500 transition-colors"
             >
               هذه السنة
             </button>
@@ -929,7 +929,7 @@ export default function FolderDetailPage({ params }: PageProps) {
                 setDateFrom('')
                 setDateTo('')
               }}
-              className="px-3 py-1.5 bg-gray-50 dark:bg-gray-800/50 hover:bg-gray-100 rounded-lg text-[10px] font-bold text-gray-500 dark:text-gray-400 transition-colors"
+              className="px-3 py-1.5 bg-gray-50 hover:bg-gray-100 rounded-lg text-[10px] font-bold text-gray-500 transition-colors"
             >
               كل الأوقات
             </button>
@@ -938,11 +938,11 @@ export default function FolderDetailPage({ params }: PageProps) {
           {/* Date Picker Inputs */}
           <div className="flex flex-wrap items-center gap-3 mr-auto min-w-0">
             <div className="flex items-center gap-2 text-xs">
-              <span className="text-gray-400 dark:text-gray-500 flex-shrink-0">الفلترة بـ:</span>
+              <span className="text-gray-450 flex-shrink-0">الفلترة بـ:</span>
               <select
                 value={selectedDateCol}
                 onChange={(e) => setSelectedDateCol(e.target.value)}
-                className="px-3 py-1.5 bg-gray-50 dark:bg-gray-800 border border-gray-100 dark:border-gray-800 rounded-xl text-xs dark:text-[#ffffff] focus:outline-none"
+                className="px-3 py-1.5 bg-gray-50 border border-gray-200 rounded-xl text-xs focus:outline-none"
               >
                 {columns.filter(c => c.type === 'date').map(c => (
                   <option key={c.key} value={c.key}>{c.label}</option>
@@ -958,14 +958,14 @@ export default function FolderDetailPage({ params }: PageProps) {
                 type="date"
                 value={dateFrom}
                 onChange={(e) => setDateFrom(e.target.value)}
-                className="px-3 py-1.5 bg-gray-50 dark:bg-gray-800 border border-gray-100 dark:border-gray-800 rounded-xl text-xs dark:text-[#ffffff] focus:outline-none"
+                className="px-3 py-1.5 bg-gray-50 border border-gray-200 rounded-xl text-xs focus:outline-none"
               />
-              <span className="text-gray-300 dark:text-gray-700">إلى</span>
+              <span className="text-gray-400">إلى</span>
               <input
                 type="date"
                 value={dateTo}
                 onChange={(e) => setDateTo(e.target.value)}
-                className="px-3 py-1.5 bg-gray-50 dark:bg-gray-800 border border-gray-100 dark:border-gray-800 rounded-xl text-xs dark:text-[#ffffff] focus:outline-none"
+                className="px-3 py-1.5 bg-gray-50 border border-gray-200 rounded-xl text-xs focus:outline-none"
               />
             </div>
           </div>
@@ -985,7 +985,7 @@ export default function FolderDetailPage({ params }: PageProps) {
             setStatsCol('')
             setShowStatsModal(true)
           }}
-          className="flex items-center justify-center gap-2 p-6 border-2 border-dashed border-gray-200 dark:border-gray-800 hover:border-farm-blue rounded-2xl text-gray-500 hover:text-farm-blue transition-all group"
+          className="flex items-center justify-center gap-2 p-6 border-2 border-dashed border-gray-200 hover:border-farm-blue rounded-2xl text-gray-500 hover:text-farm-blue transition-all group"
         >
           <Plus className="w-5 h-5 group-hover:scale-110 transition-transform" />
           <span className="text-xs font-bold font-sans">إضافة بطاقة إحصائيات</span>
@@ -995,17 +995,17 @@ export default function FolderDetailPage({ params }: PageProps) {
       {/* Excel & OCR Pipeline Actions Bar */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Excel Pipeline Panel */}
-        <div className="p-6 bg-[#ffffff] dark:bg-gray-900 border border-gray-100 dark:border-gray-800 rounded-2xl shadow-sm space-y-4">
-          <div className="flex items-center gap-2 text-emerald-600 dark:text-emerald-400">
+        <div className="p-6 bg-white border border-gray-200 rounded-2xl shadow-sm space-y-4">
+          <div className="flex items-center gap-2 text-emerald-600">
             <FileSpreadsheet className="w-5 h-5" />
             <h3 className="text-sm font-bold font-sans">معالجة واستيراد جداول البيانات الذكية (Excel)</h3>
           </div>
-          <p className="text-xs text-gray-500 dark:text-gray-400 leading-relaxed">
+          <p className="text-xs text-gray-500 leading-relaxed">
             ارفع ملف إكسل مباشرة. سيقوم النظام بتحليل الترويسات ومطابقتها ذكياً مع حقول هذا المجلد المالي باستخدام التوافق التقريبي للحروف والترجمات.
           </p>
 
           <div className="flex items-center gap-4 pt-2">
-            <label className="flex items-center gap-2 px-4 py-2.5 bg-gray-50 dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700/80 border border-gray-200 dark:border-gray-700 rounded-xl text-xs font-bold text-gray-700 dark:text-[#ffffff] cursor-pointer transition-all">
+            <label className="flex items-center gap-2 px-4 py-2.5 bg-gray-50 hover:bg-gray-100 border border-gray-200 rounded-xl text-xs font-bold text-gray-700 cursor-pointer transition-all">
               <span>اختر ملف Excel</span>
               <input type="file" accept=".xlsx,.xls,.csv" onChange={handleExcelUpload} className="hidden" />
             </label>
@@ -1014,7 +1014,7 @@ export default function FolderDetailPage({ params }: PageProps) {
               href={`${process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:8000/api'}/archive/folders/${folderId}/export`}
               target="_blank"
               rel="noreferrer"
-              className="flex items-center gap-1.5 px-4 py-2.5 border border-gray-200 dark:border-gray-800 rounded-xl text-xs font-bold text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-all"
+              className="flex items-center gap-1.5 px-4 py-2.5 border border-gray-200 rounded-xl text-xs font-bold text-gray-650 hover:bg-gray-50 transition-all"
             >
               <ArrowDownToLine className="w-3.5 h-3.5" />
               <span>تصدير السجلات الحالية</span>
@@ -1023,12 +1023,12 @@ export default function FolderDetailPage({ params }: PageProps) {
         </div>
 
         {/* OCR Scanner Pipeline Panel */}
-        <div className="p-6 bg-[#ffffff] dark:bg-gray-900 border border-gray-100 dark:border-gray-800 rounded-2xl shadow-sm space-y-4">
-          <div className="flex items-center gap-2 text-purple-600 dark:text-purple-400">
+        <div className="p-6 bg-white border border-gray-200 rounded-2xl shadow-sm space-y-4">
+          <div className="flex items-center gap-2 text-purple-600">
             <ScanFace className="w-5 h-5" />
             <h3 className="text-sm font-bold font-sans">المعالجة بالذكاء الاصطناعي والاستخراج الضوئي (OCR)</h3>
           </div>
-          <p className="text-xs text-gray-500 dark:text-gray-400 leading-relaxed">
+          <p className="text-xs text-gray-500 leading-relaxed">
             قم برفع حزمة من المستندات الممسوحة ضوئياً (PDF/صور). سيقوم محرك القراءة في الخلفية بالاستخراج الذكي للقيم وتطابقها لحفظ السجلات تلقائياً.
           </p>
 
@@ -1038,12 +1038,12 @@ export default function FolderDetailPage({ params }: PageProps) {
               multiple
               accept="application/pdf,image/*"
               onChange={(e) => setScanFiles(e.target.files)}
-              className="text-xs text-gray-500 border border-gray-200 dark:border-gray-800 p-1.5 rounded-lg w-full max-w-xs"
+              className="text-xs text-gray-500 border border-gray-200 p-1.5 rounded-lg w-full max-w-xs"
             />
             <button
               onClick={handleScannerUpload}
               disabled={scanningLoading || !scanFiles}
-              className="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-[#ffffff] font-bold text-xs rounded-xl shadow disabled:opacity-50 transition-all"
+              className="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white font-bold text-xs rounded-xl shadow disabled:opacity-50 transition-all"
             >
               {scanningLoading ? (
                 <span className="flex items-center gap-1">
@@ -1057,24 +1057,22 @@ export default function FolderDetailPage({ params }: PageProps) {
           </div>
 
           {activeJobId && (
-            <div className="p-3 bg-purple-50 dark:bg-purple-950/20 border border-purple-100 dark:border-purple-900 rounded-xl flex items-center justify-between text-xs">
-              <span className="text-purple-700 dark:text-purple-400 font-semibold animate-pulse">
+            <div className="p-3 bg-purple-105 border border-purple-200 rounded-xl flex items-center justify-between text-xs">
+              <span className="text-purple-700 font-semibold animate-pulse">
                 حالة الاستخراج: {jobStatus === 'pending' ? 'انتظار' : 'جاري الفحص المتقدم للمحتوى'}
               </span>
               <Loader2 className="w-4 h-4 text-purple-600 animate-spin" />
             </div>
           )}
         </div>
-      </div>
-
-      {/* Dynamic Schema Columns Builder Editor Panel */}
+      </div>="      {/* Dynamic Schema Columns Builder Editor Panel */}
       {isEditingSchema && (
-        <div className="p-6 bg-amber-50/40 dark:bg-amber-950/10 border border-amber-200/50 dark:border-amber-900/30 rounded-2xl space-y-4">
+        <div className="p-6 bg-amber-50 border border-amber-200 rounded-2xl space-y-4">
           <div className="flex items-center justify-between">
-            <h3 className="text-sm font-bold text-gray-800 dark:text-[#ffffff] font-sans">تعديل هيكل حقول البيانات والمستندات</h3>
+            <h3 className="text-sm font-bold text-gray-900 font-sans">تعديل هيكل حقول البيانات والمستندات</h3>
             <button
               onClick={handleAddColumn}
-              className="flex items-center gap-1 px-3 py-1.5 bg-amber-600 text-[#ffffff] text-xs font-bold rounded-lg hover:bg-opacity-95"
+              className="flex items-center gap-1 px-3 py-1.5 bg-amber-600 text-white text-xs font-bold rounded-lg hover:bg-opacity-95"
             >
               <Plus className="w-3.5 h-3.5" />
               <span>إضافة حقل جديد</span>
@@ -1083,7 +1081,7 @@ export default function FolderDetailPage({ params }: PageProps) {
 
           <div className="space-y-3">
             {schemaColumns.map((col, index) => (
-              <div key={col.key || index} className="space-y-3.5 p-4 bg-[#ffffff] dark:bg-gray-900 border border-gray-150 dark:border-gray-800 rounded-2xl text-xs shadow-sm">
+              <div key={col.key || index} className="space-y-3.5 p-4 bg-white border border-gray-200 rounded-2xl text-xs shadow-sm">
                 
                 {/* Row 1: Key Metadata Fields */}
                 <div className="flex flex-wrap items-center gap-3">
@@ -1097,7 +1095,7 @@ export default function FolderDetailPage({ params }: PageProps) {
                         handleUpdateColumnField(index, 'label', e.target.value)
                       }}
                       placeholder="مثال: قيمة المبيعات"
-                      className="w-full p-2 border border-gray-250 dark:border-gray-800 bg-gray-50 dark:bg-gray-850 rounded-xl focus:outline-none focus:ring-1 focus:ring-amber-500 dark:text-[#ffffff]"
+                      className="w-full p-2 border border-gray-200 bg-gray-50 rounded-xl focus:outline-none focus:ring-1 focus:ring-amber-500"
                     />
                   </div>
 
@@ -1108,7 +1106,7 @@ export default function FolderDetailPage({ params }: PageProps) {
                       value={col.label_en || ''}
                       onChange={(e) => handleUpdateColumnField(index, 'label_en', e.target.value)}
                       placeholder="Example: Sales Amount"
-                      className="w-full p-2 border border-gray-250 dark:border-gray-880 bg-gray-50 dark:bg-gray-850 rounded-xl focus:outline-none focus:ring-1 focus:ring-amber-500 dark:text-[#ffffff]"
+                      className="w-full p-2 border border-gray-200 bg-gray-50 rounded-xl focus:outline-none focus:ring-1 focus:ring-amber-500"
                     />
                   </div>
 
@@ -1119,7 +1117,7 @@ export default function FolderDetailPage({ params }: PageProps) {
                       value={col.key}
                       onChange={(e) => handleUpdateColumnField(index, 'key', e.target.value)}
                       placeholder="example_key"
-                      className="w-full p-2 border border-gray-250 dark:border-gray-880 bg-gray-50 dark:bg-gray-850 rounded-xl focus:outline-none focus:ring-1 focus:ring-amber-500 dark:text-[#ffffff]"
+                      className="w-full p-2 border border-gray-200 bg-gray-50 rounded-xl focus:outline-none focus:ring-1 focus:ring-amber-500"
                     />
                   </div>
 
@@ -1128,7 +1126,7 @@ export default function FolderDetailPage({ params }: PageProps) {
                     <select
                       value={col.type}
                       onChange={(e) => handleUpdateColumnField(index, 'type', e.target.value)}
-                      className="w-full p-2 border border-gray-250 dark:border-gray-880 bg-gray-50 dark:bg-gray-850 rounded-xl focus:outline-none focus:ring-1 focus:ring-amber-500 dark:text-[#ffffff]"
+                      className="w-full p-2 border border-gray-200 bg-gray-50 rounded-xl focus:outline-none focus:ring-1 focus:ring-amber-500"
                     >
                       <option value="text">نص (Text)</option>
                       <option value="number">رقم (Number)</option>
@@ -1149,7 +1147,7 @@ export default function FolderDetailPage({ params }: PageProps) {
                         placeholder="خيار1, خيار2, خيار3"
                         value={Array.isArray(col.options) ? col.options.join(',') : ''}
                         onChange={(e) => handleUpdateColumnField(index, 'options', e.target.value.split(',').map(s => s.trim()).filter(Boolean))}
-                        className="w-full p-2 border border-gray-250 dark:border-gray-880 bg-gray-50 dark:bg-gray-850 rounded-xl focus:outline-none focus:ring-1 focus:ring-amber-500 dark:text-[#ffffff]"
+                        className="w-full p-2 border border-gray-200 bg-gray-50 rounded-xl focus:outline-none focus:ring-1 focus:ring-amber-500"
                       />
                     </div>
                   )}
@@ -1162,7 +1160,7 @@ export default function FolderDetailPage({ params }: PageProps) {
                         placeholder="[qty] * [price]"
                         value={col.formula || ''}
                         onChange={(e) => handleUpdateColumnField(index, 'formula', e.target.value)}
-                        className="w-full p-2 border border-gray-250 dark:border-gray-880 bg-gray-50 dark:bg-gray-855 rounded-xl focus:outline-none focus:ring-1 focus:ring-amber-500 dark:text-[#ffffff] text-left ltr"
+                        className="w-full p-2 border border-gray-200 bg-gray-50 rounded-xl focus:outline-none focus:ring-1 focus:ring-amber-500 text-left ltr"
                       />
                     </div>
                   )}
@@ -1174,7 +1172,7 @@ export default function FolderDetailPage({ params }: PageProps) {
                         <select
                           value={col.validation || 'none'}
                           onChange={(e) => handleUpdateColumnField(index, 'validation', e.target.value)}
-                          className="w-full p-2 border border-gray-250 dark:border-gray-880 bg-gray-50 dark:bg-gray-855 rounded-xl focus:outline-none focus:ring-1 focus:ring-amber-500 dark:text-[#ffffff]"
+                          className="w-full p-2 border border-gray-200 bg-gray-50 rounded-xl focus:outline-none focus:ring-1 focus:ring-amber-500"
                         >
                           <option value="none">بدون قيود</option>
                           <option value="email">بريد إلكتروني (Email)</option>
@@ -1191,7 +1189,7 @@ export default function FolderDetailPage({ params }: PageProps) {
                             placeholder="^[A-Z]{3}-\d+$"
                             value={col.validation_pattern || ''}
                             onChange={(e) => handleUpdateColumnField(index, 'validation_pattern', e.target.value)}
-                            className="w-full p-2 border border-gray-255 dark:border-gray-880 bg-gray-50 dark:bg-gray-855 rounded-xl focus:outline-none focus:ring-1 focus:ring-amber-500 dark:text-[#ffffff] text-left ltr"
+                            className="w-full p-2 border border-gray-200 bg-gray-50 rounded-xl focus:outline-none focus:ring-1 focus:ring-amber-500 text-left ltr"
                           />
                         </div>
                       )}
@@ -1204,7 +1202,7 @@ export default function FolderDetailPage({ params }: PageProps) {
                           type="number"
                           value={col.validation_min !== undefined ? col.validation_min : ''}
                           onChange={(e) => handleUpdateColumnField(index, 'validation_min', e.target.value === '' ? '' : parseFloat(e.target.value))}
-                          className="w-full p-2 border border-gray-250 dark:border-gray-880 bg-gray-50 dark:bg-gray-855 rounded-xl focus:outline-none focus:ring-1 focus:ring-amber-500 dark:text-[#ffffff]"
+                          className="w-full p-2 border border-gray-200 bg-gray-50 rounded-xl focus:outline-none focus:ring-1 focus:ring-amber-500"
                         />
                       </div>
 
@@ -1216,7 +1214,7 @@ export default function FolderDetailPage({ params }: PageProps) {
                           type="number"
                           value={col.validation_max !== undefined ? col.validation_max : ''}
                           onChange={(e) => handleUpdateColumnField(index, 'validation_max', e.target.value === '' ? '' : parseFloat(e.target.value))}
-                          className="w-full p-2 border border-gray-250 dark:border-gray-880 bg-gray-50 dark:bg-gray-855 rounded-xl focus:outline-none focus:ring-1 focus:ring-amber-500 dark:text-[#ffffff]"
+                          className="w-full p-2 border border-gray-200 bg-gray-50 rounded-xl focus:outline-none focus:ring-1 focus:ring-amber-500"
                         />
                       </div>
                     </>
@@ -1224,45 +1222,45 @@ export default function FolderDetailPage({ params }: PageProps) {
                 </div>
 
                 {/* Row 3: Action Buttons & Configurations */}
-                <div className="flex flex-wrap items-center justify-between pt-2.5 border-t border-gray-100 dark:border-gray-800/60">
+                <div className="flex flex-wrap items-center justify-between pt-2.5 border-t border-gray-200">
                   <div className="flex flex-wrap items-center gap-4">
-                    <label className="flex items-center gap-1.5 cursor-pointer font-semibold text-gray-600 dark:text-gray-300">
+                    <label className="flex items-center gap-1.5 cursor-pointer font-semibold text-gray-600">
                       <input
                         type="checkbox"
                         checked={!!col.required}
                         onChange={(e) => handleUpdateColumnField(index, 'required', e.target.checked)}
-                        className="rounded border-gray-300 dark:border-gray-700 text-amber-600 focus:ring-amber-500 focus:ring-offset-0 bg-transparent"
+                        className="rounded border-gray-350 text-amber-600 focus:ring-amber-500 focus:ring-offset-0 bg-transparent"
                       />
                       <span>إجباري</span>
                     </label>
 
-                    <label className="flex items-center gap-1.5 cursor-pointer font-semibold text-gray-600 dark:text-gray-300">
+                    <label className="flex items-center gap-1.5 cursor-pointer font-semibold text-gray-600">
                       <input
                         type="checkbox"
                         checked={!!col.searchable}
                         onChange={(e) => handleUpdateColumnField(index, 'searchable', e.target.checked)}
-                        className="rounded border-gray-300 dark:border-gray-700 text-amber-600 focus:ring-amber-500 focus:ring-offset-0 bg-transparent"
+                        className="rounded border-gray-350 text-amber-600 focus:ring-amber-500 focus:ring-offset-0 bg-transparent"
                       />
                       <span>قابل للبحث</span>
                     </label>
 
-                    <label className="flex items-center gap-1.5 cursor-pointer font-semibold text-gray-600 dark:text-gray-300">
+                    <label className="flex items-center gap-1.5 cursor-pointer font-semibold text-gray-600">
                       <input
                         type="checkbox"
                         checked={!!col.is_group_by}
                         onChange={(e) => handleUpdateColumnField(index, 'is_group_by', e.target.checked)}
-                        className="rounded border-gray-300 dark:border-gray-700 text-amber-600 focus:ring-amber-500 focus:ring-offset-0 bg-transparent"
+                        className="rounded border-gray-350 text-amber-600 focus:ring-amber-500 focus:ring-offset-0 bg-transparent"
                       />
                       <span>تجميع حسب</span>
                     </label>
 
                     {col.type === 'number' && (
-                      <label className="flex items-center gap-1.5 cursor-pointer font-semibold text-gray-600 dark:text-gray-300">
+                      <label className="flex items-center gap-1.5 cursor-pointer font-semibold text-gray-600">
                         <input
                           type="checkbox"
                           checked={!!col.is_sum}
                           onChange={(e) => handleUpdateColumnField(index, 'is_sum', e.target.checked)}
-                          className="rounded border-gray-300 dark:border-gray-700 text-amber-600 focus:ring-amber-500 focus:ring-offset-0 bg-transparent"
+                          className="rounded border-gray-350 text-amber-600 focus:ring-amber-500 focus:ring-offset-0 bg-transparent"
                         />
                         <span>جمع القيم</span>
                       </label>
@@ -1274,8 +1272,8 @@ export default function FolderDetailPage({ params }: PageProps) {
                       onClick={() => handleUpdateColumnField(index, 'is_shown', col.is_shown !== false ? false : true)}
                       className={`flex items-center gap-1 px-2.5 py-1 rounded-lg border text-[10px] font-bold transition-all ${
                         col.is_shown !== false
-                          ? 'bg-purple-50 text-purple-600 border-purple-200/50 dark:bg-purple-950/20 dark:text-purple-400 dark:border-purple-900/30'
-                          : 'bg-gray-50 text-gray-400 border-gray-200/50 dark:bg-gray-800 dark:text-gray-500 dark:border-gray-700/50'
+                          ? 'bg-purple-100 text-purple-700 border-purple-200'
+                          : 'bg-gray-50 text-gray-400 border-gray-200'
                       }`}
                       title="إظهار/إخفاء الحقل في الجدول"
                     >
@@ -1289,8 +1287,8 @@ export default function FolderDetailPage({ params }: PageProps) {
                       onClick={() => handleUpdateColumnField(index, 'is_attachment_key', !col.is_attachment_key)}
                       className={`flex items-center gap-1 px-2.5 py-1 rounded-lg border text-[10px] font-bold transition-all ${
                         col.is_attachment_key
-                          ? 'bg-orange-50 text-orange-600 border-orange-200/50 dark:bg-orange-950/20 dark:text-orange-400 dark:border-orange-900/30 font-bold shadow-sm'
-                          : 'bg-gray-50 text-gray-400 border-gray-200/50 dark:bg-gray-800 dark:text-gray-500 dark:border-gray-700/50'
+                          ? 'bg-orange-100 text-orange-700 border-orange-200 font-bold shadow-sm'
+                          : 'bg-gray-50 text-gray-400 border-gray-200'
                       }`}
                       title="تحديد كـ مفتاح ربط للمرفقات المشتركة بين الصفوف"
                     >
@@ -1302,7 +1300,7 @@ export default function FolderDetailPage({ params }: PageProps) {
                   <button
                     type="button"
                     onClick={() => handleRemoveColumn(index)}
-                    className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-950/30 rounded-xl transition-colors"
+                    className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-xl transition-colors"
                   >
                     <Trash2 className="w-4 h-4" />
                   </button>
@@ -1312,7 +1310,7 @@ export default function FolderDetailPage({ params }: PageProps) {
             ))}
           </div>
 
-          <div className="flex justify-end gap-3 pt-3 border-t border-amber-200/50">
+          <div className="flex justify-end gap-3 pt-3 border-t border-amber-200">
             <button
               onClick={() => setIsEditingSchema(false)}
               className="px-4 py-2 text-xs font-semibold text-gray-500 hover:bg-gray-100 rounded-lg"
@@ -1322,7 +1320,7 @@ export default function FolderDetailPage({ params }: PageProps) {
             <button
               onClick={handleSaveSchema}
               disabled={updateSchemaMutation.isPending}
-              className="flex items-center gap-1.5 px-5 py-2 bg-amber-600 text-[#ffffff] text-xs font-bold rounded-lg hover:bg-amber-700"
+              className="flex items-center gap-1.5 px-5 py-2 bg-amber-600 text-white text-xs font-bold rounded-lg hover:bg-amber-700"
             >
               {updateSchemaMutation.isPending && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
               <span>حفظ التعديلات الحقلية</span>
@@ -1332,9 +1330,9 @@ export default function FolderDetailPage({ params }: PageProps) {
       )}
 
       {/* Main Tabular Document Ledger View */}
-      <div className="bg-[#ffffff] dark:bg-gray-900 border border-gray-100 dark:border-gray-800 rounded-2xl shadow-sm overflow-hidden">
+      <div className="bg-white border border-gray-200 rounded-2xl shadow-sm overflow-hidden">
         {/* Grid Filters Bar */}
-        <div className="p-6 border-b border-gray-50 dark:border-gray-800 flex flex-col sm:flex-row justify-between items-center gap-4">
+        <div className="p-6 border-b border-gray-200 flex flex-col sm:flex-row justify-between items-center gap-4">
           <div className="relative w-full sm:w-72">
             <input
               type="text"
@@ -1344,7 +1342,7 @@ export default function FolderDetailPage({ params }: PageProps) {
                 setSearchTerm(e.target.value)
                 setPage(1)
               }}
-              className="w-full pl-4 pr-10 py-2 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-800 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-farm-blue dark:text-[#ffffff]"
+              className="w-full pl-4 pr-10 py-2 bg-gray-50 border border-gray-250 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-farm-blue"
             />
             <Search className="w-3.5 h-3.5 text-gray-400 absolute right-3.5 top-3" />
           </div>
@@ -1380,7 +1378,7 @@ export default function FolderDetailPage({ params }: PageProps) {
           ) : (
             <table className="w-full text-right border-collapse text-xs">
               <thead>
-                <tr className="bg-gray-50 dark:bg-gray-800/40 border-b border-gray-100 dark:border-gray-800 text-gray-400 font-semibold">
+                <tr className="bg-gray-50/40 border-b border-gray-100 text-gray-400 font-semibold">
                   <th className="p-4 w-12 text-center">
                     <input
                       type="checkbox"
@@ -1396,12 +1394,12 @@ export default function FolderDetailPage({ params }: PageProps) {
                     />
                   </th>
                   {visibleColumns.map((col) => (
-                    <th key={col.key} className="p-4 font-sans font-semibold text-gray-600 dark:text-gray-300">
+                    <th key={col.key} className="p-4 font-sans font-semibold text-gray-600">
                       {col.label}
                     </th>
                   ))}
-                  <th className="p-4 w-28 text-center text-gray-600 dark:text-gray-300">المرفقات</th>
-                  <th className="p-4 w-24 text-center text-gray-600 dark:text-gray-300">الإجراءات</th>
+                  <th className="p-4 w-28 text-center text-gray-600">المرفقات</th>
+                  <th className="p-4 w-24 text-center text-gray-600">الإجراءات</th>
                 </tr>
               </thead>
               <tbody>
@@ -1432,7 +1430,7 @@ export default function FolderDetailPage({ params }: PageProps) {
                     {visibleColumns.map((col) => {
                       const val = item.data?.[col.key]
                       return (
-                        <td key={col.key} className="p-4 font-medium dark:text-gray-200">
+                        <td key={col.key} className="p-4 font-medium">
                           {col.type === 'number' && typeof val === 'number'
                             ? val.toLocaleString('ar-EG')
                             : val ?? '-'}
@@ -1474,12 +1472,12 @@ export default function FolderDetailPage({ params }: PageProps) {
 
       {/* Row details Drawer & Streaming attachments */}
       {isRowDrawerOpen && selectedItem && (
-        <div className="fixed inset-y-0 left-0 w-full sm:w-[500px] bg-[#ffffff] dark:bg-gray-900 border-r border-gray-200 dark:border-gray-800 shadow-2xl p-6 z-50 flex flex-col justify-between overflow-y-auto animate-slide-in">
+        <div className="fixed inset-y-0 left-0 w-full sm:w-[500px] bg-white border-r border-gray-200 shadow-2xl p-6 z-50 flex flex-col justify-between overflow-y-auto animate-slide-in">
           <div className="space-y-6">
-            <div className="flex items-center justify-between border-b border-gray-100 dark:border-gray-800 pb-4">
+            <div className="flex items-center justify-between border-b border-gray-100 pb-4">
               <div className="flex items-center gap-2">
                 <FileSpreadsheet className="w-5 h-5 text-farm-blue" />
-                <h3 className="text-base font-bold text-gray-800 dark:text-[#ffffff] font-sans">تفاصيل السجل والمستند</h3>
+                <h3 className="text-base font-bold text-gray-800 font-sans">تفاصيل السجل والمستند</h3>
               </div>
               <button
                 onClick={() => {
@@ -1493,25 +1491,25 @@ export default function FolderDetailPage({ params }: PageProps) {
             </div>
 
             {/* Dynamic details */}
-            <div className="bg-gray-50 dark:bg-gray-800/40 p-4 rounded-xl space-y-3">
+            <div className="bg-gray-50/40 p-4 rounded-xl space-y-3">
               {columns.map((col) => (
                 <div key={col.key} className="flex justify-between items-center text-xs">
                   <span className="text-gray-400 font-semibold">{col.label}</span>
-                  <span className="font-bold text-gray-700 dark:text-[#ffffff]">{selectedItem.data?.[col.key] ?? '-'}</span>
+                  <span className="font-bold text-gray-700">{selectedItem.data?.[col.key] ?? '-'}</span>
                 </div>
               ))}
             </div>
 
             {/* Attachments Section */}
             <div className="space-y-4">
-              <h4 className="text-xs font-bold text-gray-800 dark:text-[#ffffff] font-sans">مرفقات المستند ({selectedItem.attachments?.length ?? 0})</h4>
+              <h4 className="text-xs font-bold text-gray-800 font-sans">مرفقات المستند ({selectedItem.attachments?.length ?? 0})</h4>
               
               <div className="space-y-2">
                 {selectedItem.attachments?.map((attach: any) => (
-                  <div key={attach.id} className="flex items-center justify-between p-3 bg-[#ffffff] dark:bg-gray-900 border border-gray-100 dark:border-gray-800 rounded-xl text-xs">
+                  <div key={attach.id} className="flex items-center justify-between p-3 bg-white border border-gray-100 rounded-xl text-xs">
                     <div className="flex items-center gap-2">
                       <Paperclip className="w-4 h-4 text-gray-400" />
-                      <span className="font-semibold text-gray-700 dark:text-[#ffffff] line-clamp-1">{attach.original_name}</span>
+                      <span className="font-semibold text-gray-700 line-clamp-1">{attach.original_name}</span>
                     </div>
 
                     <div className="flex items-center gap-3">
@@ -1538,7 +1536,7 @@ export default function FolderDetailPage({ params }: PageProps) {
               </div>
 
               {/* Upload Form */}
-              <div className="border-2 border-dashed border-gray-200 dark:border-gray-800 p-4 rounded-xl flex flex-col items-center gap-3 bg-gray-50/20 dark:bg-gray-900/50">
+              <div className="border-2 border-dashed border-gray-200 p-4 rounded-xl flex flex-col items-center gap-3 bg-gray-50/20/50">
                 <input
                   type="file"
                   onChange={(e) => setAttachmentFile(e.target.files?.[0] ?? null)}
@@ -1557,9 +1555,9 @@ export default function FolderDetailPage({ params }: PageProps) {
 
             {/* Streaming preview panel */}
             {streamingAttachmentUrl && (
-              <div className="border border-gray-200 dark:border-gray-800 rounded-xl overflow-hidden mt-6 shadow-sm">
-                <div className="bg-gray-50 dark:bg-gray-850 px-3 py-2 border-b border-gray-200 dark:border-gray-800 flex justify-between items-center text-[10px]">
-                  <span className="font-bold text-gray-600 dark:text-gray-300">معاينة المستند المباشر</span>
+              <div className="border border-gray-200 rounded-xl overflow-hidden mt-6 shadow-sm">
+                <div className="bg-gray-50 px-3 py-2 border-b border-gray-200 flex justify-between items-center text-[10px]">
+                  <span className="font-bold text-gray-600">معاينة المستند المباشر</span>
                   <button onClick={() => setStreamingAttachmentUrl(null)} className="text-red-500 font-bold">إغلاق</button>
                 </div>
                 <iframe
@@ -1576,8 +1574,8 @@ export default function FolderDetailPage({ params }: PageProps) {
       {/* Item Form Modal */}
       {showItemModal && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50">
-          <div className="bg-[#ffffff] dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl w-full max-w-lg p-6 shadow-xl max-h-[85vh] overflow-y-auto">
-            <h2 className="text-lg font-bold text-gray-900 dark:text-[#ffffff] font-sans">
+          <div className="bg-white border border-gray-200 rounded-2xl w-full max-w-lg p-6 shadow-xl max-h-[85vh] overflow-y-auto">
+            <h2 className="text-lg font-bold text-gray-900 font-sans">
               {editingItem ? 'تعديل السجل المالي' : 'إضافة سجل مالي جديد'}
             </h2>
 
@@ -1592,7 +1590,7 @@ export default function FolderDetailPage({ params }: PageProps) {
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 {columns.map((col) => (
                   <div key={col.key}>
-                    <label className="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1.5">
+                    <label className="block text-xs font-semibold text-gray-700 mb-1.5">
                       {col.label} {col.required && <span className="text-red-500">*</span>}
                     </label>
 
@@ -1607,20 +1605,20 @@ export default function FolderDetailPage({ params }: PageProps) {
                         step="any"
                         value={itemFormValues[col.key] ?? ''}
                         onChange={(e) => setItemFormValues({ ...itemFormValues, [col.key]: e.target.value === '' ? '' : parseFloat(e.target.value) })}
-                        className="w-full px-4 py-2.5 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl text-sm focus:ring-2 focus:ring-farm-blue dark:text-[#ffffff]"
+                        className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-farm-blue"
                       />
                     ) : col.type === 'date' ? (
                       <input
                         type="date"
                         value={itemFormValues[col.key] ?? ''}
                         onChange={(e) => setItemFormValues({ ...itemFormValues, [col.key]: e.target.value })}
-                        className="w-full px-4 py-2.5 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl text-sm focus:ring-2 focus:ring-farm-blue dark:text-[#ffffff]"
+                        className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-farm-blue"
                       />
                     ) : col.type === 'select' ? (
                       <select
                         value={itemFormValues[col.key] ?? ''}
                         onChange={(e) => setItemFormValues({ ...itemFormValues, [col.key]: e.target.value })}
-                        className="w-full px-4 py-2.5 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl text-sm focus:ring-2 focus:ring-farm-blue dark:text-[#ffffff]"
+                        className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-farm-blue"
                       >
                         <option value="">اختر خيار...</option>
                         {col.options?.map(opt => <option key={opt} value={opt}>{opt}</option>)}
@@ -1629,7 +1627,7 @@ export default function FolderDetailPage({ params }: PageProps) {
                       <select
                         value={itemFormValues[col.key] === true ? 'true' : itemFormValues[col.key] === false ? 'false' : ''}
                         onChange={(e) => setItemFormValues({ ...itemFormValues, [col.key]: e.target.value === '' ? '' : e.target.value === 'true' })}
-                        className="w-full px-4 py-2.5 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl text-sm focus:ring-2 focus:ring-farm-blue dark:text-[#ffffff]"
+                        className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-farm-blue"
                       >
                         <option value="">اختر...</option>
                         <option value="true">نعم</option>
@@ -1640,14 +1638,14 @@ export default function FolderDetailPage({ params }: PageProps) {
                         type="text"
                         value={itemFormValues[col.key] ?? ''}
                         onChange={(e) => setItemFormValues({ ...itemFormValues, [col.key]: e.target.value })}
-                        className="w-full px-4 py-2.5 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl text-sm focus:ring-2 focus:ring-farm-blue dark:text-[#ffffff]"
+                        className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-farm-blue"
                       />
                     )}
                   </div>
                 ))}
               </div>
 
-              <div className="flex items-center justify-end gap-3 pt-4 border-t border-gray-100 dark:border-gray-800">
+              <div className="flex items-center justify-end gap-3 pt-4 border-t border-gray-100">
                 <button
                   type="button"
                   onClick={() => setShowItemModal(false)}
@@ -1672,9 +1670,9 @@ export default function FolderDetailPage({ params }: PageProps) {
       {/* Stats Config Add/Edit Modal */}
       {showStatsModal && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50">
-          <div className="bg-[#ffffff] dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl w-full max-w-lg p-6 shadow-xl max-h-[90vh] overflow-y-auto" dir="rtl">
-            <div className="flex justify-between items-center border-b border-gray-150 dark:border-gray-800 pb-3 mb-4">
-              <h2 className="text-base font-bold text-gray-900 dark:text-[#ffffff] font-sans flex items-center gap-2">
+          <div className="bg-white border border-gray-200 rounded-2xl w-full max-w-lg p-6 shadow-xl max-h-[90vh] overflow-y-auto" dir="rtl">
+            <div className="flex justify-between items-center border-b border-gray-150 pb-3 mb-4">
+              <h2 className="text-base font-bold text-gray-900 font-sans flex items-center gap-2">
                 <Sliders className="w-5 h-5 text-farm-blue" />
                 <span>{editingStatsId ? 'تعديل بطاقة التحليلات والمؤشرات' : 'إضافة بطاقة تحليلات جديدة'}</span>
               </h2>
@@ -1692,25 +1690,25 @@ export default function FolderDetailPage({ params }: PageProps) {
             <form onSubmit={handleCreateOrUpdateStatsConfig} className="space-y-4">
               {/* Widget Name */}
               <div>
-                <label className="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1.5">عنوان المؤشر / البطاقة *</label>
+                <label className="block text-xs font-semibold text-gray-700 mb-1.5">عنوان المؤشر / البطاقة *</label>
                 <input
                   type="text"
                   required
                   value={statsName}
                   onChange={(e) => setStatsName(e.target.value)}
                   placeholder="مثال: إجمالي الرواتب، متوسط المبيعات"
-                  className="w-full px-4 py-2.5 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl text-sm focus:outline-none dark:text-[#ffffff]"
+                  className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none"
                 />
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 {/* Visual Chart Type */}
                 <div>
-                  <label className="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1.5">طريقة العرض البياني</label>
+                  <label className="block text-xs font-semibold text-gray-700 mb-1.5">طريقة العرض البياني</label>
                   <select
                     value={statsChartType}
                     onChange={(e) => setStatsChartType(e.target.value as any)}
-                    className="w-full px-4 py-2.5 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl text-sm dark:text-[#ffffff]"
+                    className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm"
                   >
                     <option value="card">بطاقة رقمية بسيطة (KPI Card)</option>
                     <option value="bar">رسم بياني أعمدة (Bar Chart)</option>
@@ -1722,11 +1720,11 @@ export default function FolderDetailPage({ params }: PageProps) {
 
                 {/* Aggregation Function */}
                 <div>
-                  <label className="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1.5">نوع التجميع (Aggregation)</label>
+                  <label className="block text-xs font-semibold text-gray-700 mb-1.5">نوع التجميع (Aggregation)</label>
                   <select
                     value={statsAgg}
                     onChange={(e) => setStatsAgg(e.target.value as any)}
-                    className="w-full px-4 py-2.5 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl text-sm dark:text-[#ffffff]"
+                    className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm"
                   >
                     <option value="count">عدد السجلات الإجمالي (Count)</option>
                     <option value="distinct_count">عدد فريد للقيم (Distinct Count)</option>
@@ -1740,12 +1738,12 @@ export default function FolderDetailPage({ params }: PageProps) {
               {/* Target Column selector */}
               {statsAgg !== 'count' && (
                 <div>
-                  <label className="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1.5">الحقل المستهدف للحساب</label>
+                  <label className="block text-xs font-semibold text-gray-700 mb-1.5">الحقل المستهدف للحساب</label>
                   <select
                     value={statsCol}
                     required
                     onChange={(e) => setStatsCol(e.target.value)}
-                    className="w-full px-4 py-2.5 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl text-sm dark:text-[#ffffff]"
+                    className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm"
                   >
                     <option value="">اختر حقل البيانات العددي...</option>
                     {columns.filter(c => c.type === 'number' || c.type === 'select' || c.type === 'text').map(col => (
@@ -1758,12 +1756,12 @@ export default function FolderDetailPage({ params }: PageProps) {
               {/* Group By selector (for charts) */}
               {(statsChartType !== 'card' || statsAgg === 'sum_group' || statsAgg === 'distinct_count') && (
                 <div>
-                  <label className="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1.5">حقل تصنيف المجموعات (Group By)</label>
+                  <label className="block text-xs font-semibold text-gray-700 mb-1.5">حقل تصنيف المجموعات (Group By)</label>
                   <select
                     value={statsGroupBy}
                     required
                     onChange={(e) => setStatsGroupBy(e.target.value)}
-                    className="w-full px-4 py-2.5 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl text-sm dark:text-[#ffffff]"
+                    className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm"
                   >
                     <option value="">اختر حقل التصنيف (تاريخ، نص، خيار)...</option>
                     {columns.map(col => (
@@ -1777,19 +1775,19 @@ export default function FolderDetailPage({ params }: PageProps) {
               )}
 
               {/* KPI Threshold Alert Rules */}
-              <div className="border-t border-gray-150 dark:border-gray-800 pt-3">
-                <h4 className="text-xs font-bold text-gray-800 dark:text-gray-200 mb-2 flex items-center gap-1">
+              <div className="border-t border-gray-150 pt-3">
+                <h4 className="text-xs font-bold text-gray-800 mb-2 flex items-center gap-1">
                   <AlertCircle className="w-4 h-4 text-amber-500" />
                   <span>عتبة التنبيه الذكي (KPI Threshold Alerts)</span>
                 </h4>
                 
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                   <div>
-                    <label className="block text-[10px] font-semibold text-gray-500 dark:text-gray-400 mb-1">الشرط</label>
+                    <label className="block text-[10px] font-semibold text-gray-500 mb-1">الشرط</label>
                     <select
                       value={statsThresholdCond}
                       onChange={(e) => setStatsThresholdCond(e.target.value)}
-                      className="w-full px-3 py-2 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-xs dark:text-[#ffffff]"
+                      className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-xs"
                     >
                       <option value="">بدون تنبيه</option>
                       <option value="gt">أكبر من (&gt;)</option>
@@ -1799,7 +1797,7 @@ export default function FolderDetailPage({ params }: PageProps) {
                   </div>
 
                   <div>
-                    <label className="block text-[10px] font-semibold text-gray-500 dark:text-gray-400 mb-1">العتبة المستهدفة</label>
+                    <label className="block text-[10px] font-semibold text-gray-500 mb-1">العتبة المستهدفة</label>
                     <input
                       type="number"
                       step="any"
@@ -1807,17 +1805,17 @@ export default function FolderDetailPage({ params }: PageProps) {
                       onChange={(e) => setStatsThresholdVal(e.target.value)}
                       placeholder="مثال: 5000"
                       disabled={!statsThresholdCond}
-                      className="w-full px-3 py-2 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-xs focus:outline-none disabled:opacity-50 dark:text-[#ffffff]"
+                      className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-xs focus:outline-none disabled:opacity-50"
                     />
                   </div>
 
                   <div>
-                    <label className="block text-[10px] font-semibold text-gray-500 dark:text-gray-400 mb-1">نوع التوهج والإنذار</label>
+                    <label className="block text-[10px] font-semibold text-gray-500 mb-1">نوع التوهج والإنذار</label>
                     <select
                       value={statsThresholdAlert}
                       onChange={(e) => setStatsThresholdAlert(e.target.value as any)}
                       disabled={!statsThresholdCond}
-                      className="w-full px-3 py-2 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-xs disabled:opacity-50 dark:text-[#ffffff]"
+                      className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-xs disabled:opacity-50"
                     >
                       <option value="negative">سلبي / إنذار (أحمر متوهج)</option>
                       <option value="positive">إيجابي / نجاح (أخضر متوهج)</option>
@@ -1827,8 +1825,8 @@ export default function FolderDetailPage({ params }: PageProps) {
               </div>
 
               {/* Accent Widget Color Picker */}
-              <div className="border-t border-gray-150 dark:border-gray-800 pt-3">
-                <label className="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1.5">اللون الرئيسي للبطاقة والرسم البياني</label>
+              <div className="border-t border-gray-150 pt-3">
+                <label className="block text-xs font-semibold text-gray-700 mb-1.5">اللون الرئيسي للبطاقة والرسم البياني</label>
                 <div className="flex flex-wrap items-center gap-3">
                   {[
                     { hex: '#3b82f6', label: 'أزرق' },
@@ -1854,20 +1852,20 @@ export default function FolderDetailPage({ params }: PageProps) {
                   ))}
                   
                   {/* Custom color input */}
-                  <div className="flex items-center gap-1.5 border border-gray-200 dark:border-gray-700 rounded-lg p-1 mr-auto bg-gray-50 dark:bg-gray-800">
+                  <div className="flex items-center gap-1.5 border border-gray-200 rounded-lg p-1 mr-auto bg-gray-50">
                     <input
                       type="color"
                       value={statsColor}
                       onChange={(e) => setStatsColor(e.target.value)}
                       className="w-6 h-6 border-0 bg-transparent cursor-pointer rounded"
                     />
-                    <span className="text-[10px] text-gray-500 font-mono font-bold dark:text-gray-400">{statsColor.toUpperCase()}</span>
+                    <span className="text-[10px] text-gray-500 font-mono font-bold">{statsColor.toUpperCase()}</span>
                   </div>
                 </div>
               </div>
 
               {/* Action Buttons */}
-              <div className="flex items-center justify-end gap-3 pt-4 border-t border-gray-150 dark:border-gray-800 mt-6">
+              <div className="flex items-center justify-end gap-3 pt-4 border-t border-gray-150 mt-6">
                 <button
                   type="button"
                   onClick={() => {
@@ -1893,9 +1891,9 @@ export default function FolderDetailPage({ params }: PageProps) {
       {/* Excel Imports Fuzzy Matching Confirmation Dialog */}
       {showExcelModal && excelFile && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50">
-          <div className="bg-[#ffffff] dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl w-full max-w-lg p-6 shadow-xl max-h-[85vh] overflow-y-auto">
-            <div className="flex justify-between items-center border-b border-gray-100 dark:border-gray-800 pb-4">
-              <h2 className="text-base font-bold text-gray-900 dark:text-[#ffffff] font-sans flex items-center gap-1.5 text-emerald-600">
+          <div className="bg-white border border-gray-200 rounded-2xl w-full max-w-lg p-6 shadow-xl max-h-[85vh] overflow-y-auto">
+            <div className="flex justify-between items-center border-b border-gray-100 pb-4">
+              <h2 className="text-base font-bold text-gray-900 font-sans flex items-center gap-1.5 text-emerald-600">
                 <FileSpreadsheet className="w-5 h-5" />
                 <span>مطابقة وتأكيد ترويسات الاستيراد الذكي</span>
               </h2>
@@ -1904,16 +1902,16 @@ export default function FolderDetailPage({ params }: PageProps) {
               </button>
             </div>
 
-            <p className="text-xs text-gray-500 dark:text-gray-400 leading-relaxed mt-4">
+            <p className="text-xs text-gray-500 leading-relaxed mt-4">
               لقد قمنا بقراءة الأعمدة في ملف الإكسل ومطابقتها تقريبياً مع حقول النموذج. يرجى التحقق من صحة المطابقات وتعديل الخيارات الخاطئة قبل المتابعة.
             </p>
 
             <div className="mt-4 space-y-4">
               {excelHeaders.map((hdr) => (
-                <div key={hdr} className="flex flex-wrap items-center justify-between gap-3 p-3 bg-gray-50 dark:bg-gray-800 rounded-xl text-xs">
+                <div key={hdr} className="flex flex-wrap items-center justify-between gap-3 p-3 bg-gray-50 rounded-xl text-xs">
                   <div>
                     <span className="block text-[10px] text-gray-400 font-semibold">ترويسة ملف Excel</span>
-                    <span className="font-bold text-gray-700 dark:text-[#ffffff]">{hdr}</span>
+                    <span className="font-bold text-gray-700">{hdr}</span>
                   </div>
 
                   <div className="w-full sm:w-56">
@@ -1921,7 +1919,7 @@ export default function FolderDetailPage({ params }: PageProps) {
                     <select
                       value={fuzzyMappings[hdr] ?? ''}
                       onChange={(e) => setFuzzyMappings({ ...fuzzyMappings, [hdr]: e.target.value })}
-                      className="w-full p-2 border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 rounded-lg text-xs"
+                      className="w-full p-2 border border-gray-200 bg-white rounded-lg text-xs"
                     >
                       <option value="">تخطي هذا العمود (عدم الاستيراد)</option>
                       {columns.map(c => (

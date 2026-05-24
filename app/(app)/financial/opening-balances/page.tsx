@@ -232,7 +232,7 @@ export default function OpeningBalancesPage() {
       {/* Page Title */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white flex items-center gap-3">
+          <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-3">
             <ArrowLeftRight className="w-8 h-8 text-farm-blue" />
             الأرصدة الافتتاحية (Opening Balances)
           </h1>
@@ -244,8 +244,8 @@ export default function OpeningBalancesPage() {
 
       {/* Control Panel: Date and Description */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
-        <div className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-md rounded-2xl border border-gray-100 dark:border-slate-800 p-6 shadow-sm flex flex-col gap-4">
-          <h2 className="text-lg font-semibold text-gray-800 dark:text-white flex items-center gap-2">
+        <div className="bg-white/80 backdrop-blur-md rounded-2xl border border-gray-200 p-6 shadow-sm flex flex-col gap-4">
+          <h2 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
             <Calendar className="w-5 h-5 text-farm-blue" />
             خيارات الفترة والبيان
           </h2>
@@ -257,7 +257,7 @@ export default function OpeningBalancesPage() {
               type="date"
               value={balanceDate}
               onChange={handleDateChange}
-              className="w-full px-4 py-3 rounded-xl border border-gray-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-farm-blue"
+              className="w-full px-4 py-3 rounded-xl border border-gray-200 bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-farm-blue"
             />
           </div>
           <div>
@@ -269,7 +269,7 @@ export default function OpeningBalancesPage() {
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               placeholder="مثال: الأرصدة الافتتاحية للعام المالي الجديد..."
-              className="w-full px-4 py-3 rounded-xl border border-gray-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-farm-blue resize-none"
+              className="w-full px-4 py-3 rounded-xl border border-gray-200 bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-farm-blue resize-none"
             />
           </div>
         </div>
@@ -280,26 +280,26 @@ export default function OpeningBalancesPage() {
             onDragOver={handleDragOver}
             onDragLeave={handleDragLeave}
             onDrop={handleDrop}
-            className={`h-full bg-white/80 dark:bg-slate-900/80 backdrop-blur-md rounded-2xl border-2 border-dashed p-6 shadow-sm flex flex-col items-center justify-center text-center transition-all duration-300 relative overflow-hidden ${
+            className={`h-full bg-white/80 backdrop-blur-md rounded-2xl border-2 border-dashed p-6 shadow-sm flex flex-col items-center justify-center text-center transition-all duration-300 relative overflow-hidden ${
               isDragOver
                 ? 'border-farm-blue bg-farm-blue/5'
-                : 'border-gray-200 dark:border-slate-800'
+                : 'border-gray-200'
             }`}
           >
             {importMutation.isPending && (
-              <div className="absolute inset-0 bg-white/60 dark:bg-slate-900/60 backdrop-blur-sm flex flex-col items-center justify-center z-10">
+              <div className="absolute inset-0 bg-white/60 backdrop-blur-sm flex flex-col items-center justify-center z-10">
                 <Loader2 className="w-12 h-12 text-farm-blue animate-spin mb-3" />
-                <p className="text-sm font-medium text-gray-800 dark:text-white">
+                <p className="text-sm font-medium text-gray-900">
                   جاري استيراد وتحليل ملف الإكسيل...
                 </p>
               </div>
             )}
             
             <UploadCloud className="w-12 h-12 text-farm-blue mb-3" />
-            <h3 className="text-base font-semibold text-gray-800 dark:text-white mb-1">
+            <h3 className="text-base font-semibold text-gray-900 mb-1">
               استيراد الأرصدة الافتتاحية من ملف Excel
             </h3>
-            <p className="text-xs text-gray-500 dark:text-gray-400 max-w-sm mb-4">
+            <p className="text-xs text-gray-500 max-w-sm mb-4">
               اسحب وأسقط ملف الإكسيل هنا أو اضغط للتصفح. سيتم مطابقة الأعمدة تلقائياً (رمز الحساب، مدين، دائن، الوصف).
             </p>
             <label className="px-5 py-2.5 bg-farm-blue hover:bg-farm-blue-dark text-white rounded-xl text-xs font-semibold cursor-pointer transition-all duration-200 flex items-center gap-2">
@@ -352,9 +352,9 @@ export default function OpeningBalancesPage() {
       )}
 
       {/* Main Grid Spreadsheet */}
-      <div className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-md rounded-2xl border border-gray-100 dark:border-slate-800 shadow-sm overflow-hidden mb-8">
-        <div className="p-6 border-b border-gray-100 dark:border-slate-800 flex justify-between items-center">
-          <h2 className="text-lg font-semibold text-gray-800 dark:text-white">
+      <div className="bg-white/80 backdrop-blur-md rounded-2xl border border-gray-200 shadow-sm overflow-hidden mb-8">
+        <div className="p-6 border-b border-gray-200 flex justify-between items-center">
+          <h2 className="text-lg font-semibold text-gray-900">
             شجرة الحسابات وإدخال الأرصدة
           </h2>
           <button
@@ -374,7 +374,7 @@ export default function OpeningBalancesPage() {
         <div className="overflow-x-auto">
           <table className="w-full border-collapse">
             <thead>
-              <tr className="bg-gray-50/50 dark:bg-slate-800/40 text-gray-400 dark:text-gray-500 text-xs font-bold border-b border-gray-100 dark:border-slate-800">
+              <tr className="bg-gray-50/55 text-gray-500 text-xs font-bold border-b border-gray-200">
                 <th className="px-6 py-4 text-right w-1/4">رمز الحساب</th>
                 <th className="px-6 py-4 text-right w-1/3">اسم الحساب</th>
                 <th className="px-6 py-4 text-right w-36">النوع</th>
@@ -414,19 +414,19 @@ export default function OpeningBalancesPage() {
                   return (
                     <tr
                       key={account.id}
-                      className={`border-b border-gray-50 dark:border-slate-800/50 text-sm transition-all duration-150 hover:bg-gray-50/20 dark:hover:bg-slate-800/20 ${
-                        !isLeaf ? 'bg-gray-50/20 dark:bg-slate-800/10 font-medium' : ''
+                      className={`border-b border-gray-100/50 text-sm transition-all duration-150 hover:bg-gray-100/10 ${
+                        !isLeaf ? 'bg-gray-50/30 font-semibold' : ''
                       }`}
                     >
                       {/* Code */}
-                      <td className="px-6 py-3.5 text-gray-500 dark:text-gray-400 font-mono text-xs">
+                      <td className="px-6 py-3.5 text-gray-500 font-mono text-xs">
                         <span style={{ paddingRight: `${depth * 1.25}rem` }} className="inline-block">
                           {account.code}
                         </span>
                       </td>
 
                       {/* Name */}
-                      <td className="px-6 py-3.5 text-gray-900 dark:text-white">
+                      <td className="px-6 py-3.5 text-gray-900">
                         <span style={{ paddingRight: `${depth * 1.25}rem` }} className="inline-block">
                           {account.name}
                         </span>
@@ -467,7 +467,7 @@ export default function OpeningBalancesPage() {
                             value={line.debit_amount === 0 ? '' : line.debit_amount}
                             onChange={(e) => handleAmountChange(account.id, 'debit_amount', e.target.value)}
                             placeholder="0.00"
-                            className="w-full text-center px-3 py-1.5 rounded-lg border border-gray-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-gray-900 dark:text-white font-mono text-xs focus:outline-none focus:ring-2 focus:ring-farm-blue"
+                            className="w-full text-center px-3 py-1.5 rounded-lg border border-gray-200 bg-white text-gray-900 font-mono text-xs focus:outline-none focus:ring-2 focus:ring-farm-blue"
                           />
                         ) : (
                           <span className="text-gray-300 dark:text-slate-700 font-mono text-xs">-</span>
@@ -482,7 +482,7 @@ export default function OpeningBalancesPage() {
                             value={line.credit_amount === 0 ? '' : line.credit_amount}
                             onChange={(e) => handleAmountChange(account.id, 'credit_amount', e.target.value)}
                             placeholder="0.00"
-                            className="w-full text-center px-3 py-1.5 rounded-lg border border-gray-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-gray-900 dark:text-white font-mono text-xs focus:outline-none focus:ring-2 focus:ring-farm-blue"
+                            className="w-full text-center px-3 py-1.5 rounded-lg border border-gray-200 bg-white text-gray-900 font-mono text-xs focus:outline-none focus:ring-2 focus:ring-farm-blue"
                           />
                         ) : (
                           <span className="text-gray-300 dark:text-slate-700 font-mono text-xs">-</span>
@@ -497,7 +497,7 @@ export default function OpeningBalancesPage() {
                             value={line.description}
                             onChange={(e) => handleDescriptionChange(account.id, e.target.value)}
                             placeholder="ملاحظات الحساب..."
-                            className="w-full px-3 py-1.5 rounded-lg border border-gray-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-gray-900 dark:text-white text-xs focus:outline-none focus:ring-2 focus:ring-farm-blue"
+                            className="w-full px-3 py-1.5 rounded-lg border border-gray-200 bg-white text-gray-900 text-xs focus:outline-none focus:ring-2 focus:ring-farm-blue"
                           />
                         ) : (
                           <span className="text-gray-300 dark:text-slate-700 text-xs">-</span>
@@ -513,29 +513,29 @@ export default function OpeningBalancesPage() {
       </div>
 
       {/* Floating live summary calculations */}
-      <div className="sticky bottom-6 left-6 right-6 bg-white/70 dark:bg-slate-950/70 backdrop-blur-lg border border-gray-200/60 dark:border-slate-800/80 rounded-2xl p-6 shadow-2xl flex flex-col md:flex-row justify-between items-center gap-6 z-40 transition-all duration-300">
+      <div className="sticky bottom-6 left-6 right-6 bg-white/70 backdrop-blur-lg border border-gray-200 rounded-2xl p-6 shadow-2xl flex flex-col md:flex-row justify-between items-center gap-6 z-40 transition-all duration-300">
         <div className="flex flex-wrap items-center gap-8 justify-center md:justify-start">
           <div className="flex flex-col">
-            <span className="text-xs font-bold text-gray-400 dark:text-gray-500 mb-1">إجمالي المدين (Debits)</span>
-            <span className="text-2xl font-bold text-gray-900 dark:text-white font-mono">
+            <span className="text-xs font-bold text-gray-400 mb-1">إجمالي المدين (Debits)</span>
+            <span className="text-2xl font-bold text-gray-900 font-mono">
               {totalDebits.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
             </span>
           </div>
 
-          <div className="w-px h-10 bg-gray-200 dark:bg-slate-800 hidden sm:block"></div>
+          <div className="w-px h-10 bg-gray-200 hidden sm:block"></div>
 
           <div className="flex flex-col">
-            <span className="text-xs font-bold text-gray-400 dark:text-gray-500 mb-1">إجمالي الدائن (Credits)</span>
-            <span className="text-2xl font-bold text-gray-900 dark:text-white font-mono">
+            <span className="text-xs font-bold text-gray-400 mb-1">إجمالي الدائن (Credits)</span>
+            <span className="text-2xl font-bold text-gray-900 font-mono">
               {totalCredits.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
             </span>
           </div>
 
-          <div className="w-px h-10 bg-gray-200 dark:bg-slate-800 hidden sm:block"></div>
+          <div className="w-px h-10 bg-gray-200 hidden sm:block"></div>
 
           <div className="flex flex-col">
-            <span className="text-xs font-bold text-gray-400 dark:text-gray-500 mb-1">الفرق (Difference)</span>
-            <span className={`text-2xl font-bold font-mono ${difference > 0 ? 'text-rose-500' : 'text-gray-900 dark:text-white'}`}>
+            <span className="text-xs font-bold text-gray-400 mb-1">الفرق (Difference)</span>
+            <span className={`text-2xl font-bold font-mono ${difference > 0 ? 'text-rose-500' : 'text-gray-900'}`}>
               {difference.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
             </span>
           </div>
@@ -543,12 +543,12 @@ export default function OpeningBalancesPage() {
 
         <div className="flex items-center gap-4">
           {isBalanced ? (
-            <span className="px-5 py-2.5 bg-emerald-50 dark:bg-emerald-950/30 text-emerald-700 dark:text-emerald-400 rounded-xl text-sm font-bold border border-emerald-200 dark:border-emerald-900/40 flex items-center gap-2">
+            <span className="px-5 py-2.5 bg-emerald-100 text-emerald-700 rounded-xl text-sm font-bold border border-emerald-200 flex items-center gap-2">
               <CheckCircle className="w-5 h-5 text-emerald-500" />
               متزن (Balanced)
             </span>
           ) : (
-            <span className="px-5 py-2.5 bg-rose-50 dark:bg-rose-950/30 text-rose-700 dark:text-rose-400 rounded-xl text-sm font-bold border border-rose-200 dark:border-rose-900/40 flex items-center gap-2 animate-pulse">
+            <span className="px-5 py-2.5 bg-rose-100 text-rose-600 rounded-xl text-sm font-bold border border-rose-200 flex items-center gap-2 animate-pulse">
               <AlertCircle className="w-5 h-5 text-rose-500" />
               غير متزن (Unbalanced)
             </span>

@@ -21,7 +21,7 @@ interface AssetBuildingRoomsProps {
 
 export default function AssetBuildingRooms({ rooms, onAddRoom, onRemoveRoom, onRoomChange }: AssetBuildingRoomsProps) {
   return (
-    <div className="border-t border-gray-150 pt-4">
+    <div className="border-t border-gray-200 pt-4">
       <div className="flex justify-between items-center mb-3">
         <span className="text-xs font-bold text-gray-700">سجل الغرف والتقسيمات الفرعية</span>
         <button
@@ -37,7 +37,7 @@ export default function AssetBuildingRooms({ rooms, onAddRoom, onRemoveRoom, onR
       {rooms.length > 0 ? (
         <div className="space-y-3">
           {rooms.map((room, idx) => (
-            <div key={idx} className="flex flex-wrap items-center gap-3 bg-white p-3 rounded-xl border border-gray-150">
+            <div key={idx} className="flex flex-wrap items-center gap-3 bg-white p-3 rounded-xl border border-gray-200">
               <span className="text-xs font-mono bg-gray-100 text-gray-600 px-2 py-1 rounded">#{idx + 1}</span>
               <input
                 type="text"
@@ -85,7 +85,7 @@ export default function AssetBuildingRooms({ rooms, onAddRoom, onRemoveRoom, onR
               <button
                 type="button"
                 onClick={() => onRemoveRoom(idx)}
-                className="p-1.5 bg-red-100 text-red-600 rounded-lg hover:bg-red-200"
+                className="p-1.5 bg-red-100 text-red-600 rounded-lg hover:bg-red-200 dark:bg-red-950/30 dark:text-red-400 dark:hover:bg-red-900/50"
               >
                 <Trash2 className="w-3.5 h-3.5" />
               </button>
@@ -93,7 +93,7 @@ export default function AssetBuildingRooms({ rooms, onAddRoom, onRemoveRoom, onR
           ))}
         </div>
       ) : (
-        <div className="text-center py-4 bg-gray-100/50 rounded-xl text-xxs text-gray-500 border border-dashed border-gray-150">
+        <div className="text-center py-4 bg-gray-100/50 rounded-xl text-xxs text-gray-500 border border-dashed border-gray-200">
           لا توجد غرف مضافة حالياً.
         </div>
       )}

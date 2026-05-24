@@ -123,7 +123,7 @@ export default function CloseFlockDialog({
         </div>
 
         {closeFlock.error && (
-          <div className="mb-4 p-4 bg-red-50 border-r-4 border-red-500 text-red-700 flex items-start gap-3 rounded-md">
+          <div className="mb-4 p-4 bg-red-50 border-r-4 border-red-500 text-red-700 dark:bg-red-950/20 dark:border-red-900/50 dark:text-red-400 flex items-start gap-3 rounded-md">
             <AlertCircle className="w-5 h-5 mt-0.5 flex-shrink-0" />
             <p className="text-sm">
               {(closeFlock.error as { message?: string })?.message ??
@@ -161,7 +161,7 @@ export default function CloseFlockDialog({
               <button
                 type="button"
                 onClick={addAllocation}
-                className="flex items-center gap-1 text-sm text-farm-blue hover:text-blue-800 font-medium"
+                className="flex items-center gap-1 text-sm text-farm-blue hover:text-farm-blue/80 font-medium"
               >
                 <Plus className="w-4 h-4" />
                 إضافة وجهة
@@ -221,8 +221,8 @@ export default function CloseFlockDialog({
               <div
                 className={`mt-3 p-3 rounded-xl text-sm font-medium ${
                   exceedsCount
-                    ? 'bg-red-50 text-red-700'
-                    : 'bg-farm-blue/5 text-farm-blue'
+                    ? 'bg-red-50 text-red-700 dark:bg-red-950/20 dark:text-red-400'
+                    : 'bg-farm-blue/5 text-farm-blue dark:bg-farm-blue/10 dark:text-farm-blue'
                 }`}
               >
                 مجموع الطيور المخصصة:{' '}
@@ -252,7 +252,7 @@ export default function CloseFlockDialog({
             <button
               type="submit"
               disabled={closeFlock.isPending || exceedsCount}
-              className="px-6 py-2 bg-farm-blue hover:bg-blue-800 text-white rounded-xl font-medium transition-colors disabled:opacity-50 flex items-center gap-2"
+              className="px-6 py-2 bg-farm-blue hover:bg-farm-blue/90 text-white rounded-xl font-medium transition-colors disabled:opacity-50 flex items-center gap-2"
             >
               {closeFlock.isPending && (
                 <Loader2 className="w-4 h-4 animate-spin" />

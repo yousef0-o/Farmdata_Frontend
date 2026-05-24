@@ -272,7 +272,7 @@ export function CreateMovementDialog({ open, onOpenChange, defaultType = 'in', d
                 type="button"
                 onClick={() => handleTypeChange('in')}
                 className={`py-4 rounded-2xl border-2 font-bold text-lg transition-all ${
-                  type === 'in' ? 'bg-green-50 border-green-500 text-green-700 shadow-sm' : 'border-gray-200 text-gray-500 hover:bg-gray-50'
+                  type === 'in' ? 'bg-emerald-100 border-emerald-500 text-emerald-700 dark:bg-emerald-950/40 dark:border-emerald-900/50 dark:text-emerald-400 shadow-sm' : 'border-gray-200 text-gray-500 hover:bg-gray-50 dark:hover:bg-gray-800'
                 }`}
               >
                 وارد ←
@@ -281,7 +281,7 @@ export function CreateMovementDialog({ open, onOpenChange, defaultType = 'in', d
                 type="button"
                 onClick={() => handleTypeChange('out')}
                 className={`py-4 rounded-2xl border-2 font-bold text-lg transition-all ${
-                  type === 'out' ? 'bg-red-50 border-red-500 text-red-700 shadow-sm' : 'border-gray-200 text-gray-500 hover:bg-gray-50'
+                  type === 'out' ? 'bg-red-100 border-red-500 text-red-700 dark:bg-red-950/40 dark:border-red-900/50 dark:text-red-400 shadow-sm' : 'border-gray-200 text-gray-500 hover:bg-gray-50 dark:hover:bg-gray-800'
                 }`}
               >
                 → صادر
@@ -311,13 +311,13 @@ export function CreateMovementDialog({ open, onOpenChange, defaultType = 'in', d
           </section>
 
           {warehouseId > 0 && itemId > 0 && (
-            <section className="rounded-2xl bg-blue-50 border border-blue-100 p-4 text-blue-900">
+            <section className="rounded-2xl bg-blue-50 border border-blue-100 p-4 text-blue-900 dark:bg-blue-950/30 dark:border-blue-900/40 dark:text-blue-200">
               <div className="flex items-center gap-2 text-sm font-semibold">
                 <span>الرصيد الحالي:</span>
                 {isBalanceLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <span>{availableBalance.toFixed(3)} {unitLabel}</span>}
               </div>
               {exceedsBalance && (
-                <div className="mt-3 flex items-start gap-2 text-sm text-red-700 bg-red-50 border border-red-100 rounded-xl p-3">
+                <div className="mt-3 flex items-start gap-2 text-sm text-red-700 bg-red-50 border border-red-100 rounded-xl p-3 dark:bg-red-950/20 dark:border-red-900/30 dark:text-red-400">
                   <AlertTriangle className="w-4 h-4 mt-0.5" />
                   <span>الكمية المطلوبة تتجاوز الرصيد المتاح ({availableBalance.toFixed(3)} {unitLabel})</span>
                 </div>
@@ -369,7 +369,7 @@ export function CreateMovementDialog({ open, onOpenChange, defaultType = 'in', d
           </section>
 
           {(inlineError || successMessage) && (
-            <div className={`p-3 rounded-xl text-sm ${inlineError ? 'bg-red-50 text-red-700' : 'bg-green-50 text-green-700'}`}>
+            <div className={`p-3 rounded-xl text-sm ${inlineError ? 'bg-red-50 text-red-700 dark:bg-red-950/20 dark:text-red-400' : 'bg-emerald-100 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-400'}`}>
               {inlineError || successMessage}
             </div>
           )}
@@ -387,7 +387,7 @@ export function CreateMovementDialog({ open, onOpenChange, defaultType = 'in', d
               type="submit"
               disabled={createMutation.isPending || exceedsBalance || isBalanceLoading}
               className={`px-6 py-2.5 rounded-xl text-white font-bold flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed ${
-                type === 'in' ? 'bg-green-600 hover:bg-green-700' : 'bg-red-600 hover:bg-red-700'
+                type === 'in' ? 'bg-farm-green hover:bg-farm-green/90' : 'bg-red-600 hover:bg-red-600/90'
               }`}
             >
               {createMutation.isPending && <Loader2 className="w-4 h-4 animate-spin" />}

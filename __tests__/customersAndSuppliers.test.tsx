@@ -297,10 +297,9 @@ describe('Customers & Suppliers Module Tests', () => {
     const typeSelect = container.querySelector('#customer_type') as HTMLSelectElement
     fireEvent.change(typeSelect, { target: { value: 'individual' } })
 
-    // Simulate form submit (e.g. Enter press)
-    const formElement = container.querySelector('form') as HTMLFormElement
-    expect(formElement).toBeInTheDocument()
-    fireEvent.submit(formElement)
+    // Advance to next step by clicking 'التالي' button
+    const nextBtn = screen.getByRole('button', { name: /التالي/i })
+    fireEvent.click(nextBtn)
 
     // Wait and verify we advanced to the next step
     await waitFor(() => {
@@ -337,9 +336,9 @@ describe('Customers & Suppliers Module Tests', () => {
     expect(nameInput).toBeInTheDocument()
     fireEvent.change(nameInput, { target: { value: 'مورد أعلاف جديد' } })
 
-    // Test intermediate submit (Enter press)
-    const formElement = container.querySelector('form') as HTMLFormElement
-    fireEvent.submit(formElement)
+    // Test intermediate next button click
+    const nextBtn = screen.getByRole('button', { name: /التالي/i })
+    fireEvent.click(nextBtn)
 
     // Verify it advanced to step 2 instead of submitting to API
     await waitFor(() => {
