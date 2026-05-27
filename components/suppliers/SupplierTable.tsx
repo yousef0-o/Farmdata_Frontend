@@ -28,15 +28,15 @@ interface SupplierTableProps {
 
 function SkeletonRow() {
   return (
-    <tr className="border-b border-gray-100 animate-pulse">
-      <td className="py-4 px-6"><div className="w-4 h-4 bg-gray-200 rounded" /></td>
-      <td className="py-4 px-4"><div className="w-20 h-4 bg-gray-200 rounded" /></td>
-      <td className="py-4 px-4"><div className="w-32 h-4 bg-gray-200 rounded" /></td>
-      <td className="py-4 px-4"><div className="w-24 h-4 bg-gray-200 rounded" /></td>
-      <td className="py-4 px-4"><div className="w-20 h-4 bg-gray-200 rounded" /></td>
-      <td className="py-4 px-4"><div className="w-20 h-4 bg-gray-200 rounded" /></td>
-      <td className="py-4 px-4"><div className="w-16 h-5 bg-gray-200 rounded-full" /></td>
-      <td className="py-4 px-6"><div className="w-20 h-8 bg-gray-200 rounded-lg" /></td>
+    <tr className="border-b border-line animate-pulse">
+      <td className="py-4 px-6"><div className="w-4 h-4 bg-surface-muted rounded" /></td>
+      <td className="py-4 px-4"><div className="w-20 h-4 bg-surface-muted rounded" /></td>
+      <td className="py-4 px-4"><div className="w-32 h-4 bg-surface-muted rounded" /></td>
+      <td className="py-4 px-4"><div className="w-24 h-4 bg-surface-muted rounded" /></td>
+      <td className="py-4 px-4"><div className="w-20 h-4 bg-surface-muted rounded" /></td>
+      <td className="py-4 px-4"><div className="w-20 h-4 bg-surface-muted rounded" /></td>
+      <td className="py-4 px-4"><div className="w-16 h-5 bg-surface-muted rounded-full" /></td>
+      <td className="py-4 px-6"><div className="w-20 h-8 bg-surface-muted rounded-lg" /></td>
     </tr>
   )
 }
@@ -49,7 +49,7 @@ export default function SupplierTable({
       <div className="overflow-x-auto">
         <table className="w-full text-sm text-right">
           <thead>
-            <tr className="border-b border-gray-100 text-gray-500 bg-gray-50/50">
+            <tr className="border-b border-line bg-surface-subtle text-ink-soft">
               <th className="py-3.5 px-6 w-10" />
               <th className="py-3.5 px-4 font-semibold">كود المورد</th>
               <th className="py-3.5 px-4 font-semibold">الاسم</th>
@@ -70,10 +70,10 @@ export default function SupplierTable({
 
   if (suppliers.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center py-20 text-center border-2 border-dashed border-gray-200 rounded-xl m-6">
-        <Truck className="w-16 h-16 text-gray-300 mb-4" />
-        <h3 className="text-lg font-bold text-gray-800">لا يوجد موردين مدرجين</h3>
-        <p className="text-xs text-gray-500 mt-1 max-w-sm">
+      <div className="m-6 flex flex-col items-center justify-center rounded-xl border-2 border-dashed border-line py-20 text-center">
+        <Truck className="mb-4 h-16 w-16 text-ink-muted" />
+        <h3 className="text-lg font-bold text-ink">لا يوجد موردين مدرجين</h3>
+        <p className="mt-1 max-w-sm text-xs text-ink-soft">
           لم يتم العثور على أي موردين يطابقون الفرز الحالي. قم بإضافة مورد يدويًا أو استورد عبر ملف إكسل.
         </p>
       </div>
@@ -82,14 +82,14 @@ export default function SupplierTable({
 
   return (
     <>
-      <div className="overflow-x-auto">
+      <div className="hidden overflow-x-auto lg:block">
         <table className="w-full text-sm text-right">
           <thead>
-            <tr className="border-b border-gray-100 text-gray-500 bg-gray-50/50">
+            <tr className="border-b border-line bg-surface-subtle text-ink-soft">
               <th className="py-3.5 px-6 w-10">
                 <input
                   type="checkbox"
-                  className="rounded border-gray-300 text-farm-blue focus:ring-farm-blue bg-white"
+                  className="rounded border-line-strong bg-surface text-action-primary focus:ring-action-primary"
                   checked={selectedIds.length === suppliers.length && suppliers.length > 0}
                   onChange={(e) => onSelectAll(e.target.checked)}
                 />
@@ -103,43 +103,43 @@ export default function SupplierTable({
               <th className="py-3.5 px-6 text-left font-semibold">إجراءات</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-gray-100">
+          <tbody className="divide-y divide-line">
             {suppliers.map((supplier) => (
-              <tr key={supplier.id} className="hover:bg-gray-50/40 transition-colors">
+              <tr key={supplier.id} className="transition-colors hover:bg-surface-subtle">
                 <td className="py-4 px-6">
                   <input
                     type="checkbox"
-                    className="rounded border-gray-300 text-farm-blue focus:ring-farm-blue bg-white"
+                    className="rounded border-line-strong bg-surface text-action-primary focus:ring-action-primary"
                     checked={selectedIds.includes(supplier.id)}
                     onChange={(e) => onSelectRow(supplier.id, e.target.checked)}
                   />
                 </td>
                 <td className="py-4 px-4">
-                  <Link href={`/suppliers/${supplier.id}`} className="font-mono font-semibold text-farm-blue hover:underline">
+                  <Link href={`/suppliers/${supplier.id}`} className="font-mono font-semibold text-action-primary hover:underline">
                     {supplier.supplier_code}
                   </Link>
                 </td>
-                <td className="py-4 px-4 font-semibold text-gray-900">
-                  <Link href={`/suppliers/${supplier.id}`} className="hover:text-farm-blue">
+                <td className="py-4 px-4 font-semibold text-ink">
+                  <Link href={`/suppliers/${supplier.id}`} className="hover:text-action-primary">
                     {supplier.supplier_name}
                   </Link>
                 </td>
-                <td className="py-4 px-4 text-gray-600 text-xs">{supplier.phone1 || '—'}</td>
-                <td className="py-4 px-4 font-semibold text-gray-900">
-                  {supplier.credit_limit === 0 ? 'بلا حد' : <span>{supplier.credit_limit.toLocaleString('en-US')} <SaudiRiyalIcon size={14} className="text-emerald-700 inline-block align-middle" /></span>}
+                <td className="py-4 px-4 text-xs text-ink-soft">{supplier.phone1 || '—'}</td>
+                <td className="py-4 px-4 font-semibold text-ink">
+                  {supplier.credit_limit === 0 ? 'بلا حد' : <span>{supplier.credit_limit.toLocaleString('en-US')} <SaudiRiyalIcon size={14} className="text-success-strong inline-block align-middle" /></span>}
                 </td>
-                <td className={`py-4 px-4 font-semibold ${supplier.current_balance >= 0 ? 'text-emerald-700' : 'text-red-650'}`}>
-                  {supplier.current_balance.toLocaleString('en-US')} <SaudiRiyalIcon size={14} className="text-emerald-700 inline-block align-middle" />
+                <td className={`py-4 px-4 font-semibold ${supplier.current_balance >= 0 ? 'text-success-strong' : 'text-danger'}`}>
+                  {supplier.current_balance.toLocaleString('en-US')} <SaudiRiyalIcon size={14} className={`inline-block align-middle ${supplier.current_balance >= 0 ? 'text-success-strong' : 'text-danger'}`} />
                 </td>
                 <td className="py-4 px-4"><SupplierStatusBadge isSuspended={supplier.is_suspended} /></td>
                 <td className="py-4 px-6 text-left">
                   <div className="flex items-center justify-end gap-2.5">
                     <button
                       onClick={() => onToggleSuspend(supplier.id)}
-                      className={`p-1.5 rounded-lg transition-all ${
+                      className={`rounded-lg p-1.5 transition-colors ${
                         supplier.is_suspended
-                          ? 'bg-emerald-50 hover:bg-emerald-100 text-emerald-600'
-                          : 'bg-amber-50 hover:bg-amber-100 text-amber-600'
+                          ? 'bg-success-soft hover:bg-success-soft text-success'
+                          : 'bg-warning-soft hover:bg-warning-soft text-warning'
                       }`}
                       title={supplier.is_suspended ? 'تنشيط' : 'إيقاف مؤقت'}
                     >
@@ -147,14 +147,14 @@ export default function SupplierTable({
                     </button>
                     <button
                       onClick={() => onEdit(supplier)}
-                      className="p-1.5 bg-gray-100 hover:bg-gray-250 text-gray-600 rounded-lg transition-all"
+                      className="rounded-lg bg-surface-muted p-1.5 text-ink-soft transition-colors hover:bg-surface-subtle"
                       title="تعديل"
                     >
                       <Edit3 className="w-4 h-4" />
                     </button>
                     <button
                       onClick={() => onDelete(supplier.id)}
-                      className="p-1.5 bg-red-100 hover:bg-red-200 text-red-600 rounded-lg transition-all"
+                      className="rounded-lg bg-danger-soft p-1.5 text-danger transition-colors hover:bg-danger-soft"
                       title="حذف"
                     >
                       <Trash2 className="w-4 h-4" />
@@ -167,8 +167,81 @@ export default function SupplierTable({
         </table>
       </div>
 
+      <div className="grid grid-cols-1 gap-4 p-4 lg:hidden">
+        {suppliers.map((supplier) => (
+          <article
+            key={supplier.id}
+            className="rounded-2xl border border-line bg-surface p-4 shadow-sm"
+          >
+            <div className="flex items-start justify-between gap-3">
+              <div className="flex items-start gap-3">
+                <input
+                  type="checkbox"
+                  className="mt-1 rounded border-line-strong bg-surface text-action-primary focus:ring-action-primary"
+                  checked={selectedIds.includes(supplier.id)}
+                  onChange={(e) => onSelectRow(supplier.id, e.target.checked)}
+                />
+                <div className="space-y-1">
+                  <Link href={`/suppliers/${supplier.id}`} className="font-mono text-sm font-bold text-action-primary">
+                    {supplier.supplier_code}
+                  </Link>
+                  <Link href={`/suppliers/${supplier.id}`} className="block text-sm font-semibold text-ink">
+                    {supplier.supplier_name}
+                  </Link>
+                  <p className="text-xs text-ink-muted">{supplier.phone1 || '—'}</p>
+                </div>
+              </div>
+              <SupplierStatusBadge isSuspended={supplier.is_suspended} />
+            </div>
+
+            <div className="mt-4 grid grid-cols-2 gap-3 text-sm">
+              <div className="rounded-xl bg-surface-subtle px-3 py-2">
+                <span className="block text-xs text-ink-muted">الحد الائتماني</span>
+                <span className="font-semibold text-ink">
+                  {supplier.credit_limit === 0 ? 'بلا حد' : supplier.credit_limit.toLocaleString('en-US')}
+                </span>
+              </div>
+              <div className="rounded-xl bg-surface-subtle px-3 py-2">
+                <span className="block text-xs text-ink-muted">الرصيد الحالي</span>
+                <span className={`font-semibold ${supplier.current_balance >= 0 ? 'text-success-strong' : 'text-danger'}`}>
+                  {supplier.current_balance.toLocaleString('en-US')} <SaudiRiyalIcon size={14} className={`inline-block align-middle ${supplier.current_balance >= 0 ? 'text-success-strong' : 'text-danger'}`} />
+                </span>
+              </div>
+            </div>
+
+            <div className="mt-4 flex items-center gap-3">
+              <button
+                onClick={() => onToggleSuspend(supplier.id)}
+                className={`flex min-h-11 flex-1 items-center justify-center rounded-xl px-4 py-2 text-sm font-semibold ${
+                  supplier.is_suspended
+                    ? 'bg-success-soft text-success'
+                    : 'bg-warning-soft text-warning'
+                }`}
+                title={supplier.is_suspended ? 'تنشيط' : 'إيقاف مؤقت'}
+              >
+                {supplier.is_suspended ? 'تنشيط' : 'إيقاف'}
+              </button>
+              <button
+                onClick={() => onEdit(supplier)}
+                className="flex min-h-11 flex-1 items-center justify-center rounded-xl border border-info-soft bg-info-soft px-4 py-2 text-sm font-semibold text-action-primary"
+                title="تعديل"
+              >
+                تعديل
+              </button>
+              <button
+                onClick={() => onDelete(supplier.id)}
+                className="flex min-h-11 min-w-11 items-center justify-center rounded-xl border border-danger-soft bg-danger-soft px-4 py-2 text-danger"
+                title="حذف"
+              >
+                <Trash2 className="h-4 w-4" />
+              </button>
+            </div>
+          </article>
+        ))}
+      </div>
+
       {meta && meta.last_page > 1 && (
-        <div className="p-4 border-t border-gray-100">
+        <div className="border-t border-line p-4">
           <Pagination currentPage={meta.current_page} lastPage={meta.last_page} onPageChange={onPageChange} />
         </div>
       )}

@@ -7,6 +7,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { z } from 'zod'
 import { useItems, useCreateItem } from '@/lib/hooks/useInventory'
 import Pagination from '@/components/ui/Pagination'
+import AppDialog from '@/components/ui/AppDialog'
 
 const itemSchema = z.object({
   name: z.string().min(1, 'اسم الصنف مطلوب'),
@@ -87,7 +88,7 @@ export default function ItemsPage() {
   return (
     <div className="space-y-6" dir="rtl">
       {/* Header */}
-      <div className="flex justify-between items-center">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex items-center gap-4">
           <div className="p-3 bg-blue-50 text-blue-600 rounded-xl">
             <Layers className="w-6 h-6" />
@@ -99,7 +100,7 @@ export default function ItemsPage() {
         </div>
         <button
           onClick={() => setShowCreate(true)}
-          className="flex items-center gap-2 bg-farm-blue hover:bg-blue-800 text-white px-5 py-2.5 rounded-xl transition-all font-medium"
+          className="flex min-h-11 items-center justify-center gap-2 rounded-xl bg-action-primary px-5 py-2.5 font-medium text-white transition-colors hover:bg-action-primary-hover"
         >
           <Plus className="w-5 h-5" />
           <span>إضافة صنف</span>
@@ -108,9 +109,9 @@ export default function ItemsPage() {
 
       {/* Create Dialog / Form */}
       {showCreate && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-          <div className="bg-white rounded-2xl shadow-xl w-full max-w-md p-6">
-            <h2 className="text-lg font-bold mb-4 text-gray-800">إضافة صنف جديد</h2>
+        <AppDialog open={showCreate} onClose={() => setShowCreate(false)} panelClassName="max-w-md">
+          <div className="w-full rounded-2xl bg-surface p-6 shadow-xl">
+            <h2 className="mb-4 text-lg font-bold text-ink">إضافة صنف جديد</h2>
 
             {createMutation.error && (
               <div className="mb-4 p-3 bg-red-50 text-red-700 rounded-lg text-sm">
@@ -120,11 +121,11 @@ export default function ItemsPage() {
 
             <form onSubmit={handleCreate} className="space-y-4">
               <div>
-                <label className="text-sm font-semibold text-gray-700 block mb-1">اسم الصنف <span className="text-red-500">*</span></label>
+                <label className="mb-1 block text-sm font-semibold text-ink-soft">اسم الصنف <span className="text-danger">*</span></label>
                 <input
                   type="text"
                   placeholder="مثال: علف بادي 23%"
-                  className={`w-full border rounded-xl px-4 py-2.5 bg-gray-50 focus:outline-none focus:ring-2 focus:ring-farm-blue ${
+                  className={`w-full rounded-xl border px-4 py-2.5 bg-surface-muted focus:outline-none focus:ring-2 focus:ring-action-primary ${
                     errors.name ? 'border-red-500' : 'border-gray-200'
                   }`}
                   value={name}
@@ -135,20 +136,20 @@ export default function ItemsPage() {
               </div>
 
               <div>
-                <label className="text-sm font-semibold text-gray-700 block mb-1">الوحدة (اختياري)</label>
+                <label className="mb-1 block text-sm font-semibold text-ink-soft">الوحدة (اختياري)</label>
                 <input
                   type="text"
                   placeholder="مثال: كجم، كرتونة، وحدة"
-                  className="w-full border border-gray-200 rounded-xl px-4 py-2.5 bg-gray-50 focus:outline-none focus:ring-2 focus:ring-farm-blue"
+                  className="w-full rounded-xl border border-line bg-surface-muted px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-action-primary"
                   value={unit}
                   onChange={(e) => setUnit(e.target.value)}
                 />
               </div>
 
               <div>
-                <label className="text-sm font-semibold text-gray-700 block mb-1">الفئة <span className="text-red-500">*</span></label>
+                <label className="mb-1 block text-sm font-semibold text-ink-soft">الفئة <span className="text-danger">*</span></label>
                 <select
-                  className={`w-full border rounded-xl px-4 py-2.5 bg-gray-50 focus:outline-none focus:ring-2 focus:ring-farm-blue ${
+                  className={`w-full rounded-xl border px-4 py-2.5 bg-surface-muted focus:outline-none focus:ring-2 focus:ring-action-primary ${
                     errors.category ? 'border-red-500' : 'border-gray-200'
                   }`}
                   value={category}
@@ -167,7 +168,7 @@ export default function ItemsPage() {
                 <button
                   type="submit"
                   disabled={createMutation.isPending}
-                  className="bg-farm-green hover:bg-green-700 text-white px-6 py-2 rounded-xl font-medium transition-all disabled:opacity-50 flex items-center gap-2"
+                  className="flex min-h-11 items-center gap-2 rounded-xl bg-action-secondary px-6 py-2 font-medium text-white transition-colors hover:bg-action-secondary-hover disabled:opacity-50"
                 >
                   {createMutation.isPending && <Loader2 className="w-4 h-4 animate-spin" />}
                   حفظ
@@ -178,14 +179,14 @@ export default function ItemsPage() {
                     setShowCreate(false)
                     setErrors({})
                   }}
-                  className="bg-gray-100 hover:bg-gray-200 text-gray-600 px-4 py-2 rounded-xl font-medium transition-all"
+                  className="min-h-11 rounded-xl bg-surface-muted px-4 py-2 font-medium text-ink-soft transition-colors hover:bg-surface-subtle"
                 >
                   إلغاء
                 </button>
               </div>
             </form>
           </div>
-        </div>
+        </AppDialog>
       )}
 
       {/* Main List Table */}
@@ -194,17 +195,17 @@ export default function ItemsPage() {
           <Loader2 className="w-10 h-10 text-farm-blue animate-spin" />
         </div>
       ) : items.length === 0 ? (
-        <div className="flex flex-col items-center justify-center py-20 bg-white rounded-3xl border border-dashed border-gray-200">
-          <Package className="w-16 h-16 text-gray-300 mb-4" />
-          <h3 className="text-xl font-semibold text-gray-600">لا توجد أصناف حالياً</h3>
-          <p className="text-gray-500 mt-2">قم بإضافة صنف جديد للبدء.</p>
+        <div className="flex flex-col items-center justify-center rounded-3xl border border-dashed border-line bg-surface py-20">
+          <Package className="mb-4 h-16 w-16 text-ink-muted" />
+          <h3 className="text-xl font-semibold text-ink-soft">لا توجد أصناف حالياً</h3>
+          <p className="mt-2 text-ink-muted">قم بإضافة صنف جديد للبدء.</p>
         </div>
       ) : (
-        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
-          <div className="overflow-x-auto">
+        <div className="overflow-hidden rounded-2xl border border-line bg-surface shadow-sm">
+          <div className="hidden overflow-x-auto lg:block">
             <table className="w-full text-sm">
               <thead>
-                <tr className="border-b border-gray-200 text-gray-500 bg-gray-50/50">
+                <tr className="border-b border-line bg-surface-subtle text-ink-soft">
                   <th className="text-right py-3 px-4 font-semibold">اسم الصنف</th>
                   <th className="text-right py-3 px-4 font-semibold">الوحدة</th>
                   <th className="text-right py-3 px-4 font-semibold">الفئة</th>
@@ -213,30 +214,30 @@ export default function ItemsPage() {
               </thead>
               <tbody>
                 {items.map((item: any) => (
-                  <tr key={item.id} className="border-b border-gray-100 hover:bg-gray-50/50 transition-colors">
-                    <td className="py-3 px-4 font-medium text-gray-900 flex items-center gap-2">
-                      <Package className="w-4 h-4 text-gray-400" />
+                  <tr key={item.id} className="border-b border-line transition-colors hover:bg-surface-subtle">
+                    <td className="py-3 px-4 font-medium text-ink flex items-center gap-2">
+                      <Package className="w-4 h-4 text-ink-muted" />
                       {item.name}
                     </td>
-                    <td className="py-3 px-4 text-gray-600">
-                      <span className="bg-gray-100 text-gray-800 text-xs px-2.5 py-1 rounded-md font-medium">
+                    <td className="py-3 px-4 text-ink-soft">
+                      <span className="rounded-md bg-surface-muted px-2.5 py-1 text-xs font-medium text-ink">
                         {item.unit || 'كجم'}
                       </span>
                     </td>
-                    <td className="py-3 px-4 text-gray-600">
+                    <td className="py-3 px-4 text-ink-soft">
                       {item.category ? (
                         <span className="flex items-center gap-1">
-                          <Tag className="w-3.5 h-3.5 text-gray-400" />
+                          <Tag className="w-3.5 h-3.5 text-ink-muted" />
                           {item.category}
                         </span>
                       ) : (
-                        <span className="text-gray-400">—</span>
+                        <span className="text-ink-muted">—</span>
                       )}
                     </td>
                     <td className="py-3 px-4">
                       <Link
                         href={`/inventory/movements?item_id=${item.id}`}
-                        className="text-xs bg-farm-blue/5 hover:bg-farm-blue/10 text-farm-blue px-3 py-1.5 rounded-lg transition-colors font-medium flex items-center gap-1 w-fit"
+                        className="inline-flex min-h-11 w-fit items-center gap-1 rounded-lg bg-info-soft px-3 py-2 text-xs font-medium text-action-primary transition-colors hover:bg-info-soft"
                       >
                         <ArrowLeftRight className="w-3 h-3" />
                         سجل الحركات
@@ -248,8 +249,39 @@ export default function ItemsPage() {
             </table>
           </div>
 
+          <div className="grid grid-cols-1 gap-4 p-4 lg:hidden">
+            {items.map((item: any) => (
+              <article key={item.id} className="rounded-2xl border border-line bg-surface p-4 shadow-sm">
+                <div className="flex items-start justify-between gap-3">
+                  <div className="space-y-1">
+                    <p className="text-sm font-semibold text-ink">{item.name}</p>
+                    <p className="text-xs text-ink-muted">{item.category || '—'}</p>
+                  </div>
+                  <div className="rounded-xl bg-surface-subtle p-2 text-ink-muted">
+                    <Package className="h-5 w-5" />
+                  </div>
+                </div>
+
+                <div className="mt-4 rounded-xl bg-surface-subtle px-3 py-2">
+                  <span className="block text-xs text-ink-muted">الوحدة</span>
+                  <span className="text-sm font-semibold text-ink">{item.unit || 'كجم'}</span>
+                </div>
+
+                <div className="mt-4">
+                  <Link
+                    href={`/inventory/movements?item_id=${item.id}`}
+                    className="inline-flex min-h-11 w-full items-center justify-center gap-1 rounded-xl border border-info-soft bg-info-soft px-4 py-2 text-sm font-semibold text-action-primary"
+                  >
+                    <ArrowLeftRight className="h-4 w-4" />
+                    سجل الحركات
+                  </Link>
+                </div>
+              </article>
+            ))}
+          </div>
+
           {meta && (
-            <div className="p-4 border-t border-gray-100">
+            <div className="border-t border-line p-4">
               <Pagination
                 currentPage={meta.current_page}
                 lastPage={meta.last_page}

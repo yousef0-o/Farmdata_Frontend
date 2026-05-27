@@ -263,7 +263,7 @@ export default function ProductionEntryEditPage() {
                     <input 
                       type="number" 
                       min="0" 
-                      className="w-full border border-gray-200 rounded-xl px-4 py-2.5 bg-gray-50 focus:outline-none focus:ring-2 focus:ring-farm-blue transition-all"
+                      className="w-full border border-gray-200 rounded-xl px-4 py-2.5 bg-gray-50 focus:outline-none focus:ring-2 focus:ring-farm-blue transition-colors"
                       value={eggQuantities[item.id] || ''} 
                       onChange={(e) => setEggQty(item.id, e.target.value)} 
                       placeholder="0" 

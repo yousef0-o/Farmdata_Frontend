@@ -93,7 +93,7 @@ export default function AssetBuildingRooms({ rooms, onAddRoom, onRemoveRoom, onR
           ))}
         </div>
       ) : (
-        <div className="text-center py-4 bg-gray-100/50 rounded-xl text-xxs text-gray-500 border border-dashed border-gray-200">
+        <div className="text-center py-4 bg-gray-100/50 rounded-xl text-xs text-gray-500 border border-dashed border-gray-200">
           لا توجد غرف مضافة حالياً.
         </div>
       )}

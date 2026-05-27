@@ -3,11 +3,11 @@
 import React from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { LayoutDashboard, Building2, Sprout, Warehouse, Layers, ArrowLeftRight, Coins, Users, Truck, FolderArchive, BookOpen, ShieldCheck, DollarSign, Bird } from 'lucide-react'
+import { LayoutDashboard, Building2, Sprout, Warehouse, Layers, ArrowLeftRight, Coins, Users, Truck, FolderArchive, BookOpen, ShieldCheck, DollarSign, Bird, X } from 'lucide-react'
 import DarkModeToggle from '../ui/DarkModeToggle'
 import { useMe } from '@/lib/hooks/useAuth'
 
-const navItems = [
+export const navItems = [
   {
     icon: LayoutDashboard,
     label: 'الرئيسية',
@@ -94,8 +94,21 @@ const navItems = [
   },
 ]
 
+type SidebarProps = {
+  className?: string
+  drawerTitleId?: string
+  isMobileDrawer?: boolean
+  onNavigate?: () => void
+  onClose?: () => void
+}
 
-export default function Sidebar() {
+export default function Sidebar({
+  className = '',
+  drawerTitleId,
+  isMobileDrawer = false,
+  onNavigate,
+  onClose,
+}: SidebarProps) {
   const pathname = usePathname()
   const { data: user } = useMe()
 
@@ -122,22 +135,39 @@ export default function Sidebar() {
   }
 
   return (
-    <aside className="w-64 h-screen bg-surface border-l border-border flex flex-col sticky top-0 z-50 shrink-0" dir="rtl">
+    <aside
+      className={`flex h-full min-h-0 flex-col overflow-hidden border-l border-border bg-surface ${className}`}
+      dir="rtl"
+      aria-label="التنقل الرئيسي"
+    >
       {/* Brand Header */}
-      <div className="p-6 border-b border-border flex items-center gap-3">
-        <div className="p-2 bg-brand-logo-bg rounded-lg">
+      <div className="flex items-center gap-3 border-b border-border p-5 sm:p-6">
+        <div className="rounded-lg bg-brand-logo-bg p-2">
           <Sprout className="w-6 h-6 text-brand-logo-icon" />
         </div>
-        <div className="flex flex-col">
-          <span className="text-lg font-bold text-brand-logo-text leading-tight font-sans">
+        <div className="min-w-0 flex-1">
+          <span
+            id={drawerTitleId}
+            className="block truncate font-sans text-lg font-bold leading-tight text-brand-logo-text"
+          >
             Farmdata
           </span>
-          <span className="text-[10px] text-brand-logo-sub">إدارة المزارع</span>
+          <span className="block text-xs text-brand-logo-sub">إدارة المزارع</span>
         </div>
+        {isMobileDrawer && onClose ? (
+          <button
+            type="button"
+            onClick={onClose}
+            className="flex min-h-11 min-w-11 items-center justify-center rounded-xl text-ink-muted transition-colors hover:bg-surface-muted hover:text-ink lg:hidden"
+            aria-label="إغلاق القائمة"
+          >
+            <X className="h-5 w-5" />
+          </button>
+        ) : null}
       </div>
 
       {/* Navigation */}
-      <nav className="flex-1 overflow-y-auto py-6 px-4 space-y-1">
+      <nav className="flex-1 overflow-y-auto px-4 py-5 sm:py-6 space-y-1">
         {navItems
           .filter((item) => hasPermission(item.permission))
           .map((item) => {
@@ -146,7 +176,8 @@ export default function Sidebar() {
               <Link
                 key={item.href}
                 href={item.href}
-                className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 ${
+                onClick={onNavigate}
+                className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-colors duration-200 ${
                   active
                     ? 'bg-farm-blue text-[#ffffff] shadow-sm'
                     : 'text-gray-600 dark:text-gray-700 hover:bg-menu-hover-bg hover:text-menu-hover-text'
@@ -166,7 +197,7 @@ export default function Sidebar() {
 
       {/* Footer */}
       <div className="p-4 border-t border-border">
-        <p className="text-[10px] text-gray-400 dark:text-gray-600 text-center">
+        <p className="text-xs text-gray-400 dark:text-gray-600 text-center">
           نظام إدارة مزارع الدواجن
         </p>
       </div>

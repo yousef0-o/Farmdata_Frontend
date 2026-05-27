@@ -287,7 +287,7 @@ export default function MedicalRecordForm({ flockId, initialData, onSubmit, isPe
             type="button"
             onClick={addMedicationRow}
             disabled={isLoading}
-            className="flex items-center gap-1.5 bg-red-50 text-red-700 hover:bg-red-100 px-4 py-2 rounded-xl transition-all font-semibold border border-red-100 text-sm disabled:opacity-50"
+            className="flex items-center gap-1.5 bg-red-50 text-red-700 hover:bg-red-100 px-4 py-2 rounded-xl transition-colors font-semibold border border-red-100 text-sm disabled:opacity-50"
           >
             <Plus className="w-4 h-4" />
             إضافة دواء / لقاح
@@ -325,7 +325,7 @@ export default function MedicalRecordForm({ flockId, initialData, onSubmit, isPe
         <button
           type="submit"
           disabled={isPending || isLoading}
-          className="flex items-center gap-2 bg-red-600 hover:bg-red-700 text-white px-6 py-3 rounded-xl transition-all font-semibold shadow-md disabled:opacity-50"
+          className="flex items-center gap-2 bg-red-600 hover:bg-red-700 text-white px-6 py-3 rounded-xl transition-colors font-semibold shadow-md disabled:opacity-50"
         >
           {isPending ? (
             <Loader2 className="w-5 h-5 animate-spin" />
@@ -338,7 +338,7 @@ export default function MedicalRecordForm({ flockId, initialData, onSubmit, isPe
         <button
           type="button"
           onClick={() => router.push(`/flocks/${flockId}`)}
-          className="flex items-center gap-2 border border-gray-300 hover:bg-gray-50 text-gray-700 px-6 py-3 rounded-xl transition-all font-semibold"
+          className="flex items-center gap-2 border border-gray-300 hover:bg-gray-50 text-gray-700 px-6 py-3 rounded-xl transition-colors font-semibold"
         >
           <ArrowRight className="w-5 h-5" />
           إلغاء
@@ -366,7 +366,7 @@ function MedicationRow({ index, med, warehouses, balances, onUpdate, onRemove }:
       <button
         type="button"
         onClick={() => onRemove(index)}
-        className="absolute top-4 left-4 p-1.5 text-gray-400 hover:text-red-600 rounded-lg hover:bg-red-50 transition-all"
+        className="absolute top-4 left-4 p-1.5 text-gray-400 hover:text-red-600 rounded-lg hover:bg-red-50 transition-colors"
         title="حذف هذا الدواء"
       >
         <Trash2 className="w-4 h-4" />

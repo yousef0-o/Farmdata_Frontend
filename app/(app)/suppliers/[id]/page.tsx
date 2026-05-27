@@ -23,7 +23,7 @@ export default function SupplierDetailPage({ params }: { params: Promise<{ id: s
   if (error || !supplier) {
     return (
       <div className="flex flex-col items-center justify-center py-32 text-center" dir="rtl">
-        <h2 className="text-xl font-bold text-gray-800">لم يتم العثور على المورد</h2>
+        <h2 className="text-xl font-bold text-ink">لم يتم العثور على المورد</h2>
         <Link href="/suppliers" className="text-farm-blue hover:underline mt-4 text-sm">العودة لقائمة الموردين</Link>
       </div>
     )
@@ -95,12 +95,12 @@ export default function SupplierDetailPage({ params }: { params: Promise<{ id: s
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <Link href="/suppliers" className="p-2 bg-gray-100 rounded-xl hover:bg-gray-250 transition-all">
-            <ArrowRight className="w-5 h-5 text-gray-600" />
+          <Link href="/suppliers" className="rounded-xl bg-surface-muted p-2 transition-colors hover:bg-surface-subtle">
+            <ArrowRight className="w-5 h-5 text-ink-soft" />
           </Link>
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">{supplier.supplier_name}</h1>
-            <p className="text-sm text-gray-500 font-mono">{supplier.supplier_code}</p>
+            <h1 className="text-2xl font-bold text-ink">{supplier.supplier_name}</h1>
+            <p className="font-mono text-sm text-ink-muted">{supplier.supplier_code}</p>
           </div>
         </div>
         <div className="flex items-center gap-3">
@@ -112,15 +112,15 @@ export default function SupplierDetailPage({ params }: { params: Promise<{ id: s
       {sections.map((section) => {
         const Icon = section.icon
         return (
-          <div key={section.title} className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
-            <h2 className="text-sm font-bold text-gray-700 flex items-center gap-2 mb-4">
+          <div key={section.title} className="rounded-2xl border border-line bg-surface p-6 shadow-sm">
+            <h2 className="mb-4 flex items-center gap-2 text-sm font-bold text-ink-soft">
               <Icon className="w-4 h-4 ml-1.5" /> {section.title}
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               {section.fields.map((f) => (
                 <div key={f.label}>
-                  <span className="text-xxs text-gray-500 block mb-0.5">{f.label}</span>
-                  <span className="text-sm font-semibold text-gray-900">{f.value}</span>
+                  <span className="mb-0.5 block text-xs text-ink-muted">{f.label}</span>
+                  <span className="text-sm font-semibold text-ink">{f.value}</span>
                 </div>
               ))}
             </div>
@@ -129,7 +129,7 @@ export default function SupplierDetailPage({ params }: { params: Promise<{ id: s
       })}
 
       {/* Timestamps */}
-      <div className="flex items-center gap-6 text-xxs text-gray-500">
+      <div className="flex items-center gap-6 text-xs text-ink-muted">
         <span className="flex items-center gap-1"><Calendar className="w-3 h-3 ml-1" /> أنشئ: {supplier.created_at || '—'}</span>
         <span className="flex items-center gap-1"><Calendar className="w-3 h-3 ml-1" /> آخر تعديل: {supplier.updated_at || '—'}</span>
       </div>

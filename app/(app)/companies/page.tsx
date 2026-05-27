@@ -69,7 +69,7 @@ export default function CompaniesPage() {
         </div>
         <button
           onClick={() => setShowCreate(true)}
-          className="flex items-center gap-2 bg-farm-blue hover:bg-blue-800 text-white px-5 py-2.5 rounded-xl transition-all font-medium"
+          className="flex items-center gap-2 bg-farm-blue hover:bg-blue-800 text-white px-5 py-2.5 rounded-xl transition-colors font-medium"
         >
           <Plus className="w-5 h-5" />
           <span>إضافة شركة</span>
@@ -101,7 +101,7 @@ export default function CompaniesPage() {
               <button
                 type="submit"
                 disabled={createMutation.isPending}
-                className="bg-farm-green hover:bg-green-700 text-white px-6 py-2 rounded-xl font-medium transition-all disabled:opacity-50"
+                className="bg-farm-green hover:bg-green-700 text-white px-6 py-2 rounded-xl font-medium transition-colors disabled:opacity-50"
               >
                 {createMutation.isPending ? (
                   <Loader2 className="w-4 h-4 animate-spin" />
@@ -112,7 +112,7 @@ export default function CompaniesPage() {
               <button
                 type="button"
                 onClick={() => setShowCreate(false)}
-                className="bg-gray-100 hover:bg-gray-200 text-gray-600 px-4 py-2 rounded-xl font-medium transition-all"
+                className="bg-gray-100 hover:bg-gray-200 text-gray-600 px-4 py-2 rounded-xl font-medium transition-colors"
               >
                 إلغاء
               </button>
@@ -138,7 +138,7 @@ export default function CompaniesPage() {
           {companies.map((company) => (
             <div key={company.id} className="relative group">
               <Link href={`/companies/${company.id}`}>
-                <div className="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 cursor-pointer">
+                <div className="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-colors duration-300 cursor-pointer">
                   <div className="w-14 h-14 bg-gradient-to-br from-blue-100 to-blue-50 text-blue-600 rounded-2xl flex items-center justify-center mb-4">
                     <Building2 className="w-7 h-7" />
                   </div>

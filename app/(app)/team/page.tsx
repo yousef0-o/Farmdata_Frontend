@@ -11,6 +11,7 @@ import {
 import { useMe } from '@/lib/hooks/useAuth'
 import type { User } from '@/lib/types'
 import TeamForm from '@/components/team/TeamForm'
+import AppDialog from '@/components/ui/AppDialog'
 import {
   Users,
   UserPlus,
@@ -145,7 +146,7 @@ export default function TeamPage() {
 
           <button
             onClick={handleOpenCreate}
-            className="flex items-center gap-2 px-5 py-3 rounded-xl bg-farm-blue hover:bg-farm-blue-dark text-white text-sm font-semibold shadow-sm transition-all hover:scale-[1.01]"
+            className="flex items-center gap-2 px-5 py-3 rounded-xl bg-farm-blue hover:bg-farm-blue-dark text-white text-sm font-semibold shadow-sm transition-colors hover:scale-[1.01]"
           >
             <UserPlus className="w-5 h-5" />
             إضافة موظف جديد
@@ -153,7 +154,7 @@ export default function TeamPage() {
         </div>
 
         {/* Filter / Search Bar */}
-        <div className="flex items-center gap-3 p-4 bg-white rounded-2xl border border-gray-200 shadow-sm">
+        <div className="flex items-center gap-3 rounded-2xl border border-line bg-surface p-4 shadow-sm">
           <div className="relative flex-1">
             <Search className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
             <input
@@ -164,7 +165,7 @@ export default function TeamPage() {
                 setPage(1)
               }}
               placeholder="ابحث باسم الموظف أو البريد الإلكتروني..."
-              className="w-full pl-4 pr-12 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-farm-blue/20"
+              className="min-h-11 w-full rounded-xl border border-line bg-surface-muted pl-4 pr-12 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-action-primary/20"
             />
           </div>
         </div>
@@ -182,7 +183,8 @@ export default function TeamPage() {
               <p className="text-gray-500 text-sm">لم يتم العثور على أي أعضاء مسجلين.</p>
             </div>
           ) : (
-            <div className="overflow-x-auto">
+            <>
+            <div className="hidden overflow-x-auto lg:block">
               <table className="w-full border-collapse text-right">
                 <thead>
                   <tr className="bg-gray-50/50 border-b border-gray-200">
@@ -200,7 +202,7 @@ export default function TeamPage() {
                     return (
                       <tr
                         key={user.id}
-                        className="hover:bg-gray-100/30 transition-all"
+                        className="hover:bg-gray-100/30 transition-colors"
                       >
                         <td className="p-4">
                           <div className="flex flex-col">
@@ -232,7 +234,7 @@ export default function TeamPage() {
                           <button
                             onClick={() => handleToggleStatus(user)}
                             disabled={isSelf}
-                            className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs font-bold border transition-all ${
+                            className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs font-bold border transition-colors ${
                               user.is_active
                                 ? 'bg-emerald-500/5 text-emerald-500 border-emerald-500/10 hover:bg-emerald-500/10'
                                 : 'bg-red-500/5 text-red-500 border-red-500/10 hover:bg-red-500/10'
@@ -252,7 +254,7 @@ export default function TeamPage() {
                           <div className="flex items-center gap-2">
                             <button
                               onClick={() => handleOpenEdit(user)}
-                              className="p-2 text-gray-400 hover:text-farm-blue hover:bg-farm-blue/5 rounded-lg transition-all"
+                              className="p-2 text-gray-400 hover:text-farm-blue hover:bg-farm-blue/5 rounded-lg transition-colors"
                               title="تعديل البيانات والصلاحيات"
                             >
                               <Edit className="w-4 h-4" />
@@ -261,7 +263,7 @@ export default function TeamPage() {
                             <button
                               onClick={() => setDeletingUser(user)}
                               disabled={isSelf}
-                              className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-500/5 rounded-lg transition-all disabled:opacity-30 disabled:hover:bg-transparent"
+                              className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-500/5 rounded-lg transition-colors disabled:opacity-30 disabled:hover:bg-transparent"
                               title={isSelf ? 'لا يمكنك حذف حسابك الشخصي' : 'حذف العضو'}
                             >
                               <Trash2 className="w-4 h-4" />
@@ -274,6 +276,58 @@ export default function TeamPage() {
                 </tbody>
               </table>
             </div>
+
+            <div className="grid grid-cols-1 gap-4 p-4 lg:hidden">
+              {response.data.map((user) => {
+                const isSelf = currentUser?.id === user.id
+                return (
+                  <article key={user.id} className="rounded-2xl border border-line bg-surface p-4 shadow-sm">
+                    <div className="space-y-1">
+                      <p className="text-sm font-bold text-ink">
+                        {user.name} {isSelf && <span className="mr-1 text-xs font-semibold text-action-primary">(أنت)</span>}
+                      </p>
+                      <p className="text-xs text-ink-muted">{user.email}</p>
+                      <p className="text-xs text-ink-soft">{user.phone || '—'}</p>
+                    </div>
+                    <div className="mt-4 flex flex-wrap items-center gap-2">
+                      <span className="inline-flex rounded-lg bg-info-soft px-2.5 py-1 text-xs font-bold text-action-primary">
+                        {user.roles.includes('super_admin') ? 'Super Admin' :
+                         user.roles.includes('admin') ? 'Admin' :
+                         user.roles.includes('manager') ? 'Manager' :
+                         user.roles.includes('editor') ? 'Editor' :
+                         user.roles.includes('viewer') ? 'Viewer' :
+                         user.roles.includes('team_member') ? 'Team Member' : user.roles[0] || '—'}
+                      </span>
+                      <span className={`inline-flex items-center gap-1.5 rounded-lg border px-3 py-1 text-xs font-bold ${
+                        user.is_active
+                          ? 'border-success-soft bg-success-soft text-success'
+                          : 'border-danger-soft bg-danger-soft text-danger'
+                      }`}>
+                        <Power className="h-3.5 w-3.5" />
+                        {user.is_active ? 'نشط' : 'معطل'}
+                      </span>
+                      <span className="text-xs text-ink-muted">{user.permissions ? `${user.permissions.length} صلاحية مخصصة` : '0 صلاحية مخصصة'}</span>
+                    </div>
+                    <div className="mt-4 flex items-center gap-3">
+                      <button
+                        onClick={() => handleOpenEdit(user)}
+                        className="flex min-h-11 flex-1 items-center justify-center rounded-xl border border-info-soft bg-info-soft px-4 py-2 text-sm font-semibold text-action-primary"
+                      >
+                        تعديل
+                      </button>
+                      <button
+                        onClick={() => setDeletingUser(user)}
+                        disabled={isSelf}
+                        className="flex min-h-11 min-w-11 items-center justify-center rounded-xl border border-danger-soft bg-danger-soft px-4 py-2 text-danger disabled:opacity-40"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </button>
+                    </div>
+                  </article>
+                )
+              })}
+            </div>
+            </>
           )}
 
           {/* Pagination Controls */}
@@ -287,14 +341,14 @@ export default function TeamPage() {
                 <button
                   onClick={() => setPage((p) => Math.max(1, p - 1))}
                   disabled={page === 1}
-                  className="p-2 rounded-lg border border-gray-200 bg-white disabled:opacity-40 transition-all"
+                  className="p-2 rounded-lg border border-gray-200 bg-white disabled:opacity-40 transition-colors"
                 >
                   <ChevronRight className="w-4 h-4" />
                 </button>
                 <button
                   onClick={() => setPage((p) => Math.min(response.meta!.last_page, p + 1))}
                   disabled={page === response.meta.last_page}
-                  className="p-2 rounded-lg border border-gray-200 bg-white disabled:opacity-40 transition-all"
+                  className="p-2 rounded-lg border border-gray-200 bg-white disabled:opacity-40 transition-colors"
                 >
                   <ChevronLeft className="w-4 h-4" />
                 </button>
@@ -305,8 +359,8 @@ export default function TeamPage() {
 
         {/* Create/Edit Slide-over Modal Dialog */}
         {showModal && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs transition-all">
-            <div className="w-full max-w-4xl max-h-[90vh] bg-white rounded-2xl shadow-xl border border-gray-200 flex flex-col overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+          <AppDialog open={showModal} onClose={() => setShowModal(false)} panelClassName="max-w-4xl animate-in fade-in zoom-in-95 duration-200">
+            <div className="flex max-h-[90vh] w-full flex-col overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-xl">
               {/* Modal Header */}
               <div className="p-6 border-b border-gray-200 flex justify-between items-center bg-gray-50">
                 <div className="flex items-center gap-3">
@@ -325,7 +379,7 @@ export default function TeamPage() {
 
                 <button
                   onClick={() => setShowModal(false)}
-                  className="p-2 text-gray-400 hover:text-gray-600 rounded-lg hover:bg-gray-100 transition-all"
+                  className="p-2 text-gray-400 hover:text-gray-600 rounded-lg hover:bg-gray-100 transition-colors"
                 >
                   <X className="w-5 h-5" />
                 </button>
@@ -342,13 +396,13 @@ export default function TeamPage() {
                 />
               </div>
             </div>
-          </div>
+          </AppDialog>
         )}
 
         {/* Delete Confirmation Alert Modal */}
         {deletingUser && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs">
-            <div className="w-full max-w-md bg-white border border-gray-200 rounded-2xl p-6 shadow-xl text-center space-y-4">
+          <AppDialog open={!!deletingUser} onClose={() => setDeletingUser(null)} panelClassName="max-w-md">
+            <div className="w-full rounded-2xl border border-gray-200 bg-white p-6 text-center shadow-xl space-y-4">
               <div className="p-3 bg-red-500/10 text-red-500 rounded-full w-14 h-14 flex items-center justify-center mx-auto">
                 <AlertTriangle className="w-8 h-8" />
               </div>
@@ -364,20 +418,20 @@ export default function TeamPage() {
               <div className="flex items-center gap-3 pt-2">
                 <button
                   onClick={() => setDeletingUser(null)}
-                  className="flex-1 px-4 py-3 rounded-xl border border-gray-200 text-sm font-semibold text-gray-500 hover:bg-gray-50 transition-all"
+                  className="flex-1 px-4 py-3 rounded-xl border border-gray-200 text-sm font-semibold text-gray-500 hover:bg-gray-50 transition-colors"
                 >
                   إلغاء
                 </button>
 
                 <button
                   onClick={handleConfirmDelete}
-                  className="flex-1 px-4 py-3 rounded-xl bg-red-500 hover:bg-red-600 text-white text-sm font-semibold transition-all"
+                  className="flex-1 px-4 py-3 rounded-xl bg-red-500 hover:bg-red-600 text-white text-sm font-semibold transition-colors"
                 >
                   تأكيد الحذف النهائي
                 </button>
               </div>
             </div>
-          </div>
+          </AppDialog>
         )}
       </div>
     </PermissionGuard>

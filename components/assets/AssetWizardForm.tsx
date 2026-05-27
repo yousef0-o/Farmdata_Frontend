@@ -7,6 +7,7 @@ import SaudiRiyalIcon from '@/components/icons/SaudiRiyalIcon'
 import { CATEGORY_CONFIG } from './AssetTypeBadge'
 import { STATUS_CONFIG } from './AssetStatusBadge'
 import type { Asset } from '@/lib/types'
+import AppDialog from '@/components/ui/AppDialog'
 
 interface AssetWizardFormProps {
   editingAsset: Asset | null
@@ -101,13 +102,13 @@ export default function AssetWizardForm({ editingAsset, onSubmit, onClose, isPen
           setForm({ ...form, [key]: val })
         }}
       />
-      {allErrors[key] && <p className="text-xxs text-red-500 mt-1">{allErrors[key]}</p>}
+      {allErrors[key] && <p className="text-xs text-red-500 mt-1">{allErrors[key]}</p>}
     </div>
   )
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4 overflow-y-auto">
-      <div className="bg-white rounded-2xl shadow-xl w-full max-w-4xl max-h-[90vh] flex flex-col overflow-hidden animate-in fade-in zoom-in duration-200">
+    <AppDialog open onClose={onClose} panelClassName="max-w-4xl animate-in fade-in zoom-in duration-200">
+      <div className="max-h-[90vh] w-full overflow-hidden rounded-2xl bg-white shadow-xl flex flex-col">
         {/* Header */}
         <div className="p-6 border-b border-gray-100 bg-gray-50/50 flex justify-between items-center">
           <div>
@@ -116,7 +117,7 @@ export default function AssetWizardForm({ editingAsset, onSubmit, onClose, isPen
             </h2>
             <p className="text-xs text-gray-400 mt-0.5">الخطوة {step + 1} من 3 — {STEPS[step].label}</p>
           </div>
-          <button onClick={onClose} className="p-2 hover:bg-gray-200 rounded-full transition-all text-gray-400">
+          <button onClick={onClose} className="p-2 hover:bg-gray-200 rounded-full transition-colors text-gray-400">
             <X className="w-5 h-5" />
           </button>
         </div>
@@ -128,7 +129,7 @@ export default function AssetWizardForm({ editingAsset, onSubmit, onClose, isPen
               <button
                 type="button"
                 onClick={() => { if (i < step) setStep(i) }}
-                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors ${
                   i === step
                     ? 'bg-farm-blue text-white'
                     : i < step
@@ -248,17 +249,17 @@ export default function AssetWizardForm({ editingAsset, onSubmit, onClose, isPen
             </div>
             <div className="flex gap-3">
               <button type="button" onClick={onClose}
-                className="bg-gray-100 hover:bg-gray-200 text-gray-600 px-5 py-2.5 rounded-xl font-semibold text-sm transition-all">
+                className="bg-gray-100 hover:bg-gray-200 text-gray-600 px-5 py-2.5 rounded-xl font-semibold text-sm transition-colors">
                 إلغاء
               </button>
               {step < 2 ? (
                 <button key="next-step-btn" type="button" onClick={handleNext}
-                  className="bg-farm-blue hover:bg-farm-blue/90 text-white px-6 py-2.5 rounded-xl font-semibold text-sm transition-all flex items-center gap-2">
+                  className="bg-farm-blue hover:bg-farm-blue/90 text-white px-6 py-2.5 rounded-xl font-semibold text-sm transition-colors flex items-center gap-2">
                   التالي <ChevronLeft className="w-4 h-4" />
                 </button>
               ) : (
                 <button key="submit-form-btn" type="submit" disabled={isPending}
-                  className="bg-farm-blue hover:bg-farm-blue/90 disabled:opacity-50 text-white px-6 py-2.5 rounded-xl font-semibold text-sm transition-all flex items-center gap-2">
+                  className="bg-farm-blue hover:bg-farm-blue/90 disabled:opacity-50 text-white px-6 py-2.5 rounded-xl font-semibold text-sm transition-colors flex items-center gap-2">
                   {isPending && <Loader2 className="w-4 h-4 animate-spin" />}
                   {editingAsset ? 'حفظ التعديلات' : 'إضافة الأصل للموازنة'}
                 </button>
@@ -267,6 +268,6 @@ export default function AssetWizardForm({ editingAsset, onSubmit, onClose, isPen
           </div>
         </form>
       </div>
-    </div>
+    </AppDialog>
   )
 }

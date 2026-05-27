@@ -296,14 +296,14 @@ export default function TeamForm({
                   <button
                     type="button"
                     onClick={() => handleSectionToggle(group, true)}
-                    className="px-3 py-1 bg-farm-blue/5 text-farm-blue text-xs rounded-lg hover:bg-farm-blue/10 transition-all font-semibold"
+                    className="px-3 py-1 bg-farm-blue/5 text-farm-blue text-xs rounded-lg hover:bg-farm-blue/10 transition-colors font-semibold"
                   >
                     تحديد الكل
                   </button>
                   <button
                     type="button"
                     onClick={() => handleSectionToggle(group, false)}
-                    className="px-3 py-1 bg-red-500/5 text-red-500 text-xs rounded-lg hover:bg-red-500/10 transition-all font-semibold"
+                    className="px-3 py-1 bg-red-500/5 text-red-500 text-xs rounded-lg hover:bg-red-500/10 transition-colors font-semibold"
                   >
                     إلغاء التحديد
                   </button>
@@ -319,13 +319,13 @@ export default function TeamForm({
                   return (
                     <div
                       key={perm.key}
-                      className="flex flex-col sm:flex-row sm:items-center justify-between p-3 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-900/30 transition-all border border-transparent hover:border-gray-100 dark:hover:border-gray-900 gap-3"
+                      className="flex flex-col sm:flex-row sm:items-center justify-between p-3 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-900/30 transition-colors border border-transparent hover:border-gray-100 dark:hover:border-gray-900 gap-3"
                     >
                       <div className="flex flex-col">
                         <span className="text-sm font-semibold text-gray-800 dark:text-gray-200">
                           {perm.label}
                         </span>
-                        <span className="text-[11px] text-gray-400 dark:text-gray-500 font-sans">
+                        <span className="text-xs text-gray-400 dark:text-gray-500 font-sans">
                           {perm.viewKey} | {perm.manageKey}
                         </span>
                       </div>
@@ -380,7 +380,7 @@ export default function TeamForm({
           type="button"
           onClick={onCancel}
           disabled={isSubmitting}
-          className="px-5 py-3 rounded-xl border border-gray-200 dark:border-gray-800 text-sm font-semibold text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-900 transition-all"
+          className="px-5 py-3 rounded-xl border border-gray-200 dark:border-gray-800 text-sm font-semibold text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-900 transition-colors"
         >
           إلغاء
         </button>
@@ -388,7 +388,7 @@ export default function TeamForm({
         <button
           type="submit"
           disabled={isSubmitting}
-          className="px-6 py-3 rounded-xl bg-farm-blue hover:bg-farm-blue-dark text-white text-sm font-semibold shadow-sm transition-all flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+          className="px-6 py-3 rounded-xl bg-farm-blue hover:bg-farm-blue-dark text-white text-sm font-semibold shadow-sm transition-colors flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
         >
           {isSubmitting ? (
             <>

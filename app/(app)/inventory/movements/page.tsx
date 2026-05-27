@@ -83,7 +83,7 @@ export default function InventoryMovementsPage() {
   return (
     <div className="space-y-6" dir="rtl">
       {/* Header */}
-      <div className="flex justify-between items-center">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex items-center gap-4">
           <div className="p-3 bg-blue-50 text-blue-600 rounded-xl">
             <ArrowLeftRight className="w-6 h-6" />
@@ -96,7 +96,7 @@ export default function InventoryMovementsPage() {
         <button
           type="button"
           onClick={() => setShowCreateDialog(true)}
-          className="flex items-center gap-2 bg-farm-blue hover:bg-blue-800 text-white px-5 py-2.5 rounded-xl transition-all font-medium"
+          className="flex min-h-11 items-center justify-center gap-2 rounded-xl bg-farm-blue px-5 py-2.5 font-medium text-white transition-colors hover:bg-blue-800"
         >
           <Plus className="w-5 h-5" />
           <span>إضافة حركة</span>
@@ -106,13 +106,13 @@ export default function InventoryMovementsPage() {
       <CreateMovementDialog open={showCreateDialog} onOpenChange={setShowCreateDialog} />
 
       {/* Filter Bar */}
-      <form onSubmit={handleSearch} className="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm space-y-4">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+      <form onSubmit={handleSearch} className="rounded-2xl border border-line bg-surface p-4 shadow-sm">
+        <div className="grid grid-cols-1 gap-3 md:grid-cols-4 md:gap-4">
           {/* Warehouse Selector */}
           <div>
-            <label className="text-xs font-semibold text-gray-600 block mb-1">المستودع</label>
+            <label className="mb-1 block text-xs font-semibold text-ink-soft">المستودع</label>
             <select
-              className="w-full border border-gray-200 rounded-xl px-3 py-2 bg-gray-50 text-sm focus:outline-none focus:ring-2 focus:ring-farm-blue"
+              className="w-full rounded-xl border border-line bg-surface-muted px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-action-primary"
               value={selectedWarehouse}
               onChange={(e) => setSelectedWarehouse(e.target.value)}
             >
@@ -127,9 +127,9 @@ export default function InventoryMovementsPage() {
 
           {/* Item Selector */}
           <div>
-            <label className="text-xs font-semibold text-gray-600 block mb-1">الصنف</label>
+            <label className="mb-1 block text-xs font-semibold text-ink-soft">الصنف</label>
             <select
-              className="w-full border border-gray-200 rounded-xl px-3 py-2 bg-gray-50 text-sm focus:outline-none focus:ring-2 focus:ring-farm-blue"
+              className="w-full rounded-xl border border-line bg-surface-muted px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-action-primary"
               value={selectedItem}
               onChange={(e) => setSelectedItem(e.target.value)}
             >
@@ -144,9 +144,9 @@ export default function InventoryMovementsPage() {
 
           {/* Type Selector */}
           <div>
-            <label className="text-xs font-semibold text-gray-600 block mb-1">النوع</label>
+            <label className="mb-1 block text-xs font-semibold text-ink-soft">النوع</label>
             <select
-              className="w-full border border-gray-200 rounded-xl px-3 py-2 bg-gray-50 text-sm focus:outline-none focus:ring-2 focus:ring-farm-blue"
+              className="w-full rounded-xl border border-line bg-surface-muted px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-action-primary"
               value={selectedType}
               onChange={(e) => setSelectedType(e.target.value)}
             >
@@ -160,7 +160,7 @@ export default function InventoryMovementsPage() {
           <div className="flex items-end gap-2">
             <button
               type="submit"
-              className="flex-1 flex items-center justify-center gap-2 bg-farm-blue hover:bg-blue-800 text-white py-2 rounded-xl transition-all font-medium text-sm h-[38px]"
+              className="flex min-h-11 flex-1 items-center justify-center gap-2 rounded-xl bg-action-primary py-2 text-sm font-medium text-white transition-colors hover:bg-action-primary-hover"
             >
               <Search className="w-4 h-4" />
               <span>بحث</span>
@@ -168,7 +168,7 @@ export default function InventoryMovementsPage() {
             <button
               type="button"
               onClick={handleReset}
-              className="flex items-center justify-center p-2 bg-gray-100 hover:bg-gray-200 text-gray-600 rounded-xl transition-all text-sm h-[38px] w-[38px]"
+              className="flex min-h-11 min-w-11 items-center justify-center rounded-xl bg-surface-muted p-2 text-sm text-ink-soft transition-colors hover:bg-surface-subtle"
               title="إعادة تعيين الفلاتر"
             >
               <RefreshCw className="w-4 h-4" />
@@ -183,17 +183,17 @@ export default function InventoryMovementsPage() {
           <Loader2 className="w-10 h-10 text-farm-blue animate-spin" />
         </div>
       ) : movements.length === 0 ? (
-        <div className="flex flex-col items-center justify-center py-20 bg-white rounded-3xl border border-dashed border-gray-200">
-          <ArrowLeftRight className="w-16 h-16 text-gray-300 mb-4" />
-          <h3 className="text-xl font-semibold text-gray-600">لا توجد حركات مخزون مسجلة</h3>
-          <p className="text-gray-500 mt-2">تأكد من الفلاتر المحددة أو قم بتسجيل العمليات اليومية.</p>
+        <div className="flex flex-col items-center justify-center rounded-3xl border border-dashed border-line bg-surface py-20">
+          <ArrowLeftRight className="mb-4 h-16 w-16 text-ink-muted" />
+          <h3 className="text-xl font-semibold text-ink-soft">لا توجد حركات مخزون مسجلة</h3>
+          <p className="mt-2 text-ink-muted">تأكد من الفلاتر المحددة أو قم بتسجيل العمليات اليومية.</p>
         </div>
       ) : (
-        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
+        <div className="overflow-hidden rounded-2xl border border-line bg-surface shadow-sm">
+        <div className="hidden overflow-x-auto lg:block">
+          <table className="w-full text-sm">
               <thead>
-                <tr className="border-b border-gray-200 text-gray-500 bg-gray-50/50">
+                <tr className="border-b border-line bg-surface-subtle text-ink-soft">
                   <th className="text-right py-3 px-4 font-semibold">التاريخ</th>
                   <th className="text-right py-3 px-4 font-semibold">النوع</th>
                   <th className="text-right py-3 px-4 font-semibold">الصنف</th>
@@ -205,34 +205,34 @@ export default function InventoryMovementsPage() {
               </thead>
               <tbody>
                 {movements.map((mov) => (
-                  <tr key={mov.id} className="border-b border-gray-100 hover:bg-gray-50/50 transition-colors">
-                    <td className="py-3 px-4 text-gray-600 text-xs">
+                  <tr key={mov.id} className="border-b border-line transition-colors hover:bg-surface-subtle">
+                    <td className="py-3 px-4 text-xs text-ink-soft">
                       {mov.created_at ? new Date(mov.created_at).toLocaleString('ar-EG') : '—'}
                     </td>
                     <td className="py-3 px-4">
                       <MovementTypeBadge type={mov.type} />
                     </td>
-                    <td className="py-3 px-4 font-medium text-gray-900">
+                    <td className="py-3 px-4 font-medium text-ink">
                       {mov.item_name || `صنف #${mov.item_id}`}
                     </td>
-                    <td className="py-3 px-4 text-gray-600">
+                    <td className="py-3 px-4 text-ink-soft">
                       {mov.warehouse_name || `مستودع #${mov.warehouse_id}`}
                     </td>
-                    <td className={`py-3 px-4 font-bold ${mov.type === 'in' ? 'text-green-600' : 'text-red-600'}`}>
+                    <td className={`py-3 px-4 font-bold ${mov.type === 'in' ? 'text-success' : 'text-danger'}`}>
                       {mov.type === 'in' ? '+' : '-'} {Number(mov.quantity).toFixed(3)}
                     </td>
                     <td className="py-3 px-4">
                       <span className={`text-xs px-2 py-0.5 rounded-md font-medium ${
                         mov.reversal_of
-                          ? 'bg-amber-50 text-amber-700 border border-amber-200'
+                          ? 'border border-warning-soft bg-warning-soft text-warning-strong'
                           : mov.reference_type === 'manual'
-                            ? 'bg-blue-50 text-blue-700 border border-blue-100'
-                            : 'bg-gray-100 text-gray-600'
+                            ? 'border border-info-soft bg-info-soft text-info'
+                            : 'bg-surface-muted text-ink-soft'
                       }`}>
                         {getReferenceLabel(mov)}
                       </span>
                     </td>
-                    <td className="py-3 px-4 text-gray-500 max-w-xs truncate" title={mov.notes}>
+                    <td className="max-w-xs truncate py-3 px-4 text-ink-muted" title={mov.notes}>
                       {mov.notes || '—'}
                     </td>
                   </tr>
@@ -241,8 +241,45 @@ export default function InventoryMovementsPage() {
             </table>
           </div>
 
+          <div className="grid grid-cols-1 gap-4 p-4 lg:hidden">
+            {movements.map((mov) => (
+              <article key={mov.id} className="rounded-2xl border border-line bg-surface p-4 shadow-sm">
+                <div className="flex items-start justify-between gap-3">
+                  <div className="space-y-1">
+                    <p className="text-sm font-semibold text-ink">{mov.item_name || `صنف #${mov.item_id}`}</p>
+                    <p className="text-xs text-ink-muted">{mov.warehouse_name || `مستودع #${mov.warehouse_id}`}</p>
+                  </div>
+                  <MovementTypeBadge type={mov.type} />
+                </div>
+
+                <div className="mt-4 grid grid-cols-2 gap-3 text-sm">
+                  <div className="rounded-xl bg-surface-subtle px-3 py-2">
+                    <span className="block text-xs text-ink-muted">الكمية</span>
+                    <span className={`font-semibold ${mov.type === 'in' ? 'text-success' : 'text-danger'}`}>
+                      {mov.type === 'in' ? '+' : '-'} {Number(mov.quantity).toFixed(3)}
+                    </span>
+                  </div>
+                  <div className="rounded-xl bg-surface-subtle px-3 py-2">
+                    <span className="block text-xs text-ink-muted">المرجع</span>
+                    <span className="text-sm font-semibold text-ink">{getReferenceLabel(mov)}</span>
+                  </div>
+                  <div className="col-span-2 rounded-xl bg-surface-subtle px-3 py-2">
+                    <span className="block text-xs text-ink-muted">التاريخ</span>
+                    <span className="text-sm font-semibold text-ink">
+                      {mov.created_at ? new Date(mov.created_at).toLocaleString('ar-EG') : '—'}
+                    </span>
+                  </div>
+                  <div className="col-span-2 rounded-xl bg-surface-subtle px-3 py-2">
+                    <span className="block text-xs text-ink-muted">ملاحظات</span>
+                    <span className="text-sm text-ink-soft">{mov.notes || '—'}</span>
+                  </div>
+                </div>
+              </article>
+            ))}
+          </div>
+
           {meta && (
-            <div className="p-4 border-t border-gray-100">
+            <div className="border-t border-line p-4">
               <Pagination
                 currentPage={meta.current_page}
                 lastPage={meta.last_page}

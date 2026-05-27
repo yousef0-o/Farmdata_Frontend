@@ -46,6 +46,7 @@ import {
   Calendar,
   Printer
 } from 'lucide-react'
+import AppDialog from '@/components/ui/AppDialog'
 
 interface PageProps {
   params: Promise<{ id: string }>
@@ -499,16 +500,16 @@ export default function FolderDetailPage({ params }: PageProps) {
               <div key={idx} className="flex-1 flex flex-col items-center group relative h-full justify-end">
                 {/* Tooltip */}
                 <div className="absolute bottom-full mb-1.5 hidden group-hover:flex flex-col items-center z-30">
-                  <div className="bg-gray-900 text-[#ffffff] text-[8px] font-bold px-2 py-1 rounded shadow-lg whitespace-nowrap">
+                  <div className="bg-surface-inverse text-ink-inverse text-xs font-bold px-2 py-1 rounded shadow-lg whitespace-nowrap">
                     {labels[idx]}: {v.toLocaleString('ar-EG', { maximumFractionDigits: 1 })}
                   </div>
-                  <div className="w-1.5 h-1.5 bg-gray-900 rotate-45 -mt-1"></div>
+                  <div className="w-1.5 h-1.5 bg-surface-inverse rotate-45 -mt-1"></div>
                 </div>
                 
                 {/* SVG Bar */}
                 <div 
                   style={{ height: `${heightPercent}%`, backgroundColor: color }}
-                  className="w-full rounded-t-sm hover:opacity-80 transition-all duration-300 shadow-sm"
+                  className="w-full rounded-t-sm hover:opacity-80 transition-colors duration-300 shadow-sm"
                 />
               </div>
             )
@@ -516,7 +517,7 @@ export default function FolderDetailPage({ params }: PageProps) {
         </div>
         
         {/* X Axis Labels */}
-        <div className="flex justify-between border-t border-gray-100 pt-1 text-[8px] text-gray-400 font-semibold px-0.5">
+        <div className="flex justify-between border-t border-line pt-1 text-xs text-ink-muted font-semibold px-0.5">
           {labels.map((lbl, idx) => (
             <span key={idx} className="truncate max-w-[40px] text-center" title={lbl}>{lbl}</span>
           ))}
@@ -555,14 +556,14 @@ export default function FolderDetailPage({ params }: PageProps) {
                   strokeWidth="3.8"
                   strokeDasharray={strokeDash}
                   strokeDashoffset={strokeOffset}
-                  className="transition-all duration-500 ease-out hover:stroke-[4.5] cursor-pointer"
+                  className="transition-colors duration-500 ease-out hover:stroke-[4.5] cursor-pointer"
                 />
               )
             })}
           </svg>
           <div className="absolute flex flex-col items-center text-center">
-            <span className="text-[7.5px] text-gray-400 font-bold">الإجمالي</span>
-            <span className="text-[9.5px] font-bold text-gray-800 truncate max-w-[60px]">
+            <span className="text-xs text-ink-muted font-bold">الإجمالي</span>
+            <span className="text-xs font-bold text-ink truncate max-w-[60px]">
               {total.toLocaleString('ar-EG', { maximumFractionDigits: 0 })}
             </span>
           </div>
@@ -571,10 +572,10 @@ export default function FolderDetailPage({ params }: PageProps) {
         {/* Legends */}
         <div className="flex-1 space-y-0.5 max-h-24 overflow-y-auto pr-0.5">
           {labels.slice(0, 4).map((lbl, idx) => (
-            <div key={idx} className="flex items-center gap-1 text-[8.5px]">
+            <div key={idx} className="flex items-center gap-1 text-xs">
               <span className="w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ backgroundColor: colors[idx % colors.length] }} />
-              <span className="text-gray-500 truncate max-w-[65px]" title={lbl}>{lbl}</span>
-              <span className="text-gray-700 font-semibold mr-auto">
+              <span className="text-ink-muted truncate max-w-[65px]" title={lbl}>{lbl}</span>
+              <span className="text-ink-soft font-semibold mr-auto">
                 {total > 0 ? Math.round((values[idx] / total) * 100) : 0}%
               </span>
             </div>
@@ -644,7 +645,7 @@ export default function FolderDetailPage({ params }: PageProps) {
                 
                 {/* Custom hover tooltip */}
                 <foreignObject x={p.x - 35} y={p.y - 25} width="70" height="20" className="hidden group-hover:block overflow-visible z-30">
-                  <div className="bg-gray-900 text-[#ffffff] text-[7px] font-bold py-0.5 px-1 rounded shadow text-center whitespace-nowrap truncate">
+                  <div className="bg-surface-inverse text-ink-inverse text-xs font-bold py-0.5 px-1 rounded shadow text-center whitespace-nowrap truncate">
                     {p.label}: {p.value.toLocaleString('ar-EG', { maximumFractionDigits: 1 })}
                   </div>
                 </foreignObject>
@@ -654,7 +655,7 @@ export default function FolderDetailPage({ params }: PageProps) {
         </div>
         
         {/* X Axis Labels */}
-        <div className="flex justify-between border-t border-gray-100 pt-1 text-[8px] text-gray-400 font-semibold px-0.5 mt-0.5">
+        <div className="flex justify-between border-t border-line pt-1 text-xs text-ink-muted font-semibold px-0.5 mt-0.5">
           {labels.map((lbl, idx) => (
             <span key={idx} className="truncate max-w-[40px] text-center" title={lbl}>{lbl}</span>
           ))}
@@ -672,12 +673,12 @@ export default function FolderDetailPage({ params }: PageProps) {
           const percent = (val / max) * 100
           return (
             <div key={idx} className="space-y-0.5">
-              <div className="flex justify-between items-center text-[9px] font-bold">
-                <span className="text-gray-600 truncate max-w-[120px]">{lbl}</span>
-                <span className="text-gray-800">{val.toLocaleString('ar-EG')}</span>
+              <div className="flex justify-between items-center text-xs font-bold">
+                <span className="text-ink-soft truncate max-w-[120px]">{lbl}</span>
+                <span className="text-ink">{val.toLocaleString('ar-EG')}</span>
               </div>
-              <div className="w-full bg-gray-100 h-1 rounded-full overflow-hidden">
-                <div style={{ width: `${percent}%`, backgroundColor: color }} className="h-full rounded-full transition-all duration-500 ease-out" />
+              <div className="w-full bg-surface-muted h-1 rounded-full overflow-hidden">
+                <div style={{ width: `${percent}%`, backgroundColor: color }} className="h-full rounded-full transition-colors duration-500 ease-out" />
               </div>
             </div>
           )
@@ -696,8 +697,8 @@ export default function FolderDetailPage({ params }: PageProps) {
 
     if (isLoading) {
       return (
-        <div className="h-40 bg-white border border-gray-200 rounded-2xl flex items-center justify-center">
-          <Loader2 className="w-5.5 h-5.5 animate-spin text-farm-blue" />
+        <div className="h-40 bg-surface border border-line rounded-2xl flex items-center justify-center">
+          <Loader2 className="w-5.5 h-5.5 animate-spin text-action-primary" />
         </div>
       )
     }
@@ -722,12 +723,12 @@ export default function FolderDetailPage({ params }: PageProps) {
     const customColor = config.widget_color || '#3b82f6'
 
     // Card styling based on alert status
-    let cardClasses = "bg-white border border-gray-200 rounded-2xl shadow-sm p-5 relative overflow-hidden transition-all duration-300 hover:shadow-md"
+    let cardClasses = "bg-surface border border-line rounded-2xl shadow-sm p-5 relative overflow-hidden transition-colors duration-300 hover:shadow-md"
     if (isAlertActive) {
       if (isPositive) {
-        cardClasses += " border-emerald-500/80 bg-emerald-50/5 shadow-[0_0_15px_rgba(16,185,129,0.05)]"
+        cardClasses += " border-success bg-success-soft/5 shadow-[0_0_15px_rgba(16,185,129,0.05)]"
       } else {
-        cardClasses += " border-red-500/80 bg-red-50/5 shadow-[0_0_15px_rgba(239,68,68,0.05)]"
+        cardClasses += " border-danger bg-danger-soft/5 shadow-[0_0_15px_rgba(239,68,68,0.05)]"
       }
     }
 
@@ -750,12 +751,12 @@ export default function FolderDetailPage({ params }: PageProps) {
         {/* Header Actions */}
         <div className="flex items-center justify-between mb-2">
           <div className="flex items-center gap-1.5 min-w-0">
-            <span className="text-[10.5px] text-gray-500 font-bold truncate max-w-[130px]" title={config.name}>
+            <span className="text-xs text-ink-muted font-bold truncate max-w-[130px]" title={config.name}>
               {config.name}
             </span>
             {isAlertActive && (
-              <span className={`flex h-2 w-2 rounded-full relative ${isPositive ? 'bg-emerald-500' : 'bg-red-500'}`}>
-                <span className={`animate-ping absolute inline-flex h-full w-full rounded-full opacity-75 ${isPositive ? 'bg-emerald-400' : 'bg-red-400'}`}></span>
+              <span className={`flex h-2 w-2 rounded-full relative ${isPositive ? 'bg-success' : 'bg-danger'}`}>
+                <span className={`animate-ping absolute inline-flex h-full w-full rounded-full opacity-75 ${isPositive ? 'bg-success' : 'bg-danger'}`}></span>
               </span>
             )}
           </div>
@@ -764,14 +765,14 @@ export default function FolderDetailPage({ params }: PageProps) {
             <button 
               onClick={handleEditWidget}
               title="تعديل"
-              className="p-1 hover:bg-gray-50 rounded text-gray-400 hover:text-gray-650 transition-colors"
+              className="p-1 hover:bg-surface-muted rounded text-ink-muted hover:text-ink-soft transition-colors"
             >
               <Edit3 className="w-3.5 h-3.5" />
             </button>
             <button 
               onClick={() => handleDeleteStatsConfig(config.id)}
               title="حذف"
-              className="p-1 hover:bg-red-50 rounded text-gray-400 hover:text-red-500 transition-colors"
+              className="p-1 hover:bg-danger-soft rounded text-ink-muted hover:text-danger transition-colors"
             >
               <Trash2 className="w-3.5 h-3.5" />
             </button>
@@ -782,11 +783,11 @@ export default function FolderDetailPage({ params }: PageProps) {
         {config.chart_type === 'card' && (
           <div className="flex items-center justify-between mt-1">
             <div className="min-w-0">
-              <h4 className="text-xl font-bold text-gray-900 font-sans truncate">
+              <h4 className="text-xl font-bold text-ink font-sans truncate">
                 {typeof val === 'number' ? val.toLocaleString('ar-EG', { maximumFractionDigits: 1 }) : val}
               </h4>
               {config.threshold_value !== undefined && config.threshold_value !== null && (
-                <div className="flex items-center gap-1 text-[8.5px] text-gray-400 mt-1 font-sans">
+                <div className="flex items-center gap-1 text-xs text-ink-muted mt-1 font-sans">
                   <span>الحد:</span>
                   <span className="font-bold">{config.threshold_condition === 'gt' ? '>' : config.threshold_condition === 'lt' ? '<' : '='} {config.threshold_value.toLocaleString('ar-EG')}</span>
                 </div>
@@ -816,7 +817,7 @@ export default function FolderDetailPage({ params }: PageProps) {
         )}
 
         {isGrouped && config.chart_type === 'card' && (
-          <div className="text-[8.5px] text-amber-500 font-semibold mt-1 font-sans">
+          <div className="text-xs text-warning font-semibold mt-1 font-sans">
             البطاقة لا تدعم بيانات المجموعات، يرجى التعديل لاختيار نوع رسم بياني آخر.
           </div>
         )}
@@ -827,31 +828,31 @@ export default function FolderDetailPage({ params }: PageProps) {
   return (
     <div className="space-y-6" dir="rtl">
       {/* Breadcrumb Header */}
-      <div className="flex flex-wrap items-center gap-2 text-xs text-gray-500">
-        <Link href="/archive" className="hover:text-farm-blue font-semibold">الأرشيف الرئيسي</Link>
+      <div className="flex flex-wrap items-center gap-2 text-xs text-ink-muted">
+        <Link href="/archive" className="hover:text-action-primary font-semibold">الأرشيف الرئيسي</Link>
         {breadcrumbs.map((crumb) => (
           <React.Fragment key={crumb.id}>
             <ChevronRight className="w-3.5 h-3.5" />
-            <Link href="/archive" className="hover:text-farm-blue font-semibold">
+            <Link href="/archive" className="hover:text-action-primary font-semibold">
               <span>{crumb.name}</span>
             </Link>
           </React.Fragment>
         ))}
         <ChevronRight className="w-3.5 h-3.5" />
-        <span className="font-bold text-farm-blue">{folderRes?.data?.name ?? 'المجلد الحالي'}</span>
+        <span className="font-bold text-action-primary">{folderRes?.data?.name ?? 'المجلد الحالي'}</span>
       </div>
 
       {/* Title block */}
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-white p-6 rounded-2xl border border-gray-200 shadow-sm">
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-surface p-6 rounded-2xl border border-line shadow-sm">
         <div className="flex items-center gap-3">
-          <div className="p-3.5 bg-emerald-50 text-emerald-600 rounded-2xl shadow-sm">
+          <div className="p-3.5 bg-success-soft text-success rounded-2xl shadow-sm">
             <Folder className="w-7 h-7" />
           </div>
           <div>
-            <h1 className="text-xl font-bold text-gray-900 font-sans">
+            <h1 className="text-xl font-bold text-ink font-sans">
               {folderRes?.data?.name ?? 'سجلات المجلد المالي'}
             </h1>
-            <p className="text-xs text-gray-500 mt-1">تخصيص الحقول، استيراد جداول البيانات، والمعالجة بالذكاء الاصطناعي</p>
+            <p className="text-xs text-ink-muted mt-1">تخصيص الحقول، استيراد جداول البيانات، والمعالجة بالذكاء الاصطناعي</p>
           </div>
         </div>
 
@@ -859,10 +860,10 @@ export default function FolderDetailPage({ params }: PageProps) {
           {/* Custom Schema Settings */}
           <button
             onClick={() => setIsEditingSchema(!isEditingSchema)}
-            className={`flex items-center gap-1.5 px-4 py-2.5 rounded-xl border font-semibold text-xs transition-all active:scale-[0.98] ${
+            className={`flex items-center gap-1.5 px-4 py-2.5 rounded-xl border font-semibold text-xs transition-colors active:scale-[0.98] ${
               isEditingSchema
-                ? 'bg-amber-50 text-amber-600 border-amber-200'
-                : 'bg-white text-gray-600 border-gray-200 hover:bg-gray-50'
+                ? 'bg-warning-soft text-warning border-warning-soft'
+                : 'bg-surface text-ink-soft border-line hover:bg-surface-muted'
             }`}
           >
             <Settings className="w-4 h-4 animate-spin-slow" />
@@ -872,7 +873,7 @@ export default function FolderDetailPage({ params }: PageProps) {
           {/* Add item */}
           <button
             onClick={() => handleOpenItemForm()}
-            className="flex items-center gap-1.5 px-4 py-2.5 bg-farm-blue text-white font-bold text-xs rounded-xl shadow-md hover:bg-opacity-90 active:scale-[0.98] transition-all"
+            className="flex items-center gap-1.5 px-4 py-2.5 bg-action-primary text-ink-inverse font-bold text-xs rounded-xl shadow-md hover:bg-opacity-90 active:scale-[0.98] transition-colors"
           >
             <Plus className="w-4 h-4" />
             <span>إضافة سجل مالي</span>
@@ -881,23 +882,23 @@ export default function FolderDetailPage({ params }: PageProps) {
       </div>
 
       {/* Analytics Dashboard Header & Dynamic Date Filter Bar */}
-      <div className="bg-white border border-gray-200 p-6 rounded-2xl shadow-sm space-y-4 print:hidden">
+      <div className="bg-surface border border-line p-6 rounded-2xl shadow-sm space-y-4 print:hidden">
         <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-4">
-          <div className="flex items-center gap-2 text-farm-blue">
+          <div className="flex items-center gap-2 text-action-primary">
             <TrendingUp className="w-5 h-5" />
             <h3 className="text-sm font-bold font-sans">لوحة المؤشرات الإحصائية والتحليلات البيانية الذكية</h3>
           </div>
           
           <button
             onClick={() => window.print()}
-            className="flex items-center gap-1.5 px-4 py-2 border border-gray-200 rounded-xl text-xs font-bold text-gray-650 hover:bg-gray-50 transition-all cursor-pointer"
+            className="flex items-center gap-1.5 px-4 py-2 border border-line rounded-xl text-xs font-bold text-ink-soft hover:bg-surface-muted transition-colors cursor-pointer"
           >
             <Printer className="w-4 h-4" />
             <span>تصدير كتقرير / طباعة</span>
           </button>
         </div>
 
-        <div className="flex flex-wrap items-center gap-4 pt-2 border-t border-gray-250">
+        <div className="flex flex-wrap items-center gap-4 pt-2 border-t border-line">
           {/* Quick Date Range Selection */}
           <div className="flex items-center gap-2">
             <button
@@ -908,7 +909,7 @@ export default function FolderDetailPage({ params }: PageProps) {
                 setDateFrom(firstDay)
                 setDateTo(lastDay)
               }}
-              className="px-3 py-1.5 bg-gray-50 hover:bg-gray-100 rounded-lg text-[10px] font-bold text-gray-500 transition-colors"
+              className="px-3 py-1.5 bg-surface-muted hover:bg-surface-muted rounded-lg text-xs font-bold text-ink-muted transition-colors"
             >
               هذا الشهر
             </button>
@@ -920,7 +921,7 @@ export default function FolderDetailPage({ params }: PageProps) {
                 setDateFrom(firstDay)
                 setDateTo(lastDay)
               }}
-              className="px-3 py-1.5 bg-gray-50 hover:bg-gray-100 rounded-lg text-[10px] font-bold text-gray-500 transition-colors"
+              className="px-3 py-1.5 bg-surface-muted hover:bg-surface-muted rounded-lg text-xs font-bold text-ink-muted transition-colors"
             >
               هذه السنة
             </button>
@@ -929,7 +930,7 @@ export default function FolderDetailPage({ params }: PageProps) {
                 setDateFrom('')
                 setDateTo('')
               }}
-              className="px-3 py-1.5 bg-gray-50 hover:bg-gray-100 rounded-lg text-[10px] font-bold text-gray-500 transition-colors"
+              className="px-3 py-1.5 bg-surface-muted hover:bg-surface-muted rounded-lg text-xs font-bold text-ink-muted transition-colors"
             >
               كل الأوقات
             </button>
@@ -938,11 +939,11 @@ export default function FolderDetailPage({ params }: PageProps) {
           {/* Date Picker Inputs */}
           <div className="flex flex-wrap items-center gap-3 mr-auto min-w-0">
             <div className="flex items-center gap-2 text-xs">
-              <span className="text-gray-450 flex-shrink-0">الفلترة بـ:</span>
+              <span className="text-ink-muted flex-shrink-0">الفلترة بـ:</span>
               <select
                 value={selectedDateCol}
                 onChange={(e) => setSelectedDateCol(e.target.value)}
-                className="px-3 py-1.5 bg-gray-50 border border-gray-200 rounded-xl text-xs focus:outline-none"
+                className="px-3 py-1.5 bg-surface-muted border border-line rounded-xl text-xs focus:outline-none"
               >
                 {columns.filter(c => c.type === 'date').map(c => (
                   <option key={c.key} value={c.key}>{c.label}</option>
@@ -958,14 +959,14 @@ export default function FolderDetailPage({ params }: PageProps) {
                 type="date"
                 value={dateFrom}
                 onChange={(e) => setDateFrom(e.target.value)}
-                className="px-3 py-1.5 bg-gray-50 border border-gray-200 rounded-xl text-xs focus:outline-none"
+                className="px-3 py-1.5 bg-surface-muted border border-line rounded-xl text-xs focus:outline-none"
               />
-              <span className="text-gray-400">إلى</span>
+              <span className="text-ink-muted">إلى</span>
               <input
                 type="date"
                 value={dateTo}
                 onChange={(e) => setDateTo(e.target.value)}
-                className="px-3 py-1.5 bg-gray-50 border border-gray-200 rounded-xl text-xs focus:outline-none"
+                className="px-3 py-1.5 bg-surface-muted border border-line rounded-xl text-xs focus:outline-none"
               />
             </div>
           </div>
@@ -985,7 +986,7 @@ export default function FolderDetailPage({ params }: PageProps) {
             setStatsCol('')
             setShowStatsModal(true)
           }}
-          className="flex items-center justify-center gap-2 p-6 border-2 border-dashed border-gray-200 hover:border-farm-blue rounded-2xl text-gray-500 hover:text-farm-blue transition-all group"
+          className="flex items-center justify-center gap-2 p-6 border-2 border-dashed border-line hover:border-action-primary rounded-2xl text-ink-muted hover:text-action-primary transition-colors group"
         >
           <Plus className="w-5 h-5 group-hover:scale-110 transition-transform" />
           <span className="text-xs font-bold font-sans">إضافة بطاقة إحصائيات</span>
@@ -995,17 +996,17 @@ export default function FolderDetailPage({ params }: PageProps) {
       {/* Excel & OCR Pipeline Actions Bar */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Excel Pipeline Panel */}
-        <div className="p-6 bg-white border border-gray-200 rounded-2xl shadow-sm space-y-4">
-          <div className="flex items-center gap-2 text-emerald-600">
+        <div className="p-6 bg-surface border border-line rounded-2xl shadow-sm space-y-4">
+          <div className="flex items-center gap-2 text-success">
             <FileSpreadsheet className="w-5 h-5" />
             <h3 className="text-sm font-bold font-sans">معالجة واستيراد جداول البيانات الذكية (Excel)</h3>
           </div>
-          <p className="text-xs text-gray-500 leading-relaxed">
+          <p className="text-xs text-ink-muted leading-relaxed">
             ارفع ملف إكسل مباشرة. سيقوم النظام بتحليل الترويسات ومطابقتها ذكياً مع حقول هذا المجلد المالي باستخدام التوافق التقريبي للحروف والترجمات.
           </p>
 
           <div className="flex items-center gap-4 pt-2">
-            <label className="flex items-center gap-2 px-4 py-2.5 bg-gray-50 hover:bg-gray-100 border border-gray-200 rounded-xl text-xs font-bold text-gray-700 cursor-pointer transition-all">
+            <label className="flex items-center gap-2 px-4 py-2.5 bg-surface-muted hover:bg-surface-muted border border-line rounded-xl text-xs font-bold text-ink-soft cursor-pointer transition-colors">
               <span>اختر ملف Excel</span>
               <input type="file" accept=".xlsx,.xls,.csv" onChange={handleExcelUpload} className="hidden" />
             </label>
@@ -1014,7 +1015,7 @@ export default function FolderDetailPage({ params }: PageProps) {
               href={`${process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:8000/api'}/archive/folders/${folderId}/export`}
               target="_blank"
               rel="noreferrer"
-              className="flex items-center gap-1.5 px-4 py-2.5 border border-gray-200 rounded-xl text-xs font-bold text-gray-650 hover:bg-gray-50 transition-all"
+              className="flex items-center gap-1.5 px-4 py-2.5 border border-line rounded-xl text-xs font-bold text-ink-soft hover:bg-surface-muted transition-colors"
             >
               <ArrowDownToLine className="w-3.5 h-3.5" />
               <span>تصدير السجلات الحالية</span>
@@ -1023,12 +1024,12 @@ export default function FolderDetailPage({ params }: PageProps) {
         </div>
 
         {/* OCR Scanner Pipeline Panel */}
-        <div className="p-6 bg-white border border-gray-200 rounded-2xl shadow-sm space-y-4">
-          <div className="flex items-center gap-2 text-purple-600">
+        <div className="p-6 bg-surface border border-line rounded-2xl shadow-sm space-y-4">
+          <div className="flex items-center gap-2 text-action-secondary">
             <ScanFace className="w-5 h-5" />
             <h3 className="text-sm font-bold font-sans">المعالجة بالذكاء الاصطناعي والاستخراج الضوئي (OCR)</h3>
           </div>
-          <p className="text-xs text-gray-500 leading-relaxed">
+          <p className="text-xs text-ink-muted leading-relaxed">
             قم برفع حزمة من المستندات الممسوحة ضوئياً (PDF/صور). سيقوم محرك القراءة في الخلفية بالاستخراج الذكي للقيم وتطابقها لحفظ السجلات تلقائياً.
           </p>
 
@@ -1038,12 +1039,12 @@ export default function FolderDetailPage({ params }: PageProps) {
               multiple
               accept="application/pdf,image/*"
               onChange={(e) => setScanFiles(e.target.files)}
-              className="text-xs text-gray-500 border border-gray-200 p-1.5 rounded-lg w-full max-w-xs"
+              className="text-xs text-ink-muted border border-line p-1.5 rounded-lg w-full max-w-xs"
             />
             <button
               onClick={handleScannerUpload}
               disabled={scanningLoading || !scanFiles}
-              className="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white font-bold text-xs rounded-xl shadow disabled:opacity-50 transition-all"
+              className="px-4 py-2 bg-action-secondary hover:bg-action-secondary-hover text-ink-inverse font-bold text-xs rounded-xl shadow disabled:opacity-50 transition-colors"
             >
               {scanningLoading ? (
                 <span className="flex items-center gap-1">
@@ -1057,22 +1058,24 @@ export default function FolderDetailPage({ params }: PageProps) {
           </div>
 
           {activeJobId && (
-            <div className="p-3 bg-purple-105 border border-purple-200 rounded-xl flex items-center justify-between text-xs">
-              <span className="text-purple-700 font-semibold animate-pulse">
+            <div className="flex items-center justify-between rounded-xl border border-line bg-surface-subtle p-3 text-xs">
+              <span className="text-action-secondary font-semibold animate-pulse">
                 حالة الاستخراج: {jobStatus === 'pending' ? 'انتظار' : 'جاري الفحص المتقدم للمحتوى'}
               </span>
-              <Loader2 className="w-4 h-4 text-purple-600 animate-spin" />
+              <Loader2 className="w-4 h-4 text-action-secondary animate-spin" />
             </div>
           )}
         </div>
-      </div>="      {/* Dynamic Schema Columns Builder Editor Panel */}
+      </div>
+
+      {/* Dynamic Schema Columns Builder Editor Panel */}
       {isEditingSchema && (
-        <div className="p-6 bg-amber-50 border border-amber-200 rounded-2xl space-y-4">
+        <div className="p-6 bg-warning-soft border border-warning-soft rounded-2xl space-y-4">
           <div className="flex items-center justify-between">
-            <h3 className="text-sm font-bold text-gray-900 font-sans">تعديل هيكل حقول البيانات والمستندات</h3>
+            <h3 className="text-sm font-bold text-ink font-sans">تعديل هيكل حقول البيانات والمستندات</h3>
             <button
               onClick={handleAddColumn}
-              className="flex items-center gap-1 px-3 py-1.5 bg-amber-600 text-white text-xs font-bold rounded-lg hover:bg-opacity-95"
+              className="flex items-center gap-1 px-3 py-1.5 bg-warning text-ink-inverse text-xs font-bold rounded-lg hover:bg-opacity-95"
             >
               <Plus className="w-3.5 h-3.5" />
               <span>إضافة حقل جديد</span>
@@ -1081,12 +1084,12 @@ export default function FolderDetailPage({ params }: PageProps) {
 
           <div className="space-y-3">
             {schemaColumns.map((col, index) => (
-              <div key={col.key || index} className="space-y-3.5 p-4 bg-white border border-gray-200 rounded-2xl text-xs shadow-sm">
+              <div key={col.key || index} className="space-y-3.5 p-4 bg-surface border border-line rounded-2xl text-xs shadow-sm">
                 
                 {/* Row 1: Key Metadata Fields */}
                 <div className="flex flex-wrap items-center gap-3">
                   <div className="w-full sm:w-48">
-                    <label className="block text-[10px] text-gray-400 font-semibold mb-1">اسم الحقل بالعربية</label>
+                    <label className="block text-xs text-ink-muted font-semibold mb-1">اسم الحقل بالعربية</label>
                     <input
                       type="text"
                       value={col.label_ar || col.label || ''}
@@ -1095,38 +1098,38 @@ export default function FolderDetailPage({ params }: PageProps) {
                         handleUpdateColumnField(index, 'label', e.target.value)
                       }}
                       placeholder="مثال: قيمة المبيعات"
-                      className="w-full p-2 border border-gray-200 bg-gray-50 rounded-xl focus:outline-none focus:ring-1 focus:ring-amber-500"
+                      className="w-full p-2 border border-line bg-surface-muted rounded-xl focus:outline-none focus:ring-1 focus:ring-warning"
                     />
                   </div>
 
                   <div className="w-full sm:w-48">
-                    <label className="block text-[10px] text-gray-400 font-semibold mb-1">اسم الحقل بالإنجليزية</label>
+                    <label className="block text-xs text-ink-muted font-semibold mb-1">اسم الحقل بالإنجليزية</label>
                     <input
                       type="text"
                       value={col.label_en || ''}
                       onChange={(e) => handleUpdateColumnField(index, 'label_en', e.target.value)}
                       placeholder="Example: Sales Amount"
-                      className="w-full p-2 border border-gray-200 bg-gray-50 rounded-xl focus:outline-none focus:ring-1 focus:ring-amber-500"
+                      className="w-full p-2 border border-line bg-surface-muted rounded-xl focus:outline-none focus:ring-1 focus:ring-warning"
                     />
                   </div>
 
                   <div className="w-full sm:w-40">
-                    <label className="block text-[10px] text-gray-400 font-semibold mb-1">المعرف البرمجي (لاتيني)</label>
+                    <label className="block text-xs text-ink-muted font-semibold mb-1">المعرف البرمجي (لاتيني)</label>
                     <input
                       type="text"
                       value={col.key}
                       onChange={(e) => handleUpdateColumnField(index, 'key', e.target.value)}
                       placeholder="example_key"
-                      className="w-full p-2 border border-gray-200 bg-gray-50 rounded-xl focus:outline-none focus:ring-1 focus:ring-amber-500"
+                      className="w-full p-2 border border-line bg-surface-muted rounded-xl focus:outline-none focus:ring-1 focus:ring-warning"
                     />
                   </div>
 
                   <div className="w-full sm:w-36">
-                    <label className="block text-[10px] text-gray-400 font-semibold mb-1">نوع البيانات</label>
+                    <label className="block text-xs text-ink-muted font-semibold mb-1">نوع البيانات</label>
                     <select
                       value={col.type}
                       onChange={(e) => handleUpdateColumnField(index, 'type', e.target.value)}
-                      className="w-full p-2 border border-gray-200 bg-gray-50 rounded-xl focus:outline-none focus:ring-1 focus:ring-amber-500"
+                      className="w-full p-2 border border-line bg-surface-muted rounded-xl focus:outline-none focus:ring-1 focus:ring-warning"
                     >
                       <option value="text">نص (Text)</option>
                       <option value="number">رقم (Number)</option>
@@ -1141,26 +1144,26 @@ export default function FolderDetailPage({ params }: PageProps) {
                 <div className="flex flex-wrap items-center gap-3">
                   {col.type === 'select' && (
                     <div className="w-full sm:w-64">
-                      <label className="block text-[10px] text-gray-400 font-semibold mb-1">الخيارات المتاحة (مفصولة بفاصلة)</label>
+                      <label className="block text-xs text-ink-muted font-semibold mb-1">الخيارات المتاحة (مفصولة بفاصلة)</label>
                       <input
                         type="text"
                         placeholder="خيار1, خيار2, خيار3"
                         value={Array.isArray(col.options) ? col.options.join(',') : ''}
                         onChange={(e) => handleUpdateColumnField(index, 'options', e.target.value.split(',').map(s => s.trim()).filter(Boolean))}
-                        className="w-full p-2 border border-gray-200 bg-gray-50 rounded-xl focus:outline-none focus:ring-1 focus:ring-amber-500"
+                        className="w-full p-2 border border-line bg-surface-muted rounded-xl focus:outline-none focus:ring-1 focus:ring-warning"
                       />
                     </div>
                   )}
 
                   {col.type === 'number' && (
                     <div className="w-full sm:w-64">
-                      <label className="block text-[10px] text-gray-400 font-semibold mb-1">معادلة حسابية (اختياري، مثل: [qty] * [price])</label>
+                      <label className="block text-xs text-ink-muted font-semibold mb-1">معادلة حسابية (اختياري، مثل: [qty] * [price])</label>
                       <input
                         type="text"
                         placeholder="[qty] * [price]"
                         value={col.formula || ''}
                         onChange={(e) => handleUpdateColumnField(index, 'formula', e.target.value)}
-                        className="w-full p-2 border border-gray-200 bg-gray-50 rounded-xl focus:outline-none focus:ring-1 focus:ring-amber-500 text-left ltr"
+                        className="w-full p-2 border border-line bg-surface-muted rounded-xl focus:outline-none focus:ring-1 focus:ring-warning text-left ltr"
                       />
                     </div>
                   )}
@@ -1168,11 +1171,11 @@ export default function FolderDetailPage({ params }: PageProps) {
                   {col.type !== 'boolean' && col.type !== 'select' && !col.formula && (
                     <>
                       <div className="w-full sm:w-40">
-                        <label className="block text-[10px] text-gray-400 font-semibold mb-1">قاعدة التحقق من المدخلات</label>
+                        <label className="block text-xs text-ink-muted font-semibold mb-1">قاعدة التحقق من المدخلات</label>
                         <select
                           value={col.validation || 'none'}
                           onChange={(e) => handleUpdateColumnField(index, 'validation', e.target.value)}
-                          className="w-full p-2 border border-gray-200 bg-gray-50 rounded-xl focus:outline-none focus:ring-1 focus:ring-amber-500"
+                          className="w-full p-2 border border-line bg-surface-muted rounded-xl focus:outline-none focus:ring-1 focus:ring-warning"
                         >
                           <option value="none">بدون قيود</option>
                           <option value="email">بريد إلكتروني (Email)</option>
@@ -1183,38 +1186,38 @@ export default function FolderDetailPage({ params }: PageProps) {
 
                       {col.validation === 'regex' && (
                         <div className="w-full sm:w-48">
-                          <label className="block text-[10px] text-gray-400 font-semibold mb-1">تنسيق التعبير المنتظم (Pattern)</label>
+                          <label className="block text-xs text-ink-muted font-semibold mb-1">تنسيق التعبير المنتظم (Pattern)</label>
                           <input
                             type="text"
                             placeholder="^[A-Z]{3}-\d+$"
                             value={col.validation_pattern || ''}
                             onChange={(e) => handleUpdateColumnField(index, 'validation_pattern', e.target.value)}
-                            className="w-full p-2 border border-gray-200 bg-gray-50 rounded-xl focus:outline-none focus:ring-1 focus:ring-amber-500 text-left ltr"
+                            className="w-full p-2 border border-line bg-surface-muted rounded-xl focus:outline-none focus:ring-1 focus:ring-warning text-left ltr"
                           />
                         </div>
                       )}
 
                       <div className="w-full sm:w-28">
-                        <label className="block text-[10px] text-gray-400 font-semibold mb-1">
+                        <label className="block text-xs text-ink-muted font-semibold mb-1">
                           {col.type === 'number' ? 'الحد الأدنى للقيمة' : 'الحد الأدنى للحروف'}
                         </label>
                         <input
                           type="number"
                           value={col.validation_min !== undefined ? col.validation_min : ''}
                           onChange={(e) => handleUpdateColumnField(index, 'validation_min', e.target.value === '' ? '' : parseFloat(e.target.value))}
-                          className="w-full p-2 border border-gray-200 bg-gray-50 rounded-xl focus:outline-none focus:ring-1 focus:ring-amber-500"
+                          className="w-full p-2 border border-line bg-surface-muted rounded-xl focus:outline-none focus:ring-1 focus:ring-warning"
                         />
                       </div>
 
                       <div className="w-full sm:w-28">
-                        <label className="block text-[10px] text-gray-400 font-semibold mb-1">
+                        <label className="block text-xs text-ink-muted font-semibold mb-1">
                           {col.type === 'number' ? 'الحد الأقصى للقيمة' : 'الحد الأقصى للحروف'}
                         </label>
                         <input
                           type="number"
                           value={col.validation_max !== undefined ? col.validation_max : ''}
                           onChange={(e) => handleUpdateColumnField(index, 'validation_max', e.target.value === '' ? '' : parseFloat(e.target.value))}
-                          className="w-full p-2 border border-gray-200 bg-gray-50 rounded-xl focus:outline-none focus:ring-1 focus:ring-amber-500"
+                          className="w-full p-2 border border-line bg-surface-muted rounded-xl focus:outline-none focus:ring-1 focus:ring-warning"
                         />
                       </div>
                     </>
@@ -1222,45 +1225,45 @@ export default function FolderDetailPage({ params }: PageProps) {
                 </div>
 
                 {/* Row 3: Action Buttons & Configurations */}
-                <div className="flex flex-wrap items-center justify-between pt-2.5 border-t border-gray-200">
+                <div className="flex flex-wrap items-center justify-between pt-2.5 border-t border-line">
                   <div className="flex flex-wrap items-center gap-4">
-                    <label className="flex items-center gap-1.5 cursor-pointer font-semibold text-gray-600">
+                    <label className="flex items-center gap-1.5 cursor-pointer font-semibold text-ink-soft">
                       <input
                         type="checkbox"
                         checked={!!col.required}
                         onChange={(e) => handleUpdateColumnField(index, 'required', e.target.checked)}
-                        className="rounded border-gray-350 text-amber-600 focus:ring-amber-500 focus:ring-offset-0 bg-transparent"
+                        className="rounded border-line-strong bg-transparent text-warning focus:ring-warning focus:ring-offset-0"
                       />
                       <span>إجباري</span>
                     </label>
 
-                    <label className="flex items-center gap-1.5 cursor-pointer font-semibold text-gray-600">
+                    <label className="flex items-center gap-1.5 cursor-pointer font-semibold text-ink-soft">
                       <input
                         type="checkbox"
                         checked={!!col.searchable}
                         onChange={(e) => handleUpdateColumnField(index, 'searchable', e.target.checked)}
-                        className="rounded border-gray-350 text-amber-600 focus:ring-amber-500 focus:ring-offset-0 bg-transparent"
+                        className="rounded border-line-strong bg-transparent text-warning focus:ring-warning focus:ring-offset-0"
                       />
                       <span>قابل للبحث</span>
                     </label>
 
-                    <label className="flex items-center gap-1.5 cursor-pointer font-semibold text-gray-600">
+                    <label className="flex items-center gap-1.5 cursor-pointer font-semibold text-ink-soft">
                       <input
                         type="checkbox"
                         checked={!!col.is_group_by}
                         onChange={(e) => handleUpdateColumnField(index, 'is_group_by', e.target.checked)}
-                        className="rounded border-gray-350 text-amber-600 focus:ring-amber-500 focus:ring-offset-0 bg-transparent"
+                        className="rounded border-line-strong bg-transparent text-warning focus:ring-warning focus:ring-offset-0"
                       />
                       <span>تجميع حسب</span>
                     </label>
 
                     {col.type === 'number' && (
-                      <label className="flex items-center gap-1.5 cursor-pointer font-semibold text-gray-600">
+                      <label className="flex items-center gap-1.5 cursor-pointer font-semibold text-ink-soft">
                         <input
                           type="checkbox"
                           checked={!!col.is_sum}
                           onChange={(e) => handleUpdateColumnField(index, 'is_sum', e.target.checked)}
-                          className="rounded border-gray-350 text-amber-600 focus:ring-amber-500 focus:ring-offset-0 bg-transparent"
+                          className="rounded border-line-strong bg-transparent text-warning focus:ring-warning focus:ring-offset-0"
                         />
                         <span>جمع القيم</span>
                       </label>
@@ -1270,10 +1273,10 @@ export default function FolderDetailPage({ params }: PageProps) {
                     <button
                       type="button"
                       onClick={() => handleUpdateColumnField(index, 'is_shown', col.is_shown !== false ? false : true)}
-                      className={`flex items-center gap-1 px-2.5 py-1 rounded-lg border text-[10px] font-bold transition-all ${
+                      className={`flex items-center gap-1 px-2.5 py-1 rounded-lg border text-xs font-bold transition-colors ${
                         col.is_shown !== false
-                          ? 'bg-purple-100 text-purple-700 border-purple-200'
-                          : 'bg-gray-50 text-gray-400 border-gray-200'
+                          ? 'bg-info-soft text-info border-info-soft'
+                          : 'bg-surface-muted text-ink-muted border-line'
                       }`}
                       title="إظهار/إخفاء الحقل في الجدول"
                     >
@@ -1285,10 +1288,10 @@ export default function FolderDetailPage({ params }: PageProps) {
                     <button
                       type="button"
                       onClick={() => handleUpdateColumnField(index, 'is_attachment_key', !col.is_attachment_key)}
-                      className={`flex items-center gap-1 px-2.5 py-1 rounded-lg border text-[10px] font-bold transition-all ${
+                      className={`flex items-center gap-1 px-2.5 py-1 rounded-lg border text-xs font-bold transition-colors ${
                         col.is_attachment_key
                           ? 'bg-orange-100 text-orange-700 border-orange-200 font-bold shadow-sm'
-                          : 'bg-gray-50 text-gray-400 border-gray-200'
+                          : 'bg-surface-muted text-ink-muted border-line'
                       }`}
                       title="تحديد كـ مفتاح ربط للمرفقات المشتركة بين الصفوف"
                     >
@@ -1300,7 +1303,7 @@ export default function FolderDetailPage({ params }: PageProps) {
                   <button
                     type="button"
                     onClick={() => handleRemoveColumn(index)}
-                    className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-xl transition-colors"
+                    className="p-2 text-ink-muted hover:text-danger hover:bg-danger-soft rounded-xl transition-colors"
                   >
                     <Trash2 className="w-4 h-4" />
                   </button>
@@ -1310,17 +1313,17 @@ export default function FolderDetailPage({ params }: PageProps) {
             ))}
           </div>
 
-          <div className="flex justify-end gap-3 pt-3 border-t border-amber-200">
+          <div className="flex justify-end gap-3 pt-3 border-t border-warning-soft">
             <button
               onClick={() => setIsEditingSchema(false)}
-              className="px-4 py-2 text-xs font-semibold text-gray-500 hover:bg-gray-100 rounded-lg"
+              className="px-4 py-2 text-xs font-semibold text-ink-muted hover:bg-surface-muted rounded-lg"
             >
               إلغاء
             </button>
             <button
               onClick={handleSaveSchema}
               disabled={updateSchemaMutation.isPending}
-              className="flex items-center gap-1.5 px-5 py-2 bg-amber-600 text-white text-xs font-bold rounded-lg hover:bg-amber-700"
+              className="flex items-center gap-1.5 px-5 py-2 bg-warning text-ink-inverse text-xs font-bold rounded-lg hover:bg-warning-strong"
             >
               {updateSchemaMutation.isPending && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
               <span>حفظ التعديلات الحقلية</span>
@@ -1330,9 +1333,9 @@ export default function FolderDetailPage({ params }: PageProps) {
       )}
 
       {/* Main Tabular Document Ledger View */}
-      <div className="bg-white border border-gray-200 rounded-2xl shadow-sm overflow-hidden">
+      <div className="bg-surface border border-line rounded-2xl shadow-sm overflow-hidden">
         {/* Grid Filters Bar */}
-        <div className="p-6 border-b border-gray-200 flex flex-col sm:flex-row justify-between items-center gap-4">
+        <div className="p-6 border-b border-line flex flex-col sm:flex-row justify-between items-center gap-4">
           <div className="relative w-full sm:w-72">
             <input
               type="text"
@@ -1342,19 +1345,19 @@ export default function FolderDetailPage({ params }: PageProps) {
                 setSearchTerm(e.target.value)
                 setPage(1)
               }}
-              className="w-full pl-4 pr-10 py-2 bg-gray-50 border border-gray-250 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-farm-blue"
+              className="w-full pl-4 pr-10 py-2 bg-surface-muted border border-line rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-farm-blue"
             />
-            <Search className="w-3.5 h-3.5 text-gray-400 absolute right-3.5 top-3" />
+            <Search className="w-3.5 h-3.5 text-ink-muted absolute right-3.5 top-3" />
           </div>
 
           {selectedRowIds.length > 0 && (
             <div className="flex items-center gap-3 w-full sm:w-auto">
-              <span className="text-xs text-gray-500 font-semibold">
-                تم تحديد <span className="text-red-500 font-bold">{selectedRowIds.length}</span> من السجلات
+              <span className="text-xs text-ink-muted font-semibold">
+                تم تحديد <span className="text-danger font-bold">{selectedRowIds.length}</span> من السجلات
               </span>
               <button
                 onClick={handleBulkDelete}
-                className="flex items-center gap-1 px-3 py-1.5 bg-red-50 hover:bg-red-100 text-red-600 text-xs font-bold rounded-lg transition-all"
+                className="flex items-center gap-1 rounded-lg bg-danger-soft px-3 py-1.5 text-xs font-bold text-danger transition-colors hover:bg-danger-soft"
               >
                 <Trash2 className="w-3.5 h-3.5" />
                 <span>حذف المحدد</span>
@@ -1364,21 +1367,22 @@ export default function FolderDetailPage({ params }: PageProps) {
         </div>
 
         {/* Responsive Table Grid */}
-        <div className="overflow-x-auto">
-          {loadingItems ? (
-            <div className="flex flex-col items-center justify-center py-20">
-              <Loader2 className="w-10 h-10 text-farm-blue animate-spin" />
-              <span className="text-gray-500 text-sm mt-3 font-semibold">جاري تحميل السجلات المالية...</span>
-            </div>
-          ) : items.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-20">
-              <Folder className="w-12 h-12 text-gray-200 dark:text-gray-700" />
-              <span className="text-gray-500 text-sm mt-3 font-bold">لا توجد سجلات مالية مضافة في هذا المجلد</span>
-            </div>
-          ) : (
+        {loadingItems ? (
+          <div className="flex flex-col items-center justify-center py-20">
+            <Loader2 className="w-10 h-10 text-action-primary animate-spin" />
+            <span className="text-ink-muted text-sm mt-3 font-semibold">جاري تحميل السجلات المالية...</span>
+          </div>
+        ) : items.length === 0 ? (
+          <div className="flex flex-col items-center justify-center py-20">
+            <Folder className="w-12 h-12 text-ink-muted" />
+            <span className="text-ink-muted text-sm mt-3 font-bold">لا توجد سجلات مالية مضافة في هذا المجلد</span>
+          </div>
+        ) : (
+          <>
+            <div className="hidden overflow-x-auto lg:block">
             <table className="w-full text-right border-collapse text-xs">
               <thead>
-                <tr className="bg-gray-50/40 border-b border-gray-100 text-gray-400 font-semibold">
+                <tr className="bg-surface-subtle border-b border-line text-ink-muted font-semibold">
                   <th className="p-4 w-12 text-center">
                     <input
                       type="checkbox"
@@ -1390,16 +1394,16 @@ export default function FolderDetailPage({ params }: PageProps) {
                           setSelectedRowIds([])
                         }
                       }}
-                      className="rounded text-farm-blue"
+                      className="rounded text-action-primary"
                     />
                   </th>
                   {visibleColumns.map((col) => (
-                    <th key={col.key} className="p-4 font-sans font-semibold text-gray-600">
+                    <th key={col.key} className="p-4 font-sans font-semibold text-ink-soft">
                       {col.label}
                     </th>
                   ))}
-                  <th className="p-4 w-28 text-center text-gray-600">المرفقات</th>
-                  <th className="p-4 w-24 text-center text-gray-600">الإجراءات</th>
+                  <th className="p-4 w-28 text-center text-ink-soft">المرفقات</th>
+                  <th className="p-4 w-24 text-center text-ink-soft">الإجراءات</th>
                 </tr>
               </thead>
               <tbody>
@@ -1410,7 +1414,7 @@ export default function FolderDetailPage({ params }: PageProps) {
                       setSelectedItem(item)
                       setIsRowDrawerOpen(true)
                     }}
-                    className="border-b border-gray-50 dark:border-gray-850 hover:bg-gray-50 dark:hover:bg-gray-800/40 cursor-pointer transition-colors"
+                    className="border-b border-line cursor-pointer transition-colors hover:bg-surface-raised/40"
                   >
                     <td className="p-4 text-center" onClick={(e) => e.stopPropagation()}>
                       <input
@@ -1423,7 +1427,7 @@ export default function FolderDetailPage({ params }: PageProps) {
                             setSelectedRowIds(selectedRowIds.filter(id => id !== item.id))
                           }
                         }}
-                        className="rounded text-farm-blue"
+                        className="rounded text-action-primary"
                       />
                     </td>
 
@@ -1439,7 +1443,7 @@ export default function FolderDetailPage({ params }: PageProps) {
                     })}
 
                     <td className="p-4 text-center" onClick={(e) => e.stopPropagation()}>
-                      <div className="flex items-center justify-center gap-1 text-gray-400">
+                      <div className="flex items-center justify-center gap-1 text-ink-muted">
                         <Paperclip className="w-3.5 h-3.5" />
                         <span className="font-bold">{item.attachments?.length ?? 0}</span>
                       </div>
@@ -1449,14 +1453,14 @@ export default function FolderDetailPage({ params }: PageProps) {
                       <div className="flex items-center justify-center gap-2">
                         <button
                           onClick={() => handleOpenItemForm(item)}
-                          className="p-1 text-gray-400 hover:text-farm-blue rounded-lg"
+                          className="p-1 text-ink-muted hover:text-action-primary rounded-lg"
                         >
                           تعديل
                         </button>
-                        <span className="text-gray-300">|</span>
+                        <span className="text-ink-muted">|</span>
                         <button
                           onClick={() => handleDeleteItem(item.id)}
-                          className="p-1 text-gray-400 hover:text-red-500 rounded-lg"
+                          className="p-1 text-ink-muted hover:text-danger rounded-lg"
                         >
                           حذف
                         </button>
@@ -1466,50 +1470,126 @@ export default function FolderDetailPage({ params }: PageProps) {
                 ))}
               </tbody>
             </table>
-          )}
-        </div>
+            </div>
+
+            <div className="grid grid-cols-1 gap-4 p-4 lg:hidden">
+            {items.map((item) => (
+              <article
+                key={item.id}
+                onClick={() => {
+                  setSelectedItem(item)
+                  setIsRowDrawerOpen(true)
+                }}
+                className="cursor-pointer rounded-2xl border border-line bg-surface p-4 shadow-sm transition-colors hover:bg-surface-subtle"
+              >
+                <div className="flex items-start justify-between gap-3">
+                  <div className="space-y-2">
+                    {visibleColumns.slice(0, 3).map((col) => {
+                      const val = item.data?.[col.key]
+                      return (
+                        <div key={col.key}>
+                          <span className="block text-xs text-ink-muted">{col.label}</span>
+                          <span className="text-sm font-semibold text-ink">
+                            {col.type === 'number' && typeof val === 'number'
+                              ? val.toLocaleString('ar-EG')
+                              : val ?? '-'}
+                          </span>
+                        </div>
+                      )
+                    })}
+                  </div>
+
+                  <div className="rounded-xl bg-surface-subtle px-3 py-2 text-center">
+                    <span className="block text-xs text-ink-muted">المرفقات</span>
+                    <span className="text-sm font-bold text-ink">{item.attachments?.length ?? 0}</span>
+                  </div>
+                </div>
+
+                {visibleColumns.length > 3 ? (
+                  <div className="mt-4 grid grid-cols-2 gap-3">
+                    {visibleColumns.slice(3, 5).map((col) => {
+                      const val = item.data?.[col.key]
+                      return (
+                        <div key={col.key} className="rounded-xl bg-surface-subtle px-3 py-2">
+                          <span className="block text-xs text-ink-muted">{col.label}</span>
+                          <span className="text-sm font-semibold text-ink">
+                            {col.type === 'number' && typeof val === 'number'
+                              ? val.toLocaleString('ar-EG')
+                              : val ?? '-'}
+                          </span>
+                        </div>
+                      )
+                    })}
+                  </div>
+                ) : null}
+
+                <div className="mt-4 flex items-center justify-end gap-3">
+                  <button
+                    onClick={(event) => {
+                      event.stopPropagation()
+                      handleOpenItemForm(item)
+                    }}
+                    className="flex min-h-11 items-center justify-center rounded-xl border border-info-soft bg-info-soft px-4 py-2 text-sm font-semibold text-action-primary"
+                  >
+                    تعديل
+                  </button>
+                  <button
+                    onClick={(event) => {
+                      event.stopPropagation()
+                      handleDeleteItem(item.id)
+                    }}
+                    className="flex min-h-11 min-w-11 items-center justify-center rounded-xl border border-danger-soft bg-danger-soft px-4 py-2 text-danger"
+                  >
+                    حذف
+                  </button>
+                </div>
+              </article>
+            ))}
+            </div>
+          </>
+        )}
       </div>
 
       {/* Row details Drawer & Streaming attachments */}
       {isRowDrawerOpen && selectedItem && (
-        <div className="fixed inset-y-0 left-0 w-full sm:w-[500px] bg-white border-r border-gray-200 shadow-2xl p-6 z-50 flex flex-col justify-between overflow-y-auto animate-slide-in">
+        <div className="fixed inset-y-0 left-0 w-full sm:w-[500px] bg-surface border-r border-line shadow-2xl p-6 z-50 flex flex-col justify-between overflow-y-auto animate-slide-in">
           <div className="space-y-6">
-            <div className="flex items-center justify-between border-b border-gray-100 pb-4">
+            <div className="flex items-center justify-between border-b border-line pb-4">
               <div className="flex items-center gap-2">
-                <FileSpreadsheet className="w-5 h-5 text-farm-blue" />
-                <h3 className="text-base font-bold text-gray-800 font-sans">تفاصيل السجل والمستند</h3>
+                <FileSpreadsheet className="w-5 h-5 text-action-primary" />
+                <h3 className="text-base font-bold text-ink font-sans">تفاصيل السجل والمستند</h3>
               </div>
               <button
                 onClick={() => {
                   setIsRowDrawerOpen(false)
                   setStreamingAttachmentUrl(null)
                 }}
-                className="p-1.5 text-gray-400 hover:text-gray-600 rounded-xl"
+                className="p-1.5 text-ink-muted hover:text-ink-soft rounded-xl"
               >
                 <X className="w-5 h-5" />
               </button>
             </div>
 
             {/* Dynamic details */}
-            <div className="bg-gray-50/40 p-4 rounded-xl space-y-3">
+            <div className="bg-surface-subtle p-4 rounded-xl space-y-3">
               {columns.map((col) => (
                 <div key={col.key} className="flex justify-between items-center text-xs">
-                  <span className="text-gray-400 font-semibold">{col.label}</span>
-                  <span className="font-bold text-gray-700">{selectedItem.data?.[col.key] ?? '-'}</span>
+                  <span className="text-ink-muted font-semibold">{col.label}</span>
+                  <span className="font-bold text-ink-soft">{selectedItem.data?.[col.key] ?? '-'}</span>
                 </div>
               ))}
             </div>
 
             {/* Attachments Section */}
             <div className="space-y-4">
-              <h4 className="text-xs font-bold text-gray-800 font-sans">مرفقات المستند ({selectedItem.attachments?.length ?? 0})</h4>
+              <h4 className="text-xs font-bold text-ink font-sans">مرفقات المستند ({selectedItem.attachments?.length ?? 0})</h4>
               
               <div className="space-y-2">
                 {selectedItem.attachments?.map((attach: any) => (
-                  <div key={attach.id} className="flex items-center justify-between p-3 bg-white border border-gray-100 rounded-xl text-xs">
+                  <div key={attach.id} className="flex items-center justify-between p-3 bg-surface border border-line rounded-xl text-xs">
                     <div className="flex items-center gap-2">
-                      <Paperclip className="w-4 h-4 text-gray-400" />
-                      <span className="font-semibold text-gray-700 line-clamp-1">{attach.original_name}</span>
+                      <Paperclip className="w-4 h-4 text-ink-muted" />
+                      <span className="font-semibold text-ink-soft line-clamp-1">{attach.original_name}</span>
                     </div>
 
                     <div className="flex items-center gap-3">
@@ -1518,7 +1598,7 @@ export default function FolderDetailPage({ params }: PageProps) {
                           const base = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:8000/api'
                           setStreamingAttachmentUrl(`${base}/archive/attachments/${attach.id}/stream`)
                         }}
-                        className="text-farm-blue font-bold flex items-center gap-0.5 hover:underline"
+                        className="text-action-primary font-bold flex items-center gap-0.5 hover:underline"
                       >
                         <Eye className="w-3.5 h-3.5" />
                         <span>استعراض</span>
@@ -1526,7 +1606,7 @@ export default function FolderDetailPage({ params }: PageProps) {
                       
                       <button
                         onClick={() => handleDeleteAttachment(attach.id)}
-                        className="text-red-500 font-bold"
+                        className="text-danger font-bold"
                       >
                         حذف
                       </button>
@@ -1536,16 +1616,16 @@ export default function FolderDetailPage({ params }: PageProps) {
               </div>
 
               {/* Upload Form */}
-              <div className="border-2 border-dashed border-gray-200 p-4 rounded-xl flex flex-col items-center gap-3 bg-gray-50/20/50">
+              <div className="border-2 border-dashed border-line p-4 rounded-xl flex flex-col items-center gap-3 bg-surface-muted/20/50">
                 <input
                   type="file"
                   onChange={(e) => setAttachmentFile(e.target.files?.[0] ?? null)}
-                  className="text-xs text-gray-500 w-full"
+                  className="text-xs text-ink-muted w-full"
                 />
                 <button
                   onClick={handleUploadAttachment}
                   disabled={uploadingAttachment || !attachmentFile}
-                  className="w-full flex items-center justify-center gap-2 px-4 py-2 bg-farm-blue text-[#ffffff] font-bold text-xs rounded-lg disabled:opacity-50"
+                  className="w-full flex items-center justify-center gap-2 px-4 py-2 bg-action-primary text-ink-inverse font-bold text-xs rounded-lg disabled:opacity-50"
                 >
                   {uploadingAttachment ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Paperclip className="w-3.5 h-3.5" />}
                   <span>رفع المرفق</span>
@@ -1555,14 +1635,14 @@ export default function FolderDetailPage({ params }: PageProps) {
 
             {/* Streaming preview panel */}
             {streamingAttachmentUrl && (
-              <div className="border border-gray-200 rounded-xl overflow-hidden mt-6 shadow-sm">
-                <div className="bg-gray-50 px-3 py-2 border-b border-gray-200 flex justify-between items-center text-[10px]">
-                  <span className="font-bold text-gray-600">معاينة المستند المباشر</span>
-                  <button onClick={() => setStreamingAttachmentUrl(null)} className="text-red-500 font-bold">إغلاق</button>
+              <div className="border border-line rounded-xl overflow-hidden mt-6 shadow-sm">
+                <div className="bg-surface-muted px-3 py-2 border-b border-line flex justify-between items-center text-xs">
+                  <span className="font-bold text-ink-soft">معاينة المستند المباشر</span>
+                  <button onClick={() => setStreamingAttachmentUrl(null)} className="text-danger font-bold">إغلاق</button>
                 </div>
                 <iframe
                   src={streamingAttachmentUrl}
-                  className="w-full h-80 border-0 bg-white"
+                  className="w-full h-80 border-0 bg-surface"
                   title="Attachment preview"
                 />
               </div>
@@ -1573,15 +1653,15 @@ export default function FolderDetailPage({ params }: PageProps) {
 
       {/* Item Form Modal */}
       {showItemModal && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50">
-          <div className="bg-white border border-gray-200 rounded-2xl w-full max-w-lg p-6 shadow-xl max-h-[85vh] overflow-y-auto">
-            <h2 className="text-lg font-bold text-gray-900 font-sans">
+        <AppDialog open={showItemModal} onClose={() => setShowItemModal(false)} panelClassName="max-w-lg">
+          <div className="max-h-[85vh] w-full overflow-y-auto rounded-2xl border border-line bg-surface p-6 shadow-xl">
+            <h2 className="text-lg font-bold text-ink font-sans">
               {editingItem ? 'تعديل السجل المالي' : 'إضافة سجل مالي جديد'}
             </h2>
 
             <form onSubmit={handleSaveItem} className="mt-4 space-y-4">
               {itemFormError && (
-                <div className="flex items-center gap-2 p-3 bg-red-50 dark:bg-red-950/20 border border-red-100 dark:border-red-900/30 text-red-600 dark:text-red-400 text-xs rounded-xl">
+                <div className="flex items-center gap-2 rounded-xl border border-danger-soft bg-danger-soft p-3 text-xs text-danger">
                   <AlertCircle className="w-4 h-4 shrink-0" />
                   <span>{itemFormError}</span>
                 </div>
@@ -1590,14 +1670,14 @@ export default function FolderDetailPage({ params }: PageProps) {
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 {columns.map((col) => (
                   <div key={col.key}>
-                    <label className="block text-xs font-semibold text-gray-700 mb-1.5">
-                      {col.label} {col.required && <span className="text-red-500">*</span>}
+                    <label className="block text-xs font-semibold text-ink-soft mb-1.5">
+                      {col.label} {col.required && <span className="text-danger">*</span>}
                     </label>
 
                     {col.formula ? (
-                      <div className="w-full px-4 py-2.5 bg-amber-50/30 dark:bg-amber-950/10 border border-amber-200/40 dark:border-amber-900/20 rounded-xl text-sm font-semibold text-amber-700 dark:text-amber-400 flex items-center justify-between">
+                      <div className="w-full px-4 py-2.5 bg-warning-soft/30 bg-warning-soft/40 border border-warning-soft border-warning-soft rounded-xl text-sm font-semibold text-warning-strong text-warning flex items-center justify-between">
                         <span>{typeof itemFormValues[col.key] === 'number' ? itemFormValues[col.key].toLocaleString('ar-EG') : '0'}</span>
-                        <span className="text-[10px] bg-amber-100 dark:bg-amber-900/40 px-2 py-0.5 rounded-full font-sans">معادلة حسابية</span>
+                        <span className="text-xs bg-warning-soft bg-warning-soft px-2 py-0.5 rounded-full font-sans">معادلة حسابية</span>
                       </div>
                     ) : col.type === 'number' ? (
                       <input
@@ -1605,20 +1685,20 @@ export default function FolderDetailPage({ params }: PageProps) {
                         step="any"
                         value={itemFormValues[col.key] ?? ''}
                         onChange={(e) => setItemFormValues({ ...itemFormValues, [col.key]: e.target.value === '' ? '' : parseFloat(e.target.value) })}
-                        className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-farm-blue"
+                        className="w-full px-4 py-2.5 bg-surface-muted border border-line rounded-xl text-sm focus:ring-2 focus:ring-farm-blue"
                       />
                     ) : col.type === 'date' ? (
                       <input
                         type="date"
                         value={itemFormValues[col.key] ?? ''}
                         onChange={(e) => setItemFormValues({ ...itemFormValues, [col.key]: e.target.value })}
-                        className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-farm-blue"
+                        className="w-full px-4 py-2.5 bg-surface-muted border border-line rounded-xl text-sm focus:ring-2 focus:ring-farm-blue"
                       />
                     ) : col.type === 'select' ? (
                       <select
                         value={itemFormValues[col.key] ?? ''}
                         onChange={(e) => setItemFormValues({ ...itemFormValues, [col.key]: e.target.value })}
-                        className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-farm-blue"
+                        className="w-full px-4 py-2.5 bg-surface-muted border border-line rounded-xl text-sm focus:ring-2 focus:ring-farm-blue"
                       >
                         <option value="">اختر خيار...</option>
                         {col.options?.map(opt => <option key={opt} value={opt}>{opt}</option>)}
@@ -1627,7 +1707,7 @@ export default function FolderDetailPage({ params }: PageProps) {
                       <select
                         value={itemFormValues[col.key] === true ? 'true' : itemFormValues[col.key] === false ? 'false' : ''}
                         onChange={(e) => setItemFormValues({ ...itemFormValues, [col.key]: e.target.value === '' ? '' : e.target.value === 'true' })}
-                        className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-farm-blue"
+                        className="w-full px-4 py-2.5 bg-surface-muted border border-line rounded-xl text-sm focus:ring-2 focus:ring-farm-blue"
                       >
                         <option value="">اختر...</option>
                         <option value="true">نعم</option>
@@ -1638,25 +1718,25 @@ export default function FolderDetailPage({ params }: PageProps) {
                         type="text"
                         value={itemFormValues[col.key] ?? ''}
                         onChange={(e) => setItemFormValues({ ...itemFormValues, [col.key]: e.target.value })}
-                        className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-farm-blue"
+                        className="w-full px-4 py-2.5 bg-surface-muted border border-line rounded-xl text-sm focus:ring-2 focus:ring-farm-blue"
                       />
                     )}
                   </div>
                 ))}
               </div>
 
-              <div className="flex items-center justify-end gap-3 pt-4 border-t border-gray-100">
+              <div className="flex items-center justify-end gap-3 pt-4 border-t border-line">
                 <button
                   type="button"
                   onClick={() => setShowItemModal(false)}
-                  className="px-4 py-2 text-xs font-semibold text-gray-500 hover:bg-gray-50 dark:hover:bg-gray-800 rounded-lg"
+                  className="px-4 py-2 text-xs font-semibold text-ink-muted hover:bg-surface-muted hover:bg-surface-raised rounded-lg"
                 >
                   إلغاء
                 </button>
                 <button
                   type="submit"
                   disabled={createItemMutation.isPending || updateItemMutation.isPending}
-                  className="flex items-center gap-2 px-5 py-2 bg-farm-blue text-[#ffffff] font-bold text-xs rounded-lg hover:bg-opacity-90 active:scale-[0.98]"
+                  className="flex items-center gap-2 px-5 py-2 bg-action-primary text-ink-inverse font-bold text-xs rounded-lg hover:bg-opacity-90 active:scale-[0.98]"
                 >
                   {(createItemMutation.isPending || updateItemMutation.isPending) && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
                   <span>حفظ البيانات</span>
@@ -1664,16 +1744,16 @@ export default function FolderDetailPage({ params }: PageProps) {
               </div>
             </form>
           </div>
-        </div>
+        </AppDialog>
       )}
 
       {/* Stats Config Add/Edit Modal */}
       {showStatsModal && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50">
-          <div className="bg-white border border-gray-200 rounded-2xl w-full max-w-lg p-6 shadow-xl max-h-[90vh] overflow-y-auto" dir="rtl">
-            <div className="flex justify-between items-center border-b border-gray-150 pb-3 mb-4">
-              <h2 className="text-base font-bold text-gray-900 font-sans flex items-center gap-2">
-                <Sliders className="w-5 h-5 text-farm-blue" />
+        <AppDialog open={showStatsModal} onClose={() => { setShowStatsModal(false); setEditingStatsId(null) }} panelClassName="max-w-lg">
+          <div className="max-h-[90vh] w-full overflow-y-auto rounded-2xl border border-line bg-surface p-6 shadow-xl" dir="rtl">
+            <div className="flex justify-between items-center border-b border-line pb-3 mb-4">
+              <h2 className="text-base font-bold text-ink font-sans flex items-center gap-2">
+                <Sliders className="w-5 h-5 text-action-primary" />
                 <span>{editingStatsId ? 'تعديل بطاقة التحليلات والمؤشرات' : 'إضافة بطاقة تحليلات جديدة'}</span>
               </h2>
               <button 
@@ -1681,7 +1761,7 @@ export default function FolderDetailPage({ params }: PageProps) {
                   setShowStatsModal(false)
                   setEditingStatsId(null)
                 }} 
-                className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
+                className="text-ink-muted hover:text-ink-soft dark:hover:text-ink-muted transition-colors"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -1690,25 +1770,25 @@ export default function FolderDetailPage({ params }: PageProps) {
             <form onSubmit={handleCreateOrUpdateStatsConfig} className="space-y-4">
               {/* Widget Name */}
               <div>
-                <label className="block text-xs font-semibold text-gray-700 mb-1.5">عنوان المؤشر / البطاقة *</label>
+                <label className="block text-xs font-semibold text-ink-soft mb-1.5">عنوان المؤشر / البطاقة *</label>
                 <input
                   type="text"
                   required
                   value={statsName}
                   onChange={(e) => setStatsName(e.target.value)}
                   placeholder="مثال: إجمالي الرواتب، متوسط المبيعات"
-                  className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none"
+                  className="w-full px-4 py-2.5 bg-surface-muted border border-line rounded-xl text-sm focus:outline-none"
                 />
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 {/* Visual Chart Type */}
                 <div>
-                  <label className="block text-xs font-semibold text-gray-700 mb-1.5">طريقة العرض البياني</label>
+                  <label className="block text-xs font-semibold text-ink-soft mb-1.5">طريقة العرض البياني</label>
                   <select
                     value={statsChartType}
                     onChange={(e) => setStatsChartType(e.target.value as any)}
-                    className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm"
+                    className="w-full px-4 py-2.5 bg-surface-muted border border-line rounded-xl text-sm"
                   >
                     <option value="card">بطاقة رقمية بسيطة (KPI Card)</option>
                     <option value="bar">رسم بياني أعمدة (Bar Chart)</option>
@@ -1720,11 +1800,11 @@ export default function FolderDetailPage({ params }: PageProps) {
 
                 {/* Aggregation Function */}
                 <div>
-                  <label className="block text-xs font-semibold text-gray-700 mb-1.5">نوع التجميع (Aggregation)</label>
+                  <label className="block text-xs font-semibold text-ink-soft mb-1.5">نوع التجميع (Aggregation)</label>
                   <select
                     value={statsAgg}
                     onChange={(e) => setStatsAgg(e.target.value as any)}
-                    className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm"
+                    className="w-full px-4 py-2.5 bg-surface-muted border border-line rounded-xl text-sm"
                   >
                     <option value="count">عدد السجلات الإجمالي (Count)</option>
                     <option value="distinct_count">عدد فريد للقيم (Distinct Count)</option>
@@ -1738,12 +1818,12 @@ export default function FolderDetailPage({ params }: PageProps) {
               {/* Target Column selector */}
               {statsAgg !== 'count' && (
                 <div>
-                  <label className="block text-xs font-semibold text-gray-700 mb-1.5">الحقل المستهدف للحساب</label>
+                  <label className="block text-xs font-semibold text-ink-soft mb-1.5">الحقل المستهدف للحساب</label>
                   <select
                     value={statsCol}
                     required
                     onChange={(e) => setStatsCol(e.target.value)}
-                    className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm"
+                    className="w-full px-4 py-2.5 bg-surface-muted border border-line rounded-xl text-sm"
                   >
                     <option value="">اختر حقل البيانات العددي...</option>
                     {columns.filter(c => c.type === 'number' || c.type === 'select' || c.type === 'text').map(col => (
@@ -1756,38 +1836,38 @@ export default function FolderDetailPage({ params }: PageProps) {
               {/* Group By selector (for charts) */}
               {(statsChartType !== 'card' || statsAgg === 'sum_group' || statsAgg === 'distinct_count') && (
                 <div>
-                  <label className="block text-xs font-semibold text-gray-700 mb-1.5">حقل تصنيف المجموعات (Group By)</label>
+                  <label className="block text-xs font-semibold text-ink-soft mb-1.5">حقل تصنيف المجموعات (Group By)</label>
                   <select
                     value={statsGroupBy}
                     required
                     onChange={(e) => setStatsGroupBy(e.target.value)}
-                    className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm"
+                    className="w-full px-4 py-2.5 bg-surface-muted border border-line rounded-xl text-sm"
                   >
                     <option value="">اختر حقل التصنيف (تاريخ، نص، خيار)...</option>
                     {columns.map(col => (
                       <option key={col.key} value={col.key}>{col.label}</option>
                     ))}
                   </select>
-                  <span className="text-[10px] text-gray-400 mt-1 block">
+                  <span className="text-xs text-ink-muted mt-1 block">
                     يتم تقسيم الرسم البياني وتوزيعه ديناميكياً بناءً على هذا الحقل المختار.
                   </span>
                 </div>
               )}
 
               {/* KPI Threshold Alert Rules */}
-              <div className="border-t border-gray-150 pt-3">
-                <h4 className="text-xs font-bold text-gray-800 mb-2 flex items-center gap-1">
-                  <AlertCircle className="w-4 h-4 text-amber-500" />
+              <div className="border-t border-line pt-3">
+                <h4 className="text-xs font-bold text-ink mb-2 flex items-center gap-1">
+                  <AlertCircle className="w-4 h-4 text-warning" />
                   <span>عتبة التنبيه الذكي (KPI Threshold Alerts)</span>
                 </h4>
                 
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                   <div>
-                    <label className="block text-[10px] font-semibold text-gray-500 mb-1">الشرط</label>
+                    <label className="block text-xs font-semibold text-ink-muted mb-1">الشرط</label>
                     <select
                       value={statsThresholdCond}
                       onChange={(e) => setStatsThresholdCond(e.target.value)}
-                      className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-xs"
+                      className="w-full px-3 py-2 bg-surface-muted border border-line rounded-lg text-xs"
                     >
                       <option value="">بدون تنبيه</option>
                       <option value="gt">أكبر من (&gt;)</option>
@@ -1797,7 +1877,7 @@ export default function FolderDetailPage({ params }: PageProps) {
                   </div>
 
                   <div>
-                    <label className="block text-[10px] font-semibold text-gray-500 mb-1">العتبة المستهدفة</label>
+                    <label className="block text-xs font-semibold text-ink-muted mb-1">العتبة المستهدفة</label>
                     <input
                       type="number"
                       step="any"
@@ -1805,17 +1885,17 @@ export default function FolderDetailPage({ params }: PageProps) {
                       onChange={(e) => setStatsThresholdVal(e.target.value)}
                       placeholder="مثال: 5000"
                       disabled={!statsThresholdCond}
-                      className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-xs focus:outline-none disabled:opacity-50"
+                      className="w-full px-3 py-2 bg-surface-muted border border-line rounded-lg text-xs focus:outline-none disabled:opacity-50"
                     />
                   </div>
 
                   <div>
-                    <label className="block text-[10px] font-semibold text-gray-500 mb-1">نوع التوهج والإنذار</label>
+                    <label className="block text-xs font-semibold text-ink-muted mb-1">نوع التوهج والإنذار</label>
                     <select
                       value={statsThresholdAlert}
                       onChange={(e) => setStatsThresholdAlert(e.target.value as any)}
                       disabled={!statsThresholdCond}
-                      className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-xs disabled:opacity-50"
+                      className="w-full px-3 py-2 bg-surface-muted border border-line rounded-lg text-xs disabled:opacity-50"
                     >
                       <option value="negative">سلبي / إنذار (أحمر متوهج)</option>
                       <option value="positive">إيجابي / نجاح (أخضر متوهج)</option>
@@ -1825,8 +1905,8 @@ export default function FolderDetailPage({ params }: PageProps) {
               </div>
 
               {/* Accent Widget Color Picker */}
-              <div className="border-t border-gray-150 pt-3">
-                <label className="block text-xs font-semibold text-gray-700 mb-1.5">اللون الرئيسي للبطاقة والرسم البياني</label>
+              <div className="border-t border-line pt-3">
+                <label className="block text-xs font-semibold text-ink-soft mb-1.5">اللون الرئيسي للبطاقة والرسم البياني</label>
                 <div className="flex flex-wrap items-center gap-3">
                   {[
                     { hex: '#3b82f6', label: 'أزرق' },
@@ -1841,85 +1921,85 @@ export default function FolderDetailPage({ params }: PageProps) {
                       key={colorObj.hex}
                       type="button"
                       onClick={() => setStatsColor(colorObj.hex)}
-                      className={`w-7 h-7 rounded-full flex items-center justify-center transition-all ${
+                      className={`w-7 h-7 rounded-full flex items-center justify-center transition-colors ${
                         statsColor === colorObj.hex ? 'scale-110 ring-2 ring-offset-2 ring-farm-blue' : 'opacity-85 hover:opacity-100'
                       }`}
                       style={{ backgroundColor: colorObj.hex }}
                       title={colorObj.label}
                     >
-                      {statsColor === colorObj.hex && <CheckCircle className="w-3.5 h-3.5 text-[#ffffff]" />}
+                      {statsColor === colorObj.hex && <CheckCircle className="w-3.5 h-3.5 text-ink-inverse" />}
                     </button>
                   ))}
                   
                   {/* Custom color input */}
-                  <div className="flex items-center gap-1.5 border border-gray-200 rounded-lg p-1 mr-auto bg-gray-50">
+                  <div className="flex items-center gap-1.5 border border-line rounded-lg p-1 mr-auto bg-surface-muted">
                     <input
                       type="color"
                       value={statsColor}
                       onChange={(e) => setStatsColor(e.target.value)}
                       className="w-6 h-6 border-0 bg-transparent cursor-pointer rounded"
                     />
-                    <span className="text-[10px] text-gray-500 font-mono font-bold">{statsColor.toUpperCase()}</span>
+                    <span className="text-xs text-ink-muted font-mono font-bold">{statsColor.toUpperCase()}</span>
                   </div>
                 </div>
               </div>
 
               {/* Action Buttons */}
-              <div className="flex items-center justify-end gap-3 pt-4 border-t border-gray-150 mt-6">
+              <div className="flex items-center justify-end gap-3 pt-4 border-t border-line mt-6">
                 <button
                   type="button"
                   onClick={() => {
                     setShowStatsModal(false)
                     setEditingStatsId(null)
                   }}
-                  className="px-4 py-2 text-xs font-semibold text-gray-500 hover:bg-gray-50 dark:hover:bg-gray-800 rounded-xl"
+                  className="px-4 py-2 text-xs font-semibold text-ink-muted hover:bg-surface-muted hover:bg-surface-raised rounded-xl"
                 >
                   إلغاء
                 </button>
                 <button
                   type="submit"
-                  className="px-5 py-2.5 bg-farm-blue text-[#ffffff] font-bold text-xs rounded-xl hover:bg-opacity-95 shadow-md active:scale-95 transition-all"
+                  className="px-5 py-2.5 bg-action-primary text-ink-inverse font-bold text-xs rounded-xl hover:bg-opacity-95 shadow-md active:scale-95 transition-colors"
                 >
                   {editingStatsId ? 'حفظ التعديلات' : 'إضافة إلى اللوحة'}
                 </button>
               </div>
             </form>
           </div>
-        </div>
+        </AppDialog>
       )}
 
       {/* Excel Imports Fuzzy Matching Confirmation Dialog */}
       {showExcelModal && excelFile && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50">
-          <div className="bg-white border border-gray-200 rounded-2xl w-full max-w-lg p-6 shadow-xl max-h-[85vh] overflow-y-auto">
-            <div className="flex justify-between items-center border-b border-gray-100 pb-4">
-              <h2 className="text-base font-bold text-gray-900 font-sans flex items-center gap-1.5 text-emerald-600">
+        <AppDialog open={showExcelModal && !!excelFile} onClose={() => setShowExcelModal(false)} panelClassName="max-w-lg">
+          <div className="max-h-[85vh] w-full overflow-y-auto rounded-2xl border border-line bg-surface p-6 shadow-xl">
+            <div className="flex justify-between items-center border-b border-line pb-4">
+              <h2 className="text-base font-bold text-ink font-sans flex items-center gap-1.5 text-success">
                 <FileSpreadsheet className="w-5 h-5" />
                 <span>مطابقة وتأكيد ترويسات الاستيراد الذكي</span>
               </h2>
-              <button onClick={() => setShowExcelModal(false)} className="text-gray-400 hover:text-gray-600">
+              <button onClick={() => setShowExcelModal(false)} className="text-ink-muted hover:text-ink-soft">
                 <X className="w-5 h-5" />
               </button>
             </div>
 
-            <p className="text-xs text-gray-500 leading-relaxed mt-4">
+            <p className="text-xs text-ink-muted leading-relaxed mt-4">
               لقد قمنا بقراءة الأعمدة في ملف الإكسل ومطابقتها تقريبياً مع حقول النموذج. يرجى التحقق من صحة المطابقات وتعديل الخيارات الخاطئة قبل المتابعة.
             </p>
 
             <div className="mt-4 space-y-4">
               {excelHeaders.map((hdr) => (
-                <div key={hdr} className="flex flex-wrap items-center justify-between gap-3 p-3 bg-gray-50 rounded-xl text-xs">
+                <div key={hdr} className="flex flex-wrap items-center justify-between gap-3 p-3 bg-surface-muted rounded-xl text-xs">
                   <div>
-                    <span className="block text-[10px] text-gray-400 font-semibold">ترويسة ملف Excel</span>
-                    <span className="font-bold text-gray-700">{hdr}</span>
+                    <span className="block text-xs text-ink-muted font-semibold">ترويسة ملف Excel</span>
+                    <span className="font-bold text-ink-soft">{hdr}</span>
                   </div>
 
                   <div className="w-full sm:w-56">
-                    <span className="block text-[10px] text-gray-400 font-semibold mb-1">المطابقة مع الحقل المستهدف</span>
+                    <span className="block text-xs text-ink-muted font-semibold mb-1">المطابقة مع الحقل المستهدف</span>
                     <select
                       value={fuzzyMappings[hdr] ?? ''}
                       onChange={(e) => setFuzzyMappings({ ...fuzzyMappings, [hdr]: e.target.value })}
-                      className="w-full p-2 border border-gray-200 bg-white rounded-lg text-xs"
+                      className="w-full p-2 border border-line bg-surface rounded-lg text-xs"
                     >
                       <option value="">تخطي هذا العمود (عدم الاستيراد)</option>
                       {columns.map(c => (
@@ -1931,11 +2011,11 @@ export default function FolderDetailPage({ params }: PageProps) {
               ))}
             </div>
 
-            <div className="flex items-center justify-end gap-3 pt-4 border-t border-gray-150 mt-6">
+            <div className="flex items-center justify-end gap-3 pt-4 border-t border-line mt-6">
               <button
                 type="button"
                 onClick={() => setShowExcelModal(false)}
-                className="px-4 py-2 text-xs font-semibold text-gray-500 hover:bg-gray-50 rounded-lg"
+                className="px-4 py-2 text-xs font-semibold text-ink-muted hover:bg-surface-muted rounded-lg"
               >
                 إلغاء
               </button>
@@ -1943,14 +2023,14 @@ export default function FolderDetailPage({ params }: PageProps) {
                 type="button"
                 onClick={handleConfirmExcelImport}
                 disabled={excelImportLoading}
-                className="flex items-center gap-2 px-5 py-2 bg-emerald-600 text-[#ffffff] font-bold text-xs rounded-lg hover:bg-opacity-95 disabled:opacity-50"
+                className="flex items-center gap-2 rounded-lg bg-success px-5 py-2 text-xs font-bold text-ink-inverse hover:bg-opacity-95 disabled:opacity-50"
               >
                 {excelImportLoading && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
                 <span>استيراد وحفظ السجلات</span>
               </button>
             </div>
           </div>
-        </div>
+        </AppDialog>
       )}
     </div>
   )

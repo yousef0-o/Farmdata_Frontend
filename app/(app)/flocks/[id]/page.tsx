@@ -13,6 +13,7 @@ import ProductionEntriesTable from '@/components/daily/ProductionEntriesTable'
 import BreedingEntriesTable from '@/components/daily/BreedingEntriesTable'
 import MedicalRecordsTable from '@/components/medical/MedicalRecordsTable'
 import SaudiRiyalIcon from '@/components/icons/SaudiRiyalIcon'
+import AppDialog from '@/components/ui/AppDialog'
 
 export default function FlockDetailPage() {
   const { id } = useParams()
@@ -194,27 +195,27 @@ export default function FlockDetailPage() {
         <div className="flex gap-3 flex-wrap">
           <Link
             href={`/flocks/${flockId}/daily/new`}
-            className="flex items-center gap-2 bg-farm-green hover:bg-green-700 text-white px-5 py-2.5 rounded-xl transition-all font-medium"
+            className="flex items-center gap-2 bg-farm-green hover:bg-green-700 text-white px-5 py-2.5 rounded-xl transition-colors font-medium"
           >
             <BarChart3 className="w-5 h-5" />
             تسجيل يومي
           </Link>
           <Link
             href={`/flocks/${flockId}/medical/new`}
-            className="flex items-center gap-2 bg-red-600 hover:bg-red-700 text-white px-5 py-2.5 rounded-xl transition-all font-medium shadow-sm"
+            className="flex items-center gap-2 bg-red-600 hover:bg-red-700 text-white px-5 py-2.5 rounded-xl transition-colors font-medium shadow-sm"
           >
             <Stethoscope className="w-5 h-5" />
             فحص وصرف أدوية
           </Link>
           <button
             onClick={() => setShowCloseDialog(true)}
-            className="flex items-center gap-2 bg-farm-blue hover:bg-blue-800 text-white px-5 py-2.5 rounded-xl transition-all font-medium"
+            className="flex items-center gap-2 bg-farm-blue hover:bg-blue-800 text-white px-5 py-2.5 rounded-xl transition-colors font-medium"
           >
             إغلاق الفوج
           </button>
           <Link
             href={`/flocks/${flockId}/edit`}
-            className="flex items-center gap-2 border border-gray-300 hover:bg-gray-50 text-gray-700 px-5 py-2.5 rounded-xl transition-all font-medium"
+            className="flex items-center gap-2 border border-gray-300 hover:bg-gray-50 text-gray-700 px-5 py-2.5 rounded-xl transition-colors font-medium"
           >
             تعديل بيانات الفوج
           </Link>
@@ -226,7 +227,7 @@ export default function FlockDetailPage() {
         <div className="flex border-b border-gray-100 pb-2 gap-6">
           <button
             onClick={() => setActiveTab('daily')}
-            className={`pb-3 text-base font-bold transition-all relative ${
+            className={`pb-3 text-base font-bold transition-colors relative ${
               activeTab === 'daily'
                 ? 'text-gray-900 border-b-2 border-farm-green'
                 : 'text-gray-400 hover:text-gray-600'
@@ -236,7 +237,7 @@ export default function FlockDetailPage() {
           </button>
           <button
             onClick={() => setActiveTab('medical')}
-            className={`pb-3 text-base font-bold transition-all relative ${
+            className={`pb-3 text-base font-bold transition-colors relative ${
               activeTab === 'medical'
                 ? 'text-gray-900 border-b-2 border-red-600'
                 : 'text-gray-400 hover:text-gray-600'
@@ -246,7 +247,7 @@ export default function FlockDetailPage() {
           </button>
           <button
             onClick={() => setActiveTab('expenses')}
-            className={`pb-3 text-base font-bold transition-all relative ${
+            className={`pb-3 text-base font-bold transition-colors relative ${
               activeTab === 'expenses'
                 ? 'text-gray-900 border-b-2 border-farm-blue'
                 : 'text-gray-400 hover:text-gray-600'
@@ -280,7 +281,7 @@ export default function FlockDetailPage() {
               {flock.status === 'active' && (
                 <button
                   onClick={() => setShowAddModal(true)}
-                  className="flex items-center gap-2 bg-farm-blue hover:bg-blue-700 text-white px-5 py-2.5 rounded-xl transition-all font-medium"
+                  className="flex items-center gap-2 bg-farm-blue hover:bg-blue-700 text-white px-5 py-2.5 rounded-xl transition-colors font-medium"
                 >
                   <Plus className="w-5 h-5" />
                   <span>إضافة مصروف للفوج</span>
@@ -404,8 +405,8 @@ export default function FlockDetailPage() {
 
       {/* Add Modal */}
       {showAddModal && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl space-y-6 relative animate-in fade-in zoom-in-95 duration-200">
+        <AppDialog open={showAddModal} onClose={() => setShowAddModal(false)} panelClassName="max-w-md animate-in fade-in zoom-in-95 duration-200">
+          <div className="relative w-full space-y-6 rounded-3xl bg-white p-6 shadow-2xl">
             <button
               onClick={() => setShowAddModal(false)}
               className="absolute top-4 left-4 p-2 text-gray-400 hover:text-gray-600 rounded-lg transition-colors"
@@ -439,7 +440,7 @@ export default function FlockDetailPage() {
                     required
                     value={expenseDate}
                     onChange={(e) => setExpenseDate(e.target.value)}
-                    className="w-full pr-10 pl-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-farm-blue transition-all"
+                    className="w-full pr-10 pl-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-farm-blue transition-colors"
                   />
                 </div>
               </div>
@@ -453,7 +454,7 @@ export default function FlockDetailPage() {
                   placeholder="0.00"
                   value={amount}
                   onChange={(e) => setAmount(e.target.value)}
-                  className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-farm-blue transition-all text-left font-bold"
+                  className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-farm-blue transition-colors text-left font-bold"
                 />
               </div>
 
@@ -462,7 +463,7 @@ export default function FlockDetailPage() {
                 <select
                   value={category}
                   onChange={(e) => setCategory(e.target.value)}
-                  className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-farm-blue transition-all font-semibold"
+                  className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-farm-blue transition-colors font-semibold"
                 >
                   <option value="خدمات تشغيلية">خدمات تشغيلية</option>
                   <option value="عمالة مؤقتة">عمالة مؤقتة</option>
@@ -480,7 +481,7 @@ export default function FlockDetailPage() {
                     placeholder="اكتب تفاصيل المصروف هنا..."
                     value={description}
                     onChange={(e) => setDescription(e.target.value)}
-                    className="w-full pr-10 pl-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-farm-blue transition-all text-sm"
+                    className="w-full pr-10 pl-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-farm-blue transition-colors text-sm"
                   />
                 </div>
               </div>
@@ -489,14 +490,14 @@ export default function FlockDetailPage() {
                 <button
                   type="button"
                   onClick={() => setShowAddModal(false)}
-                  className="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold py-3 rounded-xl transition-all"
+                  className="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold py-3 rounded-xl transition-colors"
                 >
                   إلغاء
                 </button>
                 <button
                   type="submit"
                   disabled={createExpenseMutation.isPending}
-                  className="flex-1 bg-farm-blue hover:bg-blue-700 text-white font-semibold py-3 rounded-xl transition-all flex items-center justify-center gap-2"
+                  className="flex-1 bg-farm-blue hover:bg-blue-700 text-white font-semibold py-3 rounded-xl transition-colors flex items-center justify-center gap-2"
                 >
                   {createExpenseMutation.isPending ? (
                     <Loader2 className="w-5 h-5 animate-spin" />
@@ -507,7 +508,7 @@ export default function FlockDetailPage() {
               </div>
             </form>
           </div>
-        </div>
+        </AppDialog>
       )}
     </div>
   )

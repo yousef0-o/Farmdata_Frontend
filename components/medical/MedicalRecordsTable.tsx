@@ -46,7 +46,7 @@ export default function MedicalRecordsTable({ flockId, isActive }: MedicalRecord
         {isActive && (
           <Link
             href={`/flocks/${flockId}/medical/new`}
-            className="mt-2 text-sm bg-red-50 text-red-700 hover:bg-red-100 px-4 py-2 rounded-xl transition-all font-semibold border border-red-200"
+            className="mt-2 text-sm bg-red-50 text-red-700 hover:bg-red-100 px-4 py-2 rounded-xl transition-colors font-semibold border border-red-200"
           >
             تسجيل أول فحص طبي الآن
           </Link>
@@ -81,7 +81,7 @@ export default function MedicalRecordsTable({ flockId, isActive }: MedicalRecord
 
   return (
     <div className="space-y-4">
-      <div className="overflow-x-auto rounded-xl border border-gray-100 shadow-sm">
+      <div className="hidden overflow-x-auto rounded-xl border border-gray-100 shadow-sm lg:block">
         <table className="w-full text-sm text-right">
           <thead>
             <tr className="border-b border-gray-200 bg-gray-50 text-gray-700">
@@ -161,6 +161,72 @@ export default function MedicalRecordsTable({ flockId, isActive }: MedicalRecord
             ))}
           </tbody>
         </table>
+      </div>
+
+      <div className="grid grid-cols-1 gap-4 lg:hidden">
+        {records.map((record) => (
+          <article key={record.id} className="rounded-2xl border border-line bg-surface p-4 shadow-sm">
+            <div className="flex items-start justify-between gap-3">
+              <div className="space-y-1">
+                <p className="flex items-center gap-2 text-sm font-semibold text-ink">
+                  <Calendar className="h-4 w-4 text-ink-muted" />
+                  {record.record_date}
+                </p>
+                <p className="text-xs text-ink-soft">{record.veterinarian || '—'}</p>
+              </div>
+              {getSeverityBadge(record.severity)}
+            </div>
+
+            <div className="mt-4 space-y-3 text-sm">
+              <div className="rounded-xl bg-surface-subtle px-3 py-2">
+                <span className="block text-xs text-ink-muted">الأعراض الإكلينيكية</span>
+                <span className="text-ink-soft">{record.clinical_signs || '—'}</span>
+              </div>
+              <div className="rounded-xl bg-surface-subtle px-3 py-2">
+                <span className="block text-xs text-ink-muted">التشخيص</span>
+                <span className="font-semibold text-ink">{record.diagnosis || '—'}</span>
+              </div>
+              <div className="rounded-xl bg-surface-subtle px-3 py-2">
+                <span className="block text-xs text-ink-muted">الأدوية المصروفة والجرعة</span>
+                {record.medications && record.medications.length > 0 ? (
+                  <div className="mt-1 flex flex-col gap-1">
+                    {record.medications.map((med) => (
+                      <div key={med.id} className="text-xs text-ink-soft">
+                        <span className="font-semibold text-ink">{med.medicine_name}</span>
+                        {med.quantity !== undefined && med.quantity > 0 ? (
+                          <span className="mr-1 text-ink-muted">
+                            ({med.quantity} {med.inventory_item_name || 'وحدة'} من {med.warehouse_name || 'المستودع'})
+                          </span>
+                        ) : null}
+                        {med.dosage ? <span className="mr-1 font-medium text-action-primary">[{med.dosage}]</span> : null}
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <span className="text-xs text-ink-muted">لا يوجد أدوية مصروفة</span>
+                )}
+              </div>
+            </div>
+
+            {isActive ? (
+              <div className="mt-4 flex items-center gap-3">
+                <Link
+                  href={`/flocks/${flockId}/medical/${record.id}/edit`}
+                  className="flex min-h-11 flex-1 items-center justify-center rounded-xl border border-info-soft bg-info-soft px-4 py-2 text-sm font-semibold text-action-primary"
+                >
+                  تعديل
+                </Link>
+                <button
+                  onClick={() => handleDelete(record.id)}
+                  disabled={deleteMutation.isPending}
+                  className="flex min-h-11 min-w-11 items-center justify-center rounded-xl border border-danger-soft bg-danger-soft px-4 py-2 text-danger"
+                >
+                  <Trash2 className="h-4 w-4" />
+                </button>
+              </div>
+            ) : null}
+          </article>
+        ))}
       </div>
 
       {/* Pagination Controls */}

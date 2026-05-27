@@ -24,7 +24,7 @@ export default function DarkModeToggle() {
   return (
     <button
       onClick={() => setTheme(isDark ? 'light' : 'dark')}
-      className="w-full flex items-center justify-between px-4 py-2.5 rounded-xl transition-all duration-200 text-gray-400 hover:bg-gray-800/40 hover:text-white focus:outline-none focus:ring-2 focus:ring-farm-blue"
+      className="w-full flex items-center justify-between px-4 py-2.5 rounded-xl transition-colors duration-200 text-gray-400 hover:bg-gray-800/40 hover:text-white focus:outline-none focus:ring-2 focus:ring-farm-blue"
       aria-label={isDark ? 'تفعيل الوضع المضيء' : 'تفعيل الوضع المظلم'}
       type="button"
     >
@@ -38,7 +38,7 @@ export default function DarkModeToggle() {
           {isDark ? 'الوضع المضيء' : 'الوضع المظلم'}
         </span>
       </div>
-      <span className="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded bg-gray-800 text-gray-400">
+      <span className="text-xs uppercase font-bold tracking-wider px-2 py-0.5 rounded bg-gray-800 text-gray-400">
         {isDark ? 'داكن' : 'فاتح'}
       </span>
     </button>

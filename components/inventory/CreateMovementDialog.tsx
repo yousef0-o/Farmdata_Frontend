@@ -5,6 +5,7 @@ import { AlertTriangle, Check, ChevronDown, Loader2, Search, X } from 'lucide-re
 import { z } from 'zod'
 import { useCreateMovement, useItemBalance, useItems, useWarehouses } from '@/lib/hooks/useInventory'
 import type { Item, Warehouse } from '@/lib/types'
+import AppDialog from '@/components/ui/AppDialog'
 
 interface CreateMovementDialogProps {
   open: boolean
@@ -252,8 +253,8 @@ export function CreateMovementDialog({ open, onOpenChange, defaultType = 'in', d
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4" dir="rtl">
-      <div className="bg-white rounded-2xl shadow-xl w-full max-w-3xl max-h-[92vh] overflow-y-auto">
+    <AppDialog open={open} onClose={handleClose} panelClassName="max-w-3xl">
+      <div className="max-h-[92vh] w-full overflow-y-auto rounded-2xl bg-surface shadow-xl" dir="rtl">
         <div className="sticky top-0 bg-white border-b border-gray-100 p-5 rounded-t-2xl flex items-center justify-between z-10">
           <div>
             <h2 className="text-xl font-bold text-gray-900">إضافة حركة مخزون</h2>
@@ -271,7 +272,7 @@ export function CreateMovementDialog({ open, onOpenChange, defaultType = 'in', d
               <button
                 type="button"
                 onClick={() => handleTypeChange('in')}
-                className={`py-4 rounded-2xl border-2 font-bold text-lg transition-all ${
+                className={`py-4 rounded-2xl border-2 font-bold text-lg transition-colors ${
                   type === 'in' ? 'bg-emerald-100 border-emerald-500 text-emerald-700 dark:bg-emerald-950/40 dark:border-emerald-900/50 dark:text-emerald-400 shadow-sm' : 'border-gray-200 text-gray-500 hover:bg-gray-50 dark:hover:bg-gray-800'
                 }`}
               >
@@ -280,7 +281,7 @@ export function CreateMovementDialog({ open, onOpenChange, defaultType = 'in', d
               <button
                 type="button"
                 onClick={() => handleTypeChange('out')}
-                className={`py-4 rounded-2xl border-2 font-bold text-lg transition-all ${
+                className={`py-4 rounded-2xl border-2 font-bold text-lg transition-colors ${
                   type === 'out' ? 'bg-red-100 border-red-500 text-red-700 dark:bg-red-950/40 dark:border-red-900/50 dark:text-red-400 shadow-sm' : 'border-gray-200 text-gray-500 hover:bg-gray-50 dark:hover:bg-gray-800'
                 }`}
               >
@@ -396,6 +397,6 @@ export function CreateMovementDialog({ open, onOpenChange, defaultType = 'in', d
           </div>
         </form>
       </div>
-    </div>
+    </AppDialog>
   )
 }

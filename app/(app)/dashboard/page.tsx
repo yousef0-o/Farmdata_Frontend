@@ -30,7 +30,7 @@ export default function DashboardPage() {
         <p className="text-gray-500 text-sm">يرجى التحقق من الاتصال بالخادم والمحاولة مرة أخرى.</p>
         <button
           onClick={() => refetch()}
-          className="flex items-center gap-2 bg-farm-blue hover:bg-blue-800 text-white px-6 py-2.5 rounded-xl transition-all font-semibold shadow-sm"
+          className="flex items-center gap-2 bg-farm-blue hover:bg-blue-800 text-white px-6 py-2.5 rounded-xl transition-colors font-semibold shadow-sm"
         >
           <RefreshCw className="w-4 h-4" />
           <span>إعادة المحاولة</span>
@@ -116,7 +116,7 @@ export default function DashboardPage() {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <Link
             href="/companies"
-            className="flex items-center justify-between p-5 bg-surface border border-border rounded-2xl shadow-sm hover:shadow-md transition-all group"
+            className="flex items-center justify-between p-5 bg-surface border border-border rounded-2xl shadow-sm hover:shadow-md transition-colors group"
           >
             <div className="flex items-center gap-4">
               <div className="p-3 bg-quick-blue-bg text-quick-blue-text rounded-xl transition-colors">
@@ -132,7 +132,7 @@ export default function DashboardPage() {
 
           <Link
             href="/warehouses"
-            className="flex items-center justify-between p-5 bg-surface border border-border rounded-2xl shadow-sm hover:shadow-md transition-all group"
+            className="flex items-center justify-between p-5 bg-surface border border-border rounded-2xl shadow-sm hover:shadow-md transition-colors group"
           >
             <div className="flex items-center gap-4">
               <div className="p-3 bg-quick-green-bg text-quick-green-text rounded-xl transition-colors">
@@ -148,7 +148,7 @@ export default function DashboardPage() {
 
           <Link
             href="/inventory/movements"
-            className="flex items-center justify-between p-5 bg-surface border border-border rounded-2xl shadow-sm hover:shadow-md transition-all group"
+            className="flex items-center justify-between p-5 bg-surface border border-border rounded-2xl shadow-sm hover:shadow-md transition-colors group"
           >
             <div className="flex items-center gap-4">
               <div className="p-3 bg-quick-purple-bg text-quick-purple-text rounded-xl transition-colors">

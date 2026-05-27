@@ -42,7 +42,7 @@ export default function BreedingEntriesTable({ flockId, isActive }: BreedingEntr
 
   return (
     <div>
-      <div className="overflow-x-auto">
+      <div className="hidden overflow-x-auto lg:block">
         <table className="w-full text-sm">
           <thead>
             <tr className="border-b border-gray-200 text-gray-500">
@@ -116,6 +116,72 @@ export default function BreedingEntriesTable({ flockId, isActive }: BreedingEntr
             ))}
           </tbody>
         </table>
+      </div>
+
+      <div className="grid grid-cols-1 gap-4 lg:hidden">
+        {entries.map((entry) => (
+          <article key={entry.id} className="rounded-2xl border border-line bg-surface p-4 shadow-sm">
+            <div className="flex items-start justify-between gap-3">
+              <div className="space-y-1">
+                <p className="text-sm font-semibold text-ink">{entry.record_date}</p>
+                <p className="text-xs text-ink-muted">الأسبوع {entry.week_number}</p>
+              </div>
+              <div className="rounded-xl bg-surface-subtle px-3 py-2 text-right">
+                <span className="block text-xs text-ink-muted">العمر</span>
+                <span className="text-sm font-semibold text-ink">{entry.age_days} يوم</span>
+              </div>
+            </div>
+
+            <div className="mt-4 grid grid-cols-2 gap-3 text-sm">
+              <div className="rounded-xl bg-surface-subtle px-3 py-2">
+                <span className="block text-xs text-ink-muted">عدد الطيور</span>
+                <span className="font-semibold text-ink">{entry.bird_count.toLocaleString()}</span>
+              </div>
+              <div className="rounded-xl bg-surface-subtle px-3 py-2">
+                <span className="block text-xs text-ink-muted">النفوق</span>
+                <span className="font-semibold text-danger">{entry.mortality}</span>
+              </div>
+              <div className="rounded-xl bg-surface-subtle px-3 py-2">
+                <span className="block text-xs text-ink-muted">متوسط الوزن</span>
+                <span className="font-semibold text-ink-soft">
+                  {entry.weight_sample_avg != null ? Number(entry.weight_sample_avg).toFixed(1) : '—'}
+                </span>
+              </div>
+              <div className="rounded-xl bg-surface-subtle px-3 py-2">
+                <span className="block text-xs text-ink-muted">التجانس</span>
+                <span className="font-semibold text-ink-soft">
+                  {entry.uniformity_pct != null ? `${Number(entry.uniformity_pct).toFixed(1)}%` : '—'}
+                </span>
+              </div>
+            </div>
+
+            {isActive ? (
+              <div className="mt-4 flex items-center gap-3">
+                <Link
+                  href={`/flocks/${flockId}/daily/${entry.id}/breeding-edit`}
+                  className="flex min-h-11 flex-1 items-center justify-center rounded-xl border border-info-soft bg-info-soft px-4 py-2 text-sm font-semibold text-action-primary"
+                >
+                  تعديل
+                </Link>
+                {deleteConfirm === entry.id ? (
+                  <div className="flex flex-1 items-center justify-between rounded-xl border border-danger-soft bg-danger-soft px-4 py-2 text-xs font-bold text-danger">
+                    <button onClick={() => handleDelete(entry.id)} disabled={deleteEntry.isPending}>
+                      {deleteEntry.isPending ? <Loader2 className="h-3 w-3 animate-spin" /> : 'تأكيد'}
+                    </button>
+                    <button onClick={() => setDeleteConfirm(null)}>إلغاء</button>
+                  </div>
+                ) : (
+                  <button
+                    onClick={() => setDeleteConfirm(entry.id)}
+                    className="flex min-h-11 min-w-11 items-center justify-center rounded-xl border border-danger-soft bg-danger-soft px-4 py-2 text-danger"
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </button>
+                )}
+              </div>
+            ) : null}
+          </article>
+        ))}
       </div>
 
       {meta && (

@@ -25,6 +25,7 @@ import { useSuppliers } from '@/lib/hooks/useSuppliers'
 import type { Invoice, InvoicePayload, InvoiceItemPayload } from '@/lib/api/financial'
 import type { Item, Warehouse, Customer, Supplier } from '@/lib/types'
 import SaudiRiyalIcon from '@/components/icons/SaudiRiyalIcon'
+import AppDialog from '@/components/ui/AppDialog'
 
 interface FormItem {
   item_id: string
@@ -207,7 +208,7 @@ export default function InvoicesPage() {
         </div>
         <button
           onClick={() => setShowCreateModal(true)}
-          className="flex items-center gap-2 bg-farm-blue hover:bg-farm-blue/90 text-white px-5 py-3 rounded-xl transition-all font-semibold text-sm shadow-sm hover:scale-[1.01]"
+          className="flex items-center gap-2 bg-farm-blue hover:bg-farm-blue/90 text-white px-5 py-3 rounded-xl transition-colors font-semibold text-sm shadow-sm hover:scale-[1.01]"
         >
           <Plus className="w-5 h-5" />
           <span>فاتورة جديدة</span>
@@ -254,13 +255,13 @@ export default function InvoicesPage() {
       </div>
 
       {/* Navigation Tabs and Search Toolbar */}
-      <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
-        <div className="p-6 border-b border-gray-200 flex flex-col md:flex-row gap-4 items-center justify-between">
+      <div className="overflow-hidden rounded-2xl border border-gray-200 shadow-sm bg-white">
+        <div className="flex flex-col gap-3 border-b border-gray-200 p-4 md:flex-row md:items-center md:justify-between md:p-6">
           {/* Tabs */}
-          <div className="flex bg-gray-50 p-1.5 rounded-xl border border-gray-200">
+          <div className="flex w-full max-w-full overflow-x-auto bg-gray-50 p-1.5 rounded-xl border border-gray-200 md:w-auto">
             <button
               onClick={() => { setActiveTab('sales'); setPage(1) }}
-              className={`px-5 py-2.5 rounded-lg text-sm font-bold transition-all duration-200 ${
+              className={`min-h-11 shrink-0 px-5 py-2.5 rounded-lg text-sm font-bold transition-colors duration-200 ${
                 activeTab === 'sales'
                   ? 'bg-farm-blue text-white shadow-sm'
                   : 'text-gray-500 hover:text-gray-900'
@@ -270,7 +271,7 @@ export default function InvoicesPage() {
             </button>
             <button
               onClick={() => { setActiveTab('purchase'); setPage(1) }}
-              className={`px-5 py-2.5 rounded-lg text-sm font-bold transition-all duration-200 ${
+              className={`min-h-11 shrink-0 px-5 py-2.5 rounded-lg text-sm font-bold transition-colors duration-200 ${
                 activeTab === 'purchase'
                   ? 'bg-farm-blue text-white shadow-sm'
                   : 'text-gray-500 hover:text-gray-900'
@@ -286,7 +287,7 @@ export default function InvoicesPage() {
             <input
               type="text"
               placeholder="رقم الفاتورة أو اسم العميل..."
-              className="w-full pl-4 pr-10 py-2.5 rounded-xl border border-gray-200 bg-gray-50 text-gray-900 text-sm focus:outline-none focus:ring-2 focus:ring-farm-blue"
+              className="w-full min-h-11 pl-4 pr-10 py-2.5 rounded-xl border border-gray-200 bg-gray-50 text-gray-900 text-sm focus:outline-none focus:ring-2 focus:ring-farm-blue"
               value={search}
               onChange={(e) => { setSearch(e.target.value); setPage(1) }}
             />
@@ -294,28 +295,29 @@ export default function InvoicesPage() {
         </div>
 
         {/* Invoices Table */}
-        <div className="overflow-x-auto">
-          {isInvoicesLoading ? (
-            <div className="p-12 flex flex-col items-center justify-center gap-3">
-              <Loader2 className="w-10 h-10 text-farm-blue animate-spin" />
-              <p className="text-sm text-gray-500 dark:text-gray-400">جاري تحميل سجلات الفواتير الموثقة...</p>
+        {isInvoicesLoading ? (
+          <div className="p-12 flex flex-col items-center justify-center gap-3">
+            <Loader2 className="w-10 h-10 text-farm-blue animate-spin" />
+            <p className="text-sm text-gray-500 dark:text-gray-400">جاري تحميل سجلات الفواتير الموثقة...</p>
+          </div>
+        ) : invoices.length === 0 ? (
+          <div className="p-12 text-center flex flex-col items-center justify-center gap-4">
+            <div className="flex h-16 w-16 items-center justify-center rounded-full border border-line bg-surface-subtle">
+              <FileText className="h-8 w-8 text-ink-muted" />
             </div>
-          ) : invoices.length === 0 ? (
-            <div className="p-12 text-center flex flex-col items-center justify-center gap-4">
-              <div className="w-16 h-16 bg-gray-50 rounded-full flex items-center justify-center border border-gray-200">
-                <FileText className="w-8 h-8 text-gray-400" />
-              </div>
-              <div>
-                <h3 className="font-bold text-gray-900">لا توجد فواتير</h3>
-                <p className="text-sm text-gray-500 mt-1 max-w-sm">
-                  ابدأ بإنشاء فاتورة جديدة من الزر أعلاه.
-                </p>
-              </div>
+            <div>
+              <h3 className="font-bold text-ink">لا توجد فواتير</h3>
+              <p className="mt-1 max-w-sm text-sm text-ink-muted">
+                ابدأ بإنشاء فاتورة جديدة من الزر أعلاه.
+              </p>
             </div>
-          ) : (
+          </div>
+        ) : (
+          <>
+            <div className="hidden overflow-x-auto lg:block">
             <table className="w-full text-right border-collapse">
               <thead>
-                <tr className="bg-gray-50 border-b border-gray-200 text-xs font-bold text-gray-500">
+                <tr className="border-b border-line bg-surface-subtle text-xs font-bold text-ink-muted">
                   <th className="py-4 px-6">رقم الفاتورة</th>
                   <th className="py-4 px-6">التاريخ</th>
                   <th className="py-4 px-6">{activeTab === 'sales' ? 'العميل' : 'المورد'}</th>
@@ -327,29 +329,29 @@ export default function InvoicesPage() {
               </thead>
               <tbody className="divide-y divide-gray-250">
                 {invoices.map((inv: Invoice) => (
-                  <tr key={inv.id} className="hover:bg-gray-100/30 text-sm text-gray-700">
-                    <td className="py-4 px-6 font-mono font-bold text-farm-blue">{inv.invoice_number}</td>
+                  <tr key={inv.id} className="text-sm text-ink-soft transition-colors hover:bg-surface-subtle">
+                    <td className="py-4 px-6 font-mono font-bold text-action-primary">{inv.invoice_number}</td>
                     <td className="py-4 px-6">{inv.invoice_date}</td>
                     <td className="py-4 px-6">
                       {activeTab === 'sales' ? (inv.customer?.customer_name || 'عميل مجهول') : (inv.supplier?.supplier_name || 'مورد مجهول')}
                     </td>
                     <td className="py-4 px-6">{inv.warehouse?.name || 'مستودع مجهول'}</td>
-                    <td className="py-4 px-6 font-bold">{parseFloat(inv.tax_amount).toLocaleString('ar-SA')} <SaudiRiyalIcon size={14} className="text-emerald-700 inline-block align-middle ml-1" /></td>
-                    <td className="py-4 px-6 font-bold text-gray-900">
-                      {parseFloat(inv.total_amount).toLocaleString('ar-SA')} <SaudiRiyalIcon size={14} className="text-emerald-700 inline-block align-middle ml-1" />
+                    <td className="py-4 px-6 font-bold">{parseFloat(inv.tax_amount).toLocaleString('ar-SA')} <SaudiRiyalIcon size={14} className="text-success-strong inline-block align-middle ml-1" /></td>
+                    <td className="py-4 px-6 font-bold text-ink">
+                      {parseFloat(inv.total_amount).toLocaleString('ar-SA')} <SaudiRiyalIcon size={14} className="text-success-strong inline-block align-middle ml-1" />
                     </td>
                     <td className="py-4 px-6">
                       <div className="flex items-center justify-center gap-2">
                         <button
                           onClick={() => openInvoiceDetails(inv)}
-                          className="p-2 text-gray-400 hover:text-farm-blue hover:bg-farm-blue/5 rounded-lg transition-all"
+                          className="p-2 text-ink-muted hover:text-action-primary hover:bg-info-soft rounded-lg transition-colors"
                           title="عرض الفاتورة"
                         >
                           <Eye className="w-4 h-4" />
                         </button>
                         <button
                           onClick={() => handleDelete(inv.id)}
-                          className="p-2 text-gray-400 hover:text-red-650 hover:bg-red-50 dark:hover:bg-red-950/10 rounded-lg transition-all"
+                          className="p-2 text-ink-muted hover:text-danger hover:bg-danger-soft rounded-lg transition-colors"
                           title="حذف"
                         >
                           <Trash2 className="w-4 h-4" />
@@ -360,27 +362,84 @@ export default function InvoicesPage() {
                 ))}
               </tbody>
             </table>
-          )}
-        </div>
+            </div>
+
+            <div className="grid grid-cols-1 gap-4 p-4 lg:hidden">
+            {invoices.map((inv: Invoice) => (
+              <article
+                key={inv.id}
+                className="rounded-2xl border border-line bg-surface p-4 shadow-sm"
+              >
+                <div className="flex items-start justify-between gap-3">
+                  <div className="space-y-1">
+                    <p className="font-mono text-sm font-bold text-action-primary">{inv.invoice_number}</p>
+                    <p className="text-sm font-semibold text-ink">
+                      {activeTab === 'sales' ? (inv.customer?.customer_name || 'عميل مجهول') : (inv.supplier?.supplier_name || 'مورد مجهول')}
+                    </p>
+                    <p className="text-xs text-ink-muted">{inv.warehouse?.name || 'مستودع مجهول'}</p>
+                  </div>
+                  <div className="rounded-xl bg-surface-subtle px-3 py-2 text-right">
+                    <span className="block text-xs text-ink-muted">التاريخ</span>
+                    <span className="text-sm font-semibold text-ink">{inv.invoice_date}</span>
+                  </div>
+                </div>
+
+                <div className="mt-4 grid grid-cols-2 gap-3 text-sm">
+                  <div className="rounded-xl bg-surface-subtle px-3 py-2">
+                    <span className="block text-xs text-ink-muted">الضريبة</span>
+                    <span className="font-semibold text-ink">
+                      {parseFloat(inv.tax_amount || '0').toLocaleString('ar-SA')} <SaudiRiyalIcon size={14} className="ml-1 inline-block align-middle text-success-strong" />
+                    </span>
+                  </div>
+                  <div className="rounded-xl bg-surface-subtle px-3 py-2">
+                    <span className="block text-xs text-ink-muted">الإجمالي</span>
+                    <span className="font-semibold text-ink">
+                      {parseFloat(inv.total_amount || '0').toLocaleString('ar-SA')} <SaudiRiyalIcon size={14} className="ml-1 inline-block align-middle text-success-strong" />
+                    </span>
+                  </div>
+                </div>
+
+                <div className="mt-4 flex gap-3">
+                  <button
+                    onClick={() => openInvoiceDetails(inv)}
+                    className="flex min-h-11 flex-1 items-center justify-center gap-2 rounded-xl border border-info-soft bg-info-soft px-4 py-2 text-sm font-semibold text-action-primary"
+                    title="عرض الفاتورة"
+                  >
+                    <Eye className="h-4 w-4" />
+                    <span>عرض</span>
+                  </button>
+                  <button
+                    onClick={() => handleDelete(inv.id)}
+                    className="flex min-h-11 min-w-11 items-center justify-center rounded-xl border border-danger-soft bg-danger-soft px-4 py-2 text-danger"
+                    title="حذف"
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </button>
+                </div>
+              </article>
+            ))}
+            </div>
+          </>
+        )}
 
         {/* Pagination */}
         {meta && meta.last_page > 1 && (
-          <div className="p-6 border-t border-gray-200 flex justify-between items-center bg-gray-50">
-            <span className="text-xs text-gray-500">
+          <div className="flex flex-col gap-3 border-t border-line bg-surface-subtle p-4 sm:flex-row sm:items-center sm:justify-between sm:p-6">
+            <span className="text-xs text-ink-muted">
               صفحة {meta.current_page} من {meta.last_page}
             </span>
             <div className="flex gap-2">
               <button
                 onClick={() => setPage(prev => Math.max(prev - 1, 1))}
                 disabled={meta.current_page === 1}
-                className="px-4 py-2 text-xs font-semibold bg-white border border-gray-200 rounded-lg disabled:opacity-50"
+                className="min-h-11 rounded-lg border border-line bg-surface px-4 py-2 text-xs font-semibold disabled:opacity-50"
               >
                 السابق
               </button>
               <button
                 onClick={() => setPage(prev => Math.min(prev + 1, meta.last_page))}
                 disabled={meta.current_page === meta.last_page}
-                className="px-4 py-2 text-xs font-semibold bg-white border border-gray-200 rounded-lg disabled:opacity-50"
+                className="min-h-11 rounded-lg border border-line bg-surface px-4 py-2 text-xs font-semibold disabled:opacity-50"
               >
                 التالي
               </button>
@@ -391,8 +450,8 @@ export default function InvoicesPage() {
 
       {/* CREATE MODAL */}
       {showCreateModal && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-3xl w-full max-w-4xl shadow-2xl border border-gray-200 flex flex-col max-h-[90vh]">
+        <AppDialog open={showCreateModal} onClose={() => setShowCreateModal(false)} panelClassName="max-w-4xl">
+          <div className="flex max-h-[90vh] w-full flex-col rounded-3xl border border-gray-200 bg-white shadow-2xl">
             {/* Header */}
             <div className="p-6 border-b border-gray-200 flex justify-between items-center">
               <div className="flex items-center gap-3">
@@ -405,7 +464,7 @@ export default function InvoicesPage() {
               </div>
               <button
                 onClick={() => setShowCreateModal(false)}
-                className="p-2 hover:bg-gray-100 rounded-full transition-all text-gray-400 hover:text-gray-600"
+                className="p-2 hover:bg-gray-100 rounded-full transition-colors text-gray-400 hover:text-gray-600"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -662,7 +721,7 @@ export default function InvoicesPage() {
                 <button
                   type="submit"
                   disabled={createInvoiceMutation.isPending}
-                  className="px-5 py-2.5 text-sm font-bold bg-farm-blue hover:bg-farm-blue/90 text-white rounded-xl transition-all shadow-sm flex items-center gap-2 hover:scale-[1.01] disabled:opacity-50"
+                  className="px-5 py-2.5 text-sm font-bold bg-farm-blue hover:bg-farm-blue/90 text-white rounded-xl transition-colors shadow-sm flex items-center gap-2 hover:scale-[1.01] disabled:opacity-50"
                 >
                   {createInvoiceMutation.isPending ? (
                     <>
@@ -676,13 +735,13 @@ export default function InvoicesPage() {
               </div>
             </form>
           </div>
-        </div>
+        </AppDialog>
       )}
 
       {/* VIEW DETAILS MODAL */}
       {showDetailsModal && selectedInvoice && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-3xl w-full max-w-4xl shadow-2xl border border-gray-200 flex flex-col max-h-[90vh]">
+        <AppDialog open={showDetailsModal && !!selectedInvoice} onClose={() => setShowDetailsModal(false)} panelClassName="max-w-4xl">
+          <div className="flex max-h-[90vh] w-full flex-col rounded-3xl border border-gray-200 bg-white shadow-2xl">
             {/* Header */}
             <div className="p-6 border-b border-gray-200 flex justify-between items-center">
               <div className="flex items-center gap-3">
@@ -701,7 +760,7 @@ export default function InvoicesPage() {
               </div>
               <button
                 onClick={() => setShowDetailsModal(false)}
-                className="p-2 hover:bg-gray-100 rounded-full transition-all text-gray-400 hover:text-gray-600"
+                className="p-2 hover:bg-gray-100 rounded-full transition-colors text-gray-400 hover:text-gray-600"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -811,13 +870,13 @@ export default function InvoicesPage() {
               <button
                 type="button"
                 onClick={() => setShowDetailsModal(false)}
-                className="px-6 py-2.5 text-sm font-semibold bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-xl transition-all"
+                className="px-6 py-2.5 text-sm font-semibold bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-xl transition-colors"
               >
                 إغلاق
               </button>
             </div>
           </div>
-        </div>
+        </AppDialog>
       )}
     </div>
   )

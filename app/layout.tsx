@@ -1,5 +1,5 @@
 import type { Metadata } from 'next'
-import { Reem_Kufi, IBM_Plex_Sans_Arabic, Space_Grotesk } from 'next/font/google'
+import { Reem_Kufi, IBM_Plex_Sans_Arabic, Geist_Mono } from 'next/font/google'
 import './globals.css'
 import { Providers } from './providers'
 
@@ -14,10 +14,10 @@ const ibmPlexSansArabic = IBM_Plex_Sans_Arabic({
   weight: ['300', '400', '500', '600', '700'],
 })
 
-const spaceGrotesk = Space_Grotesk({
-  variable: '--font-mono',
+const geistMono = Geist_Mono({
   subsets: ['latin'],
-  weight: ['400', '500', '600', '700'],
+  variable: '--font-mono',
+  display: 'swap',
 })
 
 export const metadata: Metadata = {
@@ -34,11 +34,11 @@ export default function RootLayout({
     <html
       lang="ar"
       dir="rtl"
-      className={`${ibmPlexSansArabic.variable} ${reemKufi.variable} ${spaceGrotesk.variable} h-full antialiased`}
+      className={`${ibmPlexSansArabic.variable} ${reemKufi.variable} ${geistMono.variable} h-full antialiased`}
       suppressHydrationWarning
     >
       <body
-        className="min-h-full bg-gray-50 dark:bg-gray-950 text-gray-900"
+        className="min-h-screen bg-background text-foreground"
         suppressHydrationWarning
       >
         <Providers>{children}</Providers>

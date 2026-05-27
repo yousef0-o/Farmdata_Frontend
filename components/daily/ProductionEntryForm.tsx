@@ -109,7 +109,7 @@ export default function ProductionEntryForm({ flockId, onSuccess, onCancel }: Pr
   }
 
   const ic = (f: string) =>
-    `w-full border rounded-xl px-4 py-2.5 bg-gray-50 focus:outline-none focus:ring-2 focus:ring-farm-blue disabled:opacity-60 transition-all ${errors[f] ? 'border-red-500' : 'border-gray-200'}`
+    `w-full border rounded-xl px-4 py-2.5 bg-gray-50 focus:outline-none focus:ring-2 focus:ring-farm-blue disabled:opacity-60 transition-colors ${errors[f] ? 'border-red-500' : 'border-gray-200'}`
 
   return (
     <form onSubmit={handleSubmit} className="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm space-y-6" dir="rtl">
@@ -188,7 +188,7 @@ export default function ProductionEntryForm({ flockId, onSuccess, onCancel }: Pr
                   <input 
                     type="number" 
                     min="0" 
-                    className="w-full border border-gray-200 rounded-xl px-4 py-2.5 bg-gray-50 focus:outline-none focus:ring-2 focus:ring-farm-blue disabled:opacity-60 transition-all"
+                    className="w-full border border-gray-200 rounded-xl px-4 py-2.5 bg-gray-50 focus:outline-none focus:ring-2 focus:ring-farm-blue disabled:opacity-60 transition-colors"
                     value={eggQuantities[item.id] || ''} 
                     onChange={(e) => setEggQty(item.id, e.target.value)} 
                     placeholder="0" 
@@ -304,7 +304,7 @@ export default function ProductionEntryForm({ flockId, onSuccess, onCancel }: Pr
         <h3 className="text-sm font-bold text-gray-800 mb-3">ملاحظات الذكاء الاصطناعي (اختياري)</h3>
         <textarea 
           rows={3} 
-          className="w-full border border-gray-200 rounded-xl px-4 py-2.5 bg-gray-50 focus:outline-none focus:ring-2 focus:ring-farm-blue resize-none disabled:opacity-60 transition-all" 
+          className="w-full border border-gray-200 rounded-xl px-4 py-2.5 bg-gray-50 focus:outline-none focus:ring-2 focus:ring-farm-blue resize-none disabled:opacity-60 transition-colors" 
           value={aiObs} 
           onChange={(e) => setAiObs(e.target.value)} 
           placeholder="ملاحظات اختيارية..." 

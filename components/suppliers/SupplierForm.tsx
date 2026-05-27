@@ -4,6 +4,7 @@ import React, { useState, useRef, useCallback } from 'react'
 import { X, Loader2, AlertCircle, ChevronLeft, ChevronRight, Check } from 'lucide-react'
 import type { Supplier } from '@/lib/types'
 import SaudiRiyalIcon from '@/components/icons/SaudiRiyalIcon'
+import AppDialog from '@/components/ui/AppDialog'
 
 interface SupplierFormProps {
   editingSupplier: Supplier | null
@@ -185,16 +186,16 @@ export default function SupplierForm({ editingSupplier, onSubmit, onClose, isPen
 
   const inp = (key: keyof Supplier, label: React.ReactNode, opts: { required?: boolean; type?: string; placeholder?: string; span?: number } = {}) => (
     <div className={opts.span ? `md:col-span-${opts.span}` : ''}>
-      <label htmlFor={key} className="text-xs font-semibold text-gray-700 flex items-center gap-1 mb-1">
-        {label} {opts.required && <span className="text-red-500">*</span>}
+      <label htmlFor={key} className="mb-1 flex items-center gap-1 text-xs font-semibold text-ink-soft">
+        {label} {opts.required && <span className="text-danger">*</span>}
       </label>
       <input
         id={key}
         type={opts.type || 'text'}
         step={opts.type === 'number' ? '0.01' : undefined}
         placeholder={opts.placeholder}
-        className={`w-full border rounded-xl px-4 py-2.5 bg-gray-50 focus:ring-2 focus:ring-farm-blue focus:outline-none text-sm ${
-          allErrors[key] ? 'border-red-500' : 'border-gray-200'
+        className={`w-full rounded-xl border bg-surface-muted px-4 py-2.5 text-sm text-ink focus:outline-none focus:ring-2 focus:ring-action-primary ${
+          allErrors[key] ? 'border-danger' : 'border-line'
         }`}
         value={(form as any)[key] ?? ''}
         onChange={(e) => {
@@ -202,45 +203,45 @@ export default function SupplierForm({ editingSupplier, onSubmit, onClose, isPen
           updateForm(key, val)
         }}
       />
-      {allErrors[key] && <p className="text-xxs text-red-500 mt-1">{allErrors[key]}</p>}
+      {allErrors[key] && <p className="mt-1 text-xs text-danger">{allErrors[key]}</p>}
     </div>
   )
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4 overflow-y-auto">
-      <div className="bg-white rounded-2xl shadow-xl w-full max-w-4xl max-h-[90vh] flex flex-col overflow-hidden animate-in fade-in zoom-in duration-200 text-right">
+    <AppDialog open onClose={onClose} panelClassName="max-w-4xl animate-in fade-in zoom-in duration-200">
+      <div className="flex max-h-[90vh] w-full flex-col overflow-hidden rounded-2xl bg-surface shadow-xl text-right">
         {/* Header */}
-        <div className="p-6 border-b border-gray-100 bg-gray-50/50 flex justify-between items-center">
+        <div className="flex items-center justify-between border-b border-line bg-surface-subtle p-6">
           <div>
-            <h2 className="text-lg font-bold text-gray-900">
+            <h2 className="text-lg font-bold text-ink">
               {editingSupplier ? 'تعديل بيانات المورد' : 'إضافة مورد جديد'}
             </h2>
-            <p className="text-xs text-gray-400 mt-0.5">الخطوة {step + 1} من {STEPS.length} — {STEPS[step].label}</p>
+            <p className="mt-0.5 text-xs text-ink-muted">الخطوة {step + 1} من {STEPS.length} — {STEPS[step].label}</p>
           </div>
-          <button onClick={onClose} className="p-2 hover:bg-gray-200 rounded-full transition-all text-gray-400">
+          <button onClick={onClose} className="rounded-full p-2 text-ink-muted transition-colors hover:bg-surface-muted">
             <X className="w-5 h-5" />
           </button>
         </div>
 
         {/* Step indicators */}
-        <div className="flex items-center justify-center gap-2 py-3 border-b border-gray-100 bg-white">
+        <div className="flex items-center justify-center gap-2 border-b border-line bg-surface py-3">
           {STEPS.map((s, i) => (
             <React.Fragment key={s.key}>
               <button
                 type="button"
                 onClick={() => { if (i < step) setStep(i) }}
-                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
+                className={`flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-semibold transition-colors ${
                   i === step
-                    ? 'bg-farm-blue text-white'
+                    ? 'bg-action-primary text-white'
                     : i < step
-                    ? 'bg-emerald-100 text-emerald-700 cursor-pointer dark:bg-emerald-950/40 dark:text-emerald-400'
-                    : 'bg-gray-100 text-gray-500 dark:text-gray-400'
+                    ? 'cursor-pointer bg-success-soft text-success-strong'
+                    : 'bg-surface-muted text-ink-soft'
                 }`}
               >
                 {i < step ? <Check className="w-3.5 h-3.5" /> : <span>{i + 1}</span>}
                 {s.label}
               </button>
-              {i < STEPS.length - 1 && <div className="w-6 h-px bg-gray-200" />}
+              {i < STEPS.length - 1 && <div className="h-px w-6 bg-line" />}
             </React.Fragment>
           ))}
         </div>
@@ -248,8 +249,8 @@ export default function SupplierForm({ editingSupplier, onSubmit, onClose, isPen
         {/* Body — div بدل form عشان نمنع أي submission عرضي */}
         <div className="flex-1 overflow-y-auto p-6 space-y-6">
           {allErrors.non_field && (
-            <div className="p-4 bg-red-100 border border-red-200 text-red-650 dark:bg-red-950/20 dark:border-red-900/30 dark:text-red-400 text-sm rounded-xl flex items-center gap-3">
-              <AlertCircle className="w-5 h-5 shrink-0 text-red-600 dark:text-red-400" />
+            <div className="flex items-center gap-3 rounded-xl border border-danger-soft bg-danger-soft p-4 text-sm text-danger">
+              <AlertCircle className="h-5 w-5 shrink-0 text-danger" />
               <span>{allErrors.non_field}</span>
             </div>
           )}
@@ -263,8 +264,8 @@ export default function SupplierForm({ editingSupplier, onSubmit, onClose, isPen
                 {inp('issue_date', 'تاريخ التسجيل/الإصدار', { type: 'date' })}
               </div>
 
-              <div className="border-t border-gray-100 pt-6">
-                <h3 className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3">الاتصال والتواصل</h3>
+              <div className="border-t border-line pt-6">
+                <h3 className="mb-3 text-xs font-bold uppercase tracking-wider text-ink-soft">الاتصال والتواصل</h3>
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                   {inp('phone1', 'الهاتف الأساسي')}
                   {inp('phone2', 'الهاتف الإضافي')}
@@ -281,9 +282,9 @@ export default function SupplierForm({ editingSupplier, onSubmit, onClose, isPen
           {step === 1 && (
             <div className="space-y-6">
               <div>
-                <h3 className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3">البيانات المالية وحسابات الأستاذ</h3>
+                <h3 className="mb-3 text-xs font-bold uppercase tracking-wider text-ink-soft">البيانات المالية وحسابات الأستاذ</h3>
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                  {inp('credit_limit', <span className="flex items-center gap-0.5">الحد الائتماني (<SaudiRiyalIcon size={12} className="text-emerald-700" />)</span>, { type: 'number' })}
+                  {inp('credit_limit', <span className="flex items-center gap-0.5">الحد الائتماني (<SaudiRiyalIcon size={12} className="text-success-strong" />)</span>, { type: 'number' })}
                   {inp('discount_days', 'أيام الخصم المسموح بها', { type: 'number' })}
                   {inp('guarantee_amount', 'مبلغ الضمان', { type: 'number' })}
                   {inp('discount_rate', 'معدل الخصم (%)', { type: 'number' })}
@@ -293,8 +294,8 @@ export default function SupplierForm({ editingSupplier, onSubmit, onClose, isPen
                 </div>
               </div>
 
-              <div className="border-t border-gray-100 pt-6">
-                <h3 className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3">العنوان الوطني والتفاصيل الجغرافية</h3>
+              <div className="border-t border-line pt-6">
+                <h3 className="mb-3 text-xs font-bold uppercase tracking-wider text-ink-soft">العنوان الوطني والتفاصيل الجغرافية</h3>
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                   {inp('country', 'الدولة')}
                   {inp('province', 'المنطقة/المحافظة')}
@@ -309,8 +310,8 @@ export default function SupplierForm({ editingSupplier, onSubmit, onClose, isPen
                 </div>
               </div>
 
-              <div className="border-t border-gray-100 pt-6">
-                <h3 className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3">مراجع الاتصال الإضافية</h3>
+              <div className="border-t border-line pt-6">
+                <h3 className="mb-3 text-xs font-bold uppercase tracking-wider text-ink-soft">مراجع الاتصال الإضافية</h3>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   {inp('reference1', 'المرجع الأول (الاسم)')}
                   {inp('reference1_phone', 'هاتف المرجع الأول')}
@@ -324,28 +325,28 @@ export default function SupplierForm({ editingSupplier, onSubmit, onClose, isPen
           )}
 
           {/* Footer */}
-          <div className="flex justify-between items-center pt-6 border-t border-gray-200">
+          <div className="flex items-center justify-between border-t border-line pt-6">
             <div>
               {step > 0 && (
                 <button type="button" onClick={handlePrev}
-                  className="flex items-center gap-1 text-sm text-gray-600 hover:text-gray-900 font-medium">
+                  className="flex items-center gap-1 text-sm font-medium text-ink-soft hover:text-ink">
                   السابق <ChevronRight className="w-4 h-4" />
                 </button>
               )}
             </div>
             <div className="flex gap-3">
               <button type="button" onClick={onClose}
-                className="bg-gray-100 hover:bg-gray-200 text-gray-600 px-5 py-2.5 rounded-xl font-semibold text-sm transition-all">
+                className="rounded-xl bg-surface-muted px-5 py-2.5 text-sm font-semibold text-ink-soft transition-colors hover:bg-surface-subtle">
                 إلغاء
               </button>
               {step < STEPS.length - 1 ? (
                 <button type="button" onClick={handleNext}
-                  className="bg-farm-blue hover:bg-farm-blue/90 text-white px-6 py-2.5 rounded-xl font-semibold text-sm transition-all flex items-center gap-2">
+                  className="flex items-center gap-2 rounded-xl bg-action-primary px-6 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-action-primary-hover">
                   <ChevronLeft className="w-4 h-4" /> التالي
                 </button>
               ) : (
                 <button type="button" onClick={handleSubmit} disabled={isPending}
-                  className="bg-farm-blue hover:bg-farm-blue/90 disabled:opacity-50 text-white px-6 py-2.5 rounded-xl font-semibold text-sm transition-all flex items-center gap-2">
+                  className="flex items-center gap-2 rounded-xl bg-action-primary px-6 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-action-primary-hover disabled:opacity-50">
                   {isPending && <Loader2 className="w-4 h-4 animate-spin" />}
                   {editingSupplier ? 'حفظ التعديلات' : 'إضافة المورد'}
                 </button>
@@ -354,6 +355,6 @@ export default function SupplierForm({ editingSupplier, onSubmit, onClose, isPen
           </div>
         </div>
       </div>
-    </div>
+    </AppDialog>
   )
 }

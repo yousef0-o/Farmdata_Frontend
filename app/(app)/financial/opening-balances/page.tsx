@@ -280,7 +280,7 @@ export default function OpeningBalancesPage() {
             onDragOver={handleDragOver}
             onDragLeave={handleDragLeave}
             onDrop={handleDrop}
-            className={`h-full bg-white/80 backdrop-blur-md rounded-2xl border-2 border-dashed p-6 shadow-sm flex flex-col items-center justify-center text-center transition-all duration-300 relative overflow-hidden ${
+            className={`h-full bg-white/80 backdrop-blur-md rounded-2xl border-2 border-dashed p-6 shadow-sm flex flex-col items-center justify-center text-center transition-colors duration-300 relative overflow-hidden ${
               isDragOver
                 ? 'border-farm-blue bg-farm-blue/5'
                 : 'border-gray-200'
@@ -302,7 +302,7 @@ export default function OpeningBalancesPage() {
             <p className="text-xs text-gray-500 max-w-sm mb-4">
               اسحب وأسقط ملف الإكسيل هنا أو اضغط للتصفح. سيتم مطابقة الأعمدة تلقائياً (رمز الحساب، مدين، دائن، الوصف).
             </p>
-            <label className="px-5 py-2.5 bg-farm-blue hover:bg-farm-blue-dark text-white rounded-xl text-xs font-semibold cursor-pointer transition-all duration-200 flex items-center gap-2">
+            <label className="px-5 py-2.5 bg-farm-blue hover:bg-farm-blue-dark text-white rounded-xl text-xs font-semibold cursor-pointer transition-colors duration-200 flex items-center gap-2">
               <FileSpreadsheet className="w-4 h-4" />
               اختر ملف Excel
               <input
@@ -360,7 +360,7 @@ export default function OpeningBalancesPage() {
           <button
             onClick={handleSave}
             disabled={saveMutation.isPending || isLoading}
-            className="px-5 py-2.5 bg-farm-blue hover:bg-farm-blue-dark disabled:opacity-50 text-white rounded-xl text-xs font-bold transition-all duration-200 flex items-center gap-2"
+            className="px-5 py-2.5 bg-farm-blue hover:bg-farm-blue-dark disabled:opacity-50 text-white rounded-xl text-xs font-bold transition-colors duration-200 flex items-center gap-2"
           >
             {saveMutation.isPending ? (
               <Loader2 className="w-4 h-4 animate-spin" />
@@ -371,7 +371,7 @@ export default function OpeningBalancesPage() {
           </button>
         </div>
 
-        <div className="overflow-x-auto">
+        <div className="hidden overflow-x-auto lg:block">
           <table className="w-full border-collapse">
             <thead>
               <tr className="bg-gray-50/55 text-gray-500 text-xs font-bold border-b border-gray-200">
@@ -414,7 +414,7 @@ export default function OpeningBalancesPage() {
                   return (
                     <tr
                       key={account.id}
-                      className={`border-b border-gray-100/50 text-sm transition-all duration-150 hover:bg-gray-100/10 ${
+                      className={`border-b border-gray-100/50 text-sm transition-colors duration-150 hover:bg-gray-100/10 ${
                         !isLeaf ? 'bg-gray-50/30 font-semibold' : ''
                       }`}
                     >
@@ -435,7 +435,7 @@ export default function OpeningBalancesPage() {
                       {/* Type Badge */}
                       <td className="px-6 py-3.5">
                         <span
-                          className={`inline-flex items-center px-2 py-1 rounded-md text-[10px] font-bold capitalize ${
+                          className={`inline-flex items-center px-2 py-1 rounded-md text-xs font-bold capitalize ${
                             account.type === 'asset'
                               ? 'bg-blue-50 text-blue-700 dark:bg-blue-950/30 dark:text-blue-400'
                               : account.type === 'liability'
@@ -510,10 +510,90 @@ export default function OpeningBalancesPage() {
             </tbody>
           </table>
         </div>
+
+        {!isLoading && accounts.length > 0 ? (
+          <div className="grid grid-cols-1 gap-4 p-4 lg:hidden">
+            {accounts.map((account) => {
+              const depth = getAccountDepth(account.code)
+              const isLeaf = account.is_leaf
+              const line = localLines[account.id] ?? {
+                debit_amount: 0,
+                credit_amount: 0,
+                description: '',
+              }
+
+              return (
+                <article
+                  key={account.id}
+                  className={`rounded-2xl border border-line bg-surface p-4 shadow-sm ${!isLeaf ? 'bg-surface-subtle' : ''}`}
+                >
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="space-y-1" style={{ paddingRight: `${depth * 0.75}rem` }}>
+                      <p className="font-mono text-xs text-ink-muted">{account.code}</p>
+                      <p className={`text-sm ${isLeaf ? 'font-semibold text-ink' : 'font-bold text-ink-soft'}`}>{account.name}</p>
+                    </div>
+                    <span className="rounded-md bg-surface-muted px-2.5 py-1 text-xs font-bold text-ink-soft">
+                      {account.type === 'asset'
+                        ? 'أصول'
+                        : account.type === 'liability'
+                        ? 'خصوم'
+                        : account.type === 'equity'
+                        ? 'حقوق ملكية'
+                        : account.type === 'revenue'
+                        ? 'إيرادات'
+                        : 'مصروفات'}
+                    </span>
+                  </div>
+
+                  {isLeaf ? (
+                    <div className="mt-4 space-y-3">
+                      <div className="grid grid-cols-2 gap-3">
+                        <div>
+                          <label className="mb-1 block text-xs font-semibold text-ink-muted">مدين</label>
+                          <input
+                            type="text"
+                            value={line.debit_amount === 0 ? '' : line.debit_amount}
+                            onChange={(e) => handleAmountChange(account.id, 'debit_amount', e.target.value)}
+                            placeholder="0.00"
+                            className="w-full rounded-xl border border-line bg-surface px-3 py-2.5 text-center font-mono text-sm text-ink focus:outline-none focus:ring-2 focus:ring-action-primary"
+                          />
+                        </div>
+                        <div>
+                          <label className="mb-1 block text-xs font-semibold text-ink-muted">دائن</label>
+                          <input
+                            type="text"
+                            value={line.credit_amount === 0 ? '' : line.credit_amount}
+                            onChange={(e) => handleAmountChange(account.id, 'credit_amount', e.target.value)}
+                            placeholder="0.00"
+                            className="w-full rounded-xl border border-line bg-surface px-3 py-2.5 text-center font-mono text-sm text-ink focus:outline-none focus:ring-2 focus:ring-action-primary"
+                          />
+                        </div>
+                      </div>
+                      <div>
+                        <label className="mb-1 block text-xs font-semibold text-ink-muted">الوصف / البيان الخاص</label>
+                        <input
+                          type="text"
+                          value={line.description}
+                          onChange={(e) => handleDescriptionChange(account.id, e.target.value)}
+                          placeholder="ملاحظات الحساب..."
+                          className="w-full rounded-xl border border-line bg-surface px-3 py-2.5 text-sm text-ink focus:outline-none focus:ring-2 focus:ring-action-primary"
+                        />
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="mt-4 rounded-xl bg-surface px-3 py-2 text-xs text-ink-muted">
+                      هذا حساب رئيسي. يتم إدخال الأرصدة على الحسابات الطرفية فقط.
+                    </div>
+                  )}
+                </article>
+              )
+            })}
+          </div>
+        ) : null}
       </div>
 
       {/* Floating live summary calculations */}
-      <div className="sticky bottom-6 left-6 right-6 bg-white/70 backdrop-blur-lg border border-gray-200 rounded-2xl p-6 shadow-2xl flex flex-col md:flex-row justify-between items-center gap-6 z-40 transition-all duration-300">
+      <div className="sticky bottom-6 left-6 right-6 bg-white/70 backdrop-blur-lg border border-gray-200 rounded-2xl p-6 shadow-2xl flex flex-col md:flex-row justify-between items-center gap-6 z-40 transition-colors duration-300">
         <div className="flex flex-wrap items-center gap-8 justify-center md:justify-start">
           <div className="flex flex-col">
             <span className="text-xs font-bold text-gray-400 mb-1">إجمالي المدين (Debits)</span>

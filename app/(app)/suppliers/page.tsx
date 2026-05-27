@@ -133,7 +133,7 @@ export default function SuppliersPage() {
   return (
     <div className="space-y-6 text-right" dir="rtl">
       {/* Header */}
-      <div className="flex justify-between items-center">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex items-center gap-4 text-right">
           <div className="p-3 bg-quick-blue-bg text-quick-blue-text rounded-xl">
             <Truck className="w-6 h-6" />
@@ -143,17 +143,17 @@ export default function SuppliersPage() {
             <p className="text-sm text-gray-500 mt-1">تتبع حسابات الموردين، التزامات الشراء، والتوريد للمستودعات</p>
           </div>
         </div>
-        <div className="flex gap-3">
+        <div className="flex flex-col gap-3 sm:flex-row">
           <button
             onClick={() => setShowImport(true)}
-            className="flex items-center gap-2 bg-gray-100 hover:bg-gray-255 text-gray-600 px-5 py-2.5 rounded-xl transition-all font-medium text-sm"
+            className="flex min-h-11 items-center justify-center gap-2 rounded-xl bg-surface-muted px-5 py-2.5 text-sm font-medium text-ink-soft transition-colors hover:bg-surface-subtle"
           >
             <Upload className="w-5 h-5" />
             <span>استيراد موردين</span>
           </button>
           <button
             onClick={handleOpenCreate}
-            className="flex items-center gap-2 bg-farm-blue hover:bg-blue-800 text-white px-5 py-2.5 rounded-xl transition-all font-medium text-sm"
+            className="flex min-h-11 items-center justify-center gap-2 rounded-xl bg-action-primary px-5 py-2.5 text-sm font-medium text-white transition-colors hover:bg-action-primary-hover"
           >
             <Plus className="w-5 h-5" />
             <span>إضافة مورد جديد</span>
@@ -176,22 +176,22 @@ export default function SuppliersPage() {
       <SupplierStatCards stats={statsData} />
 
       {/* Main Table Card */}
-      <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+      <div className="overflow-hidden rounded-2xl border border-line bg-surface shadow-sm">
         {/* Filters Toolbar */}
-        <div className="p-6 border-b border-gray-100 flex flex-col md:flex-row gap-4 items-center justify-between">
+        <div className="flex flex-col gap-3 border-b border-line p-4 md:flex-row md:items-center md:justify-between md:p-6">
           <div className="relative w-full md:w-80">
             <Search className="w-4 h-4 text-gray-400 absolute right-3.5 top-1/2 -translate-y-1/2" />
             <input
               type="text"
               placeholder="ابحث بكود المورد، الاسم، أو الهاتف..."
-              className="w-full pl-4 pr-10 py-2.5 rounded-xl border border-gray-200 bg-gray-50 text-gray-900 text-sm focus:outline-none focus:ring-2 focus:ring-farm-blue"
+              className="min-h-11 w-full rounded-xl border border-line bg-surface-muted pl-4 pr-10 py-2.5 text-sm text-ink focus:outline-none focus:ring-2 focus:ring-action-primary"
               value={search}
               onChange={(e) => { setSearch(e.target.value); setPage(1) }}
             />
           </div>
           <div className="flex flex-wrap items-center gap-3 w-full md:w-auto">
             <select
-              className="px-4 py-2.5 rounded-xl border border-gray-200 bg-gray-50 text-gray-900 text-sm focus:outline-none focus:ring-2 focus:ring-farm-blue"
+              className="min-h-11 rounded-xl border border-line bg-surface-muted px-4 py-2.5 text-sm text-ink focus:outline-none focus:ring-2 focus:ring-action-primary"
               value={selectedSuspended}
               onChange={(e) => { setSelectedSuspended(e.target.value); setPage(1) }}
             >
@@ -204,13 +204,13 @@ export default function SuppliersPage() {
 
         {/* Bulk Actions Banner */}
         {selectedIds.length > 0 && (
-          <div className="bg-gray-950 text-white px-6 py-3.5 flex items-center justify-between border-b border-gray-950">
+          <div className="flex flex-col gap-3 border-b border-line bg-surface-inverse px-4 py-4 text-ink-inverse md:flex-row md:items-center md:justify-between md:px-6">
             <span className="text-xs">تم تحديد {selectedIds.length.toLocaleString('en-US')} موردين لإجراء عملية جماعية</span>
-            <div className="flex gap-2">
+            <div className="flex flex-wrap gap-2">
               <button
                 onClick={handleBulkDelete}
                 disabled={bulkDeleteMutation.isPending}
-                className="flex items-center gap-1.5 bg-red-650 hover:bg-red-700 text-xs px-4 py-2 rounded-xl transition-all disabled:opacity-50 text-white"
+                className="flex min-h-11 items-center gap-1.5 rounded-xl bg-danger px-4 py-2 text-xs text-ink-inverse transition-colors disabled:opacity-50"
               >
                 {bulkDeleteMutation.isPending ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Trash2 className="w-3.5 h-3.5" />}
                 <span>حذف المحدد</span>

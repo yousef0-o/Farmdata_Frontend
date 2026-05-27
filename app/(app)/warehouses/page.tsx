@@ -8,6 +8,7 @@ import { z } from 'zod'
 import { useWarehouses, useCreateWarehouse } from '@/lib/hooks/useInventory'
 import { organizationApi } from '@/lib/api/organization'
 import Pagination from '@/components/ui/Pagination'
+import AppDialog from '@/components/ui/AppDialog'
 
 const warehouseSchema = z.object({
   company_id: z.coerce.number({ message: 'الشركة مطلوبة' }).min(1, 'الشركة مطلوبة'),
@@ -89,7 +90,7 @@ export default function WarehousesPage() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex justify-between items-center">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex items-center gap-4">
           <div className="p-3 bg-blue-50 text-blue-600 rounded-xl">
             <WarehouseIcon className="w-6 h-6" />
@@ -101,7 +102,7 @@ export default function WarehousesPage() {
         </div>
         <button
           onClick={() => setShowCreate(true)}
-          className="flex items-center gap-2 bg-farm-blue hover:bg-blue-800 text-white px-5 py-2.5 rounded-xl transition-all font-medium"
+          className="flex min-h-11 items-center justify-center gap-2 rounded-xl bg-action-primary px-5 py-2.5 font-medium text-white transition-colors hover:bg-action-primary-hover"
         >
           <Plus className="w-5 h-5" />
           <span>إضافة مستودع</span>
@@ -110,9 +111,9 @@ export default function WarehousesPage() {
 
       {/* Create Dialog / Form */}
       {showCreate && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-          <div className="bg-white rounded-2xl shadow-xl w-full max-w-md p-6" dir="rtl">
-            <h2 className="text-lg font-bold mb-4 text-gray-800">إضافة مستودع جديد</h2>
+        <AppDialog open={showCreate} onClose={() => setShowCreate(false)} panelClassName="max-w-md">
+          <div className="w-full rounded-2xl bg-surface p-6 shadow-xl" dir="rtl">
+            <h2 className="mb-4 text-lg font-bold text-ink">إضافة مستودع جديد</h2>
             
             {createMutation.error && (
               <div className="mb-4 p-3 bg-red-50 text-red-700 rounded-lg text-sm">
@@ -122,9 +123,9 @@ export default function WarehousesPage() {
 
             <form onSubmit={handleCreate} className="space-y-4">
               <div>
-                <label className="text-sm font-semibold text-gray-700 block mb-1">اختر الشركة <span className="text-red-500">*</span></label>
+                <label className="mb-1 block text-sm font-semibold text-ink-soft">اختر الشركة <span className="text-danger">*</span></label>
                 <select
-                  className={`w-full border rounded-xl px-4 py-2.5 bg-gray-50 focus:outline-none focus:ring-2 focus:ring-farm-blue ${
+                  className={`w-full rounded-xl border px-4 py-2.5 bg-surface-muted focus:outline-none focus:ring-2 focus:ring-action-primary ${
                     errors.company_id ? 'border-red-500' : 'border-gray-200'
                   }`}
                   value={companyId}
@@ -142,11 +143,11 @@ export default function WarehousesPage() {
               </div>
 
               <div>
-                <label className="text-sm font-semibold text-gray-700 block mb-1">اسم المستودع <span className="text-red-500">*</span></label>
+                <label className="mb-1 block text-sm font-semibold text-ink-soft">اسم المستودع <span className="text-danger">*</span></label>
                 <input
                   type="text"
                   placeholder="مثال: مستودع العلف الرئيسي"
-                  className={`w-full border rounded-xl px-4 py-2.5 bg-gray-50 focus:outline-none focus:ring-2 focus:ring-farm-blue ${
+                  className={`w-full rounded-xl border px-4 py-2.5 bg-surface-muted focus:outline-none focus:ring-2 focus:ring-action-primary ${
                     errors.name ? 'border-red-500' : 'border-gray-200'
                   }`}
                   value={name}
@@ -158,11 +159,11 @@ export default function WarehousesPage() {
               </div>
 
               <div>
-                <label className="text-sm font-semibold text-gray-700 block mb-1">رمز المستودع <span className="text-red-500">*</span></label>
+                <label className="mb-1 block text-sm font-semibold text-ink-soft">رمز المستودع <span className="text-danger">*</span></label>
                 <input
                   type="text"
                   placeholder="مثال: WH-FEED"
-                  className={`w-full border rounded-xl px-4 py-2.5 bg-gray-50 focus:outline-none focus:ring-2 focus:ring-farm-blue ${
+                  className={`w-full rounded-xl border px-4 py-2.5 bg-surface-muted focus:outline-none focus:ring-2 focus:ring-action-primary ${
                     errors.code ? 'border-red-500' : 'border-gray-200'
                   }`}
                   value={code}
@@ -173,11 +174,11 @@ export default function WarehousesPage() {
               </div>
 
               <div>
-                <label className="text-sm font-semibold text-gray-700 block mb-1">الموقع (اختياري)</label>
+                <label className="mb-1 block text-sm font-semibold text-ink-soft">الموقع (اختياري)</label>
                 <input
                   type="text"
                   placeholder="مثال: الجناح الشمالي"
-                  className="w-full border border-gray-200 rounded-xl px-4 py-2.5 bg-gray-50 focus:outline-none focus:ring-2 focus:ring-farm-blue"
+                  className="w-full rounded-xl border border-line bg-surface-muted px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-action-primary"
                   value={location}
                   onChange={(e) => setLocation(e.target.value)}
                   disabled={createMutation.isPending}
@@ -188,7 +189,7 @@ export default function WarehousesPage() {
                 <button
                   type="submit"
                   disabled={createMutation.isPending}
-                  className="bg-farm-green hover:bg-green-700 text-white px-6 py-2 rounded-xl font-medium transition-all disabled:opacity-50 flex items-center gap-2"
+                  className="flex min-h-11 items-center gap-2 rounded-xl bg-action-secondary px-6 py-2 font-medium text-white transition-colors hover:bg-action-secondary-hover disabled:opacity-50"
                 >
                   {createMutation.isPending && <Loader2 className="w-4 h-4 animate-spin" />}
                   حفظ
@@ -202,14 +203,14 @@ export default function WarehousesPage() {
                     setLocation('')
                     setErrors({})
                   }}
-                  className="bg-gray-100 hover:bg-gray-200 text-gray-600 px-4 py-2 rounded-xl font-medium transition-all"
+                  className="min-h-11 rounded-xl bg-surface-muted px-4 py-2 font-medium text-ink-soft transition-colors hover:bg-surface-subtle"
                 >
                   إلغاء
                 </button>
               </div>
             </form>
           </div>
-        </div>
+        </AppDialog>
       )}
 
       {/* Main List Table */}
@@ -218,17 +219,17 @@ export default function WarehousesPage() {
           <Loader2 className="w-10 h-10 text-farm-blue animate-spin" />
         </div>
       ) : warehouses.length === 0 ? (
-        <div className="flex flex-col items-center justify-center py-20 bg-white rounded-3xl border border-dashed border-gray-200">
-          <WarehouseIcon className="w-16 h-16 text-gray-300 mb-4" />
-          <h3 className="text-xl font-semibold text-gray-600">لا توجد مستودعات حالياً</h3>
-          <p className="text-gray-500 mt-2">قم بإضافة مستودع جديد للبدء.</p>
+        <div className="flex flex-col items-center justify-center rounded-3xl border border-dashed border-line bg-surface py-20">
+          <WarehouseIcon className="mb-4 h-16 w-16 text-ink-muted" />
+          <h3 className="text-xl font-semibold text-ink-soft">لا توجد مستودعات حالياً</h3>
+          <p className="mt-2 text-ink-muted">قم بإضافة مستودع جديد للبدء.</p>
         </div>
       ) : (
-        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
-          <div className="overflow-x-auto">
+        <div className="overflow-hidden rounded-2xl border border-line bg-surface shadow-sm">
+          <div className="hidden overflow-x-auto lg:block">
             <table className="w-full text-sm">
               <thead>
-                <tr className="border-b border-gray-200 text-gray-500 bg-gray-50/50">
+                <tr className="border-b border-line bg-surface-subtle text-ink-soft">
                   <th className="text-right py-3 px-4 font-semibold">الاسم</th>
                   <th className="text-right py-3 px-4 font-semibold">الموقع</th>
                   <th className="text-right py-3 px-4 font-semibold w-40">الإجراءات</th>
@@ -236,31 +237,31 @@ export default function WarehousesPage() {
               </thead>
               <tbody>
                 {warehouses.map((wh: any) => (
-                  <tr key={wh.id} className="border-b border-gray-100 hover:bg-gray-50/50 transition-colors">
-                    <td className="py-3 px-4 font-medium text-gray-900 flex items-center gap-2">
-                      <WarehouseIcon className="w-4 h-4 text-gray-400" />
+                  <tr key={wh.id} className="border-b border-line transition-colors hover:bg-surface-subtle">
+                    <td className="py-3 px-4 font-medium text-ink flex items-center gap-2">
+                      <WarehouseIcon className="w-4 h-4 text-ink-muted" />
                       {wh.name}
                     </td>
-                    <td className="py-3 px-4 text-gray-600">
+                    <td className="py-3 px-4 text-ink-soft">
                       {wh.location ? (
                         <span className="flex items-center gap-1">
-                          <MapPin className="w-3.5 h-3.5 text-gray-400" />
+                          <MapPin className="w-3.5 h-3.5 text-ink-muted" />
                           {wh.location}
                         </span>
                       ) : (
-                        <span className="text-gray-400">—</span>
+                        <span className="text-ink-muted">—</span>
                       )}
                     </td>
                     <td className="py-3 px-4 flex gap-2">
                       <Link
                         href={`/warehouses/${wh.id}`}
-                        className="text-xs bg-farm-blue/5 hover:bg-farm-blue/10 text-farm-blue px-3 py-1.5 rounded-lg transition-colors font-medium"
+                        className="min-h-11 text-xs bg-info-soft hover:bg-info-soft text-action-primary px-3 py-2 rounded-lg transition-colors font-medium inline-flex items-center"
                       >
                         عرض الأرصدة
                       </Link>
                       <Link
                         href={`/inventory/movements?warehouse_id=${wh.id}`}
-                        className="text-xs bg-gray-50 hover:bg-gray-100 text-gray-600 px-3 py-1.5 rounded-lg transition-colors font-medium flex items-center gap-1"
+                        className="min-h-11 text-xs bg-surface-muted hover:bg-surface-subtle text-ink-soft px-3 py-2 rounded-lg transition-colors font-medium inline-flex items-center gap-1"
                       >
                         <ArrowLeftRight className="w-3 h-3" />
                         الحركات
@@ -272,8 +273,40 @@ export default function WarehousesPage() {
             </table>
           </div>
 
+          <div className="grid grid-cols-1 gap-4 p-4 lg:hidden">
+            {warehouses.map((wh: any) => (
+              <article key={wh.id} className="rounded-2xl border border-line bg-surface p-4 shadow-sm">
+                <div className="flex items-start justify-between gap-3">
+                  <div className="space-y-1">
+                    <p className="text-sm font-semibold text-ink">{wh.name}</p>
+                    <p className="text-xs text-ink-muted">{wh.location || '—'}</p>
+                  </div>
+                  <div className="rounded-xl bg-surface-subtle p-2 text-ink-muted">
+                    <WarehouseIcon className="h-5 w-5" />
+                  </div>
+                </div>
+
+                <div className="mt-4 flex flex-col gap-3 sm:flex-row">
+                  <Link
+                    href={`/warehouses/${wh.id}`}
+                    className="inline-flex min-h-11 flex-1 items-center justify-center rounded-xl border border-info-soft bg-info-soft px-4 py-2 text-sm font-semibold text-action-primary"
+                  >
+                    عرض الأرصدة
+                  </Link>
+                  <Link
+                    href={`/inventory/movements?warehouse_id=${wh.id}`}
+                    className="inline-flex min-h-11 flex-1 items-center justify-center gap-1 rounded-xl border border-line bg-surface-subtle px-4 py-2 text-sm font-semibold text-ink-soft"
+                  >
+                    <ArrowLeftRight className="h-4 w-4" />
+                    الحركات
+                  </Link>
+                </div>
+              </article>
+            ))}
+          </div>
+
           {meta && (
-            <div className="p-4 border-t border-gray-100">
+            <div className="border-t border-line p-4">
               <Pagination
                 currentPage={meta.current_page}
                 lastPage={meta.last_page}

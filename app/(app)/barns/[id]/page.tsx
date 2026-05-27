@@ -12,6 +12,7 @@ import UnifiedStatsCards from '@/components/statistics/UnifiedStatsCards'
 import AnnualProductionTable from '@/components/statistics/AnnualProductionTable'
 import LedgerSummaryCard from '@/components/statistics/LedgerSummaryCard'
 import SaudiRiyalIcon from '@/components/icons/SaudiRiyalIcon'
+import AppDialog from '@/components/ui/AppDialog'
 
 const typeLabels: Record<string, string> = {
   production: 'إنتاج',
@@ -154,7 +155,7 @@ export default function BarnDetailPage() {
       <div className="flex border-b-2 border-slate-300">
         <button
           onClick={() => setActiveTab('flocks')}
-          className={`pb-4 px-6 font-semibold text-sm transition-all border-b-2 ${
+          className={`pb-4 px-6 font-semibold text-sm transition-colors border-b-2 ${
             activeTab === 'flocks'
               ? 'border-farm-green text-farm-green'
               : 'border-transparent text-gray-500 hover:text-gray-700'
@@ -164,7 +165,7 @@ export default function BarnDetailPage() {
         </button>
         <button
           onClick={() => setActiveTab('expenses')}
-          className={`pb-4 px-6 font-semibold text-sm transition-all border-b-2 ${
+          className={`pb-4 px-6 font-semibold text-sm transition-colors border-b-2 ${
             activeTab === 'expenses'
               ? 'border-farm-green text-farm-green'
               : 'border-transparent text-gray-500 hover:text-gray-700'
@@ -174,7 +175,7 @@ export default function BarnDetailPage() {
         </button>
         <button
           onClick={() => setActiveTab('statistics')}
-          className={`pb-4 px-6 font-semibold text-sm transition-all border-b-2 flex items-center gap-2 ${
+          className={`pb-4 px-6 font-semibold text-sm transition-colors border-b-2 flex items-center gap-2 ${
             activeTab === 'statistics'
               ? 'border-farm-green text-farm-green'
               : 'border-transparent text-gray-500 hover:text-gray-700'
@@ -192,7 +193,7 @@ export default function BarnDetailPage() {
             <h2 className="text-xl font-bold text-gray-800">القطعان النشطة</h2>
             <Link
               href={`/flocks/new?barn_id=${barnId}`}
-              className="flex items-center gap-2 bg-farm-green hover:bg-green-700 text-white px-5 py-2.5 rounded-xl transition-all font-medium"
+              className="flex items-center gap-2 bg-farm-green hover:bg-green-700 text-white px-5 py-2.5 rounded-xl transition-colors font-medium"
             >
               <Sprout className="w-5 h-5" />
               <span>إضافة قطيع</span>
@@ -211,7 +212,7 @@ export default function BarnDetailPage() {
             <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
               {flocks.map((flock) => (
                 <Link key={flock.id} href={`/flocks/${flock.id}`}>
-                  <div className="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 cursor-pointer">
+                  <div className="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-colors duration-300 cursor-pointer">
                     <div className="flex items-center justify-between mb-4">
                       <span
                         className={`text-xs font-bold px-2 py-1 rounded-full ${
@@ -259,7 +260,7 @@ export default function BarnDetailPage() {
             </div>
             <button
               onClick={() => setShowAddModal(true)}
-              className="flex items-center gap-2 bg-farm-blue hover:bg-blue-700 text-white px-5 py-2.5 rounded-xl transition-all font-medium"
+              className="flex items-center gap-2 bg-farm-blue hover:bg-blue-700 text-white px-5 py-2.5 rounded-xl transition-colors font-medium"
             >
               <Plus className="w-5 h-5" />
               <span>إضافة مصروف للحظيرة</span>
@@ -359,8 +360,8 @@ export default function BarnDetailPage() {
 
       {/* Add Modal */}
       {showAddModal && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl space-y-6 relative animate-in fade-in zoom-in-95 duration-200">
+        <AppDialog open={showAddModal} onClose={() => setShowAddModal(false)} panelClassName="max-w-md animate-in fade-in zoom-in-95 duration-200">
+          <div className="relative w-full space-y-6 rounded-3xl bg-white p-6 shadow-2xl">
             <button
               onClick={() => setShowAddModal(false)}
               className="absolute top-4 left-4 p-2 text-gray-400 hover:text-gray-600 rounded-lg transition-colors"
@@ -394,7 +395,7 @@ export default function BarnDetailPage() {
                     required
                     value={expenseDate}
                     onChange={(e) => setExpenseDate(e.target.value)}
-                    className="w-full pr-10 pl-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-farm-blue transition-all"
+                    className="w-full pr-10 pl-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-farm-blue transition-colors"
                   />
                 </div>
               </div>
@@ -408,7 +409,7 @@ export default function BarnDetailPage() {
                   placeholder="0.00"
                   value={amount}
                   onChange={(e) => setAmount(e.target.value)}
-                  className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-farm-blue transition-all text-left font-bold"
+                  className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-farm-blue transition-colors text-left font-bold"
                 />
               </div>
 
@@ -417,7 +418,7 @@ export default function BarnDetailPage() {
                 <select
                   value={category}
                   onChange={(e) => setCategory(e.target.value)}
-                  className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-farm-blue transition-all font-semibold"
+                  className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-farm-blue transition-colors font-semibold"
                 >
                   <option value="صيانة">صيانة</option>
                   <option value="كهرباء">كهرباء</option>
@@ -436,7 +437,7 @@ export default function BarnDetailPage() {
                     placeholder="اكتب تفاصيل المصروف هنا..."
                     value={description}
                     onChange={(e) => setDescription(e.target.value)}
-                    className="w-full pr-10 pl-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-farm-blue transition-all text-sm"
+                    className="w-full pr-10 pl-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-farm-blue transition-colors text-sm"
                   />
                 </div>
               </div>
@@ -445,14 +446,14 @@ export default function BarnDetailPage() {
                 <button
                   type="button"
                   onClick={() => setShowAddModal(false)}
-                  className="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold py-3 rounded-xl transition-all"
+                  className="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold py-3 rounded-xl transition-colors"
                 >
                   إلغاء
                 </button>
                 <button
                   type="submit"
                   disabled={createExpenseMutation.isPending}
-                  className="flex-1 bg-farm-blue hover:bg-blue-700 text-white font-semibold py-3 rounded-xl transition-all flex items-center justify-center gap-2"
+                  className="flex-1 bg-farm-blue hover:bg-blue-700 text-white font-semibold py-3 rounded-xl transition-colors flex items-center justify-center gap-2"
                 >
                   {createExpenseMutation.isPending ? (
                     <Loader2 className="w-5 h-5 animate-spin" />
@@ -463,7 +464,7 @@ export default function BarnDetailPage() {
               </div>
             </form>
           </div>
-        </div>
+        </AppDialog>
       )}
     </div>
   )

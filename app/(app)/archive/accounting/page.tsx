@@ -38,6 +38,7 @@ import {
   Power,
   Ban
 } from 'lucide-react'
+import AppDialog from '@/components/ui/AppDialog'
 
 export default function AccountingPage() {
   const [activeTab, setActiveTab] = useState<'matrix' | 'accounts' | 'sheets'>('matrix')
@@ -211,33 +212,33 @@ export default function AccountingPage() {
 
     const typeConfig = {
       asset: {
-        bg: 'bg-sky-50/40 dark:bg-sky-950/20 border-sky-100/70 dark:border-sky-900/50 hover:bg-sky-100/30 dark:hover:bg-sky-900/20',
-        text: 'text-sky-700 dark:text-sky-400',
-        badge: 'bg-sky-100 text-sky-700 dark:bg-sky-900/40 dark:text-sky-300 border-sky-200/50 dark:border-sky-900/30',
+        bg: 'bg-info-soft/40 border-info-soft hover:bg-info-soft/30',
+        text: 'text-info',
+        badge: 'bg-info-soft text-info border-info-soft',
         label: 'أصول'
       },
       liability: {
-        bg: 'bg-rose-50/40 dark:bg-rose-950/20 border-rose-100/70 dark:border-rose-900/50 hover:bg-rose-100/30 dark:hover:bg-rose-900/20',
-        text: 'text-rose-700 dark:text-rose-400',
-        badge: 'bg-rose-100 text-rose-700 dark:bg-rose-900/40 dark:text-rose-300 border-rose-200/50 dark:border-rose-900/30',
+        bg: 'bg-danger-soft/40 border-danger-soft hover:bg-danger-soft/30',
+        text: 'text-danger',
+        badge: 'bg-danger-soft text-danger border-danger-soft',
         label: 'خصوم'
       },
       equity: {
-        bg: 'bg-amber-50/40 dark:bg-amber-950/20 border-amber-100/70 dark:border-amber-900/50 hover:bg-amber-100/30 dark:hover:bg-amber-900/20',
-        text: 'text-amber-700 dark:text-amber-400',
-        badge: 'bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300 border-amber-200/50 dark:border-amber-900/30',
+        bg: 'bg-warning-soft/40 border-warning-soft hover:bg-warning-soft/30',
+        text: 'text-warning-strong',
+        badge: 'bg-warning-soft text-warning-strong border-warning-soft',
         label: 'حقوق ملكية'
       },
       revenue: {
-        bg: 'bg-emerald-50/40 dark:bg-emerald-950/20 border-emerald-100/70 dark:border-emerald-900/50 hover:bg-emerald-100/30 dark:hover:bg-emerald-900/20',
-        text: 'text-emerald-700 dark:text-emerald-400',
-        badge: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300 border-emerald-200/50 dark:border-emerald-900/30',
+        bg: 'bg-success-soft/40 border-success-soft hover:bg-success-soft/30',
+        text: 'text-success-strong',
+        badge: 'bg-success-soft text-success-strong border-success-soft',
         label: 'إيرادات'
       },
       expense: {
-        bg: 'bg-purple-50/40 dark:bg-purple-950/20 border-purple-100/70 dark:border-purple-900/50 hover:bg-purple-100/30 dark:hover:bg-purple-900/20',
-        text: 'text-purple-700 dark:text-purple-400',
-        badge: 'bg-purple-100 text-purple-700 dark:bg-purple-900/40 dark:text-purple-300 border-purple-200/50 dark:border-purple-900/30',
+        bg: 'bg-surface-subtle border-line hover:bg-surface-muted',
+        text: 'text-action-secondary',
+        badge: 'bg-surface-muted text-action-secondary border-line',
         label: 'مصروفات'
       }
     }[node.type as 'asset' | 'liability' | 'equity' | 'revenue' | 'expense']
@@ -259,7 +260,7 @@ export default function AccountingPage() {
         {/* Branch connector lines */}
         {depth > 0 && (
           <div 
-            className="absolute right-0 top-0 bottom-0 border-r-2 border-dashed border-gray-250" 
+            className="absolute right-0 top-0 bottom-0 border-r-2 border-dashed border-line" 
             style={{ 
               right: `${(depth - 1) * 24 + 18}px`, 
               width: '2px',
@@ -271,7 +272,7 @@ export default function AccountingPage() {
         
         {depth > 0 && (
           <div 
-            className="absolute border-t-2 border-dashed border-gray-250" 
+            className="absolute border-t-2 border-dashed border-line" 
             style={{ 
               right: `${(depth - 1) * 24 + 18}px`, 
               width: '12px', 
@@ -282,12 +283,12 @@ export default function AccountingPage() {
 
         <div
           onClick={hasChildren ? toggleExpand : undefined}
-          className={`flex items-center justify-between p-3.5 rounded-2xl border transition-all cursor-pointer ${
+          className={`flex items-center justify-between p-3.5 rounded-2xl border transition-colors cursor-pointer ${
             isSelectedParent 
-              ? 'border-farm-blue bg-blue-50/20 dark:bg-blue-950/20 ring-1 ring-farm-blue shadow-sm'
+              ? 'border-action-primary bg-info-soft/20 ring-1 ring-action-primary shadow-sm'
               : isMatched 
-              ? 'border-yellow-400 bg-yellow-55/20 dark:bg-yellow-950/20 shadow-sm font-bold'
-              : `border-gray-150 bg-gray-50/40 ${typeConfig.bg}`
+              ? 'border-warning bg-warning-soft/40 shadow-sm font-bold'
+              : `border-line bg-surface-subtle ${typeConfig.bg}`
           } ${node.is_active === false ? 'opacity-60 dark:opacity-55 grayscale-[20%]' : ''}`}
           style={{ marginRight: `${depth * 24}px` }}
         >
@@ -296,7 +297,7 @@ export default function AccountingPage() {
             {hasChildren ? (
               <button
                 onClick={toggleExpand}
-                className="p-1 hover:bg-gray-200/50 dark:hover:bg-gray-800/50 rounded-lg text-gray-500 transition-transform duration-200"
+                className="p-1 rounded-lg text-ink-muted transition-transform duration-200 hover:bg-surface-raised/50"
                 style={{ transform: isExpanded ? 'rotate(0deg)' : 'rotate(90deg)' }}
               >
                 <ChevronDown className="w-4 h-4" />
@@ -308,7 +309,7 @@ export default function AccountingPage() {
             )}
 
             {/* Folder/Doc Icon */}
-            <div className={`p-1.5 rounded-xl bg-white shadow-sm ${typeConfig.text}`}>
+            <div className={`p-1.5 rounded-xl bg-surface shadow-sm ${typeConfig.text}`}>
               {hasChildren ? (
                 <FolderOpen className="w-4 h-4" />
               ) : (
@@ -318,10 +319,10 @@ export default function AccountingPage() {
 
             {/* Info */}
             <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2">
-              <span className="font-bold font-mono tracking-wide text-gray-450 text-[11px]">
+              <span className="font-bold font-mono tracking-wide text-ink-muted text-xs">
                 {node.code}
               </span>
-              <span className={`text-[12px] ${isSelectedParent ? 'text-farm-blue font-bold' : isMatched ? 'text-yellow-600 dark:text-yellow-400 font-bold' : 'text-gray-800 font-semibold'}`}>
+              <span className={`text-sm ${isSelectedParent ? 'text-action-primary font-bold' : isMatched ? 'text-warning font-bold' : 'text-ink font-semibold'}`}>
                 {node.name}
               </span>
             </div>
@@ -331,13 +332,13 @@ export default function AccountingPage() {
           <div className="flex items-center gap-2">
             {/* Active status badge */}
             {node.is_active === false && (
-              <span className="px-2.5 py-0.5 rounded-lg text-[10px] font-bold border bg-gray-100 text-gray-500 border-gray-200">
+              <span className="px-2.5 py-0.5 rounded-lg text-xs font-bold border bg-surface-muted text-ink-muted border-line">
                 معطّل
               </span>
             )}
 
             {/* Type badge */}
-            <span className={`px-2.5 py-0.5 rounded-lg text-[10px] font-bold border ${typeConfig.badge}`}>
+            <span className={`px-2.5 py-0.5 rounded-lg text-xs font-bold border ${typeConfig.badge}`}>
               {typeConfig.label}
             </span>
 
@@ -346,7 +347,7 @@ export default function AccountingPage() {
               <button
                 onClick={selectAsParent}
                 title="إضافة حساب فرعي تحت هذا الحساب"
-                className="p-1 hover:bg-farm-blue hover:text-white dark:hover:bg-farm-blue rounded-lg text-gray-400 hover:scale-105 transition-all"
+                className="p-1 hover:bg-action-primary hover:text-ink-inverse dark:hover:bg-action-primary rounded-lg text-ink-muted hover:scale-105 transition-colors"
               >
                 <Plus className="w-3.5 h-3.5" />
               </button>
@@ -360,10 +361,10 @@ export default function AccountingPage() {
                 toggleAccountStatusMutation.mutate({ id: node.id, isActive: node.is_active === false })
               }}
               title={node.is_active !== false ? 'تعطيل الحساب المالي (تجميد)' : 'تفعيل الحساب المالي (إعادة تنشيط)'}
-              className={`p-1 rounded-lg hover:scale-105 transition-all cursor-pointer ${
+              className={`p-1 rounded-lg hover:scale-105 transition-colors cursor-pointer ${
                 node.is_active !== false
-                  ? 'hover:bg-amber-500 hover:text-white text-gray-400'
-                  : 'hover:bg-emerald-500 hover:text-white text-emerald-600 dark:text-emerald-400'
+                  ? 'hover:bg-warning hover:text-ink-inverse text-ink-muted'
+                  : 'hover:bg-success hover:text-ink-inverse text-success'
               }`}
             >
               <Power className="w-3.5 h-3.5" />
@@ -377,7 +378,7 @@ export default function AccountingPage() {
                 setDeletingAccount(node)
               }}
               title="حذف هذا الحساب المالي"
-              className="p-1 hover:bg-rose-500 hover:text-white dark:hover:bg-rose-650 rounded-lg text-gray-400 hover:scale-105 transition-all"
+              className="p-1 rounded-lg text-ink-muted transition-colors hover:scale-105 hover:bg-danger-soft hover:text-ink-inverse"
             >
               <Trash2 className="w-3.5 h-3.5" />
             </button>
@@ -498,39 +499,39 @@ export default function AccountingPage() {
   return (
     <div className="space-y-6" dir="rtl">
       {/* Top Header */}
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-white p-6 rounded-2xl border border-gray-100 shadow-sm">
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-surface p-6 rounded-2xl border border-line shadow-sm">
         <div className="flex items-center gap-3">
-          <div className="p-3.5 bg-farm-blue text-[#ffffff] rounded-2xl shadow-sm">
+          <div className="p-3.5 bg-action-primary text-ink-inverse rounded-2xl shadow-sm">
             <BookOpen className="w-7 h-7" />
           </div>
           <div>
-            <h1 className="text-xl font-bold text-gray-900 font-sans">الدفاتر اليومية والحسابات المحاسبية</h1>
-            <p className="text-xs text-gray-500 mt-1">التقارير السنوية المتقاطعة، دليل الحسابات الشجري، والتسجيل المزدوج للقيود</p>
+            <h1 className="text-xl font-bold text-ink font-sans">الدفاتر اليومية والحسابات المحاسبية</h1>
+            <p className="text-xs text-ink-muted mt-1">التقارير السنوية المتقاطعة، دليل الحسابات الشجري، والتسجيل المزدوج للقيود</p>
           </div>
         </div>
 
         {/* Tab triggers */}
-        <div className="flex items-center gap-1.5 p-1.5 bg-gray-50 rounded-xl border border-gray-150 w-full md:w-auto">
+        <div className="flex items-center gap-1.5 p-1.5 bg-surface-muted rounded-xl border border-line w-full md:w-auto">
           <button
             onClick={() => setActiveTab('matrix')}
-            className={`px-4 py-2 text-xs font-bold rounded-lg transition-all ${
-              activeTab === 'matrix' ? 'bg-white text-farm-blue shadow-sm' : 'text-gray-500 hover:text-gray-700'
+            className={`px-4 py-2 text-xs font-bold rounded-lg transition-colors ${
+              activeTab === 'matrix' ? 'bg-surface text-action-primary shadow-sm' : 'text-ink-muted hover:text-ink-soft'
             }`}
           >
             الجدول السنوي
           </button>
           <button
             onClick={() => setActiveTab('accounts')}
-            className={`px-4 py-2 text-xs font-bold rounded-lg transition-all ${
-              activeTab === 'accounts' ? 'bg-white text-farm-blue shadow-sm' : 'text-gray-500 hover:text-gray-700'
+            className={`px-4 py-2 text-xs font-bold rounded-lg transition-colors ${
+              activeTab === 'accounts' ? 'bg-surface text-action-primary shadow-sm' : 'text-ink-muted hover:text-ink-soft'
             }`}
           >
             دليل الحسابات
           </button>
           <button
             onClick={() => setActiveTab('sheets')}
-            className={`px-4 py-2 text-xs font-bold rounded-lg transition-all ${
-              activeTab === 'sheets' ? 'bg-white text-farm-blue shadow-sm' : 'text-gray-500 hover:text-gray-700'
+            className={`px-4 py-2 text-xs font-bold rounded-lg transition-colors ${
+              activeTab === 'sheets' ? 'bg-surface text-action-primary shadow-sm' : 'text-ink-muted hover:text-ink-soft'
             }`}
           >
             الدفاتر والسجلات
@@ -540,19 +541,19 @@ export default function AccountingPage() {
 
       {/* MATRIX TAB CONTENT */}
       {activeTab === 'matrix' && (
-        <div className="bg-white border border-gray-100 rounded-2xl shadow-sm overflow-hidden p-6 space-y-6">
+        <div className="bg-surface border border-line rounded-2xl shadow-sm overflow-hidden p-6 space-y-6">
           <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
             <div>
-              <h3 className="text-sm font-bold text-gray-800 font-sans">المصفوفة المحاسبية السنوية للأرباح والمصروفات</h3>
-              <p className="text-[11px] text-gray-400 mt-1">الرصد الشهري المتكامل للتدفقات المحاسبية لعام {selectedYear}</p>
+              <h3 className="text-sm font-bold text-ink font-sans">المصفوفة المحاسبية السنوية للأرباح والمصروفات</h3>
+              <p className="text-xs text-ink-muted mt-1">الرصد الشهري المتكامل للتدفقات المحاسبية لعام {selectedYear}</p>
             </div>
 
             <div className="flex items-center gap-2">
-              <span className="text-xs text-gray-400 font-semibold">تصفية السنة:</span>
+              <span className="text-xs text-ink-muted font-semibold">تصفية السنة:</span>
               <select
                 value={selectedYear}
                 onChange={(e) => setSelectedYear(parseInt(e.target.value))}
-                className="p-2 border border-gray-200 bg-gray-50 text-xs font-bold rounded-lg"
+                className="p-2 border border-line bg-surface-muted text-xs font-bold rounded-lg"
               >
                 <option value={2026}>2026</option>
                 <option value={2025}>2025</option>
@@ -563,43 +564,43 @@ export default function AccountingPage() {
 
           {loadingMatrix ? (
             <div className="flex flex-col items-center justify-center py-20">
-              <Loader2 className="w-10 h-10 text-farm-blue animate-spin" />
-              <span className="text-gray-400 text-xs mt-3">جاري توليد المصفوفة المحاسبية...</span>
+              <Loader2 className="w-10 h-10 text-action-primary animate-spin" />
+              <span className="text-ink-muted text-xs mt-3">جاري توليد المصفوفة المحاسبية...</span>
             </div>
           ) : matrixData.length === 0 ? (
-            <div className="text-center py-16 text-gray-400 text-xs font-semibold">
+            <div className="text-center py-16 text-ink-muted text-xs font-semibold">
               لا توجد حركة قيود أو دفاتر محاسبية مقيدة لعام {selectedYear} حتى الآن.
             </div>
           ) : (
-            <div className="overflow-x-auto border border-gray-50 rounded-xl">
-              <table className="w-full text-right border-collapse text-[10px]">
+            <div className="overflow-x-auto border border-line rounded-xl">
+              <table className="w-full text-right border-collapse text-xs">
                 <thead>
-                  <tr className="bg-gray-50/40 border-b border-gray-100 text-gray-500 font-bold">
-                    <th className="p-3 font-sans w-48 sticky right-0 bg-gray-50 border-l border-gray-100">كود واسم الحساب</th>
+                  <tr className="bg-surface-subtle border-b border-line text-ink-muted font-bold">
+                    <th className="p-3 font-sans w-48 sticky right-0 bg-surface-muted border-l border-line">كود واسم الحساب</th>
                     {months.map((m) => (
                       <th key={m.num} className="p-3 font-sans text-center min-w-[70px]">{m.name}</th>
                     ))}
-                    <th className="p-3 font-sans text-center bg-gray-100 w-24">إجمالي السنوي</th>
+                    <th className="p-3 font-sans text-center bg-surface-muted w-24">إجمالي السنوي</th>
                   </tr>
                 </thead>
                 <tbody>
                   {matrixData.map((row: any) => {
                     let totalVal = 0
                     return (
-                      <tr key={row.account_id} className="border-b border-gray-50 hover:bg-gray-50/50">
-                        <td className="p-3 font-bold text-gray-800 sticky right-0 bg-white border-l border-gray-100">
+                      <tr key={row.account_id} className="border-b border-line hover:bg-surface-muted/50">
+                        <td className="p-3 font-bold text-ink sticky right-0 bg-surface border-l border-line">
                           {row.account_code} - {row.account_name}
                         </td>
                         {months.map((m) => {
                           const val = row.months?.[m.num] ?? 0
                           totalVal += val
                           return (
-                            <td key={m.num} className={`p-3 text-center font-medium ${val > 0 ? 'text-emerald-600 font-bold' : val < 0 ? 'text-red-500 font-bold' : 'text-gray-400'}`}>
+                            <td key={m.num} className={`p-3 text-center font-medium ${val > 0 ? 'text-success font-bold' : val < 0 ? 'text-danger font-bold' : 'text-ink-muted'}`}>
                               {val !== 0 ? val.toLocaleString('ar-EG') : '-'}
                             </td>
                           )
                         })}
-                        <td className={`p-3 text-center font-bold bg-gray-50/40/20 ${totalVal > 0 ? 'text-emerald-600' : totalVal < 0 ? 'text-red-500' : 'text-gray-400'}`}>
+                        <td className={`p-3 text-center font-bold bg-surface-subtle/20 ${totalVal > 0 ? 'text-success' : totalVal < 0 ? 'text-danger' : 'text-ink-muted'}`}>
                           {totalVal !== 0 ? totalVal.toLocaleString('ar-EG') : '0'}
                         </td>
                       </tr>
@@ -618,50 +619,50 @@ export default function AccountingPage() {
           {/* Sidebar Column: Create Form & Excel Bulk Import */}
           <div className="lg:col-span-1 space-y-6">
             {/* Create Account Form */}
-            <div className="bg-white border border-gray-100 p-6 rounded-2xl shadow-sm h-fit">
-              <h3 className="text-sm font-bold text-gray-800 font-sans flex items-center gap-1">
-                <Coins className="w-4 h-4 text-farm-blue" />
+            <div className="bg-surface border border-line p-6 rounded-2xl shadow-sm h-fit">
+              <h3 className="text-sm font-bold text-ink font-sans flex items-center gap-1">
+                <Coins className="w-4 h-4 text-action-primary" />
                 <span>إضافة حساب محاسبي جديد</span>
               </h3>
 
               <form onSubmit={handleCreateAccount} className="mt-4 space-y-4 text-xs">
                 {accError && (
-                  <div className="flex items-center gap-2 p-3 bg-red-50 dark:bg-red-950/20 border border-red-150 text-red-600 rounded-xl">
+                  <div className="flex items-center gap-2 p-3 bg-danger-soft bg-danger-soft border border-danger-soft text-danger rounded-xl">
                     <AlertCircle className="w-4 h-4" />
                     <span>{accError}</span>
                   </div>
                 )}
 
                 <div>
-                  <label className="block font-semibold text-gray-600 mb-1.5">كود الحساب (رقمي فريد)</label>
+                  <label className="block font-semibold text-ink-soft mb-1.5">كود الحساب (رقمي فريد)</label>
                   <input
                     type="text"
                     required
                     placeholder="مثال: 1101"
                     value={newAccCode}
                     onChange={(e) => setNewAccCode(e.target.value)}
-                    className="w-full p-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none"
+                    className="w-full p-2.5 bg-surface-muted border border-line rounded-xl focus:outline-none"
                   />
                 </div>
 
                 <div>
-                  <label className="block font-semibold text-gray-600 mb-1.5">اسم الحساب</label>
+                  <label className="block font-semibold text-ink-soft mb-1.5">اسم الحساب</label>
                   <input
                     type="text"
                     required
                     placeholder="مثال: نقدية البنك الأهلي"
                     value={newAccName}
                     onChange={(e) => setNewAccName(e.target.value)}
-                    className="w-full p-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none"
+                    className="w-full p-2.5 bg-surface-muted border border-line rounded-xl focus:outline-none"
                   />
                 </div>
 
                 <div>
-                  <label className="block font-semibold text-gray-600 mb-1.5">نوع التصنيف الرئيسي</label>
+                  <label className="block font-semibold text-ink-soft mb-1.5">نوع التصنيف الرئيسي</label>
                   <select
                     value={newAccType}
                     onChange={(e) => setNewAccType(e.target.value as any)}
-                    className="w-full p-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none"
+                    className="w-full p-2.5 bg-surface-muted border border-line rounded-xl focus:outline-none"
                   >
                     <option value="asset">الأصول (Assets)</option>
                     <option value="liability">الخصوم (Liabilities)</option>
@@ -672,11 +673,11 @@ export default function AccountingPage() {
                 </div>
 
                 <div>
-                  <label className="block font-semibold text-gray-600 mb-1.5">الحساب الأب (إن وجد)</label>
+                  <label className="block font-semibold text-ink-soft mb-1.5">الحساب الأب (إن وجد)</label>
                   <select
                     value={newAccParentId ?? ''}
                     onChange={(e) => setNewAccParentId(e.target.value ? parseInt(e.target.value) : null)}
-                    className="w-full p-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none"
+                    className="w-full p-2.5 bg-surface-muted border border-line rounded-xl focus:outline-none"
                   >
                     <option value="">حساب رئيسي (بدون أب)</option>
                     {accounts.filter(acc => acc.is_active !== false).map(acc => (
@@ -688,7 +689,7 @@ export default function AccountingPage() {
                 <button
                   type="submit"
                   disabled={createAccountMutation.isPending}
-                  className="w-full py-2.5 bg-farm-blue text-[#ffffff] font-bold rounded-xl shadow-md hover:bg-opacity-95 disabled:opacity-50 hover:scale-[1.01] transition-all cursor-pointer"
+                  className="w-full py-2.5 bg-action-primary text-ink-inverse font-bold rounded-xl shadow-md hover:bg-opacity-95 disabled:opacity-50 hover:scale-[1.01] transition-colors cursor-pointer"
                 >
                   {createAccountMutation.isPending ? 'جاري الحفظ...' : 'حفظ الحساب'}
                 </button>
@@ -696,29 +697,29 @@ export default function AccountingPage() {
             </div>
 
           {/* Chart of Accounts Bulk Import */}
-          <div className="bg-white border border-gray-100 p-6 rounded-2xl shadow-sm h-fit mt-6">
-            <h3 className="text-sm font-bold text-gray-800 font-sans flex items-center gap-1.5">
-              <FileSpreadsheet className="w-4.5 h-4.5 text-farm-blue" />
+          <div className="bg-surface border border-line p-6 rounded-2xl shadow-sm h-fit mt-6">
+            <h3 className="text-sm font-bold text-ink font-sans flex items-center gap-1.5">
+              <FileSpreadsheet className="w-4.5 h-4.5 text-action-primary" />
               <span>استيراد دليل الحسابات (دفعة واحدة)</span>
             </h3>
             
             <div className="mt-4 space-y-4 text-xs font-sans">
               {coaImportSuccess && (
-                <div className="flex items-start gap-2 p-3 bg-emerald-50 dark:bg-emerald-950/20 border border-emerald-150 text-emerald-600 rounded-xl">
+                <div className="flex items-start gap-2 rounded-xl border border-success-soft bg-success-soft p-3 text-success">
                   <CheckCircle className="w-4 h-4 mt-0.5 flex-shrink-0" />
                   <div className="space-y-1">
                     <span className="font-bold">{coaImportSuccess}</span>
-                    <p className="text-[10px] text-emerald-500">تم تحديث شجرة الحسابات تلقائياً وحساب الفروع الهرمية.</p>
+                    <p className="text-xs text-success">تم تحديث شجرة الحسابات تلقائياً وحساب الفروع الهرمية.</p>
                   </div>
                 </div>
               )}
 
               {coaImportError && (
-                <div className="flex items-start gap-2 p-3 bg-red-50 dark:bg-red-950/20 border border-red-150 text-red-600 rounded-xl">
+                <div className="flex items-start gap-2 p-3 bg-danger-soft bg-danger-soft border border-danger-soft text-danger rounded-xl">
                   <AlertCircle className="w-4 h-4 mt-0.5 flex-shrink-0" />
                   <div className="space-y-1">
                     <span className="font-bold">فشل الاستيراد:</span>
-                    <p className="text-[10px] whitespace-pre-wrap">{coaImportError}</p>
+                    <p className="text-xs whitespace-pre-wrap">{coaImportError}</p>
                   </div>
                 </div>
               )}
@@ -733,12 +734,12 @@ export default function AccountingPage() {
                     setCoaFile(e.dataTransfer.files[0])
                   }
                 }}
-                className={`border-2 border-dashed rounded-2xl p-6 text-center transition-all cursor-pointer ${
+                className={`border-2 border-dashed rounded-2xl p-6 text-center transition-colors cursor-pointer ${
                   coaDragActive
-                    ? 'border-farm-blue bg-blue-50/10'
+                    ? 'border-action-primary bg-info-soft/10'
                     : coaFile
-                    ? 'border-emerald-500 bg-emerald-50/5'
-                    : 'border-gray-200 hover:border-farm-blue'
+                    ? 'border-success bg-success-soft/5'
+                    : 'border-line hover:border-action-primary'
                 }`}
                 onClick={() => document.getElementById('coa-file-input')?.click()}
               >
@@ -755,18 +756,18 @@ export default function AccountingPage() {
                 />
                 
                 <div className="flex flex-col items-center justify-center space-y-2">
-                  <div className={`p-2.5 rounded-xl ${coaFile ? 'bg-emerald-50 text-emerald-600 dark:bg-emerald-950/30' : 'bg-blue-50 text-farm-blue dark:bg-blue-950/30'}`}>
+                  <div className={`p-2.5 rounded-xl ${coaFile ? 'bg-success-soft text-success' : 'bg-info-soft text-action-primary'}`}>
                     <UploadCloud className="w-5.5 h-5.5" />
                   </div>
                   {coaFile ? (
                     <div className="space-y-1">
-                      <p className="font-bold text-gray-800 max-w-[200px] truncate">{coaFile.name}</p>
-                      <p className="text-[10px] text-gray-400">{(coaFile.size / 1024).toFixed(1)} KB</p>
+                      <p className="font-bold text-ink max-w-[200px] truncate">{coaFile.name}</p>
+                      <p className="text-xs text-ink-muted">{(coaFile.size / 1024).toFixed(1)} KB</p>
                     </div>
                   ) : (
                     <div className="space-y-1">
-                      <p className="font-bold text-gray-700">اسحب وأفلت ملف الـ Excel هنا</p>
-                      <p className="text-[10px] text-gray-400">أو اضغط لتصفح الملفات من جهازك</p>
+                      <p className="font-bold text-ink-soft">اسحب وأفلت ملف الـ Excel هنا</p>
+                      <p className="text-xs text-ink-muted">أو اضغط لتصفح الملفات من جهازك</p>
                     </div>
                   )}
                 </div>
@@ -778,7 +779,7 @@ export default function AccountingPage() {
                     type="button"
                     onClick={() => setCoaFile(null)}
                     disabled={importCoaMutation.isPending}
-                    className="px-3.5 py-2 bg-gray-50 hover:bg-gray-100 border border-gray-200 text-gray-500 font-bold rounded-xl transition-all disabled:opacity-50"
+                    className="px-3.5 py-2 bg-surface-muted hover:bg-surface-muted border border-line text-ink-muted font-bold rounded-xl transition-colors disabled:opacity-50"
                   >
                     إلغاء
                   </button>
@@ -800,7 +801,7 @@ export default function AccountingPage() {
                     }
                   }}
                   disabled={!coaFile || importCoaMutation.isPending}
-                  className="flex-1 py-2 bg-farm-blue text-white font-bold rounded-xl shadow-md hover:bg-opacity-95 disabled:opacity-50 flex items-center justify-center gap-1.5 cursor-pointer"
+                  className="flex-1 py-2 bg-action-primary text-ink-inverse font-bold rounded-xl shadow-md hover:bg-opacity-95 disabled:opacity-50 flex items-center justify-center gap-1.5 cursor-pointer"
                 >
                   {importCoaMutation.isPending ? (
                     <>
@@ -820,11 +821,11 @@ export default function AccountingPage() {
         </div>
 
         {/* Main Column: Interactive Collapsible Tree View of Accounts */}
-          <div className="bg-white border border-gray-100 p-6 rounded-2xl shadow-sm lg:col-span-2 space-y-5">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-gray-50 pb-4">
+          <div className="bg-surface border border-line p-6 rounded-2xl shadow-sm lg:col-span-2 space-y-5">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-line pb-4">
               <div>
-                <h3 className="text-sm font-bold text-gray-800 font-sans">دليل الحسابات المحاسبي (Chart of Accounts)</h3>
-                <p className="text-[10px] text-gray-400 mt-1 leading-relaxed">تصفح الهيكل الشجري التفاعلي للحسابات وتفريعها الهرمي</p>
+                <h3 className="text-sm font-bold text-ink font-sans">دليل الحسابات المحاسبي (Chart of Accounts)</h3>
+                <p className="text-xs text-ink-muted mt-1 leading-relaxed">تصفح الهيكل الشجري التفاعلي للحسابات وتفريعها الهرمي</p>
               </div>
 
               {/* Controls */}
@@ -832,14 +833,14 @@ export default function AccountingPage() {
                 <button
                   type="button"
                   onClick={handleExpandAll}
-                  className="px-3 py-1.5 text-[10px] font-bold text-farm-blue bg-blue-50/70 hover:bg-blue-100 dark:bg-blue-950/30 dark:text-blue-400 border border-blue-100/50 dark:border-blue-900/30 rounded-xl transition-all cursor-pointer hover:scale-102"
+                  className="px-3 py-1.5 text-xs font-bold text-action-primary bg-info-soft/70 hover:bg-info-soft border border-info-soft rounded-xl transition-colors cursor-pointer hover:scale-[1.02]"
                 >
                   توسيع الكل
                 </button>
                 <button
                   type="button"
                   onClick={handleCollapseAll}
-                  className="px-3 py-1.5 text-[10px] font-bold text-gray-500 bg-gray-50 hover:bg-gray-100 border border-gray-200 rounded-xl transition-all cursor-pointer hover:scale-102"
+                  className="px-3 py-1.5 text-xs font-bold text-ink-muted bg-surface-muted hover:bg-surface-muted border border-line rounded-xl transition-colors cursor-pointer hover:scale-[1.02]"
                 >
                   طي الكل
                 </button>
@@ -853,15 +854,15 @@ export default function AccountingPage() {
                 placeholder="البحث بكود الحساب أو الاسم..."
                 value={coaSearch}
                 onChange={(e) => setCoaSearch(e.target.value)}
-                className="w-full pl-3 pr-9 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-xs focus:outline-none"
+                className="w-full pl-3 pr-9 py-2.5 bg-surface-muted border border-line rounded-xl text-xs focus:outline-none"
               />
-              <Search className="absolute right-3.5 top-3.5 w-4 h-4 text-gray-400" />
+              <Search className="absolute right-3.5 top-3.5 w-4 h-4 text-ink-muted" />
             </div>
             
             {loadingAccounts ? (
-              <div className="flex justify-center py-10"><Loader2 className="w-8 h-8 animate-spin text-farm-blue" /></div>
+              <div className="flex justify-center py-10"><Loader2 className="w-8 h-8 animate-spin text-action-primary" /></div>
             ) : accounts.length === 0 ? (
-              <p className="text-gray-400 text-xs">لا يوجد حسابات مضافة حالياً.</p>
+              <p className="text-ink-muted text-xs">لا يوجد حسابات مضافة حالياً.</p>
             ) : (
               <div className="space-y-2 max-h-[600px] overflow-y-auto pr-1">
                 {accountTree.map((node) => renderAccountNode(node))}
@@ -875,17 +876,17 @@ export default function AccountingPage() {
       {activeTab === 'sheets' && (
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Active Sheets List */}
-          <div className="bg-white border border-gray-100 p-6 rounded-2xl shadow-sm space-y-4">
-            <div className="flex items-center justify-between border-b border-gray-50 pb-3">
-              <h3 className="text-sm font-bold text-gray-800 font-sans flex items-center gap-1.5">
-                <Receipt className="w-5 h-5 text-farm-blue" />
+          <div className="bg-surface border border-line p-6 rounded-2xl shadow-sm space-y-4">
+            <div className="flex items-center justify-between border-b border-line pb-3">
+              <h3 className="text-sm font-bold text-ink font-sans flex items-center gap-1.5">
+                <Receipt className="w-5 h-5 text-action-primary" />
                 <span>دفاتر السجلات المفتوحة</span>
               </h3>
               
               <select
                 value={sheetFilterStatus ?? ''}
                 onChange={(e) => setSheetFilterStatus(e.target.value ? e.target.value as any : undefined)}
-                className="p-1 border border-gray-200 rounded bg-gray-50 text-[10px]"
+                className="p-1 border border-line rounded bg-surface-muted text-xs"
               >
                 <option value="">الكل</option>
                 <option value="open">مفتوح</option>
@@ -894,29 +895,29 @@ export default function AccountingPage() {
             </div>
 
             {loadingSheets ? (
-              <div className="flex justify-center"><Loader2 className="w-6 h-6 animate-spin text-farm-blue" /></div>
+              <div className="flex justify-center"><Loader2 className="w-6 h-6 animate-spin text-action-primary" /></div>
             ) : sheets.length === 0 ? (
-              <p className="text-gray-400 text-xs">لا يوجد دفاتر قيود مسجلة.</p>
+              <p className="text-ink-muted text-xs">لا يوجد دفاتر قيود مسجلة.</p>
             ) : (
               <div className="space-y-2">
                 {sheets.map((sheet) => (
                   <div
                     key={sheet.id}
                     onClick={() => setActiveSheetId(sheet.id)}
-                    className={`p-4 bg-gray-50 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-xl border cursor-pointer transition-all ${
-                      activeSheetId === sheet.id ? 'border-farm-blue bg-blue-50/10' : 'border-gray-100'
+                    className={`p-4 bg-surface-muted hover:bg-surface-muted hover:bg-surface-raised rounded-xl border cursor-pointer transition-colors ${
+                      activeSheetId === sheet.id ? 'border-action-primary bg-info-soft/10' : 'border-line'
                     }`}
                   >
                     <div className="flex items-center justify-between text-xs">
-                      <span className="font-bold text-gray-800">{sheet.title}</span>
-                      <span className={`px-2 py-0.5 rounded text-[9px] font-bold ${
-                        sheet.status === 'open' ? 'bg-emerald-50 text-emerald-600' : 'bg-gray-100 text-gray-500'
+                      <span className="font-bold text-ink">{sheet.title}</span>
+                      <span className={`px-2 py-0.5 rounded text-xs font-bold ${
+                        sheet.status === 'open' ? 'bg-success-soft text-success' : 'bg-surface-muted text-ink-muted'
                       }`}>
                         {sheet.status === 'open' ? 'نشط ومفتوح' : 'مغلق ومؤرشف'}
                       </span>
                     </div>
 
-                    <div className="flex justify-between items-center text-[10px] text-gray-400 mt-2">
+                    <div className="flex justify-between items-center text-xs text-ink-muted mt-2">
                       <span>الحساب: {sheet.account?.name}</span>
                       <span>الفترة: {sheet.period_start}</span>
                     </div>
@@ -926,10 +927,10 @@ export default function AccountingPage() {
             )}
 
             {/* Quick Open Sheet Form */}
-            <div className="border-t border-gray-100 pt-4 mt-6">
-              <h4 className="text-xs font-bold text-gray-800 font-sans">فتح دفتر يومية محاسبي جديد</h4>
+            <div className="border-t border-line pt-4 mt-6">
+              <h4 className="text-xs font-bold text-ink font-sans">فتح دفتر يومية محاسبي جديد</h4>
               <form onSubmit={handleCreateSheet} className="mt-3 space-y-3 text-xs">
-                {sheetError && <p className="text-red-500 font-bold">{sheetError}</p>}
+                {sheetError && <p className="text-danger font-bold">{sheetError}</p>}
                 
                 <input
                   type="text"
@@ -937,14 +938,14 @@ export default function AccountingPage() {
                   placeholder="عنوان السجل (مثال: دفاتر يناير 2026)"
                   value={newSheetTitle}
                   onChange={(e) => setNewSheetTitle(e.target.value)}
-                  className="w-full p-2 bg-gray-50 border border-gray-250 rounded-lg focus:outline-none"
+                  className="w-full p-2 bg-surface-muted border border-line rounded-lg focus:outline-none"
                 />
 
                 <select
                   required
                   value={newSheetAccountId}
                   onChange={(e) => setNewSheetAccountId(parseInt(e.target.value))}
-                  className="w-full p-2 bg-gray-50 border border-gray-250 rounded-lg focus:outline-none"
+                  className="w-full p-2 bg-surface-muted border border-line rounded-lg focus:outline-none"
                 >
                   <option value="">اختر حساب الربط...</option>
                   {accounts.filter(acc => acc.is_active !== false).map(acc => (
@@ -958,21 +959,21 @@ export default function AccountingPage() {
                     required
                     value={newSheetStart}
                     onChange={(e) => setNewSheetStart(e.target.value)}
-                    className="w-1/2 p-2 bg-gray-50 border border-gray-250 rounded-lg text-[10px]"
+                    className="w-1/2 p-2 bg-surface-muted border border-line rounded-lg text-xs"
                   />
                   <input
                     type="date"
                     required
                     value={newSheetEnd}
                     onChange={(e) => setNewSheetEnd(e.target.value)}
-                    className="w-1/2 p-2 bg-gray-50 border border-gray-250 rounded-lg text-[10px]"
+                    className="w-1/2 p-2 bg-surface-muted border border-line rounded-lg text-xs"
                   />
                 </div>
 
                 <button
                   type="submit"
                   disabled={createSheetMutation.isPending}
-                  className="w-full py-2 bg-farm-blue text-[#ffffff] font-bold rounded-lg hover:bg-opacity-95"
+                  className="w-full py-2 bg-action-primary text-ink-inverse font-bold rounded-lg hover:bg-opacity-95"
                 >
                   فتح الدفتر الآن
                 </button>
@@ -981,22 +982,22 @@ export default function AccountingPage() {
           </div>
 
           {/* Sheet transactions Explorer & Ledger Postings */}
-          <div className="bg-white border border-gray-100 p-6 rounded-2xl shadow-sm lg:col-span-2 space-y-6">
+          <div className="bg-surface border border-line p-6 rounded-2xl shadow-sm lg:col-span-2 space-y-6">
             {!activeSheetId ? (
-              <div className="flex flex-col items-center justify-center py-20 text-gray-400 text-xs font-semibold">
-                <FolderOpen className="w-12 h-12 text-gray-200" />
+              <div className="flex flex-col items-center justify-center py-20 text-ink-muted text-xs font-semibold">
+                <FolderOpen className="w-12 h-12 text-ink-muted" />
                 <span className="mt-3">يرجى تحديد أحد دفاتر القيود النشطة من القائمة الجانبية لاستعراض قيود اليومية.</span>
               </div>
             ) : loadingSheetDetail ? (
-              <div className="flex justify-center py-20"><Loader2 className="w-8 h-8 animate-spin text-farm-blue" /></div>
+              <div className="flex justify-center py-20"><Loader2 className="w-8 h-8 animate-spin text-action-primary" /></div>
             ) : !currentSheet ? (
-              <p className="text-red-500 text-xs">تعذر جلب تفاصيل السجل المالي.</p>
+              <p className="text-danger text-xs">تعذر جلب تفاصيل السجل المالي.</p>
             ) : (
               <div className="space-y-6">
-                <div className="flex items-center justify-between border-b border-gray-50 pb-4">
+                <div className="flex items-center justify-between border-b border-line pb-4">
                   <div>
-                    <h3 className="text-sm font-bold text-gray-800 font-sans">{currentSheet.title}</h3>
-                    <p className="text-[10px] text-gray-400 mt-1">
+                    <h3 className="text-sm font-bold text-ink font-sans">{currentSheet.title}</h3>
+                    <p className="text-xs text-ink-muted mt-1">
                       حساب السيطرة: {currentSheet.account?.name} | حالة الدفتر: {currentSheet.status === 'open' ? 'نشط' : 'مغلق ومثبت'}
                     </p>
                   </div>
@@ -1005,7 +1006,7 @@ export default function AccountingPage() {
                     <button
                       onClick={handleCloseSheet}
                       disabled={closeSheetMutation.isPending}
-                      className="px-4 py-2 bg-amber-600 hover:bg-amber-700 text-[#ffffff] font-bold text-xs rounded-xl shadow transition-all"
+                      className="px-4 py-2 bg-warning hover:bg-warning-strong text-ink-inverse font-bold text-xs rounded-xl shadow transition-colors"
                     >
                       إغلاق وتجميد الفترة
                     </button>
@@ -1014,54 +1015,96 @@ export default function AccountingPage() {
 
                 {/* Transactions Ledger Table */}
                 <div className="space-y-2">
-                  <h4 className="text-xs font-bold text-gray-700 font-sans">جدول قيود اليومية المقيدة ({currentSheet.transactions?.length ?? 0})</h4>
-                  <div className="overflow-x-auto border border-gray-50 rounded-xl text-[10px]">
-                    <table className="w-full text-right border-collapse">
-                      <thead>
-                        <tr className="bg-gray-50/40 border-b border-gray-150 text-gray-500 font-bold">
-                          <th className="p-3 font-sans">التاريخ</th>
-                          <th className="p-3 font-sans">البيان / الوصف</th>
-                          <th className="p-3 font-sans">الحساب المقابل</th>
-                          <th className="p-3 font-sans text-center">مدين (+)</th>
-                          <th className="p-3 font-sans text-center">دائن (-)</th>
-                          <th className="p-3 font-sans">المرجع</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {currentSheet.transactions?.length === 0 ? (
-                          <tr>
-                            <td colSpan={6} className="p-4 text-center text-gray-400">لا يوجد قيود يومية مقيدة في هذا الدفتر بعد.</td>
-                          </tr>
-                        ) : (
-                          currentSheet.transactions?.map((tx) => (
-                            <tr key={tx.id} className="border-b border-gray-50">
-                              <td className="p-3 font-medium">{tx.transaction_date}</td>
-                              <td className="p-3 text-gray-700">{tx.description ?? '-'}</td>
-                              <td className="p-3 font-bold">{tx.account?.name}</td>
-                              <td className="p-3 text-center text-emerald-600 font-bold">{tx.debit > 0 ? tx.debit.toLocaleString('ar-EG') : '-'}</td>
-                              <td className="p-3 text-center text-red-500 font-bold">{tx.credit > 0 ? tx.credit.toLocaleString('ar-EG') : '-'}</td>
-                              <td className="p-3 text-gray-400 font-semibold">{tx.reference ?? '-'}</td>
+                  <h4 className="text-xs font-bold text-ink-soft font-sans">جدول قيود اليومية المقيدة ({currentSheet.transactions?.length ?? 0})</h4>
+                  {currentSheet.transactions?.length === 0 ? (
+                    <div className="rounded-2xl border border-line bg-surface-subtle p-4 text-center text-sm text-ink-muted">
+                      لا يوجد قيود يومية مقيدة في هذا الدفتر بعد.
+                    </div>
+                  ) : (
+                    <>
+                      <div className="hidden overflow-x-auto rounded-xl border border-line text-xs lg:block">
+                        <table className="w-full text-right border-collapse">
+                          <thead>
+                            <tr className="bg-surface-subtle border-b border-line text-ink-muted font-bold">
+                              <th className="p-3 font-sans">التاريخ</th>
+                              <th className="p-3 font-sans">البيان / الوصف</th>
+                              <th className="p-3 font-sans">الحساب المقابل</th>
+                              <th className="p-3 font-sans text-center">مدين (+)</th>
+                              <th className="p-3 font-sans text-center">دائن (-)</th>
+                              <th className="p-3 font-sans">المرجع</th>
                             </tr>
-                          ))
-                        )}
-                      </tbody>
-                    </table>
-                  </div>
+                          </thead>
+                          <tbody>
+                            {currentSheet.transactions?.map((tx) => (
+                              <tr key={tx.id} className="border-b border-line">
+                                <td className="p-3 font-medium">{tx.transaction_date}</td>
+                                <td className="p-3 text-ink-soft">{tx.description ?? '-'}</td>
+                                <td className="p-3 font-bold">{tx.account?.name}</td>
+                                <td className="p-3 text-center text-success font-bold">{tx.debit > 0 ? tx.debit.toLocaleString('ar-EG') : '-'}</td>
+                                <td className="p-3 text-center text-danger font-bold">{tx.credit > 0 ? tx.credit.toLocaleString('ar-EG') : '-'}</td>
+                                <td className="p-3 text-ink-muted font-semibold">{tx.reference ?? '-'}</td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+
+                      <div className="grid grid-cols-1 gap-4 lg:hidden">
+                      {currentSheet.transactions?.map((tx) => (
+                        <article
+                          key={tx.id}
+                          className="rounded-2xl border border-line bg-surface p-4 shadow-sm"
+                        >
+                          <div className="flex items-start justify-between gap-3">
+                            <div className="space-y-1">
+                              <p className="text-sm font-semibold text-ink">{tx.account?.name}</p>
+                              <p className="text-xs text-ink-muted">{tx.transaction_date}</p>
+                            </div>
+                            <div className="rounded-xl bg-surface-subtle px-3 py-2 text-right">
+                              <span className="block text-xs text-ink-muted">المرجع</span>
+                              <span className="text-sm font-semibold text-ink">{tx.reference ?? '-'}</span>
+                            </div>
+                          </div>
+
+                          <div className="mt-4 rounded-xl bg-surface-subtle px-3 py-2">
+                            <span className="block text-xs text-ink-muted">البيان / الوصف</span>
+                            <span className="text-sm text-ink-soft">{tx.description ?? '-'}</span>
+                          </div>
+
+                          <div className="mt-4 grid grid-cols-2 gap-3 text-sm">
+                            <div className="rounded-xl bg-surface-subtle px-3 py-2">
+                              <span className="block text-xs text-ink-muted">مدين (+)</span>
+                              <span className="font-semibold text-success">
+                                {tx.debit > 0 ? tx.debit.toLocaleString('ar-EG') : '-'}
+                              </span>
+                            </div>
+                            <div className="rounded-xl bg-surface-subtle px-3 py-2">
+                              <span className="block text-xs text-ink-muted">دائن (-)</span>
+                              <span className="font-semibold text-danger">
+                                {tx.credit > 0 ? tx.credit.toLocaleString('ar-EG') : '-'}
+                              </span>
+                            </div>
+                          </div>
+                        </article>
+                      ))}
+                      </div>
+                    </>
+                  )}
                 </div>
 
                 {/* Post Transaction Form or Excel Ingest */}
                 {currentSheet.status === 'open' && (
-                  <div className="p-5 bg-white border border-gray-100 rounded-2xl space-y-4 shadow-sm">
+                  <div className="p-5 bg-surface border border-line rounded-2xl space-y-4 shadow-sm">
                     {/* Horizontal switcher for Manual Post vs Excel Import */}
-                    <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-gray-100 pb-3 gap-2">
-                      <div className="flex items-center gap-1 bg-gray-50 p-1 rounded-xl w-fit">
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-line pb-3 gap-2">
+                      <div className="flex items-center gap-1 bg-surface-muted p-1 rounded-xl w-fit">
                         <button
                           type="button"
                           onClick={() => setEntryMode('manual')}
-                          className={`px-3.5 py-1.5 text-[11px] font-bold rounded-lg transition-all ${
+                          className={`px-3.5 py-1.5 text-xs font-bold rounded-lg transition-colors ${
                             entryMode === 'manual'
-                              ? 'bg-white text-farm-blue shadow-sm border border-gray-100'
-                              : 'text-gray-500 hover:text-gray-750'
+                              ? 'bg-surface text-action-primary shadow-sm border border-line'
+                              : 'text-ink-muted hover:text-ink-soft'
                           }`}
                         >
                           تسجيل قيد يدوي
@@ -1069,10 +1112,10 @@ export default function AccountingPage() {
                         <button
                           type="button"
                           onClick={() => setEntryMode('import')}
-                          className={`px-3.5 py-1.5 text-[11px] font-bold rounded-lg transition-all ${
+                          className={`px-3.5 py-1.5 text-xs font-bold rounded-lg transition-colors ${
                             entryMode === 'import'
-                              ? 'bg-white text-farm-blue shadow-sm border border-gray-100'
-                              : 'text-gray-500 hover:text-gray-750'
+                              ? 'bg-surface text-action-primary shadow-sm border border-line'
+                              : 'text-ink-muted hover:text-ink-soft'
                           }`}
                         >
                           استيراد قيود من Excel
@@ -1081,19 +1124,19 @@ export default function AccountingPage() {
 
                       {/* Display warning if auto-distribution is enabled for this sheet's folder */}
                       {isAutoDistribute && (
-                        <span className="flex items-center gap-1 text-[10px] text-amber-600 bg-amber-50 dark:bg-amber-950/20 dark:text-amber-400 px-2.5 py-1 rounded-lg font-bold border border-amber-100 dark:border-amber-900 animate-pulse">
-                          <AlertCircle className="w-3.5 h-3.5 text-amber-500" />
+                        <span className="flex items-center gap-1 rounded-lg border border-warning-soft bg-warning-soft px-2.5 py-1 text-xs font-bold text-warning animate-pulse">
+                          <AlertCircle className="w-3.5 h-3.5 text-warning" />
                           <span>توزيع تلقائي تناسبي</span>
                         </span>
                       )}
                     </div>
 
                     {!isLeafAccount ? (
-                      <div className="flex items-start gap-2.5 p-3.5 bg-red-50 dark:bg-red-950/20 border border-red-150 text-red-600 rounded-xl text-xs">
+                      <div className="flex items-start gap-2.5 p-3.5 bg-danger-soft bg-danger-soft border border-danger-soft text-danger rounded-xl text-xs">
                         <AlertCircle className="w-4.5 h-4.5 mt-0.5 flex-shrink-0" />
                         <div>
                           <span className="font-bold">تنبيه الحساب الرئيسي غير الطرفي:</span>
-                          <p className="text-[10.5px] mt-1 text-red-500/90 leading-relaxed">
+                          <p className="text-xs mt-1 text-danger/90 leading-relaxed">
                             لا يمكن تسجيل قيود أو استيراد حركات مالية على الحساب المحاسبي الحالي [{currentSheet.account?.code}] {currentSheet.account?.name} لأنه حساب رئيسي.
                             التسجيل والتكامل المالي مسموح فقط على الحسابات الفرعية الطرفية (Terminal Leaf Nodes).
                           </p>
@@ -1104,16 +1147,16 @@ export default function AccountingPage() {
                         {/* MANUAL ENTRY */}
                         {entryMode === 'manual' && (
                           <div className="space-y-3 font-sans">
-                            {txError && <p className="text-red-500 font-bold text-xs">{txError}</p>}
+                            {txError && <p className="text-danger font-bold text-xs">{txError}</p>}
                             
                             <form onSubmit={handlePostTransaction} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 text-xs">
                               <div>
-                                <label className="block text-[10px] text-gray-400 font-semibold mb-1">الحساب المقابل</label>
+                                <label className="block text-xs text-ink-muted font-semibold mb-1">الحساب المقابل</label>
                                 <select
                                   required
                                   value={txAccountId}
                                   onChange={(e) => setTxAccountId(parseInt(e.target.value))}
-                                  className="w-full p-2 border border-gray-200 bg-white rounded-lg text-xs"
+                                  className="w-full p-2 border border-line bg-surface rounded-lg text-xs"
                                 >
                                   <option value="">اختر حساب...</option>
                                   {accounts.filter(acc => acc.is_active !== false).map(acc => (
@@ -1123,58 +1166,58 @@ export default function AccountingPage() {
                               </div>
 
                               <div>
-                                <label className="block text-[10px] text-gray-400 font-semibold mb-1">البيان / الوصف</label>
+                                <label className="block text-xs text-ink-muted font-semibold mb-1">البيان / الوصف</label>
                                 <input
                                   type="text"
                                   placeholder="مثال: دفعة فواتير مشتريات الأعلاف"
                                   value={txDesc}
                                   onChange={(e) => setTxDesc(e.target.value)}
-                                  className="w-full p-2 border border-gray-200 bg-white rounded-lg text-xs"
+                                  className="w-full p-2 border border-line bg-surface rounded-lg text-xs"
                                 />
                               </div>
 
                               <div className="flex gap-2">
                                 <div className="w-1/2">
-                                  <label className="block text-[10px] text-gray-400 font-semibold mb-1">مدين (+)</label>
+                                  <label className="block text-xs text-ink-muted font-semibold mb-1">مدين (+)</label>
                                   <input
                                     type="number"
                                     step="any"
                                     value={txDebit === 0 ? '' : txDebit}
                                     onChange={(e) => setTxDebit(e.target.value === '' ? 0 : parseFloat(e.target.value))}
-                                    className="w-full p-2 border border-gray-200 bg-white rounded-lg text-xs font-bold text-emerald-600 dark:text-emerald-400"
+                                    className="w-full p-2 border border-line bg-surface rounded-lg text-xs font-bold text-success"
                                   />
                                 </div>
                                 <div className="w-1/2">
-                                  <label className="block text-[10px] text-gray-400 font-semibold mb-1">دائن (-)</label>
+                                  <label className="block text-xs text-ink-muted font-semibold mb-1">دائن (-)</label>
                                   <input
                                     type="number"
                                     step="any"
                                     value={txCredit === 0 ? '' : txCredit}
                                     onChange={(e) => setTxCredit(e.target.value === '' ? 0 : parseFloat(e.target.value))}
-                                    className="w-full p-2 border border-gray-200 bg-white rounded-lg text-xs font-bold text-red-500"
+                                    className="w-full p-2 border border-line bg-surface rounded-lg text-xs font-bold text-danger"
                                   />
                                 </div>
                               </div>
 
                               <div>
-                                <label className="block text-[10px] text-gray-400 font-semibold mb-1">تاريخ القيد</label>
+                                <label className="block text-xs text-ink-muted font-semibold mb-1">تاريخ القيد</label>
                                 <input
                                   type="date"
                                   required
                                   value={txDate}
                                   onChange={(e) => setTxDate(e.target.value)}
-                                  className="w-full p-2 border border-gray-200 bg-white rounded-lg text-xs"
+                                  className="w-full p-2 border border-line bg-surface rounded-lg text-xs"
                                 />
                               </div>
 
                               <div>
-                                <label className="block text-[10px] text-gray-400 font-semibold mb-1">الرقم المرجعي / الفاتورة</label>
+                                <label className="block text-xs text-ink-muted font-semibold mb-1">الرقم المرجعي / الفاتورة</label>
                                 <input
                                   type="text"
                                   placeholder="مثال: INV-9821"
                                   value={txRef}
                                   onChange={(e) => setTxRef(e.target.value)}
-                                  className="w-full p-2 border border-gray-200 bg-white rounded-lg text-xs"
+                                  className="w-full p-2 border border-line bg-surface rounded-lg text-xs"
                                 />
                               </div>
 
@@ -1182,7 +1225,7 @@ export default function AccountingPage() {
                                 <button
                                   type="submit"
                                   disabled={createTxMutation.isPending}
-                                  className="w-full py-2 bg-farm-blue text-[#ffffff] font-bold rounded-lg hover:bg-opacity-95 flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-50"
+                                  className="w-full py-2 bg-action-primary text-ink-inverse font-bold rounded-lg hover:bg-opacity-95 flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-50"
                                 >
                                   {createTxMutation.isPending && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
                                   <span>ترحيل القيد</span>
@@ -1196,37 +1239,37 @@ export default function AccountingPage() {
                         {entryMode === 'import' && (
                           <div className="space-y-4 font-sans text-xs">
                             <div className="space-y-1">
-                              <p className="text-[10px] text-gray-450 leading-relaxed">
+                              <p className="text-xs text-ink-muted leading-relaxed">
                                 قم برفع ورقة عمل قيود اليومية. يجب أن يحتوي الملف على أعمدة باسم (التاريخ، الوصف، مدين، دائن، الحساب المقابل، الرقم المرجعي).
                               </p>
                             </div>
 
                             {txImportSuccess && (
-                              <div className="flex items-start gap-2 p-3 bg-emerald-50 dark:bg-emerald-950/20 border border-emerald-150 text-emerald-600 rounded-xl">
+                              <div className="flex items-start gap-2 rounded-xl border border-success-soft bg-success-soft p-3 text-success">
                                 <CheckCircle className="w-4 h-4 mt-0.5 flex-shrink-0" />
                                 <div className="space-y-1">
                                   <span className="font-bold">{txImportSuccess}</span>
-                                  <p className="text-[10px] text-emerald-500">تم تسجيل كافة المعاملات وتحديث أرصدة الحسابات بنجاح.</p>
+                                  <p className="text-xs text-success">تم تسجيل كافة المعاملات وتحديث أرصدة الحسابات بنجاح.</p>
                                 </div>
                               </div>
                             )}
 
                             {txImportError && (
-                              <div className="flex items-start gap-2 p-3 bg-red-50 dark:bg-red-950/20 border border-red-150 text-red-600 rounded-xl">
+                              <div className="flex items-start gap-2 p-3 bg-danger-soft bg-danger-soft border border-danger-soft text-danger rounded-xl">
                                 <AlertCircle className="w-4 h-4 mt-0.5 flex-shrink-0" />
                                 <div className="space-y-1">
                                   <span className="font-bold">فشل الاستيراد:</span>
-                                  <p className="text-[10px] whitespace-pre-wrap">{txImportError}</p>
+                                  <p className="text-xs whitespace-pre-wrap">{txImportError}</p>
                                 </div>
                               </div>
                             )}
 
                             {isAutoDistribute && (
-                              <div className="flex items-start gap-2 p-3 bg-amber-50 dark:bg-amber-950/20 border border-amber-150 text-amber-600 dark:text-amber-400 rounded-xl leading-relaxed">
-                                <Info className="w-4 h-4 mt-0.5 flex-shrink-0 text-amber-500" />
+                              <div className="flex items-start gap-2 rounded-xl border border-warning-soft bg-warning-soft p-3 text-warning leading-relaxed">
+                                <Info className="w-4 h-4 mt-0.5 flex-shrink-0 text-warning" />
                                 <div>
                                   <span className="font-bold">تنبيه التوزيع التلقائي للمصاريف:</span>
-                                  <p className="text-[10px] mt-0.5 text-amber-500">
+                                  <p className="text-xs mt-0.5 text-warning">
                                     هذا الدفتر مهيأ للتوزيع التلقائي التناسبى (Egg Production Cost Splitting). سيقوم النظام آلياً باحتساب نسب التوزيع لكل مشروع بناءً على أعداد وإنتاج البيض، ثم تقسيم كل معاملة يتم رفعها وحفظها موزعة بين المشاريع النشطة!
                                   </p>
                                 </div>
@@ -1243,12 +1286,12 @@ export default function AccountingPage() {
                                   setTxFile(e.dataTransfer.files[0])
                                 }
                               }}
-                              className={`border-2 border-dashed rounded-2xl p-6 text-center transition-all cursor-pointer ${
+                              className={`border-2 border-dashed rounded-2xl p-6 text-center transition-colors cursor-pointer ${
                                 txDragActive
-                                  ? 'border-farm-blue bg-blue-50/10'
+                                  ? 'border-action-primary bg-info-soft/10'
                                   : txFile
-                                  ? 'border-emerald-500 bg-emerald-50/5'
-                                  : 'border-gray-250 hover:border-farm-blue'
+                                  ? 'border-success bg-success-soft/5'
+                                  : 'border-line hover:border-action-primary'
                               }`}
                               onClick={() => document.getElementById('tx-file-input')?.click()}
                             >
@@ -1265,18 +1308,18 @@ export default function AccountingPage() {
                               />
                               
                               <div className="flex flex-col items-center justify-center space-y-2">
-                                <div className={`p-2.5 rounded-xl ${txFile ? 'bg-emerald-50 text-emerald-600 dark:bg-emerald-950/30' : 'bg-emerald-50/10 text-emerald-600 dark:bg-emerald-950/30'}`}>
+                                <div className={`p-2.5 rounded-xl ${txFile ? 'bg-success-soft text-success' : 'bg-success-soft/10 text-success'}`}>
                                   <UploadCloud className="w-5.5 h-5.5" />
                                 </div>
                                 {txFile ? (
                                   <div className="space-y-1">
-                                    <p className="font-bold text-gray-800 max-w-[200px] truncate mx-auto">{txFile.name}</p>
-                                    <p className="text-[10px] text-gray-400">{(txFile.size / 1024).toFixed(1)} KB</p>
+                                    <p className="font-bold text-ink max-w-[200px] truncate mx-auto">{txFile.name}</p>
+                                    <p className="text-xs text-ink-muted">{(txFile.size / 1024).toFixed(1)} KB</p>
                                   </div>
                                 ) : (
                                   <div className="space-y-1">
-                                    <p className="font-bold text-gray-700">اسحب وأفلت ورقة عمل قيود اليومية هنا</p>
-                                    <p className="text-[10px] text-gray-400 font-medium">أو اضغط لتصفح الملفات من جهازك (.xlsx, .xls)</p>
+                                    <p className="font-bold text-ink-soft">اسحب وأفلت ورقة عمل قيود اليومية هنا</p>
+                                    <p className="text-xs text-ink-muted font-medium">أو اضغط لتصفح الملفات من جهازك (.xlsx, .xls)</p>
                                   </div>
                                 )}
                               </div>
@@ -1288,7 +1331,7 @@ export default function AccountingPage() {
                                   type="button"
                                   onClick={() => setTxFile(null)}
                                   disabled={importTxMutation.isPending}
-                                  className="px-3.5 py-2 bg-gray-50 hover:bg-gray-150 border border-gray-250 text-gray-500 font-bold rounded-xl transition-all disabled:opacity-50"
+                                  className="px-3.5 py-2 bg-surface-muted hover:bg-surface-subtle border border-line text-ink-muted font-bold rounded-xl transition-colors disabled:opacity-50"
                                 >
                                   إلغاء
                                 </button>
@@ -1310,7 +1353,7 @@ export default function AccountingPage() {
                                   }
                                 }}
                                 disabled={!txFile || importTxMutation.isPending}
-                                className="flex-1 py-2 bg-farm-blue text-white font-bold rounded-xl shadow-md hover:bg-opacity-95 disabled:opacity-50 flex items-center justify-center gap-1.5 cursor-pointer"
+                                className="flex-1 py-2 bg-action-primary text-ink-inverse font-bold rounded-xl shadow-md hover:bg-opacity-95 disabled:opacity-50 flex items-center justify-center gap-1.5 cursor-pointer"
                               >
                                 {importTxMutation.isPending ? (
                                   <>
@@ -1343,12 +1386,12 @@ export default function AccountingPage() {
         const hasChildren = descendants.length > 0
 
         return (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in" dir="rtl">
-            <div className="bg-white border border-gray-150 rounded-3xl shadow-2xl max-w-lg w-full overflow-hidden transform transition-all duration-300 scale-100 flex flex-col">
+          <AppDialog open={!!deletingAccount} onClose={() => { setDeletingAccount(null); setDeleteError(null) }} panelClassName="max-w-lg animate-fade-in">
+            <div className="flex w-full flex-col overflow-hidden rounded-3xl border border-line bg-surface shadow-2xl" dir="rtl">
               
               {/* Header */}
-              <div className={`p-6 flex items-center gap-4 ${hasChildren ? 'bg-rose-50 dark:bg-rose-950/20 text-rose-700 dark:text-rose-400 border-b border-rose-100 dark:border-rose-900/30' : 'bg-amber-50 dark:bg-amber-950/20 text-amber-700 dark:text-amber-400 border-b border-amber-100 dark:border-amber-900/30'}`}>
-                <div className={`p-3 rounded-2xl ${hasChildren ? 'bg-rose-100 dark:bg-rose-900/30' : 'bg-amber-100 dark:bg-amber-900/30'}`}>
+              <div className={`p-6 flex items-center gap-4 ${hasChildren ? 'bg-danger-soft text-danger border-b border-danger-soft' : 'bg-warning-soft text-warning-strong border-b border-warning-soft'}`}>
+                <div className={`p-3 rounded-2xl ${hasChildren ? 'bg-danger-soft' : 'bg-warning-soft'}`}>
                   <AlertTriangle className="w-6 h-6 animate-pulse" />
                 </div>
                 <div>
@@ -1365,13 +1408,13 @@ export default function AccountingPage() {
               <div className="p-6 space-y-4 overflow-y-auto max-h-[60vh]">
                 {deleteError && (
                   <div className="space-y-3">
-                    <div className="p-4 bg-rose-50 border border-rose-200/60 rounded-2xl flex items-start gap-3 text-rose-800 text-[12.5px] font-semibold dark:bg-rose-950/40 dark:border-rose-900/40 dark:text-rose-300">
+                    <div className="flex items-start gap-3 rounded-2xl border border-danger-soft bg-danger-soft p-4 text-danger text-sm font-semibold">
                       <AlertCircle className="w-4 h-4 mt-0.5 shrink-0" />
                       <span>{deleteError}</span>
                     </div>
 
-                    <div className="p-4 bg-amber-50 dark:bg-amber-950/20 border border-amber-200/50 dark:border-amber-900/30 rounded-2xl space-y-3">
-                      <p className="text-[12.5px] text-amber-800 dark:text-amber-300 font-semibold leading-relaxed">
+                    <div className="space-y-3 rounded-2xl border border-warning-soft bg-warning-soft p-4">
+                      <p className="text-sm text-warning-strong font-semibold leading-relaxed">
                         خيارات الحماية البديلة: يمكنك تجميد الحساب المالي لتعطيله بالكامل ومنع أي قيود يومية جديدة عليه وعلى كافة حساباته الفرعية مع الاحتفاظ بكافة سجلاته المالية التاريخية.
                       </p>
                       <button
@@ -1386,7 +1429,7 @@ export default function AccountingPage() {
                             setDeleteError(err?.message || 'تعذر تجميد الحساب المالي.')
                           }
                         }}
-                        className="w-full py-2.5 bg-amber-600 hover:bg-amber-700 text-white font-bold rounded-xl text-[12px] flex items-center justify-center gap-2 shadow-md transition-all cursor-pointer hover:scale-[1.01]"
+                        className="w-full py-2.5 bg-warning hover:bg-warning-strong text-ink-inverse font-bold rounded-xl text-[12px] flex items-center justify-center gap-2 shadow-md transition-colors cursor-pointer hover:scale-[1.01]"
                       >
                         {toggleAccountStatusMutation.isPending ? (
                           <>
@@ -1406,31 +1449,31 @@ export default function AccountingPage() {
 
                 {hasChildren ? (
                   <div className="space-y-3">
-                    <p className="text-gray-700 text-[13.5px] leading-relaxed font-medium">
-                      تنبيه هام: هذا الحساب رئيسي ويحتوي على <span className="text-rose-600 dark:text-rose-400 font-extrabold">{descendants.length}</span> حساب فرعي تابعة له في شجرة الحسابات. 
-                      <span className="font-bold text-rose-700 dark:text-rose-400 block mt-1">تأكيد الحذف سيقوم بحذف هذا الحساب الرئيسي وكافة حساباته الفرعية التالية نهائياً:</span>
+                    <p className="text-ink-soft text-sm leading-relaxed font-medium">
+                      تنبيه هام: هذا الحساب رئيسي ويحتوي على <span className="text-danger text-danger font-extrabold">{descendants.length}</span> حساب فرعي تابعة له في شجرة الحسابات. 
+                      <span className="font-bold text-danger text-danger block mt-1">تأكيد الحذف سيقوم بحذف هذا الحساب الرئيسي وكافة حساباته الفرعية التالية نهائياً:</span>
                     </p>
-                    <div className="bg-gray-50 dark:bg-gray-950 rounded-2xl p-4 border border-gray-150 max-h-48 overflow-y-auto space-y-2">
+                    <div className="bg-surface-raised rounded-2xl p-4 border border-line max-h-48 overflow-y-auto space-y-2">
                       {descendants.map((child: any) => (
-                        <div key={child.id} className="flex items-center justify-between text-[11.5px] text-gray-600 bg-white p-2 rounded-xl border border-gray-100">
-                          <span className="font-bold font-mono text-gray-450">{child.code}</span>
+                        <div key={child.id} className="flex items-center justify-between text-xs text-ink-soft bg-surface p-2 rounded-xl border border-line">
+                          <span className="font-bold font-mono text-ink-muted">{child.code}</span>
                           <span className="font-semibold">{child.name}</span>
-                          <span className="text-[10px] text-gray-400 px-1.5 py-0.5 bg-gray-100 rounded-md">
+                          <span className="text-xs text-ink-muted px-1.5 py-0.5 bg-surface-muted rounded-md">
                             {child.type === 'asset' ? 'أصول' : child.type === 'liability' ? 'خصوم' : child.type === 'equity' ? 'حقوق ملكية' : child.type === 'revenue' ? 'إيرادات' : 'مصروفات'}
                           </span>
                         </div>
                       ))}
                     </div>
-                    <p className="text-[12.5px] text-gray-550 italic leading-relaxed">
+                    <p className="text-sm text-ink-muted italic leading-relaxed">
                       * لن يتم الحذف في حال وجود أي حركات يومية مقيدة تحت هذا الحساب أو أي من حساباته التابعة حفاظاً على سلامة البيانات.
                     </p>
                   </div>
                 ) : (
-                  <div className="space-y-2 text-gray-700 text-[13.5px] leading-relaxed">
+                  <div className="space-y-2 text-ink-soft text-sm leading-relaxed">
                     <p className="font-semibold">
                       هل أنت متأكد من رغبتك في حذف هذا الحساب المالي نهائياً من شجرة دليل الحسابات؟
                     </p>
-                    <div className="bg-amber-50/40 dark:bg-amber-950/10 p-3.5 rounded-2xl border border-amber-200/50 dark:border-amber-900/30 flex items-start gap-2.5 text-amber-800 dark:text-amber-400 text-[12px] font-semibold">
+                    <div className="flex items-start gap-2.5 rounded-2xl border border-warning-soft bg-warning-soft/40 p-3.5 text-sm font-semibold text-warning-strong">
                       <Info className="w-4 h-4 mt-0.5 shrink-0" />
                       <span>ملاحظة: هذا الإجراء نهائي ولا يمكن التراجع عنه. لن يتمكن النظام من إتمام الحذف إذا كان الحساب مرتبطاً بقيود يومية أو حركات حسابات نشطة.</span>
                     </div>
@@ -1439,7 +1482,7 @@ export default function AccountingPage() {
               </div>
 
               {/* Modal Footer */}
-              <div className="p-6 bg-gray-50 dark:bg-gray-950 border-t border-gray-150 flex items-center justify-end gap-3">
+              <div className="p-6 bg-surface-muted bg-surface-raised border-t border-line flex items-center justify-end gap-3">
                 <button
                   type="button"
                   onClick={() => {
@@ -1447,7 +1490,7 @@ export default function AccountingPage() {
                     setDeleteError(null)
                   }}
                   disabled={deleteAccountMutation.isPending}
-                  className="px-4 py-2.5 bg-white hover:bg-gray-100 border border-gray-250 text-gray-700 font-bold rounded-xl transition-all disabled:opacity-50 text-[13px]"
+                  className="px-4 py-2.5 bg-surface hover:bg-surface-muted border border-line text-ink-soft font-bold rounded-xl transition-colors disabled:opacity-50 text-sm"
                 >
                   إلغاء
                 </button>
@@ -1463,7 +1506,7 @@ export default function AccountingPage() {
                     }
                   }}
                   disabled={deleteAccountMutation.isPending}
-                  className="px-5 py-2.5 bg-rose-600 text-white hover:bg-rose-700 font-bold rounded-xl shadow-lg shadow-rose-600/10 hover:shadow-rose-650/20 transition-all disabled:opacity-50 flex items-center gap-2 text-[13px]"
+                  className="px-5 py-2.5 bg-danger text-ink-inverse hover:bg-danger font-bold rounded-xl shadow-lg transition-colors disabled:opacity-50 flex items-center gap-2 text-sm"
                 >
                   {deleteAccountMutation.isPending ? (
                     <>
@@ -1477,7 +1520,7 @@ export default function AccountingPage() {
               </div>
 
             </div>
-          </div>
+          </AppDialog>
         )
       })()}
     </div>

@@ -22,6 +22,7 @@ import {
   AlertCircle
 } from 'lucide-react'
 import Link from 'next/link'
+import AppDialog from '@/components/ui/AppDialog'
 
 export default function ArchivePage() {
   const [currentNodeId, setCurrentNodeId] = useState<number | undefined>(undefined)
@@ -131,7 +132,7 @@ export default function ArchivePage() {
         <button
           onClick={handleAddClick}
           disabled={createNodeMutation.isPending}
-          className="flex items-center gap-2 px-5 py-3 bg-farm-blue text-white font-semibold text-sm rounded-xl shadow-md hover:bg-opacity-90 active:scale-[0.98] transition-all disabled:opacity-50 shrink-0"
+          className="flex items-center gap-2 px-5 py-3 bg-farm-blue text-white font-semibold text-sm rounded-xl shadow-md hover:bg-opacity-90 active:scale-[0.98] transition-colors disabled:opacity-50 shrink-0"
         >
           <Plus className="w-4 h-4" />
           <span>
@@ -201,7 +202,7 @@ export default function ArchivePage() {
           <span className="text-gray-500 text-sm mt-3 font-semibold">المجلد فارغ</span>
           <button
             onClick={handleAddClick}
-            className="mt-4 px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs font-bold rounded-lg transition-all"
+            className="mt-4 px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs font-bold rounded-lg transition-colors"
           >
             أضف ملفاً أو مجلداً للبدء
           </button>
@@ -222,7 +223,7 @@ export default function ArchivePage() {
                     setCurrentNodeId(node.id)
                   }
                 }}
-                className="group relative flex flex-col justify-between p-6 bg-white border border-gray-200 rounded-2xl shadow-sm hover:shadow-md hover:border-farm-blue cursor-pointer transition-all duration-200"
+                className="group relative flex flex-col justify-between p-6 bg-white border border-gray-200 rounded-2xl shadow-sm hover:shadow-md hover:border-farm-blue cursor-pointer transition-colors duration-200"
               >
                 <div>
                   <div className="flex items-center justify-between">
@@ -238,7 +239,7 @@ export default function ArchivePage() {
 
                     <button
                       onClick={(e) => triggerDelete(node, e)}
-                      className="opacity-0 group-hover:opacity-100 p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-xl transition-all duration-150"
+                      className="opacity-0 group-hover:opacity-100 p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-xl transition-colors duration-150"
                       title="حذف"
                     >
                       <Trash2 className="w-4 h-4" />
@@ -276,8 +277,8 @@ export default function ArchivePage() {
 
       {/* Add Node Modal Form */}
       {showAddModal && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50 animate-fade-in">
-          <div className="bg-white border border-gray-200 rounded-2xl w-full max-w-md p-6 shadow-xl" onClick={(e) => e.stopPropagation()}>
+        <AppDialog open={showAddModal} onClose={() => setShowAddModal(false)} panelClassName="max-w-md animate-fade-in">
+          <div className="w-full rounded-2xl border border-gray-200 bg-white p-6 shadow-xl">
             <h2 className="text-lg font-bold text-gray-900 font-sans">
               {newNodeType === 'institution' && 'إضافة شركة'}
               {newNodeType === 'year' && 'إضافة سنة'}
@@ -370,7 +371,7 @@ export default function ArchivePage() {
                 <button
                   type="submit"
                   disabled={createNodeMutation.isPending}
-                  className="flex items-center gap-2 px-5 py-2 bg-farm-blue text-white font-bold text-xs rounded-lg hover:bg-opacity-90 active:scale-[0.98] disabled:opacity-50 transition-all"
+                  className="flex items-center gap-2 px-5 py-2 bg-farm-blue text-white font-bold text-xs rounded-lg hover:bg-opacity-90 active:scale-[0.98] disabled:opacity-50 transition-colors"
                 >
                   {createNodeMutation.isPending && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
                   <span>حفظ</span>
@@ -378,20 +379,20 @@ export default function ArchivePage() {
               </div>
             </form>
           </div>
-        </div>
+        </AppDialog>
       )}
 
       {/* Delete Confirmation Modal */}
       {deleteTarget && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50 animate-fade-in" dir="rtl">
-          <div className="bg-white border border-gray-200 rounded-2xl w-full max-w-md p-6 shadow-xl space-y-4" onClick={(e) => e.stopPropagation()}>
+        <AppDialog open={!!deleteTarget} onClose={() => setDeleteTarget(null)} panelClassName="max-w-md animate-fade-in">
+          <div className="w-full space-y-4 rounded-2xl border border-gray-200 bg-white p-6 shadow-xl" dir="rtl">
             <div className="flex items-center gap-3 border-b border-gray-200 pb-3">
               <div className="p-2.5 bg-red-50 text-red-650 rounded-xl">
                 <Trash2 className="w-6 h-6" />
               </div>
               <div>
                 <h3 className="text-base font-bold text-gray-900 font-sans">حذف نهائي</h3>
-                <p className="text-[11px] text-gray-400 mt-0.5">سيتم إزالة العنصر وكافة البيانات المرتبطة به</p>
+                <p className="text-xs text-gray-400 mt-0.5">سيتم إزالة العنصر وكافة البيانات المرتبطة به</p>
               </div>
             </div>
 
@@ -415,7 +416,7 @@ export default function ArchivePage() {
               <button
                 type="button"
                 onClick={() => setDeleteTarget(null)}
-                className="px-4 py-2 text-xs font-semibold text-gray-500 hover:bg-gray-50 dark:hover:bg-gray-800 rounded-lg transition-all"
+                className="px-4 py-2 text-xs font-semibold text-gray-500 hover:bg-gray-50 dark:hover:bg-gray-800 rounded-lg transition-colors"
               >
                 إلغاء
               </button>
@@ -423,14 +424,14 @@ export default function ArchivePage() {
                 type="button"
                 onClick={confirmDeleteNode}
                 disabled={deleteNodeMutation.isPending}
-                className="flex items-center gap-2 px-5 py-2 bg-red-600 hover:bg-red-700 text-white font-bold text-xs rounded-lg transition-all shadow disabled:opacity-50"
+                className="flex items-center gap-2 px-5 py-2 bg-red-600 hover:bg-red-700 text-white font-bold text-xs rounded-lg transition-colors shadow disabled:opacity-50"
               >
                 {deleteNodeMutation.isPending && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
                 <span>حذف نهائي</span>
               </button>
             </div>
           </div>
-        </div>
+        </AppDialog>
       )}
     </div>
   )

@@ -132,7 +132,7 @@ export default function ProjectDetailPage() {
         {activeView === 'sections' && (
           <button
             onClick={() => setShowCreate(true)}
-            className="flex items-center gap-2 bg-farm-blue hover:bg-blue-800 text-white px-5 py-2.5 rounded-xl transition-all font-medium"
+            className="flex items-center gap-2 bg-farm-blue hover:bg-blue-800 text-white px-5 py-2.5 rounded-xl transition-colors font-medium"
           >
             <Plus className="w-5 h-5" />
             <span>إضافة قسم</span>
@@ -144,7 +144,7 @@ export default function ProjectDetailPage() {
       <div className="flex border-b-2 border-slate-300 gap-6">
         <button
           onClick={() => setActiveView('sections')}
-          className={`pb-4 text-sm font-bold border-b-2 transition-all ${
+          className={`pb-4 text-sm font-bold border-b-2 transition-colors ${
             activeView === 'sections'
               ? 'border-farm-blue text-farm-blue'
               : 'border-transparent text-gray-500 hover:text-gray-800'
@@ -154,7 +154,7 @@ export default function ProjectDetailPage() {
         </button>
         <button
           onClick={() => setActiveView('statistics')}
-          className={`pb-4 text-sm font-bold border-b-2 transition-all flex items-center gap-2 ${
+          className={`pb-4 text-sm font-bold border-b-2 transition-colors flex items-center gap-2 ${
             activeView === 'statistics'
               ? 'border-farm-blue text-farm-blue'
               : 'border-transparent text-gray-500 hover:text-gray-800'
@@ -248,7 +248,7 @@ export default function ProjectDetailPage() {
               {sections.map((section) => (
                 <div key={section.id} className="relative group">
                   <Link href={`/sections/${section.id}`}>
-                    <div className="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 cursor-pointer">
+                    <div className="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-colors duration-300 cursor-pointer">
                       <div className="flex items-center gap-3 mb-3">
                         <div
                           className={`w-12 h-12 rounded-full flex items-center justify-center ${

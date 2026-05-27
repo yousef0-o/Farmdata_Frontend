@@ -118,7 +118,7 @@ export default function LoginPage() {
                   id="email"
                   type="email"
                   placeholder="name@company.com"
-                  className={`block w-full pr-10 pl-3 py-3 border rounded-xl leading-5 bg-gray-50 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-farm-blue focus:border-transparent transition-all duration-200 text-right text-gray-900 ${
+                  className={`block w-full pr-10 pl-3 py-3 border rounded-xl leading-5 bg-gray-50 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-farm-blue focus:border-transparent transition-colors duration-200 text-right text-gray-900 ${
                     errors.email
                       ? 'border-red-500 bg-red-50'
                       : 'border-gray-200 focus:bg-white'
@@ -149,7 +149,7 @@ export default function LoginPage() {
                   id="password"
                   type="password"
                   placeholder="••••••••"
-                  className={`block w-full pr-10 pl-3 py-3 border rounded-xl leading-5 bg-gray-50 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-farm-blue focus:border-transparent transition-all duration-200 text-right text-gray-900 ${
+                  className={`block w-full pr-10 pl-3 py-3 border rounded-xl leading-5 bg-gray-50 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-farm-blue focus:border-transparent transition-colors duration-200 text-right text-gray-900 ${
                     errors.password
                       ? 'border-red-500 bg-red-50'
                       : 'border-gray-200 focus:bg-white'
@@ -169,7 +169,7 @@ export default function LoginPage() {
             <button
               type="submit"
               disabled={isLoading}
-              className="w-full flex justify-center items-center py-3 px-4 border border-transparent rounded-xl shadow-sm text-sm font-bold text-white bg-farm-blue hover:bg-blue-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-farm-blue transition-all duration-200 transform hover:scale-[1.02] active:scale-[0.98] disabled:opacity-70 disabled:cursor-not-allowed"
+              className="w-full flex justify-center items-center py-3 px-4 border border-transparent rounded-xl shadow-sm text-sm font-bold text-white bg-farm-blue hover:bg-blue-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-farm-blue transition-[background-color,opacity] duration-200 active:scale-[0.98] disabled:opacity-70 disabled:cursor-not-allowed"
             >
               {isLoading ? (
                 <>

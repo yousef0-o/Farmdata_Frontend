@@ -4,6 +4,7 @@ import React, { useState } from 'react'
 import { X, Plus, Trash2, Loader2, AlertCircle } from 'lucide-react'
 import { z } from 'zod'
 import { useCloseFlock } from '@/lib/hooks/useFlock'
+import AppDialog from '@/components/ui/AppDialog'
 
 interface CloseFlockDialogProps {
   flockId: number
@@ -109,8 +110,8 @@ export default function CloseFlockDialog({
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-      <div className="bg-white rounded-2xl shadow-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto p-6" dir="rtl">
+    <AppDialog open={open} onClose={() => onOpenChange(false)} panelClassName="max-w-2xl">
+      <div className="max-h-[90vh] w-full overflow-y-auto rounded-2xl bg-surface p-6 shadow-xl" dir="rtl">
         {/* Header */}
         <div className="flex items-center justify-between mb-6">
           <h2 className="text-xl font-bold text-gray-900">إغلاق الفوج</h2>
@@ -262,6 +263,6 @@ export default function CloseFlockDialog({
           </div>
         </form>
       </div>
-    </div>
+    </AppDialog>
   )
 }

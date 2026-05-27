@@ -36,7 +36,7 @@ export default function WarehouseDetailPage() {
         <p className="text-sm text-gray-500 mb-6">يرجى التأكد من معرف المستودع والمحاولة مرة أخرى.</p>
         <Link
           href="/warehouses"
-          className="inline-flex items-center gap-2 bg-gray-100 hover:bg-gray-200 text-gray-600 px-5 py-2.5 rounded-xl font-medium transition-all"
+          className="inline-flex items-center gap-2 bg-gray-100 hover:bg-gray-200 text-gray-600 px-5 py-2.5 rounded-xl font-medium transition-colors"
         >
           <ArrowLeft className="w-4 h-4" />
           العودة للمستودعات
@@ -73,21 +73,21 @@ export default function WarehouseDetailPage() {
           <button
             type="button"
             onClick={() => setShowCreateDialog(true)}
-            className="flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white px-5 py-2.5 rounded-xl transition-all font-medium text-sm"
+            className="flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white px-5 py-2.5 rounded-xl transition-colors font-medium text-sm"
           >
             <Plus className="w-4 h-4" />
             <span>إضافة حركة لهذا المستودع</span>
           </button>
           <Link
             href={`/inventory/movements?warehouse_id=${warehouseId}`}
-            className="flex items-center gap-2 bg-farm-blue hover:bg-blue-800 text-white px-5 py-2.5 rounded-xl transition-all font-medium text-sm"
+            className="flex items-center gap-2 bg-farm-blue hover:bg-blue-800 text-white px-5 py-2.5 rounded-xl transition-colors font-medium text-sm"
           >
             <ArrowLeftRight className="w-4 h-4" />
             <span>عرض حركات هذا المستودع</span>
           </Link>
           <Link
             href="/warehouses"
-            className="flex items-center gap-2 bg-gray-100 hover:bg-gray-200 text-gray-600 px-4 py-2.5 rounded-xl transition-all font-medium text-sm"
+            className="flex items-center gap-2 bg-gray-100 hover:bg-gray-200 text-gray-600 px-4 py-2.5 rounded-xl transition-colors font-medium text-sm"
           >
             <ArrowLeft className="w-4 h-4" />
             <span>العودة للقائمة</span>
