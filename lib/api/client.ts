@@ -1,20 +1,20 @@
-const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:8000/api'
+export const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:8000/api'
 
-function getToken(): string | null {
+export function getToken(): string | null {
   if (typeof window === 'undefined') return null
   return localStorage.getItem('auth_token')
 }
 
-export async function apiRequest<T>(
+export async function apiRequestRaw(
   path: string,
   options: RequestInit = {}
-): Promise<T> {
+): Promise<Response> {
   const token = getToken()
   const headers: Record<string, string> = {
     Accept: 'application/json',
     ...(options.headers as Record<string, string>),
   }
-  
+
   if (!(options.body instanceof FormData)) {
     headers['Content-Type'] = 'application/json'
   }
@@ -30,6 +30,15 @@ export async function apiRequest<T>(
     }
     throw new Error('Unauthorized')
   }
+
+  return res
+}
+
+export async function apiRequest<T>(
+  path: string,
+  options: RequestInit = {}
+): Promise<T> {
+  const res = await apiRequestRaw(path, options)
 
   if (!res.ok) {
     const error = await res.json().catch(() => ({ message: 'Request failed' }))
@@ -49,4 +58,3 @@ export function wrapResponse<T>(promise: Promise<any>): Promise<{ data: T }> {
     return { data: res }
   })
 }
-

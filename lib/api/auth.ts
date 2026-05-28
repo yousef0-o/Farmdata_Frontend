@@ -1,6 +1,18 @@
 import { apiRequest } from './client'
 import type { User } from '../types'
 
+function buildAuthCookie(token: string) {
+  return [
+    `auth_token=${encodeURIComponent(token)}`,
+    'Path=/',
+    `Max-Age=${60 * 60 * 24 * 7}`,
+    'SameSite=Lax',
+    typeof window !== 'undefined' && window.location.protocol === 'https:' ? 'Secure' : '',
+  ]
+    .filter(Boolean)
+    .join('; ')
+}
+
 export async function login(email: string, password: string) {
   const res = await apiRequest<{ token: string; user: User }>(
     '/auth/login',
@@ -10,7 +22,7 @@ export async function login(email: string, password: string) {
     }
   )
   localStorage.setItem('auth_token', res.token)
-  document.cookie = `auth_token=${res.token}; path=/; max-age=${60 * 60 * 24 * 7}`
+  document.cookie = buildAuthCookie(res.token)
   return res
 }
 

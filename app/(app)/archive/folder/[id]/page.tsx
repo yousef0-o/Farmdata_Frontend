@@ -87,6 +87,8 @@ export default function FolderDetailPage({ params }: PageProps) {
   const [attachmentFile, setAttachmentFile] = useState<File | null>(null)
   const [uploadingAttachment, setUploadingAttachment] = useState(false)
   const [streamingAttachmentUrl, setStreamingAttachmentUrl] = useState<string | null>(null)
+  const [loadingAttachmentId, setLoadingAttachmentId] = useState<number | null>(null)
+  const [exportingRecords, setExportingRecords] = useState(false)
 
   // Item Form Modal
   const [showItemModal, setShowItemModal] = useState(false)
@@ -381,6 +383,31 @@ export default function FolderDetailPage({ params }: PageProps) {
       }
     } catch (err: any) {
       alert('فشل الحذف: ' + err?.message)
+    }
+  }
+
+  const handleExportDownload = async () => {
+    setExportingRecords(true)
+
+    try {
+      await archiveApi.downloadExport(folderId)
+    } catch (err: any) {
+      alert('فشل تنزيل ملف التصدير: ' + (err?.message ?? ''))
+    } finally {
+      setExportingRecords(false)
+    }
+  }
+
+  const handleOpenAttachmentPreview = async (attachId: number) => {
+    setLoadingAttachmentId(attachId)
+
+    try {
+      const res = await archiveApi.getAttachmentDownloadUrl(attachId)
+      setStreamingAttachmentUrl(res.data.url)
+    } catch (err: any) {
+      alert('تعذر تحميل رابط المعاينة الآمن: ' + (err?.message ?? ''))
+    } finally {
+      setLoadingAttachmentId(null)
     }
   }
 
@@ -1011,15 +1038,19 @@ export default function FolderDetailPage({ params }: PageProps) {
               <input type="file" accept=".xlsx,.xls,.csv" onChange={handleExcelUpload} className="hidden" />
             </label>
             
-            <a
-              href={`${process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:8000/api'}/archive/folders/${folderId}/export`}
-              target="_blank"
-              rel="noreferrer"
+            <button
+              type="button"
+              onClick={handleExportDownload}
+              disabled={exportingRecords}
               className="flex items-center gap-1.5 px-4 py-2.5 border border-line rounded-xl text-xs font-bold text-ink-soft hover:bg-surface-muted transition-colors"
             >
-              <ArrowDownToLine className="w-3.5 h-3.5" />
-              <span>تصدير السجلات الحالية</span>
-            </a>
+              {exportingRecords ? (
+                <Loader2 className="w-3.5 h-3.5 animate-spin" />
+              ) : (
+                <ArrowDownToLine className="w-3.5 h-3.5" />
+              )}
+              <span>{exportingRecords ? 'جاري تجهيز الملف...' : 'تصدير السجلات الحالية'}</span>
+            </button>
           </div>
         </div>
 
@@ -1594,14 +1625,16 @@ export default function FolderDetailPage({ params }: PageProps) {
 
                     <div className="flex items-center gap-3">
                       <button
-                        onClick={() => {
-                          const base = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:8000/api'
-                          setStreamingAttachmentUrl(`${base}/archive/attachments/${attach.id}/stream`)
-                        }}
+                        type="button"
+                        onClick={() => handleOpenAttachmentPreview(attach.id)}
                         className="text-action-primary font-bold flex items-center gap-0.5 hover:underline"
                       >
-                        <Eye className="w-3.5 h-3.5" />
-                        <span>استعراض</span>
+                        {loadingAttachmentId === attach.id ? (
+                          <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                        ) : (
+                          <Eye className="w-3.5 h-3.5" />
+                        )}
+                        <span>{loadingAttachmentId === attach.id ? 'جاري التحميل...' : 'استعراض'}</span>
                       </button>
                       
                       <button

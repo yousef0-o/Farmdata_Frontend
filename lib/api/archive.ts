@@ -114,6 +114,10 @@ export const archiveApi = {
     return apiRequest<void>(`/archive/attachments/${id}`, { method: 'DELETE' })
   },
 
+  getAttachmentDownloadUrl(id: number): Promise<{ data: { url: string } }> {
+    return apiRequest<{ data: { url: string } }>(`/archive/attachments/${id}/download`)
+  },
+
   // --- Stats Configs & Computed Analytics Widget Payloads ---
   listStatsConfigs(folderId: number): Promise<{ data: ArchiveStatsConfig[] }> {
     return apiRequest<{ data: ArchiveStatsConfig[] }>(`/archive/folders/${folderId}/stats-configs`)
@@ -170,6 +174,37 @@ export const archiveApi = {
       body: formData,
       headers: {},
     })
+  },
+
+  getExportDownloadUrl(folderId: number, format: 'excel' | 'csv' = 'excel'): Promise<{ data: { url: string } }> {
+    return apiRequest<{ data: { url: string } }>(
+      `/archive/folders/${folderId}/export-url?format=${format}`
+    )
+  },
+
+  async downloadExport(folderId: number, format: 'excel' | 'csv' = 'excel'): Promise<void> {
+    const signedUrlRes = await this.getExportDownloadUrl(folderId, format)
+    const res = await fetch(signedUrlRes.data.url)
+
+    if (!res.ok) {
+      throw new Error('تعذر تنزيل ملف التصدير')
+    }
+
+    const blob = await res.blob()
+    const href = URL.createObjectURL(blob)
+    const disposition = res.headers.get('content-disposition')
+    const encodedFileName = disposition?.match(/filename\*=UTF-8''([^;]+)/)?.[1]
+    const plainFileName = disposition?.match(/filename="?([^"]+)"?/)?.[1]
+    const fileName = encodedFileName
+      ? decodeURIComponent(encodedFileName)
+      : plainFileName || `archive-export.${format === 'csv' ? 'csv' : 'xlsx'}`
+
+    const anchor = document.createElement('a')
+    anchor.href = href
+    anchor.download = fileName
+    anchor.click()
+    anchor.remove()
+    URL.revokeObjectURL(href)
   },
 
   // --- Scan Pipeline ---
@@ -264,4 +299,3 @@ export const archiveApi = {
     })
   }
 }
-
