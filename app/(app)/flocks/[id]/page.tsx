@@ -14,12 +14,14 @@ import BreedingEntriesTable from '@/components/daily/BreedingEntriesTable'
 import MedicalRecordsTable from '@/components/medical/MedicalRecordsTable'
 import SaudiRiyalIcon from '@/components/icons/SaudiRiyalIcon'
 import AppDialog from '@/components/ui/AppDialog'
+import { FlockStandardsGuide } from '@/components/flock/FlockStandardsGuide'
+import { FlockAnalyticsDashboard } from '@/components/flock/FlockAnalyticsDashboard'
 
 export default function FlockDetailPage() {
   const { id } = useParams()
   const flockId = Number(id)
   const [showCloseDialog, setShowCloseDialog] = useState(false)
-  const [activeTab, setActiveTab] = useState<'daily' | 'medical' | 'expenses'>('daily')
+  const [activeTab, setActiveTab] = useState<'daily' | 'analytics' | 'medical' | 'expenses'>('daily')
   const [showAddModal, setShowAddModal] = useState(false)
 
   // Form states
@@ -236,6 +238,16 @@ export default function FlockDetailPage() {
             السجلات اليومية
           </button>
           <button
+            onClick={() => setActiveTab('analytics')}
+            className={`pb-3 text-base font-bold transition-colors relative ${
+              activeTab === 'analytics'
+                ? 'text-gray-900 border-b-2 border-amber-500'
+                : 'text-gray-400 hover:text-gray-600'
+            }`}
+          >
+            التحليلات والإحصائيات
+          </button>
+          <button
             onClick={() => setActiveTab('medical')}
             className={`pb-3 text-base font-bold transition-colors relative ${
               activeTab === 'medical'
@@ -264,6 +276,13 @@ export default function FlockDetailPage() {
             ) : (
               <BreedingEntriesTable flockId={flockId} isActive={flock.status === 'active'} />
             )}
+          </div>
+        )}
+
+        {activeTab === 'analytics' && (
+          <div className="space-y-6">
+            {isProduction && <FlockStandardsGuide />}
+            <FlockAnalyticsDashboard flock={flock} />
           </div>
         )}
 
@@ -361,7 +380,15 @@ export default function FlockDetailPage() {
       {/* Closing Allocations — only for completed flocks */}
       {flock.status === 'completed' && flock.closing_allocations && flock.closing_allocations.length > 0 && (
         <div className="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm">
-          <h2 className="text-lg font-bold text-gray-900 mb-4">توزيع الإغلاق</h2>
+          <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <h2 className="text-lg font-bold text-gray-900">توزيع الإغلاق</h2>
+            <Link
+              href={`/flocks/${flockId}/closure`}
+              className="inline-flex min-h-11 items-center justify-center rounded-xl border border-info-soft bg-info-soft px-4 py-2 text-sm font-semibold text-action-primary"
+            >
+              تفاصيل الإغلاق والتوزيع
+            </Link>
+          </div>
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>

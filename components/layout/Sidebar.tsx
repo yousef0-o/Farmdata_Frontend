@@ -27,6 +27,12 @@ export const navItems = [
     permission: 'view-flocks',
   },
   {
+    icon: Bird,
+    label: 'تحليلات القطيع',
+    href: '/analytics/flocks',
+    permission: 'view-flocks',
+  },
+  {
     icon: FolderArchive,
     label: 'الأرشيف',
     href: '/archive',

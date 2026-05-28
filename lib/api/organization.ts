@@ -105,6 +105,21 @@ export const flockApi = {
       body: JSON.stringify(data),
     })),
 
+  deleteFlock: (id: number) =>
+    apiRequest<void>(`/flocks/${id}`, { method: 'DELETE' }),
+
+  importFlocks: (barnId: number, file: File) => {
+    const formData = new FormData()
+    formData.append('barn_id', barnId.toString())
+    formData.append('file', file)
+    return wrapResponse<{ message: string }>(
+      apiRequest('/flocks/import', {
+        method: 'POST',
+        body: formData,
+      })
+    )
+  },
+
   getFlockSummary: (id: number) =>
     apiRequest<FlockSummary>(`/flocks/${id}/summary`),
 

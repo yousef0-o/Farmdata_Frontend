@@ -46,6 +46,8 @@ export interface Barn {
   barn_type: 'production' | 'breeding'
   capacity?: number
   active_flocks?: Flock[]
+  flocks?: Flock[]
+  section?: Section & { project?: Project & { company?: Company } }
 }
 
 export interface Flock {
@@ -56,6 +58,7 @@ export interface Flock {
   entry_birds: number
   current_count: number
   entry_date: string
+  exit_date?: string
   breed?: string
   supplier?: string
   chick_unit_cost?: string
@@ -224,7 +227,7 @@ export interface Asset {
   depreciation_ac_name?: string
   accumulated_depreciation_ac?: string
   accumulated_depreciation_ac_name?: string
-  additional_details?: Record<string, any>
+  additional_details?: Record<string, unknown>
   status: 'active' | 'in_maintenance' | 'disposed' | 'sold'
   status_label: string
   depreciation_percentage: number
@@ -426,3 +429,195 @@ export interface EntityStatistics {
   flock_count: number
 }
 
+export type AnalyticsScopeLevel = 'company' | 'project' | 'section' | 'barn' | 'flock'
+export type AnalyticsStage = 'production' | 'breeding' | 'mixed'
+export type AnalyticsAggregation = 'daily' | 'weekly' | 'monthly'
+export type AnalyticsAxis = 'date' | 'age'
+
+export interface AnalyticsFilterOption {
+  id: number
+  name: string
+  company_id?: number
+  project_id?: number
+  section_id?: number
+  barn_id?: number
+  section_type?: 'production' | 'breeding'
+  barn_type?: 'production' | 'breeding'
+}
+
+export interface AnalyticsMetricEvaluation {
+  level: 'excellent' | 'very_good' | 'good' | 'average' | 'weak' | 'neutral' | 'unknown'
+  label_ar: string
+  label_en: string
+  color_token: string
+}
+
+export interface AnalyticsGoalComparison {
+  metric_key: 'fcr' | 'lay_rate' | 'carton_yield'
+  name: string
+  source: string
+  comparison_operator: 'gte' | 'lte'
+  target_value: number | null
+  actual_value: number | null
+  achievement_rate: number | null
+  variance: number | null
+  remaining_threshold: number | null
+  is_achieved: boolean
+}
+
+export interface FlockAnalyticsResponse {
+  meta: {
+    level: AnalyticsScopeLevel
+    scope: {
+      level: AnalyticsScopeLevel
+      flock_id: number | null
+      barn_id: number | null
+      section_id: number | null
+      project_id: number | null
+      company_id: number | null
+      label: string
+    }
+    stage: AnalyticsStage
+    aggregation: AnalyticsAggregation
+    axis: AnalyticsAxis
+    active_flocks_only: boolean
+    date_from: string
+    date_to: string
+    year: number
+    flock_count: number
+    production_flock_count: number
+    breeding_flock_count: number
+  }
+  filters: {
+    companies: AnalyticsFilterOption[]
+    projects: AnalyticsFilterOption[]
+    sections: AnalyticsFilterOption[]
+    barns: AnalyticsFilterOption[]
+    years: number[]
+  }
+  stage_router: {
+    current: AnalyticsStage
+    has_breeding_data: boolean
+    has_production_data: boolean
+  }
+  summary: {
+    breeding: {
+      entry_birds: number
+      exit_birds: number
+      mortality_breeding: number
+      mortality_rate: number
+      chick_cost: number
+      feed_cost: number
+      vet_cost: number
+      other_cost: number
+      bird_value: number
+      mortality_value: number
+      total_flock_value: number
+      total_feed_kg: number
+      evaluation: AnalyticsMetricEvaluation
+    }
+    production: {
+      cartons_produced: number
+      total_eggs: number
+      total_feed_kg: number
+      total_feed_ton: number
+      mortality_production: number
+      mortality_rate: number
+      mortality_value: number
+      weighted_lay_rate: number
+      actual_avg_egg_weight_g: number
+      actual_carton_weight_kg: number
+      total_egg_weight_kg: number
+      total_egg_weight_ton: number
+      feed_per_carton_kg: number | null
+      fcr: number | null
+      cartons_per_ton_feed: number | null
+      targets: {
+        operational_target_eggs: number
+        operational_target_cartons: number
+        standard_target_eggs: number
+        standard_target_cartons: number
+        operational_achievement_rate: number | null
+        standard_achievement_rate: number | null
+      }
+      evaluations: {
+        lay_rate: AnalyticsMetricEvaluation
+        fcr: AnalyticsMetricEvaluation
+        feed_per_carton: AnalyticsMetricEvaluation
+        mortality_rate: AnalyticsMetricEvaluation
+      }
+    }
+  }
+  goal_dashboard: {
+    goals: AnalyticsGoalComparison[]
+    achievement_summary: {
+      tracked_goal_count: number
+      achieved_goal_count: number
+      achievement_ratio: number
+    }
+  }
+  egg_weight_distribution: {
+    summary: {
+      total_eggs: number
+      total_cartons: number
+      total_plates: number
+    }
+    rows: {
+      size_code: string
+      label_ar: string
+      label_en: string
+      cartons: number
+      plates: number
+      eggs: number
+      percentage: number
+      weight_from: number | null
+      weight_to: number | null
+      avg_weight: number | null
+      egg_weight_gram: number
+      total_weight_ton: number
+    }[]
+  }
+  series: {
+    axis: AnalyticsAxis
+    aggregation: AnalyticsAggregation
+    summary_line: {
+      avg_lay_rate: number
+      fcr: number | null
+    }
+    points: {
+      bucket: string
+      label: string
+      date: string
+      age_days: number
+      total_eggs: number
+      cartons: number
+      feed_kg: number
+      mortality: number
+      lay_rate: number
+    }[]
+  }
+  breeding_series: {
+    axis: AnalyticsAxis
+    aggregation: AnalyticsAggregation
+    points: {
+      bucket: string
+      label: string
+      date: string
+      age_days: number
+      feed_kg: number
+      mortality: number
+    }[]
+  }
+  annual_movement: {
+    year: number
+    cartons_produced: number
+    eggs_produced: number
+    birds_entering_production: number
+    cumulative_birds: number
+    production_rate: number
+    annual_mortality: number
+    annual_feed_ton: number
+    annual_target_cartons: number
+    carton_difference: number
+  }[]
+}

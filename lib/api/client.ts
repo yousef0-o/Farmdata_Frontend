@@ -11,10 +11,14 @@ export async function apiRequest<T>(
 ): Promise<T> {
   const token = getToken()
   const headers: Record<string, string> = {
-    'Content-Type': 'application/json',
     Accept: 'application/json',
     ...(options.headers as Record<string, string>),
   }
+  
+  if (!(options.body instanceof FormData)) {
+    headers['Content-Type'] = 'application/json'
+  }
+
   if (token) headers['Authorization'] = `Bearer ${token}`
 
   const res = await fetch(`${API_BASE}${path}`, { ...options, headers })

@@ -25,6 +25,7 @@ export function useCreateProductionEntry(flockId: number) {
       queryClient.invalidateQueries({ queryKey: ['production-entries', flockId] })
       queryClient.invalidateQueries({ queryKey: ['flock-summary', flockId] })
       queryClient.invalidateQueries({ queryKey: ['flock', flockId] })
+      queryClient.invalidateQueries({ queryKey: ['flock-analytics'] })
     },
   })
 }
@@ -38,6 +39,7 @@ export function useCreateBreedingEntry(flockId: number) {
       queryClient.invalidateQueries({ queryKey: ['breeding-entries', flockId] })
       queryClient.invalidateQueries({ queryKey: ['flock-summary', flockId] })
       queryClient.invalidateQueries({ queryKey: ['flock', flockId] })
+      queryClient.invalidateQueries({ queryKey: ['flock-analytics'] })
     },
   })
 }
@@ -51,6 +53,7 @@ export function useDeleteProductionEntry(flockId: number) {
       queryClient.invalidateQueries({ queryKey: ['production-entries', flockId] })
       queryClient.invalidateQueries({ queryKey: ['flock-summary', flockId] })
       queryClient.invalidateQueries({ queryKey: ['flock', flockId] })
+      queryClient.invalidateQueries({ queryKey: ['flock-analytics'] })
     },
   })
 }
@@ -64,6 +67,7 @@ export function useDeleteBreedingEntry(flockId: number) {
       queryClient.invalidateQueries({ queryKey: ['breeding-entries', flockId] })
       queryClient.invalidateQueries({ queryKey: ['flock-summary', flockId] })
       queryClient.invalidateQueries({ queryKey: ['flock', flockId] })
+      queryClient.invalidateQueries({ queryKey: ['flock-analytics'] })
     },
   })
 }
@@ -79,6 +83,7 @@ export function useUpdateProductionEntry(flockId: number) {
       queryClient.invalidateQueries({ queryKey: ['production-entries', flockId] })
       queryClient.invalidateQueries({ queryKey: ['flock-summary', flockId] })
       queryClient.invalidateQueries({ queryKey: ['flock', flockId] })
+      queryClient.invalidateQueries({ queryKey: ['flock-analytics'] })
     },
   })
 }
@@ -94,6 +99,7 @@ export function useUpdateBreedingEntry(flockId: number) {
       queryClient.invalidateQueries({ queryKey: ['breeding-entries', flockId] })
       queryClient.invalidateQueries({ queryKey: ['flock-summary', flockId] })
       queryClient.invalidateQueries({ queryKey: ['flock', flockId] })
+      queryClient.invalidateQueries({ queryKey: ['flock-analytics'] })
     },
   })
 }
@@ -113,4 +119,3 @@ export function useBreedingEntry(flockId: number, entryId: number) {
     enabled: entryId > 0,
   })
 }
-
