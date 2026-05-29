@@ -3,10 +3,37 @@
 import React from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { LayoutDashboard, Building2, Sprout, Warehouse, Layers, ArrowLeftRight, Coins, Users, Truck, FolderArchive, BookOpen, ShieldCheck, DollarSign, Bird, X } from 'lucide-react'
+import { 
+  LayoutDashboard, 
+  Building2, 
+  Sprout, 
+  Warehouse, 
+  Layers, 
+  ArrowLeftRight, 
+  Coins, 
+  Users, 
+  Truck, 
+  FolderArchive, 
+  BookOpen, 
+  ShieldCheck, 
+  DollarSign, 
+  Bird, 
+  X,
+  ChartLine,
+  MapPin,
+  TreePine,
+  LayoutGrid,
+  Boxes,
+  Scale,
+  FileSpreadsheet,
+  Wallet,
+  Bot,
+  ArrowRight
+} from 'lucide-react'
 import DarkModeToggle from '../ui/DarkModeToggle'
 import { useMe } from '@/lib/hooks/useAuth'
 
+// 1. القائمة الافتراضية للنظام العام (Main ERP Menu)
 export const navItems = [
   {
     icon: LayoutDashboard,
@@ -19,6 +46,12 @@ export const navItems = [
     label: 'الشركات',
     href: '/companies',
     permission: 'view-companies',
+  },
+  {
+    icon: Sprout, // إضافة زر المشتل في النظام العام
+    label: 'المشتل',
+    href: '/nursery',
+    permission: 'view-companies', // يمكنك تعديل الصلاحية حسب النظام عندك
   },
   {
     icon: Bird,
@@ -100,6 +133,76 @@ export const navItems = [
   },
 ]
 
+// 2. قائمة موديول المشتل المخصصة والكاملة (Nursery Internal Menu)
+export const nurseryNavItems = [
+  {
+    icon: ChartLine,
+    label: 'إحصائيات الموقع',
+    href: '/nursery',
+    permission: 'view-companies',
+  },
+  {
+    icon: MapPin,
+    label: 'المواقع',
+    href: '/nursery/locations',
+    permission: 'view-companies',
+  },
+  {
+    icon: TreePine,
+    label: 'أصناف الأشجار',
+    href: '/nursery/varieties',
+    permission: 'view-companies',
+  },
+  {
+    icon: LayoutGrid,
+    label: 'إدارة الحقول العامة',
+    href: '/nursery/fields',
+    permission: 'view-companies',
+  },
+  {
+    icon: Sprout,
+    label: 'إدارة المشتل',
+    href: '/nursery/manage',
+    permission: 'view-companies',
+  },
+  {
+    icon: Boxes,
+    label: 'المخزون',
+    href: '/nursery/inventory',
+    permission: 'view-companies',
+  },
+  {
+    icon: Scale,
+    label: 'الأرصدة الافتتاحية',
+    href: '/nursery/opening-balances',
+    permission: 'view-companies',
+  },
+  {
+    icon: Users,
+    label: 'العملاء والموردين',
+    href: '/nursery/contacts',
+    permission: 'view-companies',
+  },
+  {
+    icon: FileSpreadsheet,
+    label: 'الفواتير',
+    href: '/nursery/invoices',
+    permission: 'view-companies',
+  },
+  {
+    icon: Wallet,
+    label: 'مصروفات المشتل',
+    href: '/nursery/expenses',
+    permission: 'view-companies',
+  },
+  {
+    icon: Bot,
+    label: 'المستشار الزراعي',
+    href: '/nursery/ai-chat',
+    permission: 'view-companies',
+  },
+]
+
 type SidebarProps = {
   className?: string
   drawerTitleId?: string
@@ -118,8 +221,11 @@ export default function Sidebar({
   const pathname = usePathname()
   const { data: user } = useMe()
 
+  // التحقق هل نحن داخل مسار المشتل حالياً أم لا
+  const isNurseryMode = pathname === '/nursery' || pathname.startsWith('/nursery/')
+
   function isActive(href: string) {
-    if (href === '/dashboard') return pathname === '/dashboard'
+    if (href === '/dashboard' || href === '/nursery') return pathname === href
     if (href === '/archive') {
       return pathname === '/archive' || pathname.startsWith('/archive/folder')
     }
@@ -128,7 +234,6 @@ export default function Sidebar({
 
   function hasPermission(permission: string | null) {
     if (!user) return false
-    // Admins and Managers bypass standard checks
     const isAdmin = user.roles.some((role) =>
       ['super_admin', 'admin', 'manager'].includes(role)
     ) || user.email === 'admin@farmdata.com'
@@ -136,9 +241,11 @@ export default function Sidebar({
     if (isAdmin) return true
     if (!permission) return true
 
-    // Check custom permissions list
     return user.permissions?.includes(permission) || false
   }
+
+  // اختيار عناصر القائمة بناءً على الوضع الحالي للـ URL
+  const activeNavItems = isNurseryMode ? nurseryNavItems : navItems
 
   return (
     <aside
@@ -158,7 +265,9 @@ export default function Sidebar({
           >
             Farmdata
           </span>
-          <span className="block text-xs text-brand-logo-sub">إدارة المزارع</span>
+          <span className="block text-xs text-brand-logo-sub">
+            {isNurseryMode ? 'نظام إدارة المشتل' : 'إدارة المزارع'}
+          </span>
         </div>
         {isMobileDrawer && onClose ? (
           <button
@@ -172,9 +281,9 @@ export default function Sidebar({
         ) : null}
       </div>
 
-      {/* Navigation */}
+      {/* Navigation Layer */}
       <nav className="flex-1 overflow-y-auto px-4 py-5 sm:py-6 space-y-1">
-        {navItems
+        {activeNavItems
           .filter((item) => hasPermission(item.permission))
           .map((item) => {
             const active = isActive(item.href)
@@ -183,17 +292,31 @@ export default function Sidebar({
                 key={item.href}
                 href={item.href}
                 onClick={onNavigate}
-                className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-colors duration-200 ${
+                className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 active:scale-[0.98] ${
                   active
-                    ? 'bg-farm-blue text-[#ffffff] shadow-sm'
+                    ? 'bg-farm-blue text-[#ffffff] shadow-sm font-semibold'
                     : 'text-gray-600 dark:text-gray-700 hover:bg-menu-hover-bg hover:text-menu-hover-text'
                 }`}
               >
                 <item.icon className={`w-5 h-5 ${active ? 'text-[#ffffff]' : ''}`} />
-                <span className="font-medium text-sm">{item.label}</span>
+                <span className="text-sm">{item.label}</span>
               </Link>
             )
           })}
+
+        {/* زر العودة للرئيسية - يظهر فقط عندما نكون داخل طور المشتل */}
+        {isNurseryMode && (
+          <div className="pt-4 mt-4 border-t border-border">
+            <Link
+              href="/dashboard"
+              onClick={onNavigate}
+              className="flex items-center gap-3 px-4 py-3 rounded-xl text-brand-logo-icon bg-brand-logo-bg/50 hover:bg-brand-logo-bg transition-colors duration-200 active:scale-[0.98]"
+            >
+              <ArrowRight className="w-5 h-5 text-brand-logo-icon" />
+              <span className="text-sm font-bold">العودة للرئيسية</span>
+            </Link>
+          </div>
+        )}
       </nav>
 
       {/* Theme Toggle Button */}
@@ -204,7 +327,7 @@ export default function Sidebar({
       {/* Footer */}
       <div className="p-4 border-t border-border">
         <p className="text-xs text-gray-400 dark:text-gray-600 text-center">
-          نظام إدارة مزارع الدواجن
+          {isNurseryMode ? 'نظام إدارة مشتل صبارة الفني' : 'نظام إدارة مزارع الدواجن'}
         </p>
       </div>
     </aside>
