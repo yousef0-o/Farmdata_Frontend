@@ -152,6 +152,7 @@ export const dailyOpsApi = {
     egg_size_medium?: number
     egg_size_small?: number
     egg_size_reject?: number
+    egg_items?: { item_id: number; quantity: number }[]
     feed_quantity_kg: number
     warehouse_id?: number
     inventory_item_id?: number
@@ -191,6 +192,7 @@ export const dailyOpsApi = {
     ),
 
   createBreedingEntry: (flockId: number, data: {
+    record_date?: string
     mortality?: number
     weight_sample_avg?: number
     uniformity_pct?: number
