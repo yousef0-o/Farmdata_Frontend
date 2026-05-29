@@ -38,16 +38,58 @@ const PERMISSION_GROUPS: PermissionGroup[] = [
     ],
   },
   {
-    title: 'الأرشيف والمالية (Archive & Accounting)',
+    title: 'أرشيف والمالية (Archive & Accounting)',
     permissions: [
       { key: 'archive', label: 'أرشيف المستندات والوثائق', viewKey: 'view-archive', manageKey: 'manage-archive' },
       { key: 'accounting', label: 'الدفاتر المحاسبية والقيود', viewKey: 'view-accounting', manageKey: 'manage-accounting' },
     ],
   },
   {
-    title: 'الإدارة والضبط (General Administration)',
+    title: 'إدارة والضبط (General Administration)',
     permissions: [
       { key: 'team', label: 'فريق العمل والصلاحيات', viewKey: 'view-team', manageKey: 'manage-team' },
+    ],
+  },
+  {
+    title: 'المشتل - إدارة المشتل (Nursery Management)',
+    permissions: [
+      { key: 'nursery-dashboard', label: 'لوحة التحكم والإحصائيات', viewKey: 'view-nursery-dashboard', manageKey: 'manage-nursery-dashboard' },
+      { key: 'nursery-locations', label: 'المواقع والتنظيم الهيكلي', viewKey: 'view-nursery-locations', manageKey: 'manage-nursery-locations' },
+      { key: 'nursery-varieties', label: 'أصناف الأشجار والدليل', viewKey: 'view-nursery-varieties', manageKey: 'manage-nursery-varieties' },
+      { key: 'nursery-fields', label: 'الحقول والخيارات العامة', viewKey: 'view-nursery-fields', manageKey: 'manage-nursery-fields' },
+      { key: 'nursery-management', label: 'إدارة المشتل البصرية', viewKey: 'view-nursery-management', manageKey: 'manage-nursery-management' },
+    ],
+  },
+  {
+    title: 'المشتل - العمليات والنشاطات (Nursery Operations)',
+    permissions: [
+      { key: 'nursery-basin-operations', label: 'عمليات الأحواض', viewKey: 'view-nursery-basin-operations', manageKey: 'manage-nursery-basin-operations' },
+      { key: 'nursery-trees', label: 'الأشجار والخطوط', viewKey: 'view-nursery-trees', manageKey: 'manage-nursery-trees' },
+      { key: 'nursery-activities', label: 'سجل النشاطات', viewKey: 'view-nursery-activities', manageKey: 'manage-nursery-activities' },
+      { key: 'nursery-irrigation', label: 'الري والري المبرمج', viewKey: 'view-nursery-irrigation', manageKey: 'manage-nursery-irrigation' },
+      { key: 'nursery-fertilization', label: 'التسميد والأسمدة', viewKey: 'view-nursery-fertilization', manageKey: 'manage-nursery-fertilization' },
+      { key: 'nursery-mortality', label: 'النفوق والخسائر', viewKey: 'view-nursery-mortality', manageKey: 'manage-nursery-mortality' },
+      { key: 'nursery-transfers', label: 'النقل والتحويلات', viewKey: 'view-nursery-transfers', manageKey: 'manage-nursery-transfers' },
+      { key: 'nursery-procedures', label: 'الإجراءات والعمليات', viewKey: 'view-nursery-procedures', manageKey: 'manage-nursery-procedures' },
+      { key: 'nursery-cycles', label: 'دورات الإنتاج والإنبات', viewKey: 'view-nursery-cycles', manageKey: 'manage-nursery-cycles' },
+    ],
+  },
+  {
+    title: 'المشتل - المخزون والمالية (Nursery Inventory & Finance)',
+    permissions: [
+      { key: 'nursery-inventory', label: 'مخزون المشتل', viewKey: 'view-nursery-inventory', manageKey: 'manage-nursery-inventory' },
+      { key: 'nursery-contacts', label: 'العملاء والموردين', viewKey: 'view-nursery-contacts', manageKey: 'manage-nursery-contacts' },
+      { key: 'nursery-opening-balances', label: 'الأرصدة الافتتاحية', viewKey: 'view-nursery-opening-balances', manageKey: 'manage-nursery-opening-balances' },
+      { key: 'nursery-invoices', label: 'الفواتير', viewKey: 'view-nursery-invoices', manageKey: 'manage-nursery-invoices' },
+      { key: 'nursery-sales', label: 'المبيعات', viewKey: 'view-nursery-sales', manageKey: 'manage-nursery-sales' },
+      { key: 'nursery-purchases', label: 'المشتريات', viewKey: 'view-nursery-purchases', manageKey: 'manage-nursery-purchases' },
+      { key: 'nursery-expenses', label: 'المصروفات', viewKey: 'view-nursery-expenses', manageKey: 'manage-nursery-expenses' },
+    ],
+  },
+  {
+    title: 'المشتل - الذكاء الاصطناعي (Nursery AI)',
+    permissions: [
+      { key: 'nursery-ai', label: 'المستشار الزراعي الذكي', viewKey: 'view-nursery-ai', manageKey: 'manage-nursery-ai' },
     ],
   },
 ]
