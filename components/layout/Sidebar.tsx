@@ -202,12 +202,7 @@ export const nurseryNavItems = [
     href: '/nursery/expenses',
     permission: 'view-companies',
   },
-  {
-    icon: Bot,
-    label: 'المستشار الزراعي',
-    href: '/nursery/ai-chat',
-    permission: 'view-companies',
-  },
+
 ]
 
 type SidebarProps = {
