@@ -131,3 +131,11 @@ export function useDeleteIrrigationPlan() {
     onSuccess: invalidate,
   })
 }
+
+export function useDeleteNurseryImage() {
+  const invalidate = useInvalidateNurseryLocations()
+  return useMutation({
+    mutationFn: (id: number) => nurseryLocationsApi.deleteNurseryImage(id),
+    onSuccess: invalidate,
+  })
+}

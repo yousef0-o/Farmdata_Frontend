@@ -119,4 +119,7 @@ export const nurseryLocationsApi = {
 
   deleteIrrigationPlan: (id: number) =>
     apiRequest<void>(`/nursery/locations/irrigation-plans/${id}`, { method: 'DELETE' }),
+
+  deleteNurseryImage: (id: number) =>
+    apiRequest<void>(`/nursery/images/${id}`, { method: 'DELETE' }),
 }

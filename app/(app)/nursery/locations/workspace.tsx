@@ -45,6 +45,7 @@ import {
   useUpdateNurseryBasin,
   useUpdateNurseryLayout,
   useUpdateNurserySection,
+  useDeleteNurseryImage,
 } from '@/lib/hooks/useNurseryLocations'
 import { useNurseryFieldOptions } from '@/lib/hooks/useNurseryFields'
 import type { ApiError } from '@/lib/types'
@@ -912,6 +913,7 @@ export default function NurseryLocationsWorkspace() {
   const updateBasin = useUpdateNurseryBasin()
   const deleteBasin = useDeleteNurseryBasin()
   const deletePlan = useDeleteIrrigationPlan()
+  const deleteImage = useDeleteNurseryImage()
 
   const busy =
     createNursery.isPending ||
@@ -920,7 +922,8 @@ export default function NurseryLocationsWorkspace() {
     createSection.isPending ||
     updateSection.isPending ||
     createBasin.isPending ||
-    updateBasin.isPending
+    updateBasin.isPending ||
+    deleteImage.isPending
 
   const mutationError =
     createNursery.error ??
@@ -934,7 +937,8 @@ export default function NurseryLocationsWorkspace() {
     createBasin.error ??
     updateBasin.error ??
     deleteBasin.error ??
-    deletePlan.error
+    deletePlan.error ??
+    deleteImage.error
 
   const pageContext = useMemo(() => {
     if (pathname.endsWith('/nursery/locations')) return 'المواقع'
@@ -1072,6 +1076,44 @@ export default function NurseryLocationsWorkspace() {
                     </div>
                   )}
                 </div>
+
+                {nursery.images && nursery.images.length > 0 ? (
+                  <div className="border-b border-line bg-surface-muted p-4">
+                    <div className="text-xs font-bold text-ink-soft mb-2 flex items-center gap-1.5">
+                      <ImageIcon className="h-3.5 w-3.5 text-action-primary" />
+                      <span>صور المشتل ({nursery.images.length}):</span>
+                    </div>
+                    <div className="flex flex-wrap gap-3">
+                      {nursery.images.map((img) => (
+                        <div
+                          key={img.id}
+                          className="relative group w-20 h-20 rounded-xl overflow-hidden border border-line bg-surface shadow-sm transition-all hover:border-action-primary"
+                        >
+                          <img src={buildAssetUrl(img.image_path) || ''} alt="صورة المشتل" className="w-full h-full object-cover" />
+                          <div className="absolute inset-0 bg-black/55 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                            <button
+                              type="button"
+                              disabled={deleteImage.isPending}
+                              onClick={async () => {
+                                if (confirm('هل أنت متأكد من حذف هذه الصورة نهائياً؟')) {
+                                  try {
+                                    await deleteImage.mutateAsync(img.id)
+                                  } catch (err) {
+                                    // errors are handled globally by mutationError
+                                  }
+                                }
+                              }}
+                              className="p-1.5 rounded-full bg-danger text-white hover:bg-red-700 transition-colors disabled:cursor-not-allowed disabled:opacity-50"
+                              title="حذف الصورة"
+                            >
+                              <X className="w-4 h-4" />
+                            </button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                ) : null}
 
                 <div className="flex flex-col gap-3 border-b border-line bg-surface px-5 py-4 xl:flex-row xl:items-center xl:justify-between">
                   <button
