@@ -8,27 +8,28 @@ import {
   Building2, 
   Sprout, 
   Warehouse, 
-  Layers, 
   ArrowLeftRight, 
   Coins, 
   Users, 
   Truck, 
   FolderArchive, 
   BookOpen, 
-  ShieldCheck, 
-  DollarSign, 
   Bird, 
   X,
   ChartLine,
   MapPin,
   TreePine,
-  LayoutGrid,
   Boxes,
   Scale,
-  FileSpreadsheet,
+  ReceiptText,
   Wallet,
   Bot,
-  ArrowRight
+  ArrowRight,
+  Package2,
+  PackageCheck,
+  UserCog,
+  SlidersHorizontal,
+  ListOrdered
 } from 'lucide-react'
 import DarkModeToggle from '../ui/DarkModeToggle'
 import { useMe } from '@/lib/hooks/useAuth'
@@ -60,7 +61,7 @@ export const navItems = [
     permission: 'view-flocks',
   },
   {
-    icon: Bird,
+    icon: ChartLine,
     label: 'تحليلات القطيع',
     href: '/analytics/flocks',
     permission: 'view-flocks',
@@ -78,7 +79,7 @@ export const navItems = [
     permission: 'view-accounting',
   },
   {
-    icon: DollarSign,
+    icon: ReceiptText,
     label: 'الفواتير',
     href: '/financial/invoices',
     permission: 'view-accounting',
@@ -90,7 +91,7 @@ export const navItems = [
     permission: 'view-accounting',
   },
   {
-    icon: Coins,
+    icon: PackageCheck,
     label: 'الأصول',
     href: '/assets',
     permission: 'view-assets',
@@ -114,7 +115,7 @@ export const navItems = [
     permission: 'view-warehouses',
   },
   {
-    icon: Layers,
+    icon: Package2,
     label: 'الأصناف',
     href: '/items',
     permission: 'view-items',
@@ -126,7 +127,7 @@ export const navItems = [
     permission: 'view-movements',
   },
   {
-    icon: ShieldCheck,
+    icon: UserCog,
     label: 'المستخدمون',
     href: '/team',
     permission: 'view-team',
@@ -154,7 +155,7 @@ export const nurseryNavItems = [
     permission: 'view-companies',
   },
   {
-    icon: LayoutGrid,
+    icon: SlidersHorizontal,
     label: 'إدارة الحقول العامة',
     href: '/nursery/fields',
     permission: 'view-companies',
@@ -163,6 +164,12 @@ export const nurseryNavItems = [
     icon: Sprout,
     label: 'إدارة المشتل',
     href: '/nursery/manage',
+    permission: 'view-companies',
+  },
+  {
+    icon: ListOrdered,
+    label: 'عرض الخطوط',
+    href: '/nursery/lines',
     permission: 'view-companies',
   },
   {
@@ -175,7 +182,7 @@ export const nurseryNavItems = [
     icon: Scale,
     label: 'الأرصدة الافتتاحية',
     href: '/nursery/opening-balances',
-    permission: 'view-companies',
+    permission: 'view-nursery-opening-balances',
   },
   {
     icon: Users,
@@ -184,7 +191,7 @@ export const nurseryNavItems = [
     permission: 'view-companies',
   },
   {
-    icon: FileSpreadsheet,
+    icon: ReceiptText,
     label: 'الفواتير',
     href: '/nursery/invoices',
     permission: 'view-companies',

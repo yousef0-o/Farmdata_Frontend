@@ -10,11 +10,11 @@ import {
   ChartPie,
   ChevronDown,
   CircleDollarSign,
-  Coins,
   Grid3X3,
+  Landmark,
   Layers3,
   MapPin,
-  PackageSearch,
+  ReceiptText,
   Ruler,
   Search,
   Sprout,
@@ -132,7 +132,7 @@ const NURSERY_DASHBOARD_MOCK: NurseryDashboardMock = {
       label: 'قيمة الأصول',
       value: '694,789',
       unit: 'ريال',
-      icon: Coins,
+      icon: Landmark,
       tone: 'purple',
     },
     {
@@ -148,7 +148,7 @@ const NURSERY_DASHBOARD_MOCK: NurseryDashboardMock = {
       label: 'الإيرادات (من فواتير المبيعات)',
       value: '57.50',
       unit: 'ريال',
-      icon: PackageSearch,
+      icon: ReceiptText,
       tone: 'amber',
     },
   ],
@@ -463,7 +463,14 @@ function SpeciesDonutChart({ data }: { data: ChartDatum[] }) {
   const total = data.reduce((sum, item) => sum + item.value, 0)
   const radius = 42
   const circumference = 2 * Math.PI * radius
-  let offset = 0
+  const chartSegments = data.map((item, index) => {
+    const segment = (item.value / total) * circumference
+    const offset = data
+      .slice(0, index)
+      .reduce((sum, row) => sum + (row.value / total) * circumference, 0)
+
+    return { item, segment, offset }
+  })
 
   return (
     <div className="min-h-[320px] rounded-2xl border border-slate-100 bg-slate-50/60 p-5 dark:border-slate-800 dark:bg-slate-900/40">
@@ -488,26 +495,20 @@ function SpeciesDonutChart({ data }: { data: ChartDatum[] }) {
               strokeWidth="16"
               className="text-slate-100 dark:text-slate-800"
             />
-            {data.map((item) => {
-              const segment = (item.value / total) * circumference
-              const dashOffset = offset
-              offset += segment
-
-              return (
-                <circle
-                  key={item.label}
-                  cx="60"
-                  cy="60"
-                  r={radius}
-                  fill="none"
-                  stroke={item.color}
-                  strokeWidth="16"
-                  strokeLinecap="round"
-                  strokeDasharray={`${segment} ${circumference - segment}`}
-                  strokeDashoffset={-dashOffset}
-                />
-              )
-            })}
+            {chartSegments.map(({ item, segment, offset }) => (
+              <circle
+                key={item.label}
+                cx="60"
+                cy="60"
+                r={radius}
+                fill="none"
+                stroke={item.color}
+                strokeWidth="16"
+                strokeLinecap="round"
+                strokeDasharray={`${segment} ${circumference - segment}`}
+                strokeDashoffset={-offset}
+              />
+            ))}
           </svg>
           <div className="absolute inset-0 flex flex-col items-center justify-center text-center">
             <span className="font-mono text-2xl font-extrabold text-slate-950 dark:text-slate-50">
