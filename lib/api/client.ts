@@ -10,18 +10,24 @@ export async function apiRequestRaw(
   options: RequestInit = {}
 ): Promise<Response> {
   const token = getToken()
+  const requestOptions: RequestInit = { ...options }
+  const requestedMethod = options.method?.toUpperCase()
   const headers: Record<string, string> = {
     Accept: 'application/json',
     ...(options.headers as Record<string, string>),
   }
 
-  if (!(options.body instanceof FormData)) {
+  if (requestedMethod === 'DELETE') {
+    requestOptions.method = 'POST'
+    requestOptions.body = new URLSearchParams({ _method: 'DELETE' }).toString()
+    headers['Content-Type'] = 'application/x-www-form-urlencoded'
+  } else if (!(options.body instanceof FormData)) {
     headers['Content-Type'] = 'application/json'
   }
 
   if (token) headers['Authorization'] = `Bearer ${token}`
 
-  const res = await fetch(`${API_BASE}${path}`, { ...options, headers })
+  const res = await fetch(`${API_BASE}${path}`, { ...requestOptions, headers })
 
   if (res.status === 401) {
     if (typeof window !== 'undefined') {
