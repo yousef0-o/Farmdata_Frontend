@@ -52,6 +52,8 @@ const statusLabels: Record<NurseryInvoiceStatus, string> = {
   draft: 'مسودة',
 }
 
+import SaudiRiyalIcon from '@/components/icons/SaudiRiyalIcon'
+
 function today() {
   return new Date().toISOString().slice(0, 10)
 }
@@ -61,10 +63,17 @@ function asNumber(value: string | number | null | undefined) {
 }
 
 function formatMoney(value: string | number | null | undefined) {
-  return `${new Intl.NumberFormat('ar-SA', {
-    maximumFractionDigits: 2,
-    minimumFractionDigits: 2,
-  }).format(asNumber(value))} ريال`
+  return (
+    <span className="inline-flex items-center gap-1">
+      <span>
+        {new Intl.NumberFormat('ar-SA', {
+          maximumFractionDigits: 2,
+          minimumFractionDigits: 2,
+        }).format(asNumber(value))}
+      </span>
+      <SaudiRiyalIcon size={14} className="text-emerald-700 inline-block align-middle ml-1" />
+    </span>
+  )
 }
 
 function formatNumber(value: string | number | null | undefined) {
@@ -408,9 +417,9 @@ function InvoiceDialog({
         </button>
 
         <div className="mt-4 rounded-2xl bg-surface-subtle p-4 text-left text-sm font-semibold text-ink-soft">
-          <div>المجموع الفرعي: <span className="font-mono text-ink">{subtotal.toFixed(2)}</span> ريال</div>
-          <div>ضريبة القيمة المضافة (15%): <span className="font-mono text-ink">{vat.toFixed(2)}</span> ريال</div>
-          <div className="mt-1 text-lg font-extrabold text-ink">الإجمالي: <span className="font-mono">{total.toFixed(2)}</span> ريال</div>
+          <div>المجموع الفرعي: <span className="font-mono text-ink">{subtotal.toFixed(2)}</span> <SaudiRiyalIcon size={14} className="text-emerald-700 inline-block align-middle ml-1" /></div>
+          <div>ضريبة القيمة المضافة (15%): <span className="font-mono text-ink">{vat.toFixed(2)}</span> <SaudiRiyalIcon size={14} className="text-emerald-700 inline-block align-middle ml-1" /></div>
+          <div className="mt-1 text-lg font-extrabold text-ink">الإجمالي: <span className="font-mono">{total.toFixed(2)}</span> <SaudiRiyalIcon size={16} className="text-emerald-700 inline-block align-middle ml-1" /></div>
         </div>
 
         {createMutation.isError ? (

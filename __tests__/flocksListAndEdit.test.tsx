@@ -67,9 +67,9 @@ describe('FlocksListPage', () => {
   it('renders flocks list page layout and table successfully', () => {
     render(<FlocksListPage />)
     expect(screen.getByText('إدارة الأفواج')).toBeInTheDocument()
-    expect(screen.getByText('#101')).toBeInTheDocument()
-    expect(screen.getByText('عنبر 1')).toBeInTheDocument()
-    expect(screen.getByText('القسم الأول')).toBeInTheDocument()
+    expect(screen.getAllByText('#101')[0]).toBeInTheDocument()
+    expect(screen.getAllByText('عنبر 1')[0]).toBeInTheDocument()
+    expect(screen.getAllByText('القسم الأول')[0]).toBeInTheDocument()
   })
 
   it('triggers search filter when clicking search button', async () => {

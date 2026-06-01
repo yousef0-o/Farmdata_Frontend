@@ -42,7 +42,7 @@ function MetricCard({
   icon: ComponentType<{ className?: string }>
   label: string
   value: string
-  detail: string
+  detail: React.ReactNode
   accent: 'clay' | 'emerald' | 'danger' | 'slate'
   currency?: boolean
 }) {
@@ -94,7 +94,12 @@ export function FlockAnalyticsCards({ analytics }: FlockAnalyticsCardsProps) {
         icon={Scale}
         label="قيمة الطير الرأسمالية"
         value={formatNumber(breeding.bird_value || production.bird_value, 2)}
-        detail={`إجمالي قيمة الفوج: ${formatNumber(breeding.total_flock_value, 2)} ريال`}
+        detail={
+          <span className="flex items-center gap-1 font-sans justify-start flex-wrap">
+            <span>إجمالي قيمة الفوج: {formatNumber(breeding.total_flock_value, 2)}</span>
+            <SaudiRiyalIcon size={12} className="text-emerald-700 ml-0.5" />
+          </span>
+        }
         accent="emerald"
         currency
       />
@@ -102,7 +107,15 @@ export function FlockAnalyticsCards({ analytics }: FlockAnalyticsCardsProps) {
         icon={TrendingUp}
         label="قيمة النافق التراكمي"
         value={formatNumber((breeding.mortality_value || 0) + (production.mortality_value || 0), 2)}
-        detail={`تربية: ${formatNumber(breeding.mortality_value, 2)}، إنتاج: ${formatNumber(production.mortality_value, 2)} ريال`}
+        detail={
+          <span className="flex items-center gap-1 font-sans justify-start flex-wrap">
+            <span>تربية: {formatNumber(breeding.mortality_value, 2)}</span>
+            <SaudiRiyalIcon size={12} className="text-emerald-700 ml-0.5" />
+            <span className="mx-1">،</span>
+            <span>إنتاج: {formatNumber(production.mortality_value, 2)}</span>
+            <SaudiRiyalIcon size={12} className="text-emerald-700 ml-0.5" />
+          </span>
+        }
         accent="clay"
         currency
       />

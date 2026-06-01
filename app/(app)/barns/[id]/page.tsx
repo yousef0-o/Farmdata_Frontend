@@ -1862,11 +1862,28 @@ function SmartDailySheet({
               />
             </FormField>
             <ReadOnlyMetric label="عدد الدجاج الحالي" value={formatNumber(currentBirdsAfterMortality)} tone="success" />
-            <ReadOnlyMetric label="قيمة النافق اليومي" value={`${formatCurrency(mortalityValueToday)} ريال`} tone="warning" />
+            <ReadOnlyMetric
+              label="قيمة النافق اليومي"
+              value={
+                <span className="flex items-center gap-1 font-sans justify-end">
+                  <span>{formatCurrency(mortalityValueToday)}</span>
+                  <SaudiRiyalIcon size={14} className="text-emerald-700 inline-block align-middle ml-1" />
+                </span>
+              }
+              tone="warning"
+            />
           </div>
           <div className="mt-4 grid gap-3 rounded-xl border border-line bg-surface-subtle p-3 md:grid-cols-2">
             <ReadOnlyMetric label="إجماليات النافق للفوج: إجمالي العدد" value={formatNumber(totalMortalityCount)} />
-            <ReadOnlyMetric label="إجماليات النافق للفوج: إجمالي القيمة" value={`${formatCurrency(totalMortalityValue)} ريال`} />
+            <ReadOnlyMetric
+              label="إجماليات النافق للفوج: إجمالي القيمة"
+              value={
+                <span className="flex items-center gap-1 font-sans justify-end">
+                  <span>{formatCurrency(totalMortalityValue)}</span>
+                  <SaudiRiyalIcon size={14} className="text-emerald-700 inline-block align-middle ml-1" />
+                </span>
+              }
+            />
           </div>
         </section>
 
@@ -1944,7 +1961,16 @@ function SmartDailySheet({
 
           <div className="mt-4 grid gap-3 rounded-xl border border-line-strong bg-surface-muted p-3 md:grid-cols-2">
             <ReadOnlyMetric label="الإجمالي اليومي بالطن" value={formatNumber(dailyFeedTotalTon, 3)} tone="success" />
-            <ReadOnlyMetric label="إجمالي التكلفة بالريال" value={formatCurrency(dailyFeedTotalCost)} tone="warning" />
+            <ReadOnlyMetric
+              label="إجمالي التكلفة"
+              value={
+                <span className="flex items-center gap-1 font-sans justify-end">
+                  <span>{formatCurrency(dailyFeedTotalCost)}</span>
+                  <SaudiRiyalIcon size={14} className="text-emerald-700 inline-block align-middle ml-1" />
+                </span>
+              }
+              tone="warning"
+            />
           </div>
         </section>
 
@@ -2057,7 +2083,7 @@ function ReadOnlyMetric({
   tone = 'neutral',
 }: {
   label: string
-  value: string
+  value: React.ReactNode
   tone?: 'neutral' | 'success' | 'warning'
 }) {
   const toneClass =

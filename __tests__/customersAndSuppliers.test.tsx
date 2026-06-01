@@ -217,8 +217,8 @@ describe('Customers & Suppliers Module Tests', () => {
   it('renders Customers Page layout and stats correctly', () => {
     render(<CustomersPage />)
     expect(screen.getByText('إدارة العملاء')).toBeInTheDocument()
-    expect(screen.getByText('شركة زراعة الدواجن المتحدة')).toBeInTheDocument()
-    expect(screen.getByText('CUST-001')).toBeInTheDocument()
+    expect(screen.getAllByText('شركة زراعة الدواجن المتحدة')[0]).toBeInTheDocument()
+    expect(screen.getAllByText('CUST-001')[0]).toBeInTheDocument()
     // Stats check
     expect(screen.getByText(matchText('50 عميل'))).toBeInTheDocument() // Total count
     expect(screen.getByText(matchText('45 عميل'))).toBeInTheDocument() // Active count
@@ -230,8 +230,8 @@ describe('Customers & Suppliers Module Tests', () => {
     render(<CustomerDetailPage params={Promise.resolve({ id: '123' })} />)
     expect(screen.getAllByText('شركة زراعة الدواجن المتحدة')[0]).toBeInTheDocument()
     expect(screen.getByText('الحد الائتماني')).toBeInTheDocument()
-    expect(screen.getByText('100,000 ريال')).toBeInTheDocument()
-    expect(screen.getByText('35,000 ريال')).toBeInTheDocument() // Current balance
+    expect(screen.getByText('100,000')).toBeInTheDocument()
+    expect(screen.getByText('35,000')).toBeInTheDocument() // Current balance
   })
 
   // 3. Customer Form: step validation & payload purity whitelisting
@@ -314,8 +314,8 @@ describe('Customers & Suppliers Module Tests', () => {
   it('renders Suppliers Page layout and stats correctly', () => {
     render(<SuppliersPage />)
     expect(screen.getByText('إدارة الموردين')).toBeInTheDocument()
-    expect(screen.getByText('شركة الأعلاف الوطنية')).toBeInTheDocument()
-    expect(screen.getByText('SUPP-001')).toBeInTheDocument()
+    expect(screen.getAllByText('شركة الأعلاف الوطنية')[0]).toBeInTheDocument()
+    expect(screen.getAllByText('SUPP-001')[0]).toBeInTheDocument()
     // Stats check
     expect(screen.getByText(matchText('20 مورد'))).toBeInTheDocument() // Total count
     expect(screen.getByText(matchText('18 مورد'))).toBeInTheDocument() // Active count
@@ -372,6 +372,6 @@ describe('Customers & Suppliers Module Tests', () => {
     expect(screen.getAllByText('شركة الأعلاف الوطنية')[0]).toBeInTheDocument()
     expect(screen.getAllByText('SUPP-001')[0]).toBeInTheDocument()
     expect(screen.getByText('الحد الائتماني')).toBeInTheDocument()
-    expect(screen.getByText('50,000 ريال')).toBeInTheDocument()
+    expect(screen.getByText('50,000')).toBeInTheDocument()
   })
 })

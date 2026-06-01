@@ -20,6 +20,7 @@ import {
 import { AnalyticsAxis, AnalyticsAggregation, FlockDetail } from '@/lib/types'
 import { Activity, AlertTriangle, Calendar, Layers, PieChart as PieChartIcon } from 'lucide-react'
 import { FlockAnalyticsCards } from './FlockAnalyticsCards'
+import SaudiRiyalIcon from '@/components/icons/SaudiRiyalIcon'
 
 interface FlockAnalyticsDashboardProps {
   flock: FlockDetail
@@ -100,7 +101,10 @@ export function FlockAnalyticsDashboard({ flock }: FlockAnalyticsDashboardProps)
               </Pie>
               <Tooltip
                 formatter={(value) => [
-                  `${Number(value ?? 0).toLocaleString()} ريال`,
+                  <span key="cost-val" className="flex items-center gap-1 font-sans justify-end">
+                    <span>{Number(value ?? 0).toLocaleString()}</span>
+                    <SaudiRiyalIcon size={12} className="text-emerald-700 ml-0.5" />
+                  </span>,
                   'التكلفة',
                 ]}
               />
