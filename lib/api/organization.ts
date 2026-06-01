@@ -1,5 +1,5 @@
 import { apiRequest, wrapResponse } from './client'
-import type { Company, Project, Section, Barn, Flock, FlockDetail, FlockSummary, PaginatedResponse, ProductionEntry, BreedingEntry, FeedEntry, EntityStatistics } from '../types'
+import type { Company, Project, Section, Barn, Flock, FlockDetail, FlockSummary, PaginatedResponse, ProductionEntry, BreedingEntry, FeedEntry, EntityStatistics, EggItemPayload, PoultryFeedBatch } from '../types'
 
 export const organizationApi = {
   // Companies
@@ -152,11 +152,16 @@ export const dailyOpsApi = {
     egg_size_medium?: number
     egg_size_small?: number
     egg_size_reject?: number
-    egg_items?: { item_id: number; quantity: number }[]
+    egg_items?: EggItemPayload[]
+    feed_batches?: PoultryFeedBatch[]
+    feed_rows?: PoultryFeedBatch[]
+    feed_items?: PoultryFeedBatch[]
     feed_quantity_kg: number
     warehouse_id?: number
+    feed_warehouse_id?: number
     inventory_item_id?: number
     egg_warehouse_id?: number
+    production_warehouse_id?: number
     egg_item_id?: number
     ai_observation?: string
   }) => apiRequest<{ data: { production_entry: ProductionEntry; feed_entry: FeedEntry } }>(
@@ -196,11 +201,20 @@ export const dailyOpsApi = {
     mortality?: number
     weight_sample_avg?: number
     uniformity_pct?: number
-    feed_quantity_kg: number
+    feed_quantity_kg?: number
+    quantity_kg?: number
+    quantity_ton?: number
+    price_per_ton?: number
+    feed_type?: string
+    feed_batches?: PoultryFeedBatch[]
+    feed_rows?: PoultryFeedBatch[]
+    feed_items?: PoultryFeedBatch[]
     warehouse_id?: number
+    feed_warehouse_id?: number
     item_id?: number
+    inventory_item_id?: number
     ai_observation?: string
-  }) => apiRequest<{ data: { measurement: BreedingEntry; feed: FeedEntry } }>(
+  }) => apiRequest<{ data: { measurement: BreedingEntry; feed: FeedEntry; feed_batches?: PoultryFeedBatch[] } }>(
     `/flocks/${flockId}/breeding-entries`,
     { method: 'POST', body: JSON.stringify(data) }
   ),

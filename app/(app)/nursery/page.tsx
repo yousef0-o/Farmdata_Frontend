@@ -22,7 +22,28 @@ import {
   Warehouse,
   X,
 } from 'lucide-react'
+import { useRouter } from 'next/navigation'
 import AppDialog from '@/components/ui/AppDialog'
+import { Skeleton } from '@/components/ui/Skeleton'
+import { useNurseryManagement } from '@/lib/hooks/useNurseryManagement'
+import { useNurseryInventoryBootstrap, useNurseryInventoryValuation } from '@/lib/hooks/useNurseryInventory'
+import { useNurseryExpensesBootstrap } from '@/lib/hooks/useNurseryExpenses'
+import { useNurseryInvoices } from '@/lib/hooks/useNurseryInvoices'
+import type { NurseryCycle } from '@/lib/types/nurseryManagement'
+import type { NurseryInventoryCategoryTotal, NurseryInventoryItem } from '@/lib/types/nurseryInventory'
+import type { NurseryAssetGroup, NurseryPinnedExpenseAccount } from '@/lib/types/nurseryExpenses'
+import {
+  PieChart,
+  Pie,
+  Cell,
+  ResponsiveContainer,
+  Tooltip as RechartsTooltip,
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+} from 'recharts'
 
 type MetricTile = {
   id: string
@@ -86,16 +107,6 @@ type NurseryOption = {
   locations: LocationOption[]
 }
 
-type NurseryDashboardMock = {
-  metrics: MetricTile[]
-  capacity: CapacityOverview
-  potDistribution: ChartDatum[]
-  speciesDistribution: ChartDatum[]
-  structure: StructureMetric[]
-  lowStock: LowStockItem[]
-  quickAccess: NurseryOption[]
-}
-
 type NurserySelection = {
   nurseryId: string
   locationId: string
@@ -103,218 +114,13 @@ type NurserySelection = {
   basinId: string
 }
 
-const NURSERY_DASHBOARD_MOCK: NurseryDashboardMock = {
-  metrics: [
-    {
-      id: 'total-trees',
-      label: 'إجمالي الأشجار',
-      value: '33,108',
-      icon: Trees,
-      tone: 'emerald',
-    },
-    {
-      id: 'total-capacity',
-      label: 'الطاقة الاستيعابية',
-      value: '252,661',
-      icon: Ruler,
-      tone: 'blue',
-    },
-    {
-      id: 'inventory-value',
-      label: 'قيمة المخزون',
-      value: '15,078',
-      unit: 'ريال',
-      icon: Boxes,
-      tone: 'slate',
-    },
-    {
-      id: 'asset-value',
-      label: 'قيمة الأصول',
-      value: '694,789',
-      unit: 'ريال',
-      icon: Landmark,
-      tone: 'purple',
-    },
-    {
-      id: 'total-expenses',
-      label: 'إجمالي المصروفات',
-      value: '1,445,378',
-      unit: 'ريال',
-      icon: CircleDollarSign,
-      tone: 'orange',
-    },
-    {
-      id: 'sales-revenue',
-      label: 'الإيرادات (من فواتير المبيعات)',
-      value: '57.50',
-      unit: 'ريال',
-      icon: ReceiptText,
-      tone: 'amber',
-    },
-  ],
-  capacity: {
-    total: 252661,
-    totalDisplay: '252,661',
-    planted: 33108,
-    plantedDisplay: '33,108',
-    utilizationDisplay: '13.10%',
-  },
-  potDistribution: [
-    {
-      label: 'مركن مقاس 30 سم',
-      value: 21850,
-      valueDisplay: '21,850',
-      color: '#10b981',
-    },
-    {
-      label: 'حفرة مقاس متر',
-      value: 6120,
-      valueDisplay: '6,120',
-      color: '#3b82f6',
-    },
-    {
-      label: 'مركن مقاس 20 سم',
-      value: 5138,
-      valueDisplay: '5,138',
-      color: '#c2410c',
-    },
-  ],
-  speciesDistribution: [
-    {
-      label: 'الخبيز الساحلي',
-      value: 18420,
-      valueDisplay: '18,420',
-      color: '#10b981',
-    },
-    {
-      label: 'الكونوكاربس',
-      value: 9760,
-      valueDisplay: '9,760',
-      color: '#3b82f6',
-    },
-    {
-      label: 'إليكس أخضر',
-      value: 4928,
-      valueDisplay: '4,928',
-      color: '#c2410c',
-    },
-  ],
-  structure: [
-    {
-      id: 'nurseries',
-      label: 'المشاتل',
-      value: '1',
-      dotClassName: 'bg-[#10b981]',
-    },
-    {
-      id: 'locations',
-      label: 'المواقع',
-      value: '9',
-      dotClassName: 'bg-blue-500',
-    },
-    {
-      id: 'sections',
-      label: 'الأقسام',
-      value: '22',
-      dotClassName: 'bg-[#c2410c]',
-    },
-    {
-      id: 'basins',
-      label: 'الأحواض',
-      value: '114',
-      dotClassName: 'bg-purple-500',
-    },
-    {
-      id: 'area',
-      label: 'المساحة',
-      value: '124,628 م²',
-      dotClassName: 'bg-amber-500',
-    },
-  ],
-  lowStock: [
-    {
-      id: 'fertilizer-yellow-top-ten',
-      name: 'سماد توب تن لون أصفر',
-      unit: 'كيس',
-      currentQuantity: 0,
-      minQuantity: 12,
-    },
-    {
-      id: 'fertilizer-green-top-ten',
-      name: 'سماد توب تن لون أخضر',
-      unit: 'كيس',
-      currentQuantity: 0,
-      minQuantity: 10,
-    },
-    {
-      id: 'fertilizer-phosphorus',
-      name: 'سماد عالي الفوسفور',
-      unit: 'كجم',
-      currentQuantity: 0,
-      minQuantity: 25,
-    },
-    {
-      id: 'fertilizer-micro-elements',
-      name: 'سماد توازن العناصر الصغرى',
-      unit: 'عبوة',
-      currentQuantity: 0,
-      minQuantity: 8,
-    },
-  ],
-  quickAccess: [
-    {
-      id: 'nursery-main',
-      name: 'مشتل صبارة الرئيسي',
-      locations: [
-        {
-          id: 'loc-north',
-          name: 'الموقع الشمالي',
-          sections: [
-            {
-              id: 'sec-a',
-              name: 'القسم أ',
-              basins: [
-                { id: 'basin-a-01', name: 'حوض A-01' },
-                { id: 'basin-a-02', name: 'حوض A-02' },
-                { id: 'basin-a-03', name: 'حوض A-03' },
-              ],
-            },
-            {
-              id: 'sec-b',
-              name: 'القسم ب',
-              basins: [
-                { id: 'basin-b-01', name: 'حوض B-01' },
-                { id: 'basin-b-02', name: 'حوض B-02' },
-              ],
-            },
-          ],
-        },
-        {
-          id: 'loc-south',
-          name: 'الموقع الجنوبي',
-          sections: [
-            {
-              id: 'sec-c',
-              name: 'القسم ج',
-              basins: [
-                { id: 'basin-c-01', name: 'حوض C-01' },
-                { id: 'basin-c-02', name: 'حوض C-02' },
-              ],
-            },
-          ],
-        },
-      ],
-    },
-  ],
-}
-
 const toneClasses: Record<MetricTile['tone'], string> = {
-  emerald: 'bg-emerald-50 text-[#10b981] border-emerald-100',
-  blue: 'bg-blue-50 text-blue-600 border-blue-100',
-  orange: 'bg-orange-50 text-[#c2410c] border-orange-100',
-  purple: 'bg-purple-50 text-purple-600 border-purple-100',
-  amber: 'bg-amber-50 text-amber-600 border-amber-100',
-  slate: 'bg-slate-50 text-slate-600 border-slate-100',
+  emerald: 'bg-emerald-50 text-[#10b981] border-emerald-100 dark:bg-emerald-950/20 dark:border-emerald-900/30',
+  blue: 'bg-blue-50 text-blue-600 border-blue-100 dark:bg-blue-950/20 dark:border-blue-900/30',
+  orange: 'bg-orange-50 text-[#c2410c] border-orange-100 dark:bg-orange-950/20 dark:border-orange-900/30',
+  purple: 'bg-purple-50 text-purple-600 border-purple-100 dark:bg-purple-950/20 dark:border-purple-900/30',
+  amber: 'bg-amber-50 text-amber-600 border-amber-100 dark:bg-amber-950/20 dark:border-amber-900/30',
+  slate: 'bg-slate-50 text-slate-600 border-slate-100 dark:bg-slate-900/20 dark:border-slate-800/30',
 }
 
 const selectBaseClassName =
@@ -366,14 +172,14 @@ function ProgressRow({
   toneClassName: string
 }) {
   return (
-    <div>
-      <div className="mb-3 flex items-center justify-between gap-4 text-sm font-bold">
-        <span className="text-slate-800 dark:text-slate-100">{label}</span>
-        <span className="font-mono text-slate-500 dark:text-slate-400">{value}</span>
+    <div className="space-y-2">
+      <div className="flex items-center justify-between gap-4 text-xs font-extrabold">
+        <span className="text-slate-700 dark:text-slate-300">{label}</span>
+        <span className="font-mono text-slate-900 dark:text-slate-100">{value}</span>
       </div>
-      <div className="h-4 overflow-hidden rounded-full bg-slate-100 ring-1 ring-inset ring-slate-200/70 dark:bg-slate-800 dark:ring-slate-700">
+      <div className="h-3.5 overflow-hidden rounded-full bg-slate-100 p-0.5 ring-1 ring-inset ring-slate-200/50 dark:bg-slate-800 dark:ring-slate-700/50">
         <div
-          className={`h-full rounded-full ${toneClassName}`}
+          className={`h-full rounded-full transition-all duration-500 ease-out ${toneClassName}`}
           style={{ width: `${Math.min(percent, 100)}%` }}
         />
       </div>
@@ -382,20 +188,20 @@ function ProgressRow({
 }
 
 function CapacityCard({ capacity }: { capacity: CapacityOverview }) {
-  const utilization = (capacity.planted / capacity.total) * 100
+  const utilization = capacity.total > 0 ? (capacity.planted / capacity.total) * 100 : 0
 
   return (
     <section className="rounded-2xl border border-slate-100 bg-white p-5 shadow-sm dark:border-slate-800 dark:bg-surface sm:p-6">
       <div className="mb-7 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex items-center gap-3">
-          <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-50 text-[#10b981] ring-1 ring-emerald-100">
+          <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-50 text-[#10b981] ring-1 ring-emerald-100 dark:bg-emerald-950/20 dark:ring-emerald-900/30">
             <ChartPie className="h-5 w-5" />
           </span>
           <h2 className="text-lg font-extrabold text-slate-950 dark:text-slate-50">
             مقارنة السعة والزراعة
           </h2>
         </div>
-        <span className="w-fit rounded-xl bg-emerald-50 px-3 py-2 text-sm font-extrabold text-emerald-700 ring-1 ring-emerald-100">
+        <span className="w-fit rounded-xl bg-emerald-50 px-3 py-2 text-sm font-extrabold text-emerald-700 ring-1 ring-emerald-100 dark:bg-emerald-950/20 dark:text-emerald-400 dark:ring-emerald-900/30">
           نسبة التشغيل: {capacity.utilizationDisplay}
         </span>
       </div>
@@ -419,11 +225,28 @@ function CapacityCard({ capacity }: { capacity: CapacityOverview }) {
 }
 
 function PotSizeChart({ data }: { data: ChartDatum[] }) {
-  const maxValue = Math.max(...data.map((item) => item.value))
+  const CustomTooltip = ({ active, payload }: any) => {
+    if (active && payload && payload.length) {
+      const item = payload[0].payload
+      return (
+        <div className="rounded-xl border border-slate-100 bg-white/95 p-3 shadow-lg backdrop-blur-md dark:border-slate-800 dark:bg-slate-950/95">
+          <p className="text-xs font-extrabold text-slate-800 dark:text-slate-100">{item.label}</p>
+          <p className="mt-1 text-xs font-bold text-slate-500 dark:text-slate-400 text-right">
+            العدد:{' '}
+            <span className="font-mono font-extrabold text-[#c2410c] dark:text-orange-400">
+              {item.value.toLocaleString('ar-SA')}
+            </span>{' '}
+            شجرة
+          </p>
+        </div>
+      )
+    }
+    return null
+  }
 
   return (
-    <div className="min-h-[320px] rounded-2xl border border-slate-100 bg-slate-50/60 p-5 dark:border-slate-800 dark:bg-slate-900/40">
-      <div className="mb-6 flex items-center justify-between gap-3">
+    <div className="min-h-[320px] rounded-2xl border border-slate-100 bg-slate-50/60 p-5 dark:border-slate-800 dark:bg-slate-900/40 flex flex-col justify-between">
+      <div className="mb-4 flex items-center justify-between gap-3">
         <h3 className="text-base font-extrabold text-slate-950 dark:text-slate-50">
           توزيع الأشجار حسب حجم المركن
         </h3>
@@ -432,49 +255,73 @@ function PotSizeChart({ data }: { data: ChartDatum[] }) {
         </span>
       </div>
 
-      <div className="flex h-56 items-end justify-around gap-4 rounded-2xl bg-white px-4 pb-4 pt-6 ring-1 ring-slate-100 dark:bg-slate-950 dark:ring-slate-800">
-        {data.map((item) => (
-          <div key={item.label} className="flex h-full min-w-0 flex-1 flex-col items-center justify-end gap-3">
-            <div className="flex h-full w-full items-end justify-center">
-              <div
-                className="w-full max-w-16 rounded-t-2xl shadow-sm transition-all duration-300"
-                style={{
-                  height: `${Math.max((item.value / maxValue) * 100, 14)}%`,
-                  backgroundColor: item.color,
-                }}
-              />
-            </div>
-            <div className="min-h-16 text-center">
-              <p className="font-mono text-sm font-extrabold text-slate-900 dark:text-slate-100">
-                {item.valueDisplay}
-              </p>
-              <p className="mt-1 text-xs font-semibold leading-5 text-slate-500 dark:text-slate-400">
-                {item.label}
-              </p>
-            </div>
-          </div>
-        ))}
+      <div className="h-56 w-full rounded-2xl bg-white p-4 ring-1 ring-slate-100 dark:bg-slate-950 dark:ring-slate-800">
+        <ResponsiveContainer width="100%" height="100%">
+          <BarChart data={data} margin={{ top: 10, right: 10, left: 10, bottom: 0 }}>
+            <CartesianGrid
+              strokeDasharray="3 3"
+              vertical={false}
+              stroke="#f1f5f9"
+              className="dark:stroke-slate-800"
+            />
+            <XAxis
+              dataKey="label"
+              tickLine={false}
+              axisLine={false}
+              tick={{ fill: '#64748b', fontSize: 11, fontWeight: 'bold' }}
+            />
+            <YAxis
+              tickLine={false}
+              axisLine={false}
+              orientation="right"
+              tick={{ fill: '#64748b', fontSize: 10, fontFamily: 'monospace' }}
+            />
+            <RechartsTooltip content={<CustomTooltip />} cursor={{ fill: '#f8fafc', radius: 8 }} />
+            <Bar dataKey="value" radius={[6, 6, 0, 0]} barSize={32} animationDuration={1000}>
+              {data.map((entry, index) => (
+                <Cell
+                  key={`cell-${index}`}
+                  fill={entry.color || '#c2410c'}
+                  className="transition-all duration-300 hover:opacity-85"
+                />
+              ))}
+            </Bar>
+          </BarChart>
+        </ResponsiveContainer>
       </div>
     </div>
   )
 }
 
 function SpeciesDonutChart({ data }: { data: ChartDatum[] }) {
-  const total = data.reduce((sum, item) => sum + item.value, 0)
-  const radius = 42
-  const circumference = 2 * Math.PI * radius
-  const chartSegments = data.map((item, index) => {
-    const segment = (item.value / total) * circumference
-    const offset = data
-      .slice(0, index)
-      .reduce((sum, row) => sum + (row.value / total) * circumference, 0)
+  const total = useMemo(() => data.reduce((sum, item) => sum + item.value, 0), [data])
 
-    return { item, segment, offset }
-  })
+  const CustomTooltip = ({ active, payload }: any) => {
+    if (active && payload && payload.length) {
+      const item = payload[0].payload
+      const percent = total > 0 ? ((item.value / total) * 100).toFixed(1) : '0'
+      return (
+        <div className="rounded-xl border border-slate-100 bg-white/95 p-3 shadow-lg backdrop-blur-md dark:border-slate-800 dark:bg-slate-950/95">
+          <div className="flex items-center gap-2 justify-end">
+            <span className="text-sm font-bold text-slate-800 dark:text-slate-100">{item.label}</span>
+            <span className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: item.color }} />
+          </div>
+          <p className="mt-1.5 text-xs font-semibold text-slate-500 dark:text-slate-400 text-right">
+            العدد:{' '}
+            <span className="font-mono font-extrabold text-slate-950 dark:text-slate-50">
+              {item.value.toLocaleString('ar-SA')}
+            </span>{' '}
+            ({percent}%)
+          </p>
+        </div>
+      )
+    }
+    return null
+  }
 
   return (
-    <div className="min-h-[320px] rounded-2xl border border-slate-100 bg-slate-50/60 p-5 dark:border-slate-800 dark:bg-slate-900/40">
-      <div className="mb-6 flex items-center justify-between gap-3">
+    <div className="min-h-[320px] rounded-2xl border border-slate-100 bg-slate-50/60 p-5 dark:border-slate-800 dark:bg-slate-900/40 flex flex-col justify-between">
+      <div className="mb-4 flex items-center justify-between gap-3">
         <h3 className="text-base font-extrabold text-slate-950 dark:text-slate-50">
           توزيع الأشجار حسب النوع
         </h3>
@@ -484,35 +331,28 @@ function SpeciesDonutChart({ data }: { data: ChartDatum[] }) {
       </div>
 
       <div className="grid min-h-56 grid-cols-1 items-center gap-6 rounded-2xl bg-white p-5 ring-1 ring-slate-100 dark:bg-slate-950 dark:ring-slate-800 sm:grid-cols-[0.9fr_1.1fr]">
-        <div className="relative mx-auto h-44 w-44">
-          <svg className="h-full w-full -rotate-90" viewBox="0 0 120 120" role="img" aria-label="رسم دائري لتوزيع الأشجار حسب النوع">
-            <circle
-              cx="60"
-              cy="60"
-              r={radius}
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="16"
-              className="text-slate-100 dark:text-slate-800"
-            />
-            {chartSegments.map(({ item, segment, offset }) => (
-              <circle
-                key={item.label}
-                cx="60"
-                cy="60"
-                r={radius}
-                fill="none"
-                stroke={item.color}
-                strokeWidth="16"
-                strokeLinecap="round"
-                strokeDasharray={`${segment} ${circumference - segment}`}
-                strokeDashoffset={-offset}
-              />
-            ))}
-          </svg>
-          <div className="absolute inset-0 flex flex-col items-center justify-center text-center">
-            <span className="font-mono text-2xl font-extrabold text-slate-950 dark:text-slate-50">
-              33,108
+        <div className="relative mx-auto h-40 w-40">
+          <ResponsiveContainer width="100%" height="100%">
+            <PieChart>
+              <Pie
+                data={data}
+                cx="50%"
+                cy="50%"
+                innerRadius={58}
+                outerRadius={70}
+                paddingAngle={3}
+                dataKey="value"
+              >
+                {data.map((entry, index) => (
+                  <Cell key={`cell-${index}`} fill={entry.color} stroke="none" />
+                ))}
+              </Pie>
+              <RechartsTooltip content={<CustomTooltip />} />
+            </PieChart>
+          </ResponsiveContainer>
+          <div className="absolute inset-0 flex flex-col items-center justify-center text-center pointer-events-none">
+            <span className="font-mono text-2xl font-extrabold text-slate-950 dark:text-slate-50 leading-none">
+              {total.toLocaleString('ar-SA')}
             </span>
             <span className="mt-1 text-xs font-bold text-slate-500 dark:text-slate-400">
               شجرة
@@ -520,23 +360,30 @@ function SpeciesDonutChart({ data }: { data: ChartDatum[] }) {
           </div>
         </div>
 
-        <div className="space-y-3">
-          {data.map((item) => (
-            <div key={item.label} className="flex items-center justify-between gap-4 rounded-xl bg-slate-50 px-3 py-3 dark:bg-slate-900">
-              <div className="flex min-w-0 items-center gap-3">
-                <span
-                  className="h-3 w-3 shrink-0 rounded-[4px]"
-                  style={{ backgroundColor: item.color }}
-                />
-                <span className="truncate text-sm font-bold text-slate-700 dark:text-slate-200">
-                  {item.label}
-                </span>
+        <div className="space-y-2 max-h-[180px] overflow-y-auto pr-1">
+          {data.map((item) => {
+            const percent = total > 0 ? ((item.value / total) * 100).toFixed(1) : '0'
+            return (
+              <div
+                key={item.label}
+                className="flex items-center justify-between gap-4 rounded-xl bg-slate-50 px-3 py-2.5 dark:bg-slate-900 transition-all duration-200 hover:bg-slate-100 dark:hover:bg-slate-800/80"
+              >
+                <div className="flex min-w-0 items-center gap-2">
+                  <span
+                    className="h-2.5 w-2.5 shrink-0 rounded-full"
+                    style={{ backgroundColor: item.color }}
+                  />
+                  <span className="truncate text-xs font-extrabold text-slate-700 dark:text-slate-200">
+                    {item.label}
+                  </span>
+                </div>
+                <div className="text-left font-mono text-xs font-extrabold text-slate-950 dark:text-slate-50 flex items-center gap-1.5">
+                  <span>{item.valueDisplay}</span>
+                  <span className="text-[10px] text-slate-400 font-semibold">({percent}%)</span>
+                </div>
               </div>
-              <span className="font-mono text-sm font-extrabold text-slate-950 dark:text-slate-50">
-                {item.valueDisplay}
-              </span>
-            </div>
-          ))}
+            )
+          })}
         </div>
       </div>
     </div>
@@ -555,6 +402,334 @@ function ChartsCard({
       <div className="grid gap-5 xl:grid-cols-2">
         <PotSizeChart data={potDistribution} />
         <SpeciesDonutChart data={speciesDistribution} />
+      </div>
+    </section>
+  )
+}
+
+function AssetsPieChart({ groupedAssets }: { groupedAssets: NurseryAssetGroup[] }) {
+  const total = useMemo(() => groupedAssets.reduce((sum, item) => sum + item.total, 0), [groupedAssets])
+
+  const chartData = useMemo(() => {
+    const colors = ['#3b82f6', '#10b981', '#8b5cf6', '#c2410c', '#f59e0b', '#64748b']
+    return groupedAssets
+      .map((item, index) => ({
+        label: item.category_name || 'غير محدد',
+        value: item.total,
+        valueDisplay: item.total.toLocaleString('ar-SA'),
+        color: colors[index % colors.length],
+      }))
+      .sort((a, b) => b.value - a.value)
+  }, [groupedAssets])
+
+  const CustomTooltip = ({ active, payload }: any) => {
+    if (active && payload && payload.length) {
+      const item = payload[0].payload
+      const percent = total > 0 ? ((item.value / total) * 100).toFixed(1) : '0'
+      return (
+        <div className="rounded-xl border border-slate-100 bg-white/95 p-3 shadow-lg backdrop-blur-md dark:border-slate-800 dark:bg-slate-950/95">
+          <div className="flex items-center gap-2 justify-end">
+            <span className="text-sm font-bold text-slate-800 dark:text-slate-100">{item.label}</span>
+            <span className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: item.color }} />
+          </div>
+          <p className="mt-1.5 text-xs font-semibold text-slate-500 dark:text-slate-400 text-right">
+            القيمة:{' '}
+            <span className="font-mono font-extrabold text-slate-950 dark:text-slate-50">
+              {item.value.toLocaleString('ar-SA')} ريال
+            </span>{' '}
+            ({percent}%)
+          </p>
+        </div>
+      )
+    }
+    return null
+  }
+
+  return (
+    <div className="min-h-[320px] rounded-2xl border border-slate-100 bg-slate-50/60 p-5 dark:border-slate-800 dark:bg-slate-900/40 flex flex-col justify-between">
+      <div className="mb-4 flex items-center justify-between gap-3">
+        <h3 className="text-base font-extrabold text-slate-950 dark:text-slate-50">
+          توزيع الأصول الثابتة
+        </h3>
+        <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-white text-blue-500 ring-1 ring-slate-100 dark:bg-slate-950 dark:ring-slate-800">
+          <Landmark className="h-4 w-4" />
+        </span>
+      </div>
+
+      <div className="grid min-h-56 grid-cols-1 items-center gap-6 rounded-2xl bg-white p-5 ring-1 ring-slate-100 dark:bg-slate-950 dark:ring-slate-800 sm:grid-cols-[0.9fr_1.1fr]">
+        <div className="relative mx-auto h-40 w-40">
+          <ResponsiveContainer width="100%" height="100%">
+            <PieChart>
+              <Pie
+                data={chartData}
+                cx="50%"
+                cy="50%"
+                innerRadius={58}
+                outerRadius={70}
+                paddingAngle={3}
+                dataKey="value"
+              >
+                {chartData.map((entry, index) => (
+                  <Cell key={`cell-${index}`} fill={entry.color} stroke="none" />
+                ))}
+              </Pie>
+              <RechartsTooltip content={<CustomTooltip />} />
+            </PieChart>
+          </ResponsiveContainer>
+          <div className="absolute inset-0 flex flex-col items-center justify-center text-center pointer-events-none">
+            <span className="font-mono text-base font-extrabold text-slate-950 dark:text-slate-50 leading-none">
+              {total.toLocaleString('ar-SA')}
+            </span>
+            <span className="mt-1 text-[9px] font-bold text-slate-400">
+              ريال أصول
+            </span>
+          </div>
+        </div>
+
+        <div className="space-y-2 max-h-[180px] overflow-y-auto pr-1">
+          {chartData.map((item) => {
+            const percent = total > 0 ? ((item.value / total) * 100).toFixed(1) : '0'
+            return (
+              <div
+                key={item.label}
+                className="flex items-center justify-between gap-4 rounded-xl bg-slate-50 px-3 py-2.5 dark:bg-slate-900 transition-all duration-200 hover:bg-slate-100 dark:hover:bg-slate-800/80"
+              >
+                <div className="flex min-w-0 items-center gap-2">
+                  <span
+                    className="h-2.5 w-2.5 shrink-0 rounded-full"
+                    style={{ backgroundColor: item.color }}
+                  />
+                  <span className="truncate text-xs font-extrabold text-slate-700 dark:text-slate-200">
+                    {item.label}
+                  </span>
+                </div>
+                <div className="text-left font-mono text-xs font-extrabold text-slate-950 dark:text-slate-50 flex items-center gap-1.5">
+                  <span>{item.valueDisplay}</span>
+                  <span className="text-[10px] text-slate-400 font-semibold">({percent}%)</span>
+                </div>
+              </div>
+            )
+          })}
+        </div>
+      </div>
+    </div>
+  )
+}
+
+function ExpensesBarChart({ pinnedAccounts }: { pinnedAccounts: NurseryPinnedExpenseAccount[] }) {
+  const chartData = useMemo(() => {
+    const colors = ['#c2410c', '#3b82f6', '#10b981', '#8b5cf6', '#f59e0b', '#64748b']
+    return pinnedAccounts
+      .map((item, index) => ({
+        label: item.name || 'غير محدد',
+        value: item.total_amount,
+        valueDisplay: item.total_amount.toLocaleString('ar-SA'),
+        color: colors[index % colors.length],
+      }))
+      .sort((a, b) => b.value - a.value)
+  }, [pinnedAccounts])
+
+  const CustomTooltip = ({ active, payload }: any) => {
+    if (active && payload && payload.length) {
+      const item = payload[0].payload
+      return (
+        <div className="rounded-xl border border-slate-100 bg-white/95 p-3 shadow-lg backdrop-blur-md dark:border-slate-800 dark:bg-slate-950/95">
+          <p className="text-xs font-extrabold text-slate-800 dark:text-slate-100">{item.label}</p>
+          <p className="mt-1 text-xs font-bold text-slate-500 dark:text-slate-400 text-right">
+            المصروفات:{' '}
+            <span className="font-mono font-extrabold text-[#c2410c] dark:text-orange-400">
+              {item.value.toLocaleString('ar-SA')} ريال
+            </span>
+          </p>
+        </div>
+      )
+    }
+    return null
+  }
+
+  return (
+    <div className="min-h-[320px] rounded-2xl border border-slate-100 bg-slate-50/60 p-5 dark:border-slate-800 dark:bg-slate-900/40 flex flex-col justify-between">
+      <div className="mb-4 flex items-center justify-between gap-3">
+        <h3 className="text-base font-extrabold text-slate-950 dark:text-slate-50">
+          المصروفات للبنود المثبتة
+        </h3>
+        <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-white text-[#c2410c] ring-1 ring-slate-100 dark:bg-slate-950 dark:ring-slate-800">
+          <CircleDollarSign className="h-4 w-4" />
+        </span>
+      </div>
+
+      <div className="h-56 w-full rounded-2xl bg-white p-4 ring-1 ring-slate-100 dark:bg-slate-950 dark:ring-slate-800">
+        {chartData.length === 0 ? (
+          <div className="flex h-full items-center justify-center text-sm font-semibold text-slate-400">
+            لا توجد حسابات مصروفات مثبتة لعرضها.
+          </div>
+        ) : (
+          <ResponsiveContainer width="100%" height="100%">
+            <BarChart data={chartData} margin={{ top: 10, right: 10, left: 10, bottom: 0 }}>
+              <CartesianGrid
+                strokeDasharray="3 3"
+                vertical={false}
+                stroke="#f1f5f9"
+                className="dark:stroke-slate-800"
+              />
+              <XAxis
+                dataKey="label"
+                tickLine={false}
+                axisLine={false}
+                tick={{ fill: '#64748b', fontSize: 11, fontWeight: 'bold' }}
+              />
+              <YAxis
+                tickLine={false}
+                axisLine={false}
+                orientation="right"
+                tick={{ fill: '#64748b', fontSize: 10, fontFamily: 'monospace' }}
+              />
+              <RechartsTooltip content={<CustomTooltip />} cursor={{ fill: '#f8fafc', radius: 8 }} />
+              <Bar dataKey="value" radius={[6, 6, 0, 0]} barSize={32} animationDuration={1000}>
+                {chartData.map((entry, index) => (
+                  <Cell
+                    key={`cell-${index}`}
+                    fill={entry.color || '#c2410c'}
+                    className="transition-all duration-300 hover:opacity-85"
+                  />
+                ))}
+              </Bar>
+            </BarChart>
+          </ResponsiveContainer>
+        )}
+      </div>
+    </div>
+  )
+}
+
+function FinancialChartsCard({
+  groupedAssets,
+  pinnedAccounts,
+}: {
+  groupedAssets: NurseryAssetGroup[]
+  pinnedAccounts: NurseryPinnedExpenseAccount[]
+}) {
+  return (
+    <section className="rounded-2xl border border-slate-100 bg-white p-5 shadow-sm dark:border-slate-800 dark:bg-surface sm:p-6">
+      <div className="mb-5 flex items-center justify-between gap-4">
+        <div className="flex items-center gap-3">
+          <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-50 text-blue-600 ring-1 ring-blue-100 dark:bg-blue-950/20 dark:ring-blue-900/30">
+            <Landmark className="h-5 w-5" />
+          </span>
+          <div className="text-right">
+            <h2 className="text-lg font-extrabold text-slate-950 dark:text-slate-50">
+              التحليلات المالية للأصول والمصروفات
+            </h2>
+            <p className="mt-0.5 text-xs font-semibold text-slate-500 dark:text-slate-400">
+              رسم بياني لتوزيع قيم الأصول الثابتة والمصروفات الجارية
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <div className="grid gap-5 xl:grid-cols-2">
+        <AssetsPieChart groupedAssets={groupedAssets} />
+        <ExpensesBarChart pinnedAccounts={pinnedAccounts} />
+      </div>
+    </section>
+  )
+}
+
+function ActiveCyclesCard({ cycles }: { cycles: NurseryCycle[] }) {
+  const propagationLabels: Record<string, string> = {
+    seeds: 'بذور',
+    cuttings: 'عقل',
+    grafting: 'تطعيم',
+    layering: 'ترقيد',
+  }
+
+  const statusLabels: Record<string, string> = {
+    active: 'نشط',
+    completed: 'مكتمل',
+    cancelled: 'ملغي',
+  }
+
+  return (
+    <section className="rounded-2xl border border-slate-100 bg-white p-5 shadow-sm dark:border-slate-800 dark:bg-surface sm:p-6">
+      <div className="mb-5 flex items-center justify-between gap-4">
+        <div className="flex items-center gap-3">
+          <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-50 text-[#10b981] ring-1 ring-emerald-100 dark:bg-emerald-950/20 dark:ring-emerald-900/30">
+            <Sprout className="h-5 w-5" />
+          </span>
+          <div className="text-right">
+            <h2 className="text-lg font-extrabold text-slate-950 dark:text-slate-50">
+              دورات الإنتاج النشطة بالمشتل
+            </h2>
+            <p className="mt-0.5 text-xs font-semibold text-slate-500 dark:text-slate-400">
+              متابعة كميات وتواريخ وعمليات الإنتاج الجارية
+            </p>
+          </div>
+        </div>
+        <span className="rounded-xl bg-emerald-50 px-3 py-1.5 text-xs font-extrabold text-emerald-700 dark:bg-emerald-950/20 dark:text-emerald-400">
+          إجمالي الدورات: {cycles.length.toLocaleString('ar-SA')}
+        </span>
+      </div>
+
+      <div className="overflow-x-auto rounded-xl border border-slate-100 dark:border-slate-800">
+        <table className="w-full min-w-[700px] border-collapse text-right text-sm">
+          <thead>
+            <tr className="bg-slate-50/70 text-slate-600 dark:bg-slate-900/50 dark:text-slate-400">
+              <th className="p-4 font-extrabold">اسم الدورة</th>
+              <th className="p-4 font-extrabold">النوع / الصنف</th>
+              <th className="p-4 font-extrabold text-center">الكمية القائمة</th>
+              <th className="p-4 font-extrabold">طريقة الإكثار</th>
+              <th className="p-4 font-extrabold">الموقع / الحوض</th>
+              <th className="p-4 font-extrabold">تاريخ البدء</th>
+              <th className="p-4 font-extrabold text-center">الحالة</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+            {cycles.length === 0 ? (
+              <tr>
+                <td colSpan={7} className="p-8 text-center font-semibold text-slate-400">
+                  لا توجد دورات إنتاج نشطة حالياً.
+                </td>
+              </tr>
+            ) : (
+              cycles.map((cycle) => (
+                <tr
+                  key={cycle.id}
+                  className="transition-colors duration-150 hover:bg-slate-50/50 dark:hover:bg-slate-900/30"
+                >
+                  <td className="p-4 font-extrabold text-slate-900 dark:text-slate-100">
+                    {cycle.name}
+                  </td>
+                  <td className="p-4 font-semibold text-slate-600 dark:text-slate-300">
+                    {cycle.variety_name || 'غير محدد'}
+                  </td>
+                  <td className="p-4 text-center font-mono font-extrabold text-slate-950 dark:text-slate-50">
+                    {cycle.count.toLocaleString('ar-SA')}
+                  </td>
+                  <td className="p-4">
+                    <span className="inline-flex rounded-lg bg-blue-50 px-2 py-1 text-xs font-bold text-blue-700 dark:bg-blue-950/20 dark:text-blue-400">
+                      {cycle.propagation_type ? propagationLabels[cycle.propagation_type] : 'غير محدد'}
+                    </span>
+                  </td>
+                  <td className="p-4 text-xs font-semibold text-slate-500 dark:text-slate-400">
+                    {cycle.nursery?.name || ''} - {cycle.basin?.name || 'غير محدد'}
+                  </td>
+                  <td className="p-4 font-mono text-xs font-semibold text-slate-500 dark:text-slate-400">
+                    {cycle.start_date || 'غير محدد'}
+                  </td>
+                  <td className="p-4 text-center">
+                    <span className={`inline-flex rounded-lg px-2 py-1 text-xs font-extrabold ${
+                      cycle.status === 'active'
+                        ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/20 dark:text-emerald-400'
+                        : 'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400'
+                    }`}>
+                      {statusLabels[cycle.status] || cycle.status}
+                    </span>
+                  </td>
+                </tr>
+              ))
+            )}
+          </tbody>
+        </table>
       </div>
     </section>
   )
@@ -591,6 +766,61 @@ function StructureCard({ structure }: { structure: StructureMetric[] }) {
   )
 }
 
+function InventoryCategoriesCard({ categories }: { categories: NurseryInventoryCategoryTotal[] }) {
+  return (
+    <section className="flex flex-col flex-1 rounded-2xl border border-slate-100 bg-white p-5 shadow-sm dark:border-slate-800 dark:bg-surface">
+      <div className="mb-5 flex items-center gap-3">
+        <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-slate-50 text-slate-600 ring-1 ring-slate-100 dark:bg-slate-900 dark:text-slate-300 dark:ring-slate-800">
+          <Boxes className="h-5 w-5" />
+        </span>
+        <h2 className="text-lg font-extrabold text-slate-950 dark:text-slate-50">
+          فئات مخزون المشتل
+        </h2>
+      </div>
+
+      <div className="flex-1 overflow-y-auto space-y-3 pr-0.5">
+        {categories.length === 0 ? (
+          <div className="text-center py-6 text-sm font-semibold text-slate-400">
+            لا توجد فئات مخزون.
+          </div>
+        ) : (
+          categories.map((cat, index) => {
+            const colors = [
+              'border-r-[#10b981]',
+              'border-r-blue-500',
+              'border-r-[#c2410c]',
+              'border-r-purple-500',
+              'border-r-amber-500',
+            ]
+            const borderCol = colors[index % colors.length]
+            return (
+              <div
+                key={cat.category_id || index}
+                className={`flex items-center justify-between gap-4 border-r-4 ${borderCol} bg-slate-50/50 px-3.5 py-3 dark:bg-slate-900/40 rounded-l-xl transition-all duration-200 hover:bg-slate-100 dark:hover:bg-slate-800/60`}
+              >
+                <div className="text-right">
+                  <p className="text-sm font-extrabold text-slate-800 dark:text-slate-100">
+                    {cat.category_name}
+                  </p>
+                  <p className="mt-0.5 text-xs font-semibold text-slate-400">
+                    عدد المواد: {cat.items_count.toLocaleString('ar-SA')}
+                  </p>
+                </div>
+                <div className="text-left font-mono text-sm font-extrabold text-slate-950 dark:text-slate-50">
+                  <span>{cat.total_value.toLocaleString('ar-SA')}</span>
+                  <span className="mr-1 text-[10px] font-bold text-slate-400">
+                    ريال
+                  </span>
+                </div>
+              </div>
+            )
+          })
+        )}
+      </div>
+    </section>
+  )
+}
+
 function NurseryInventoryCard({
   items,
   showDetails,
@@ -601,13 +831,13 @@ function NurseryInventoryCard({
   onToggleDetails: () => void
 }) {
   return (
-    <section className="rounded-2xl border border-slate-100 bg-white p-5 shadow-sm dark:border-slate-800 dark:bg-surface">
+    <section className="flex flex-col flex-1 rounded-2xl border border-slate-100 bg-white p-5 shadow-sm dark:border-slate-800 dark:bg-surface">
       <div className="mb-4 flex items-center justify-between gap-4">
         <div className="flex items-center gap-3">
-          <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-amber-50 text-amber-600 ring-1 ring-amber-100">
+          <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-amber-50 text-amber-600 ring-1 ring-amber-100 dark:bg-amber-950/20 dark:ring-amber-900/30">
             <AlertTriangle className="h-5 w-5" />
           </span>
-          <div>
+          <div className="text-right">
             <h2 className="text-lg font-extrabold text-slate-950 dark:text-slate-50">
               مخزون المشتل
             </h2>
@@ -625,32 +855,38 @@ function NurseryInventoryCard({
         </button>
       </div>
 
-      <div className="space-y-3">
-        {items.map((item) => (
-          <div
-            key={item.id}
-            className="flex items-center justify-between gap-4 rounded-xl border border-amber-100 bg-amber-50/40 px-4 py-3"
-          >
-            <div className="min-w-0">
-              <p className="truncate text-sm font-extrabold text-slate-800">
-                {item.name}
-              </p>
-              {showDetails ? (
-                <p className="mt-1 text-xs font-semibold text-amber-700">
-                  الحد الأدنى: {item.minQuantity} {item.unit}
-                </p>
-              ) : null}
-            </div>
-            <div className="text-left">
-              <span className="block font-mono text-xl font-extrabold text-amber-700">
-                {item.currentQuantity}
-              </span>
-              <span className="text-xs font-bold text-slate-400">
-                {item.unit}
-              </span>
-            </div>
+      <div className="flex-1 overflow-y-auto space-y-3 pr-0.5">
+        {items.length === 0 ? (
+          <div className="text-center py-6 text-sm font-semibold text-slate-400">
+            المخزون سليم بالكامل.
           </div>
-        ))}
+        ) : (
+          items.map((item) => (
+            <div
+              key={item.id}
+              className="flex items-center justify-between gap-4 rounded-xl border border-amber-100 bg-amber-50/40 px-4 py-3 dark:border-amber-900/30 dark:bg-amber-950/20"
+            >
+              <div className="min-w-0 text-right">
+                <p className="truncate text-sm font-extrabold text-slate-800 dark:text-slate-100">
+                  {item.name}
+                </p>
+                {showDetails ? (
+                  <p className="mt-1 text-xs font-semibold text-amber-700 dark:text-amber-400">
+                    الحد الأدنى: {item.minQuantity} {item.unit}
+                  </p>
+                ) : null}
+              </div>
+              <div className="text-left">
+                <span className="block font-mono text-xl font-extrabold text-amber-700 dark:text-amber-400">
+                  {item.currentQuantity}
+                </span>
+                <span className="text-xs font-bold text-slate-400">
+                  {item.unit}
+                </span>
+              </div>
+            </div>
+          ))
+        )}
       </div>
     </section>
   )
@@ -708,6 +944,7 @@ function QuickAccessModal({
   onClose: () => void
   nurseries: NurseryOption[]
 }) {
+  const router = useRouter()
   const [selection, setSelection] = useState<NurserySelection>({
     nurseryId: '',
     locationId: '',
@@ -751,7 +988,7 @@ function QuickAccessModal({
         </button>
 
         <div className="mb-7 text-center">
-          <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-emerald-50 text-[#10b981] ring-1 ring-emerald-100">
+          <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-emerald-50 text-[#10b981] ring-1 ring-emerald-100 dark:bg-emerald-950/20 dark:ring-emerald-900/30">
             <Grid3X3 className="h-7 w-7" />
           </div>
           <h2 id="quick-access-title" className="text-xl font-extrabold text-slate-950 dark:text-slate-50">
@@ -828,7 +1065,12 @@ function QuickAccessModal({
         <button
           type="button"
           disabled={!isPathComplete}
-          onClick={isPathComplete ? onClose : undefined}
+          onClick={() => {
+            if (isPathComplete) {
+              router.push(`/nursery/manage/basins/${selection.basinId}`)
+              onClose()
+            }
+          }}
           className={`mt-6 flex min-h-12 w-full items-center justify-center gap-2 rounded-xl px-5 py-3 text-sm font-extrabold transition-all duration-200 active:scale-[0.98] ${
             isPathComplete
               ? 'bg-[#10b981] text-white shadow-[0_12px_28px_rgba(16,185,129,0.24)] hover:bg-emerald-600'
@@ -844,16 +1086,323 @@ function QuickAccessModal({
 }
 
 export default function NurseryPage() {
-  const [dashboardData] = useState<NurseryDashboardMock>(NURSERY_DASHBOARD_MOCK)
   const [quickAccessOpen, setQuickAccessOpen] = useState(false)
   const [showLowStockDetails, setShowLowStockDetails] = useState(false)
 
+  // Real live backend integration hooks
+  const { data: nurseryManageRes, isLoading: isNurseryLoading } = useNurseryManagement({})
+  const { data: inventoryValuationRes, isLoading: isValuationLoading } = useNurseryInventoryValuation()
+  const { data: expensesBootstrapRes, isLoading: isExpensesLoading } = useNurseryExpensesBootstrap()
+  const { data: invoicesRes, isLoading: isInvoicesLoading } = useNurseryInvoices('sale')
+  const { data: inventoryBootstrapRes, isLoading: isInventoryLoading } = useNurseryInventoryBootstrap()
+
+  const isLoading =
+    isNurseryLoading ||
+    isValuationLoading ||
+    isExpensesLoading ||
+    isInvoicesLoading ||
+    isInventoryLoading
+
+  // Unpack dynamic counts safely
+  const stats = nurseryManageRes?.data?.stats
+  const varietyStats = nurseryManageRes?.data?.variety_stats
+  const hierarchy = nurseryManageRes?.data?.hierarchy
+  const cycles = nurseryManageRes?.data?.cycles || []
+
+  const totalTrees = stats?.total_trees ?? 0
+  const activePonds = stats?.basins ?? 0
+  const nurseriesCount = stats?.nurseries ?? 0
+  const locationsCount = stats?.locations ?? 0
+  const sectionsCount = stats?.sections ?? 0
+  const totalArea = stats?.basins_area ?? 0
+
+  // Calculate dynamic capacity from basin hierarchy
+  const totalCapacity = useMemo(() => {
+    if (!hierarchy) return 0
+    let sum = 0
+    hierarchy.forEach((n) => {
+      n.locations?.forEach((l) => {
+        l.sections?.forEach((s) => {
+          s.basins?.forEach((b) => {
+            sum += b.capacity || 0
+          })
+        })
+      })
+    })
+    return sum
+  }, [hierarchy])
+
+  // Unpack financial details safely
+  const inventoryValue = inventoryValuationRes?.data?.grand_total_value ?? 0
+  const assetValue = expensesBootstrapRes?.data?.summary?.assets_total ?? 0
+  const totalExpenses = expensesBootstrapRes?.data?.summary?.expenses_total ?? 0
+  const salesRevenue = invoicesRes?.data?.summary?.total ?? 0
+  const categoryTotals = inventoryValuationRes?.data?.category_totals || []
+  const groupedAssets = expensesBootstrapRes?.data?.grouped_assets || []
+  const pinnedAccounts = expensesBootstrapRes?.data?.pinned_accounts || []
+
+  // Assemble Dynamic Metrics
+  const metrics: MetricTile[] = useMemo(() => {
+    return [
+      {
+        id: 'total-trees',
+        label: 'إجمالي الأشجار القائمة',
+        value: totalTrees.toLocaleString('ar-SA'),
+        icon: Trees,
+        tone: 'emerald',
+      },
+      {
+        id: 'total-capacity',
+        label: 'الطاقة الاستيعابية القصوى',
+        value: totalCapacity.toLocaleString('ar-SA'),
+        icon: Ruler,
+        tone: 'blue',
+      },
+      {
+        id: 'inventory-value',
+        label: 'قيمة المخزون الإجمالية',
+        value: inventoryValue.toLocaleString('ar-SA'),
+        unit: 'ريال',
+        icon: Boxes,
+        tone: 'slate',
+      },
+      {
+        id: 'asset-value',
+        label: 'قيمة الأصول الثابتة',
+        value: assetValue.toLocaleString('ar-SA'),
+        unit: 'ريال',
+        icon: Landmark,
+        tone: 'purple',
+      },
+      {
+        id: 'total-expenses',
+        label: 'إجمالي المصروفات التشغيلية',
+        value: totalExpenses.toLocaleString('ar-SA'),
+        unit: 'ريال',
+        icon: CircleDollarSign,
+        tone: 'orange',
+      },
+      {
+        id: 'sales-revenue',
+        label: 'إجمالي إيرادات المبيعات',
+        value: salesRevenue.toLocaleString('ar-SA'),
+        unit: 'ريال',
+        icon: ReceiptText,
+        tone: 'amber',
+      },
+    ]
+  }, [totalTrees, totalCapacity, inventoryValue, assetValue, totalExpenses, salesRevenue])
+
+  // Assemble Capacity Details
+  const capacity: CapacityOverview = useMemo(() => {
+    const rate = totalCapacity > 0 ? (totalTrees / totalCapacity) * 100 : 0
+    return {
+      total: totalCapacity,
+      totalDisplay: totalCapacity.toLocaleString('ar-SA'),
+      planted: totalTrees,
+      plantedDisplay: totalTrees.toLocaleString('ar-SA'),
+      utilizationDisplay: `${rate.toFixed(2)}%`,
+    }
+  }, [totalCapacity, totalTrees])
+
+  // Assemble Pot Size Bar Chart Distribution
+  const potDistribution = useMemo(() => {
+    if (!varietyStats) return []
+    const map: Record<string, number> = {}
+    varietyStats.forEach((v) => {
+      v.sizes?.forEach((s) => {
+        const sizeLabel = s.pot_size || 'غير محدد'
+        map[sizeLabel] = (map[sizeLabel] || 0) + s.total_quantity
+      })
+    })
+
+    const colors = ['#c2410c', '#10b981', '#3b82f6', '#8b5cf6', '#f59e0b', '#64748b']
+    return Object.entries(map)
+      .map(([label, value], index) => ({
+        label,
+        value,
+        valueDisplay: value.toLocaleString('ar-SA'),
+        color: colors[index % colors.length],
+      }))
+      .sort((a, b) => b.value - a.value)
+  }, [varietyStats])
+
+  // Assemble Donut Chart Variety/Species Distribution
+  const speciesDistribution = useMemo(() => {
+    if (!varietyStats) return []
+    const colors = ['#10b981', '#c2410c', '#3b82f6', '#8b5cf6', '#f59e0b', '#64748b']
+    return varietyStats
+      .map((item, index) => ({
+        label: item.variety_name || 'غير محدد',
+        value: item.total_quantity,
+        valueDisplay: item.total_quantity.toLocaleString('ar-SA'),
+        color: colors[index % colors.length],
+      }))
+      .sort((a, b) => b.value - a.value)
+  }, [varietyStats])
+
+  // Assemble Structure Metrics
+  const structure = useMemo(() => {
+    return [
+      {
+        id: 'nurseries',
+        label: 'المشاتل',
+        value: nurseriesCount.toLocaleString('ar-SA'),
+        dotClassName: 'bg-[#10b981]',
+      },
+      {
+        id: 'locations',
+        label: 'المواقع الفرعية',
+        value: locationsCount.toLocaleString('ar-SA'),
+        dotClassName: 'bg-blue-500',
+      },
+      {
+        id: 'sections',
+        label: 'الأقسام الرئيسية',
+        value: sectionsCount.toLocaleString('ar-SA'),
+        dotClassName: 'bg-[#c2410c]',
+      },
+      {
+        id: 'basins',
+        label: 'الأحواض النشطة',
+        value: activePonds.toLocaleString('ar-SA'),
+        dotClassName: 'bg-purple-500',
+      },
+      {
+        id: 'area',
+        label: 'المساحة الكلية للمشاتل',
+        value: `${totalArea.toLocaleString('ar-SA')} م²`,
+        dotClassName: 'bg-amber-500',
+      },
+    ]
+  }, [nurseriesCount, locationsCount, sectionsCount, activePonds, totalArea])
+
+  // Assemble Low Stock Details from Dynamic Balances
+  const lowStock = useMemo(() => {
+    if (!inventoryBootstrapRes?.data?.items) return []
+    return inventoryBootstrapRes.data.items
+      .filter((item: NurseryInventoryItem) => item.low_stock)
+      .map((item: NurseryInventoryItem) => ({
+        id: String(item.id),
+        name: item.name,
+        unit: item.unit || 'وحدة',
+        currentQuantity: item.quantity,
+        minQuantity: item.min_quantity,
+      }))
+  }, [inventoryBootstrapRes])
+
+  // Assemble Quick Access hierarchy
+  const mappedQuickAccess = useMemo(() => {
+    if (!hierarchy) return []
+    return hierarchy.map((n) => ({
+      id: String(n.id),
+      name: n.name,
+      locations:
+        n.locations?.map((l) => ({
+          id: String(l.id),
+          name: l.name,
+          sections:
+            l.sections?.map((s) => ({
+              id: String(s.id),
+              name: s.name,
+              basins:
+                s.basins?.map((b) => ({
+                  id: String(b.id),
+                  name: b.name,
+                })) || [],
+            })) || [],
+        })) || [],
+    }))
+  }, [hierarchy])
+
+  // Skeletons during data fetching
+  if (isLoading) {
+    return (
+      <div className="min-h-full space-y-6 bg-[#f8fafc] p-6 text-slate-950 dark:bg-background dark:text-slate-50" dir="rtl">
+        {/* Header Skeleton */}
+        <header className="flex flex-col gap-4 rounded-2xl border border-slate-100 bg-white p-5 shadow-sm dark:border-slate-800 dark:bg-surface sm:flex-row sm:items-center sm:justify-between">
+          <div className="space-y-2 text-right">
+            <Skeleton className="h-7 w-32" />
+            <Skeleton className="h-4 w-56" />
+          </div>
+          <Skeleton className="h-12 w-48 rounded-xl" />
+        </header>
+
+        {/* Metrics Grid Skeleton */}
+        <section className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-6">
+          {[...Array(6)].map((_, index) => (
+            <div key={index} className="flex min-h-32 items-start justify-between gap-4 rounded-2xl border border-slate-100 bg-white p-5 shadow-sm dark:border-slate-800 dark:bg-surface">
+              <div className="space-y-3 min-w-0 text-right w-full">
+                <Skeleton className="h-4 w-24" />
+                <Skeleton className="h-7 w-20" />
+              </div>
+              <Skeleton className="h-11 w-11 shrink-0 rounded-xl" />
+            </div>
+          ))}
+        </section>
+
+        {/* Charts & Details Skeleton */}
+        <div className="grid gap-6 xl:grid-cols-[3fr_2fr]">
+          <div className="space-y-6">
+            {/* Capacity Card Skeleton */}
+            <div className="rounded-2xl border border-slate-100 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-surface space-y-5">
+              <div className="flex items-center justify-between">
+                <Skeleton className="h-6 w-40" />
+                <Skeleton className="h-8 w-28 rounded-xl" />
+              </div>
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <Skeleton className="h-4 w-48" />
+                  <Skeleton className="h-4 w-full rounded-full" />
+                </div>
+                <div className="space-y-2">
+                  <Skeleton className="h-4 w-48" />
+                  <Skeleton className="h-4 w-full rounded-full" />
+                </div>
+              </div>
+            </div>
+
+            {/* Charts Skeleton */}
+            <div className="rounded-2xl border border-slate-100 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-surface">
+              <div className="grid gap-5 xl:grid-cols-2">
+                <div className="h-[320px] rounded-2xl border border-slate-100 bg-slate-50/60 p-5 dark:border-slate-800 dark:bg-slate-900/40 space-y-4">
+                  <Skeleton className="h-5 w-48" />
+                  <Skeleton className="h-40 w-full rounded-xl" />
+                </div>
+                <div className="h-[320px] rounded-2xl border border-slate-100 bg-slate-50/60 p-5 dark:border-slate-800 dark:bg-slate-900/40 space-y-4">
+                  <Skeleton className="h-5 w-48" />
+                  <Skeleton className="h-40 w-full rounded-xl" />
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div className="space-y-6">
+            {/* Structure Card Skeleton */}
+            <div className="rounded-2xl border border-slate-100 bg-white p-5 shadow-sm dark:border-slate-800 dark:bg-surface space-y-4">
+              <Skeleton className="h-6 w-32" />
+              <div className="space-y-3 divide-y divide-slate-100 dark:divide-slate-800">
+                {[...Array(5)].map((_, i) => (
+                  <div key={i} className="flex justify-between py-3">
+                    <Skeleton className="h-4 w-24" />
+                    <Skeleton className="h-4 w-12" />
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
   return (
     <div className="min-h-full space-y-6 bg-[#f8fafc] text-slate-950 dark:bg-background dark:text-slate-50" dir="rtl">
+      {/* Banner / Header */}
       <header className="flex flex-col gap-4 rounded-2xl border border-slate-100 bg-white p-5 shadow-sm dark:border-slate-800 dark:bg-surface sm:flex-row sm:items-center sm:justify-between">
         <div className="text-right">
           <h1 className="text-2xl font-extrabold tracking-normal text-slate-950 dark:text-slate-50">
-            نظرة عامة
+            نظام إدارة المشتل
           </h1>
           <p className="mt-1 text-sm font-semibold text-slate-500 dark:text-slate-400">
             لوحة التحكم الرئيسية وإحصائيات المشتل
@@ -871,24 +1420,46 @@ export default function NurseryPage() {
       </header>
 
       <section className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-6">
-        {dashboardData.metrics.map((metric) => (
+        {metrics.map((metric) => (
           <MetricCard key={metric.id} metric={metric} />
         ))}
       </section>
 
-      <div className="grid gap-6 xl:grid-cols-[3fr_2fr]">
-        <div className="space-y-6">
-          <CapacityCard capacity={dashboardData.capacity} />
+      {/* Group A Layout: Capacity, Species/Pot Charts, Structure and Categories */}
+      <div className="grid gap-6 xl:grid-cols-[3fr_2fr] items-stretch">
+        <div className="flex flex-col space-y-6">
+          <CapacityCard capacity={capacity} />
+          
+          {/* Main Visual Species & Pot Size Charts */}
           <ChartsCard
-            potDistribution={dashboardData.potDistribution}
-            speciesDistribution={dashboardData.speciesDistribution}
+            potDistribution={potDistribution}
+            speciesDistribution={speciesDistribution}
           />
         </div>
 
-        <aside className="space-y-6">
-          <StructureCard structure={dashboardData.structure} />
+        <aside className="flex flex-col space-y-6 h-full">
+          <StructureCard structure={structure} />
+          {/* Core Inventory Categories Valuation Card */}
+          <InventoryCategoriesCard categories={categoryTotals} />
+        </aside>
+      </div>
+
+      {/* Group B Layout: Financial Analytics, Active Cycles and Alerts */}
+      <div className="grid gap-6 xl:grid-cols-[3fr_2fr] items-stretch">
+        <div className="flex flex-col space-y-6">
+          {/* Dynamic Financial Visualization Charts (Fixed Assets + Operating Expenses) */}
+          <FinancialChartsCard
+            groupedAssets={groupedAssets}
+            pinnedAccounts={pinnedAccounts}
+          />
+
+          {/* Dynamic Active Production Cycles Table */}
+          <ActiveCyclesCard cycles={cycles} />
+        </div>
+
+        <aside className="flex flex-col space-y-6 h-full">
           <NurseryInventoryCard
-            items={dashboardData.lowStock}
+            items={lowStock}
             showDetails={showLowStockDetails}
             onToggleDetails={() => setShowLowStockDetails((visible) => !visible)}
           />
@@ -898,7 +1469,7 @@ export default function NurseryPage() {
       <QuickAccessModal
         open={quickAccessOpen}
         onClose={() => setQuickAccessOpen(false)}
-        nurseries={dashboardData.quickAccess}
+        nurseries={mappedQuickAccess}
       />
     </div>
   )

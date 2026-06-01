@@ -72,6 +72,18 @@ type FeedAllocation = {
   quantityTon: string
   pricePerTon: string
 }
+type FeedBatchDisplayRow = {
+  id: string
+  flock: Flock
+  entry: DailyEntry
+  logTime: string | null
+  feedType: string
+  itemId: number | null
+  quantityTon: number
+  quantityKg: number
+  pricePerTon: number
+  amount: number
+}
 
 const typeLabels: Record<string, string> = {
   production: 'إنتاج',
@@ -152,11 +164,52 @@ const toDisplayDate = (value?: string) => {
 }
 
 const flockCode = (flock: Flock) => {
+  if (flock.flock_number) return flock.flock_number
   const compactDate = flock.entry_date?.replaceAll('-', '') || String(flock.id)
   return compactDate || String(flock.id)
 }
 
 const getEntryFeedKg = (entry: DailyEntry) => parseNumeric(entry.feed_quantity_kg)
+
+const getEntryFeedBatches = (flock: Flock, entry: DailyEntry): FeedBatchDisplayRow[] => {
+  if (entry.feed_batches && entry.feed_batches.length > 0) {
+    return entry.feed_batches
+      .filter((batch) => parseNumeric(batch.quantity_kg) > 0 || parseNumeric(batch.quantity_ton) > 0)
+      .map((batch, index) => {
+        const quantityTon = parseNumeric(batch.quantity_ton) || parseNumeric(batch.quantity_kg) / 1000
+        const quantityKg = parseNumeric(batch.quantity_kg) || quantityTon * 1000
+        const pricePerTon = parseNumeric(batch.price_per_ton)
+        return {
+          id: `${flock.id}-${entry.id}-${batch.id ?? index}`,
+          flock,
+          entry,
+          logTime: batch.log_time ?? null,
+          feedType: batch.feed_type || 'علف تشغيلي',
+          itemId: batch.item_id ?? batch.inventory_item_id ?? null,
+          quantityTon,
+          quantityKg,
+          pricePerTon,
+          amount: parseNumeric(batch.amount) || quantityTon * pricePerTon,
+        }
+      })
+  }
+
+  const quantityKg = getEntryFeedKg(entry)
+  if (quantityKg <= 0) return []
+
+  return [{
+    id: `${flock.id}-${entry.id}-summary`,
+    flock,
+    entry,
+    logTime: null,
+    feedType: 'إجمالي يومي',
+    itemId: null,
+    quantityTon: quantityKg / 1000,
+    quantityKg,
+    pricePerTon: 0,
+    amount: 0,
+  }]
+}
 
 const getErrorMessage = (error: unknown, fallback: string) =>
   error instanceof Error ? error.message : fallback
@@ -376,6 +429,22 @@ export default function BarnDetailPage() {
       }
 
       const firstAllocation = feedAllocations.find((row) => parseNumeric(row.quantityTon) > 0)
+      const feedBatches = feedAllocations
+        .filter((row) => parseNumeric(row.quantityTon) > 0)
+        .map((row) => {
+          const quantityTon = Number(parseNumeric(row.quantityTon).toFixed(3))
+          const pricePerTon = Math.max(0, parseNumeric(row.pricePerTon))
+          return {
+            log_time: row.time || null,
+            feed_type: activeStockItems.find((stockItem) => String(stockItem.id) === row.itemId)?.name ?? 'علف تشغيلي',
+            quantity_ton: quantityTon,
+            quantity_kg: Number((quantityTon * 1000).toFixed(2)),
+            price_per_ton: pricePerTon,
+            amount: Number((quantityTon * pricePerTon).toFixed(2)),
+            item_id: row.itemId ? Number(row.itemId) : undefined,
+            inventory_item_id: row.itemId ? Number(row.itemId) : undefined,
+          }
+        })
       const feedQuantityKg = Number((dailyFeedTotalTon * 1000).toFixed(3))
       const observation = [
         `مياه: ${waterConsumption || 'غير مدخل'} لتر`,
@@ -400,6 +469,8 @@ export default function BarnDetailPage() {
           record_date: recordDate,
           mortality: mortalityToday,
           feed_quantity_kg: feedQuantityKg,
+          feed_batches: feedBatches,
+          feed_rows: feedBatches,
           inventory_item_id: firstAllocation?.itemId ? Number(firstAllocation.itemId) : undefined,
           ai_observation: observation,
         })
@@ -409,6 +480,8 @@ export default function BarnDetailPage() {
         record_date: recordDate,
         mortality: mortalityToday,
         feed_quantity_kg: feedQuantityKg,
+        feed_batches: feedBatches,
+        feed_rows: feedBatches,
         item_id: firstAllocation?.itemId ? Number(firstAllocation.itemId) : undefined,
         uniformity_pct: uniformity ? Number(uniformity) : undefined,
         ai_observation: observation,
@@ -1481,21 +1554,16 @@ function FeedLedgerTable({
   stockItems: Item[]
 }) {
   const rows = flocks.flatMap((flock) =>
-    (entriesByFlock.get(flock.id) ?? [])
-      .filter((entry) => getEntryFeedKg(entry) > 0)
-      .map((entry) => ({
-        flock,
-        entry,
-      }))
+    (entriesByFlock.get(flock.id) ?? []).flatMap((entry) => getEntryFeedBatches(flock, entry))
   )
 
   return (
     <div className="overflow-hidden rounded-2xl border border-line">
       <div className="overflow-x-auto">
-        <table className="w-full min-w-[860px] text-right text-sm">
+        <table className="w-full min-w-[1080px] text-right text-sm">
           <thead>
             <tr className="border-b border-line bg-surface-muted text-xs font-bold text-ink-soft">
-              {['التاريخ', 'العمر (يوم)', 'الأسبوع', 'النوع', 'الكمية (طن)', 'المبلغ', 'السعر / طن'].map((column) => (
+              {['رقم الفوج', 'التاريخ', 'الوقت', 'العمر (يوم)', 'الأسبوع', 'نوع العلف', 'الكمية (طن)', 'الكمية (كجم)', 'السعر / طن', 'المبلغ'].map((column) => (
                 <th key={column} className="px-4 py-3">
                   {column}
                 </th>
@@ -1505,23 +1573,29 @@ function FeedLedgerTable({
           <tbody className="divide-y divide-line">
             {rows.length === 0 ? (
               <tr>
-                <td colSpan={7} className="px-4 py-10 text-center text-sm text-ink-muted">
+                <td colSpan={10} className="px-4 py-10 text-center text-sm text-ink-muted">
                   لا توجد سجلات أعلاف مسجلة بعد.
                 </td>
               </tr>
             ) : (
-              rows.map(({ flock, entry }) => {
-                const quantityTon = getEntryFeedKg(entry) / 1000
-                const itemName = stockItems[0]?.name ?? 'علف تشغيلي'
+              rows.map((row) => {
+                const itemName = stockItems.find((item) => item.id === row.itemId)?.name ?? row.feedType
                 return (
-                  <tr key={`${flock.id}-${entry.id}`} className="transition-colors hover:bg-surface-subtle">
-                    <td className="px-4 py-3 font-mono text-ink">{toDisplayDate(entry.record_date)}</td>
-                    <td className="px-4 py-3 font-mono text-ink">{formatNumber(entry.age_days)}</td>
-                    <td className="px-4 py-3 font-mono text-ink">{formatNumber('week_number' in entry ? entry.week_number : Math.max(1, Math.ceil((entry.age_days + 1) / 7)))}</td>
+                  <tr key={row.id} className="transition-colors hover:bg-surface-subtle">
+                    <td className="px-4 py-3">
+                      <Link href={`/flocks/${row.flock.id}`} className="inline-flex rounded-lg border border-orange-100 bg-orange-50 px-2.5 py-1 font-mono text-xs font-bold text-[#c2410c] transition-colors hover:bg-orange-100">
+                        {flockCode(row.flock)}
+                      </Link>
+                    </td>
+                    <td className="px-4 py-3 font-mono text-ink">{toDisplayDate(row.entry.record_date)}</td>
+                    <td className="px-4 py-3 font-mono text-ink">{row.logTime ?? '—'}</td>
+                    <td className="px-4 py-3 font-mono text-ink">{formatNumber(row.entry.age_days)}</td>
+                    <td className="px-4 py-3 font-mono text-ink">{formatNumber('week_number' in row.entry ? row.entry.week_number : Math.max(1, Math.ceil((row.entry.age_days + 1) / 7)))}</td>
                     <td className="px-4 py-3 text-ink-soft">{itemName}</td>
-                    <td className="px-4 py-3 font-mono font-bold text-ink">{formatNumber(quantityTon, 3)}</td>
-                    <td className="px-4 py-3 font-mono text-ink-muted">—</td>
-                    <td className="px-4 py-3 font-mono text-ink-muted">—</td>
+                    <td className="px-4 py-3 font-mono font-bold text-ink">{formatNumber(row.quantityTon, 3)}</td>
+                    <td className="px-4 py-3 font-mono text-ink">{formatNumber(row.quantityKg, 2)}</td>
+                    <td className="px-4 py-3 font-mono text-ink-muted">{row.pricePerTon > 0 ? formatCurrency(row.pricePerTon) : '—'}</td>
+                    <td className="px-4 py-3 font-mono text-emerald-700">{row.amount > 0 ? formatCurrency(row.amount) : '—'}</td>
                   </tr>
                 )
               })

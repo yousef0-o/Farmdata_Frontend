@@ -35,7 +35,11 @@ export interface Section {
   id: number
   project_id: number
   section_name: string
+  name?: string
   section_type: 'production' | 'breeding'
+  type?: string
+  feed_warehouse_id?: number | null
+  production_warehouse_id?: number | null
   barns?: Barn[]
 }
 
@@ -43,8 +47,14 @@ export interface Barn {
   id: number
   section_id: number
   barn_name: string
+  name?: string
+  barn_number?: string | null
   barn_type: 'production' | 'breeding'
   capacity?: number
+  current_birds?: number
+  location?: string | null
+  status?: 'active' | 'inactive' | 'maintenance'
+  description?: string | null
   active_flocks?: Flock[]
   flocks?: Flock[]
   section?: Section & { project?: Project & { company?: Company } }
@@ -53,15 +63,27 @@ export interface Barn {
 export interface Flock {
   id: number
   barn_id: number
+  flock_number?: string | null
   flock_type: 'production' | 'breeding'
   status: 'active' | 'completed' | 'cancelled'
   entry_birds: number
   current_count: number
   entry_date: string
+  end_date?: string | null
+  production_end_date?: string | null
+  breeding_entered_count?: number | null
+  breeding_exited_count?: number | null
+  production_entered_count?: number | null
+  production_exited_count?: number | null
+  exit_count?: number | null
+  exit_age?: number | null
+  target_carton?: number | null
+  target_tray?: number | null
   exit_date?: string
   breed?: string
   supplier?: string
   chick_unit_cost?: string
+  chick_total_cost?: string
   barn?: Barn
 }
 
@@ -86,9 +108,18 @@ export interface FlockSummary {
   flock_type: 'production' | 'breeding'
   entry_birds: number
   current_count: number
+  current_birds?: number
+  age_days?: number
+  week_number?: number
   cumulative_mortality: number
   mortality_rate: number
   total_feed_kg: number
+  chick_cost?: number
+  feed_cost?: number
+  vet_cost?: number
+  other_cost?: number
+  bird_value?: number
+  mortality_value?: number
   days_recorded: number
   last_record_date: string | null
   // production only
@@ -139,9 +170,11 @@ export interface ProductionEntry {
   total_eggs: number
   production_rate: number   // PERCENT (0-100)
   operational_target: number
+  standard_target?: number
   ai_observation?: string
   feed_quantity_kg?: number
-  egg_items?: { item_id: number; quantity: number }[]
+  egg_items?: EggItemPayload[]
+  feed_batches?: PoultryFeedBatch[]
 }
 
 export interface BreedingEntry {
@@ -156,6 +189,7 @@ export interface BreedingEntry {
   uniformity_pct?: number
   ai_observation?: string
   feed_quantity_kg?: number
+  feed_batches?: PoultryFeedBatch[]
 }
 
 export interface FeedEntry {
@@ -165,6 +199,30 @@ export interface FeedEntry {
   feed_quantity_kg: number
   warehouse_id?: number
   item_id?: number
+}
+
+export interface EggItemPayload {
+  item_id: number
+  quantity: number
+  size_code?: string
+  egg_size?: string
+  size?: string
+}
+
+export interface PoultryFeedBatch {
+  id?: number
+  flock_id?: number
+  record_date?: string
+  log_time?: string | null
+  feed_type?: string | null
+  quantity_ton: number
+  quantity_kg?: number
+  price_per_ton?: number
+  amount?: number
+  warehouse_id?: number | null
+  item_id?: number | null
+  inventory_item_id?: number | null
+  inventory_movement_id?: number | null
 }
 
 export interface Warehouse {
@@ -529,6 +587,11 @@ export interface FlockAnalyticsResponse {
       total_feed_ton: number
       mortality_production: number
       mortality_rate: number
+      chick_cost?: number
+      feed_cost?: number
+      vet_cost?: number
+      other_cost?: number
+      bird_value?: number
       mortality_value: number
       weighted_lay_rate: number
       actual_avg_egg_weight_g: number

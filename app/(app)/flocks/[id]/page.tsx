@@ -3,9 +3,11 @@
 import React, { useState } from 'react'
 import Link from 'next/link'
 import { useParams } from 'next/navigation'
-import { Loader2, BarChart3, TrendingUp, TrendingDown, Stethoscope, DollarSign, Plus, Trash2, Calendar, FileText, X } from 'lucide-react'
+import { useQuery } from '@tanstack/react-query'
+import { Loader2, BarChart3, TrendingUp, TrendingDown, Stethoscope, DollarSign, Plus, Trash2, Calendar, FileText, X, Wheat } from 'lucide-react'
 import { useFlock, useFlockSummary } from '@/lib/hooks/useFlock'
 import { useFlockExpenses, useCreateFlockExpense, useDeleteFlockExpense } from '@/lib/hooks/useExpenses'
+import { dailyOpsApi } from '@/lib/api/organization'
 import { FlockStatusBadge } from '@/components/flock/FlockStatusBadge'
 import { FlockTypeBadge } from '@/components/flock/FlockTypeBadge'
 import CloseFlockDialog from '@/components/flock/CloseFlockDialog'
@@ -16,6 +18,33 @@ import SaudiRiyalIcon from '@/components/icons/SaudiRiyalIcon'
 import AppDialog from '@/components/ui/AppDialog'
 import { FlockStandardsGuide } from '@/components/flock/FlockStandardsGuide'
 import { FlockAnalyticsDashboard } from '@/components/flock/FlockAnalyticsDashboard'
+import type { BreedingEntry, PaginatedResponse, PoultryFeedBatch, ProductionEntry } from '@/lib/types'
+
+type DailyEntry = BreedingEntry | ProductionEntry
+
+const parseNumeric = (value: unknown) => {
+  const parsed = Number(value)
+  return Number.isFinite(parsed) ? parsed : 0
+}
+
+const formatNumber = (value: number, digits = 0) =>
+  Number.isFinite(value)
+    ? value.toLocaleString('ar-EG', {
+        minimumFractionDigits: digits,
+        maximumFractionDigits: digits,
+      })
+    : '0'
+
+const formatCurrency = (value: number) =>
+  Number.isFinite(value)
+    ? value.toLocaleString('ar-EG', {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2,
+      })
+    : '0.00'
+
+const flockCode = (flock: { id: number; flock_number?: string | null; entry_date?: string }) =>
+  flock.flock_number || flock.entry_date?.replaceAll('-', '') || String(flock.id)
 
 export default function FlockDetailPage() {
   const { id } = useParams()
@@ -123,6 +152,9 @@ export default function FlockDetailPage() {
           <h1 className="text-2xl font-bold text-gray-900">
             {isProduction ? 'فوج إنتاج' : 'فوج تربية'}
           </h1>
+          <span className="inline-flex items-center rounded-xl border border-orange-100 bg-orange-50 px-3 py-1.5 font-mono text-sm font-bold text-[#c2410c]">
+            {flockCode(flock)}
+          </span>
           <FlockStatusBadge status={flock.status} />
           <FlockTypeBadge type={flock.flock_type} />
         </div>
@@ -270,12 +302,13 @@ export default function FlockDetailPage() {
         </div>
 
         {activeTab === 'daily' && (
-          <div>
+          <div className="space-y-6">
             {isProduction ? (
               <ProductionEntriesTable flockId={flockId} isActive={flock.status === 'active'} />
             ) : (
               <BreedingEntriesTable flockId={flockId} isActive={flock.status === 'active'} />
             )}
+            <FlockFeedBatchesTable flockId={flockId} isProduction={isProduction} flockNumber={flockCode(flock)} />
           </div>
         )}
 
@@ -538,6 +571,125 @@ export default function FlockDetailPage() {
         </AppDialog>
       )}
     </div>
+  )
+}
+
+function getFeedRows(entries: DailyEntry[]) {
+  return entries.flatMap((entry) => {
+    const batches = entry.feed_batches ?? []
+    if (batches.length > 0) {
+      return batches.map((batch: PoultryFeedBatch, index: number) => {
+        const quantityTon = parseNumeric(batch.quantity_ton) || parseNumeric(batch.quantity_kg) / 1000
+        const quantityKg = parseNumeric(batch.quantity_kg) || quantityTon * 1000
+        const pricePerTon = parseNumeric(batch.price_per_ton)
+        return {
+          id: `${entry.id}-${batch.id ?? index}`,
+          entry,
+          logTime: batch.log_time ?? null,
+          feedType: batch.feed_type || 'علف تشغيلي',
+          quantityTon,
+          quantityKg,
+          pricePerTon,
+          amount: parseNumeric(batch.amount) || quantityTon * pricePerTon,
+        }
+      })
+    }
+
+    const quantityKg = parseNumeric(entry.feed_quantity_kg)
+    if (quantityKg <= 0) return []
+
+    return [{
+      id: `${entry.id}-summary`,
+      entry,
+      logTime: null,
+      feedType: 'إجمالي يومي',
+      quantityTon: quantityKg / 1000,
+      quantityKg,
+      pricePerTon: 0,
+      amount: 0,
+    }]
+  })
+}
+
+function FlockFeedBatchesTable({
+  flockId,
+  isProduction,
+  flockNumber,
+}: {
+  flockId: number
+  isProduction: boolean
+  flockNumber: string
+}) {
+  const entriesQuery = useQuery<PaginatedResponse<DailyEntry>>({
+    queryKey: ['flock-feed-batches-ledger', flockId, isProduction ? 'production' : 'breeding'],
+    queryFn: async () => {
+      const response = isProduction
+        ? await dailyOpsApi.listProductionEntries(flockId, 1)
+        : await dailyOpsApi.listBreedingEntries(flockId, 1)
+      return response as PaginatedResponse<DailyEntry>
+    },
+  })
+  const entries = (entriesQuery.data?.data ?? []) as DailyEntry[]
+  const rows = getFeedRows(entries)
+
+  if (entriesQuery.isLoading) {
+    return (
+      <div className="flex justify-center rounded-2xl border border-slate-100 bg-white py-10">
+        <Loader2 className="h-7 w-7 animate-spin text-[#c2410c]" />
+      </div>
+    )
+  }
+
+  return (
+    <section dir="rtl" className="rounded-2xl border border-slate-100 bg-white p-4 shadow-sm">
+      <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex items-center gap-2">
+          <Wheat className="h-5 w-5 text-emerald-700" />
+          <h2 className="text-base font-bold text-slate-950">جدول دفعات العلف للفوج</h2>
+        </div>
+        <span className="inline-flex w-fit rounded-xl border border-orange-100 bg-orange-50 px-3 py-1.5 font-mono text-xs font-bold text-[#c2410c]">
+          {flockNumber}
+        </span>
+      </div>
+      <div className="overflow-x-auto rounded-xl border border-slate-100">
+        <table className="w-full min-w-[940px] text-right text-sm">
+          <thead>
+            <tr className="border-b border-slate-100 bg-slate-50 text-xs font-bold text-slate-500">
+              {['التاريخ', 'الوقت', 'العمر (يوم)', 'الأسبوع', 'نوع العلف', 'الكمية طن', 'الكمية كجم', 'السعر/طن', 'المبلغ'].map((column) => (
+                <th key={column} className="px-4 py-3">
+                  {column}
+                </th>
+              ))}
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-slate-100">
+            {rows.length === 0 ? (
+              <tr>
+                <td colSpan={9} className="px-4 py-10 text-center text-sm font-semibold text-slate-500">
+                  لا توجد دفعات علف مسجلة لهذا الفوج.
+                </td>
+              </tr>
+            ) : (
+              rows.map((row) => (
+                <tr key={row.id} className="transition-colors hover:bg-slate-50">
+                  <td className="px-4 py-3 font-mono font-semibold text-slate-950">{row.entry.record_date}</td>
+                  <td className="px-4 py-3 font-mono text-slate-700">{row.logTime ?? '—'}</td>
+                  <td className="px-4 py-3 font-mono text-slate-700">{formatNumber(row.entry.age_days)}</td>
+                  <td className="px-4 py-3 font-mono text-slate-700">
+                    {formatNumber('week_number' in row.entry ? row.entry.week_number : Math.max(1, Math.ceil((row.entry.age_days + 1) / 7)))}
+                  </td>
+                  <td className="px-4 py-3 font-semibold text-slate-700">{row.feedType}</td>
+                  <td className="px-4 py-3 font-mono font-bold text-slate-950">{formatNumber(row.quantityTon, 3)}</td>
+                  <td className="px-4 py-3 font-mono text-slate-700">{formatNumber(row.quantityKg, 2)}</td>
+                  <td className="px-4 py-3 font-mono text-slate-600">{row.pricePerTon > 0 ? formatCurrency(row.pricePerTon) : '—'}</td>
+                  <td className="px-4 py-3 font-mono font-bold text-emerald-700">{row.amount > 0 ? formatCurrency(row.amount) : '—'}</td>
+                </tr>
+              ))
+            )}
+          </tbody>
+        </table>
+      </div>
+    </section>
   )
 }
 

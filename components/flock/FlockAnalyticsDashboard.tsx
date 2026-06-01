@@ -19,6 +19,7 @@ import {
 } from 'recharts'
 import { AnalyticsAxis, AnalyticsAggregation, FlockDetail } from '@/lib/types'
 import { Activity, AlertTriangle, Calendar, Layers, PieChart as PieChartIcon } from 'lucide-react'
+import { FlockAnalyticsCards } from './FlockAnalyticsCards'
 
 interface FlockAnalyticsDashboardProps {
   flock: FlockDetail
@@ -36,15 +37,15 @@ export function FlockAnalyticsDashboard({ flock }: FlockAnalyticsDashboardProps)
 
   if (isLoading) {
     return (
-      <div className="flex justify-center items-center h-64 bg-white rounded-2xl border border-gray-100 shadow-sm">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-farm-blue"></div>
+      <div dir="rtl" className="flex h-64 items-center justify-center rounded-2xl border border-slate-100 bg-white shadow-sm">
+        <div className="h-8 w-8 animate-spin rounded-full border-2 border-slate-100 border-b-[#c2410c]" />
       </div>
     )
   }
 
   if (error || !analytics) {
     return (
-      <div className="bg-red-50 text-red-600 p-6 rounded-2xl flex items-center justify-center gap-3">
+      <div dir="rtl" className="flex items-center justify-center gap-3 rounded-2xl border border-red-100 bg-red-50 p-6 text-sm font-bold text-red-700">
         <AlertTriangle className="w-5 h-5" />
         <span>حدث خطأ أثناء تحميل البيانات الإحصائية</span>
       </div>
@@ -111,46 +112,47 @@ export function FlockAnalyticsDashboard({ flock }: FlockAnalyticsDashboardProps)
   }
 
   return (
-    <div className="space-y-6">
-      {/* أدوات التحكم بالرسم البياني */}
-      <div className="bg-white p-4 rounded-2xl border border-gray-100 shadow-sm flex flex-wrap gap-4 items-center justify-between">
+    <div dir="rtl" className="space-y-6">
+      <FlockAnalyticsCards analytics={analytics} />
+
+      <div className="flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-slate-100 bg-white p-4 shadow-sm">
         <div className="flex items-center gap-2">
-          <Activity className="w-5 h-5 text-farm-blue" />
-          <h3 className="font-bold text-gray-800">تحليلات الأداء</h3>
+          <Activity className="w-5 h-5 text-[#c2410c]" />
+          <h3 className="font-bold text-slate-950">تحليلات الأداء</h3>
         </div>
         
         <div className="flex flex-wrap gap-4">
-          <div className="flex bg-gray-100 p-1 rounded-lg">
+          <div className="flex rounded-xl border border-slate-100 bg-slate-50 p-1">
             <button
               onClick={() => setAxis('age')}
-              className={`px-4 py-1.5 text-sm rounded-md transition-colors ${axis === 'age' ? 'bg-white text-farm-blue shadow-sm font-semibold' : 'text-gray-600 hover:text-gray-900'}`}
+              className={`rounded-lg px-4 py-1.5 text-sm font-semibold transition-colors ${axis === 'age' ? 'bg-white text-[#c2410c] shadow-sm' : 'text-slate-600 hover:text-slate-950'}`}
             >
               العمر
             </button>
             <button
               onClick={() => setAxis('date')}
-              className={`px-4 py-1.5 text-sm rounded-md transition-colors ${axis === 'date' ? 'bg-white text-farm-blue shadow-sm font-semibold' : 'text-gray-600 hover:text-gray-900'}`}
+              className={`rounded-lg px-4 py-1.5 text-sm font-semibold transition-colors ${axis === 'date' ? 'bg-white text-[#c2410c] shadow-sm' : 'text-slate-600 hover:text-slate-950'}`}
             >
               التاريخ
             </button>
           </div>
 
-          <div className="flex bg-gray-100 p-1 rounded-lg">
+          <div className="flex rounded-xl border border-slate-100 bg-slate-50 p-1">
             <button
               onClick={() => setAggregation('daily')}
-              className={`px-4 py-1.5 text-sm rounded-md transition-colors ${aggregation === 'daily' ? 'bg-white text-farm-blue shadow-sm font-semibold' : 'text-gray-600 hover:text-gray-900'}`}
+              className={`rounded-lg px-4 py-1.5 text-sm font-semibold transition-colors ${aggregation === 'daily' ? 'bg-white text-[#c2410c] shadow-sm' : 'text-slate-600 hover:text-slate-950'}`}
             >
               يومي
             </button>
             <button
               onClick={() => setAggregation('weekly')}
-              className={`px-4 py-1.5 text-sm rounded-md transition-colors ${aggregation === 'weekly' ? 'bg-white text-farm-blue shadow-sm font-semibold' : 'text-gray-600 hover:text-gray-900'}`}
+              className={`rounded-lg px-4 py-1.5 text-sm font-semibold transition-colors ${aggregation === 'weekly' ? 'bg-white text-[#c2410c] shadow-sm' : 'text-slate-600 hover:text-slate-950'}`}
             >
               أسبوعي
             </button>
             <button
               onClick={() => setAggregation('monthly')}
-              className={`px-4 py-1.5 text-sm rounded-md transition-colors ${aggregation === 'monthly' ? 'bg-white text-farm-blue shadow-sm font-semibold' : 'text-gray-600 hover:text-gray-900'}`}
+              className={`rounded-lg px-4 py-1.5 text-sm font-semibold transition-colors ${aggregation === 'monthly' ? 'bg-white text-[#c2410c] shadow-sm' : 'text-slate-600 hover:text-slate-950'}`}
             >
               شهري
             </button>
