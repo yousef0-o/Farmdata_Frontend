@@ -29,10 +29,10 @@ export function useCreateTeamUser() {
   })
 }
 
-export function useUpdateTeamUser(id: number) {
+export function useUpdateTeamUser() {
   const qc = useQueryClient()
   return useMutation({
-    mutationFn: (data: Partial<User> & { password?: string; role_ids?: number[]; permission_ids?: number[] }) =>
+    mutationFn: ({ id, data }: { id: number; data: Partial<User> & { password?: string; role_ids?: number[]; permission_ids?: number[] } }) =>
       teamApi.updateUser(id, data),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['team-users'] })

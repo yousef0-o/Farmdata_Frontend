@@ -40,7 +40,7 @@ export default function TeamPage() {
 
   // API mutations
   const createUserMutation = useCreateTeamUser()
-  const updateUserMutation = useUpdateTeamUser(editingUser?.id || 0)
+  const updateUserMutation = useUpdateTeamUser()
   const deleteUserMutation = useDeleteTeamUser()
 
   const handleOpenCreate = () => {
@@ -71,7 +71,7 @@ export default function TeamPage() {
   }
 
   const teamApiUpdate = (id: number, payload: any) => {
-    updateUserMutation.mutate(payload, {
+    updateUserMutation.mutate({ id, data: payload }, {
       onSuccess: () => {
         // Handled via React Query
       },
@@ -85,7 +85,7 @@ export default function TeamPage() {
     setBackendErrors(null)
 
     if (editingUser) {
-      updateUserMutation.mutate(payload, {
+      updateUserMutation.mutate({ id: editingUser.id, data: payload }, {
         onSuccess: () => {
           setShowModal(false)
           setEditingUser(null)
