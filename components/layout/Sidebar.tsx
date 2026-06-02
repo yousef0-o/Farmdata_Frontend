@@ -256,7 +256,7 @@ export default function Sidebar({
       aria-label="التنقل الرئيسي"
     >
       {/* Brand Header */}
-      <div className="flex items-center gap-3 border-b border-border p-5 sm:p-6">
+      <div className="flex min-h-12 items-center gap-3 border-b border-border px-5 py-4 sm:px-6">
         <div className="rounded-lg bg-brand-logo-bg p-2">
           <Sprout className="w-6 h-6 text-brand-logo-icon" />
         </div>
@@ -324,13 +324,6 @@ export default function Sidebar({
       {/* Theme Toggle Button */}
       <div className="px-4 py-3 border-t border-border">
         <DarkModeToggle />
-      </div>
-
-      {/* Footer */}
-      <div className="p-4 border-t border-border">
-        <p className="text-xs text-gray-400 dark:text-gray-600 text-center">
-          {isNurseryMode ? 'نظام إدارة مشتل صبارة الفني' : 'نظام إدارة مزارع الدواجن'}
-        </p>
       </div>
     </aside>
   )
