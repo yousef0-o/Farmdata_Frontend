@@ -109,20 +109,23 @@ function warehouseName(warehouses: WarehouseType[], warehouseId?: number | null)
   return warehouses.find((warehouse) => warehouse.id === warehouseId)?.name ?? `#${warehouseId}`
 }
 
-function buildFeedPayload(feedBatches: ProductionEntryValues['feed_batches']): PoultryFeedBatch[] {
+function buildFeedPayload(feedBatches: ProductionEntryValues['feed_batches'], items: Item[]): PoultryFeedBatch[] {
   return feedBatches
     .filter((row) => row.quantity_ton > 0)
-    .map((row) => ({
-      log_time: row.log_time || null,
-      feed_type: row.feed_type || null,
-      quantity_ton: Number(row.quantity_ton.toFixed(3)),
-      quantity_kg: Number((row.quantity_ton * 1000).toFixed(2)),
-      price_per_ton: Number(row.price_per_ton || 0),
-      amount: Number((row.quantity_ton * (row.price_per_ton || 0)).toFixed(2)),
-      warehouse_id: row.warehouse_id ?? null,
-      item_id: row.item_id,
-      inventory_item_id: row.item_id,
-    }))
+    .map((row) => {
+      const item = items.find((it) => it.id === Number(row.item_id))
+      return {
+        log_time: row.log_time || null,
+        feed_type: item?.name || null,
+        quantity_ton: Number(row.quantity_ton.toFixed(3)),
+        quantity_kg: Number((row.quantity_ton * 1000).toFixed(2)),
+        price_per_ton: Number(row.price_per_ton || 0),
+        amount: Number((row.quantity_ton * (row.price_per_ton || 0)).toFixed(2)),
+        warehouse_id: row.warehouse_id ?? null,
+        item_id: row.item_id,
+        inventory_item_id: row.item_id,
+      }
+    })
 }
 
 function buildEggPayload(eggItems: ProductionEntryValues['egg_items']): EggItemPayload[] {
@@ -141,7 +144,7 @@ export default function ProductionEntryForm({ flockId, onSuccess, onCancel }: Pr
   const createEntry = useCreateProductionEntry(flockId)
   const { data: flockData } = useFlock(flockId)
   const { data: warehousesData, isLoading: isLoadingWarehouses } = useWarehouses(1, 200)
-  const { data: itemsData, isLoading: isLoadingItems } = useItems(1, 300)
+  const { data: itemsData, isLoading: isLoadingItems } = useItems(1, 300, true)
 
   const flock = flockData?.data as FlockDetail | undefined
   const warehouses = unwrapData<WarehouseType>(warehousesData)
@@ -174,7 +177,6 @@ export default function ProductionEntryForm({ flockId, onSuccess, onCancel }: Pr
     feed_batches: [
       {
         log_time: '08:00',
-        feed_type: '',
         quantity_ton: 0,
         price_per_ton: 0,
         warehouse_id: undefined,
@@ -213,7 +215,7 @@ export default function ProductionEntryForm({ flockId, onSuccess, onCancel }: Pr
   const totalEggs = watchedEggItems.reduce((total, row) => total + (Number(row.quantity) || 0), 0)
 
   const onSubmit = (values: ProductionEntryValues) => {
-    const feedBatches = buildFeedPayload(values.feed_batches)
+    const feedBatches = buildFeedPayload(values.feed_batches, items)
     const firstFeedBatch = feedBatches[0]
     const feedSummary = feedBatches
       .map((row) => `${row.log_time ?? 'بدون وقت'} / ${row.feed_type || 'علف'} / ${row.quantity_ton} طن / ${row.price_per_ton ?? 0} ريال`)
@@ -239,9 +241,9 @@ export default function ProductionEntryForm({ flockId, onSuccess, onCancel }: Pr
   const isBusy = createEntry.isPending || isLoadingWarehouses || isLoadingItems
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} dir="rtl" className="space-y-5 rounded-2xl border border-slate-100 bg-white p-5 shadow-sm">
+    <form onSubmit={handleSubmit(onSubmit)} dir="rtl" className="space-y-6">
       {createEntry.error ? (
-        <div className="rounded-2xl border border-red-100 bg-red-50 p-4 text-sm font-semibold text-red-700">
+        <div className="rounded-2xl border border-red-100 bg-red-50 p-4 text-sm font-semibold text-red-700 shadow-sm animate-in fade-in slide-in-from-top-2 duration-200">
           <div className="flex items-start gap-3">
             <AlertCircle className="mt-0.5 h-5 w-5 shrink-0" />
             <div>
@@ -258,181 +260,208 @@ export default function ProductionEntryForm({ flockId, onSuccess, onCancel }: Pr
         </div>
       ) : null}
 
-      <section className="grid gap-3 rounded-2xl border border-slate-100 bg-slate-50/70 p-4 md:grid-cols-3">
-        <FormField label="تاريخ السجل" error={errors.record_date?.message}>
-          <input type="date" max={today()} disabled={isBusy} className={fieldBase} {...register('record_date')} />
-        </FormField>
-        <FormField label="النافق اليومي" error={errors.mortality?.message}>
-          <input type="number" min="0" disabled={isBusy} className={fieldBase} {...register('mortality')} />
-        </FormField>
-        <div className="rounded-xl border border-emerald-100 bg-emerald-50 px-4 py-3">
-          <p className="text-xs font-bold text-emerald-800">مستودع البيض الافتراضي</p>
-          <p className="mt-1 text-sm font-semibold text-emerald-950">
-            {warehouseName(warehouses, defaultProductionWarehouseId)}
-          </p>
-        </div>
-      </section>
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-12 lg:items-start">
+        {/* العمود الأيمن: البيانات العامة والملاحظات */}
+        <div className="space-y-6 lg:col-span-4">
+          <div className="rounded-2xl border border-slate-100 bg-white p-5 shadow-sm space-y-4">
+            <h3 className="text-sm font-bold text-slate-800 border-b border-slate-100 pb-2">البيانات الأساسية</h3>
+            
+            <FormField label="تاريخ السجل" error={errors.record_date?.message}>
+              <input type="date" max={today()} disabled={isBusy} className={fieldBase} {...register('record_date')} />
+            </FormField>
 
-      <section className="space-y-4 rounded-2xl border border-slate-100 bg-white p-4">
-        <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-          <div>
-            <h3 className="text-base font-bold text-slate-950">إنتاج البيض حسب المقاسات القياسية</h3>
-            <p className="text-xs font-semibold text-slate-500">13 مقاساً تراثياً، يرسل كل مقاس كصف مستقل في egg_items.</p>
+            <FormField label="النافق اليومي" error={errors.mortality?.message}>
+              <input type="number" min="0" disabled={isBusy} className={fieldBase} {...register('mortality')} />
+            </FormField>
+
+            <FormField label="مستودع تخزين البيض" error={errors.egg_warehouse_id?.message}>
+              <select disabled={isBusy} className={fieldBase} {...register('egg_warehouse_id')}>
+                <option value="">
+                  استخدام الافتراضي: {warehouseName(warehouses, defaultProductionWarehouseId)}
+                </option>
+                {warehouses.map((warehouse) => (
+                  <option key={warehouse.id} value={warehouse.id}>{warehouse.name}</option>
+                ))}
+              </select>
+              {!selectedEggWarehouseId && defaultProductionWarehouseId ? (
+                <p className="mt-1.5 text-[10px] font-semibold text-emerald-700 bg-emerald-50 px-2 py-1 rounded">سيتم استخدام مستودع الإنتاج الافتراضي من القسم.</p>
+              ) : null}
+            </FormField>
           </div>
-          <div className="rounded-xl border border-slate-100 bg-slate-50 px-4 py-2 text-sm font-bold text-[#c2410c]">
-            الإجمالي: {totalEggs.toLocaleString('ar-EG')} بيضة
+
+          <div className="rounded-2xl border border-slate-100 bg-white p-5 shadow-sm space-y-4">
+            <h3 className="text-sm font-bold text-slate-800 border-b border-slate-100 pb-2">ملاحظات تشغيلية</h3>
+            <FormField label="ملاحظات وتوصيات" error={errors.ai_observation?.message}>
+              <textarea
+                rows={4}
+                disabled={isBusy}
+                className="w-full resize-none rounded-xl border border-slate-100 bg-slate-50 px-3 py-2 text-sm font-semibold text-slate-900 outline-none transition-colors focus:border-[#c2410c] focus:ring-2 focus:ring-[#c2410c]/20 disabled:opacity-60"
+                placeholder="اكتب أي ملاحظات أو توصيات هنا..."
+                {...register('ai_observation')}
+              />
+            </FormField>
           </div>
         </div>
 
-        <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
-          {canonicalEggSizes.map((size, index) => (
-            <div key={size.code} className="rounded-xl border border-slate-100 bg-slate-50 p-3">
-              <div className="mb-2 flex items-center justify-between gap-2">
-                <span className="inline-flex items-center gap-2 text-sm font-bold text-slate-950">
-                  <Egg className="h-4 w-4 text-[#c2410c]" />
-                  {size.label}
-                </span>
-                <span className="rounded-lg bg-white px-2 py-1 font-mono text-xs font-bold text-slate-500">
-                  {size.code}
-                </span>
+        {/* العمود الأيسر: مقاسات البيض ودفعات العلف */}
+        <div className="space-y-6 lg:col-span-8">
+          {/* مقاسات البيض */}
+          <div className="rounded-2xl border border-slate-100 bg-white p-5 shadow-sm space-y-5">
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between border-b border-slate-100 pb-3">
+              <div>
+                <h3 className="text-base font-bold text-slate-800 flex items-center gap-2">
+                  <Egg className="h-5 w-5 text-[#c2410c]" />
+                  إنتاج البيض حسب المقاسات القياسية
+                </h3>
+                <p className="text-xs font-semibold text-slate-400 mt-1">يتم ربط وحفظ الإنتاج تلقائياً بـ 13 مقاساً قياسياً معتمداً.</p>
               </div>
-              <input type="hidden" {...register(`egg_items.${index}.size_code`)} />
-              <div className="grid gap-2">
-                <select disabled={isBusy} className={fieldBase} {...register(`egg_items.${index}.item_id`)}>
-                  <option value="">صنف المخزون</option>
-                  {eggItems.map((item) => (
-                    <option key={item.id} value={item.id}>{item.name}</option>
-                  ))}
-                </select>
-                {errors.egg_items?.[index]?.item_id?.message ? (
-                  <p className="text-xs font-semibold text-red-600">{errors.egg_items[index]?.item_id?.message}</p>
-                ) : null}
-                <input
-                  type="number"
-                  min="0"
-                  inputMode="numeric"
-                  disabled={isBusy}
-                  className={`${fieldBase} text-left font-mono`}
-                  placeholder="0"
-                  {...register(`egg_items.${index}.quantity`)}
-                />
+              <div className="rounded-xl border border-orange-100 bg-orange-50/50 px-4 py-2 text-sm font-bold text-[#c2410c] shadow-sm">
+                الإجمالي: {totalEggs.toLocaleString('ar-EG')} طبق
               </div>
             </div>
-          ))}
-        </div>
 
-        <FormField label="مستودع تخزين البيض" error={errors.egg_warehouse_id?.message}>
-          <select disabled={isBusy} className={fieldBase} {...register('egg_warehouse_id')}>
-            <option value="">
-              استخدام الافتراضي: {warehouseName(warehouses, defaultProductionWarehouseId)}
-            </option>
-            {warehouses.map((warehouse) => (
-              <option key={warehouse.id} value={warehouse.id}>{warehouse.name}</option>
-            ))}
-          </select>
-          {!selectedEggWarehouseId && defaultProductionWarehouseId ? (
-            <p className="mt-2 text-xs font-semibold text-emerald-700">سيتم استخدام مستودع الإنتاج الافتراضي من القسم.</p>
-          ) : null}
-        </FormField>
-      </section>
-
-      <section className="space-y-4 rounded-2xl border border-slate-100 bg-white p-4">
-        <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-          <div>
-            <h3 className="text-base font-bold text-slate-950">دفعات العلف اليومية</h3>
-            <p className="text-xs font-semibold text-slate-500">كل صف يحفظ وقت الدفعة والكمية بالطن مع تحويلها إلى كجم.</p>
+            <div className="grid gap-3 grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-7">
+              {canonicalEggSizes.map((size, index) => (
+                <div key={size.code} className="rounded-xl border border-slate-100 bg-slate-50/50 p-3 hover:border-orange-200 transition-all duration-200">
+                  <div className="mb-2 flex items-center justify-between gap-2">
+                    <span className="inline-flex items-center gap-1.5 text-xs font-bold text-slate-800">
+                      <span className="h-2 w-2 rounded-full bg-[#c2410c]" />
+                      {size.label}
+                    </span>
+                    <span className="rounded bg-slate-100 px-1.5 py-0.5 font-mono text-[10px] font-bold text-slate-500">
+                      {size.code}
+                    </span>
+                  </div>
+                  <input type="hidden" {...register(`egg_items.${index}.size_code`)} />
+                  <input type="hidden" {...register(`egg_items.${index}.item_id`)} />
+                  
+                  <div className="space-y-1.5">
+                    <input
+                      type="number"
+                      min="0"
+                      inputMode="numeric"
+                      disabled={isBusy}
+                      className="h-10 w-full rounded-xl border border-slate-100 bg-white px-3 text-left font-mono text-sm font-semibold text-slate-900 outline-none transition-all focus:border-[#c2410c] focus:ring-2 focus:ring-[#c2410c]/10"
+                      placeholder="0"
+                      {...register(`egg_items.${index}.quantity`)}
+                    />
+                    {(() => {
+                      const itemId = watchedEggItems?.[index]?.item_id
+                      const matchedItem = eggItems.find((it) => it.id === Number(itemId))
+                      return (
+                        <p className="text-[10px] text-slate-400 font-semibold text-center truncate">
+                          مخزون: {matchedItem?.name || size.label}
+                        </p>
+                      )
+                    })()}
+                    {errors.egg_items?.[index]?.item_id?.message ? (
+                      <p className="text-xs font-semibold text-red-600 text-center">{errors.egg_items[index]?.item_id?.message}</p>
+                    ) : null}
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
-          <button
-            type="button"
-            onClick={() => feedArray.append({ log_time: '', feed_type: '', quantity_ton: 0, price_per_ton: 0, warehouse_id: undefined, item_id: 0 })}
-            className={`inline-flex min-h-10 items-center justify-center gap-2 rounded-xl bg-[#1c3b2b] px-4 py-2 text-sm font-bold text-white hover:bg-[#244936] ${buttonPress}`}
-          >
-            <CirclePlus className="h-4 w-4" />
-            إضافة دفعة
-          </button>
-        </div>
 
-        <div className="rounded-xl border border-emerald-100 bg-emerald-50 px-4 py-3">
-          <div className="flex items-center gap-2 text-sm font-bold text-emerald-900">
-            <Warehouse className="h-4 w-4" />
-            مستودع العلف الافتراضي: {warehouseName(warehouses, defaultFeedWarehouseId)}
-          </div>
-        </div>
-
-        <div className="space-y-3">
-          {feedArray.fields.map((field, index) => (
-            <div key={field.id} className="grid gap-3 rounded-xl border border-slate-100 bg-slate-50 p-3 lg:grid-cols-[120px_150px_minmax(180px,1fr)_130px_130px_minmax(180px,1fr)_44px]">
-              <FormField label="الوقت" error={errors.feed_batches?.[index]?.log_time?.message}>
-                <input type="time" disabled={isBusy} className={fieldBase} {...register(`feed_batches.${index}.log_time`)} />
-              </FormField>
-              <FormField label="نوع العلف" error={errors.feed_batches?.[index]?.feed_type?.message}>
-                <input disabled={isBusy} className={fieldBase} placeholder="بادئ، نامي..." {...register(`feed_batches.${index}.feed_type`)} />
-              </FormField>
-              <FormField label="صنف المخزون" error={errors.feed_batches?.[index]?.item_id?.message}>
-                <select disabled={isBusy} className={fieldBase} {...register(`feed_batches.${index}.item_id`)}>
-                  <option value="">اختر الصنف</option>
-                  {feedItems.map((item) => (
-                    <option key={item.id} value={item.id}>{item.name}</option>
-                  ))}
-                </select>
-              </FormField>
-              <FormField label="الكمية طن" error={errors.feed_batches?.[index]?.quantity_ton?.message}>
-                <input type="number" min="0" step="0.001" disabled={isBusy} className={`${fieldBase} text-left font-mono`} {...register(`feed_batches.${index}.quantity_ton`)} />
-              </FormField>
-              <FormField label="السعر/طن" error={errors.feed_batches?.[index]?.price_per_ton?.message}>
-                <input type="number" min="0" step="0.01" disabled={isBusy} className={`${fieldBase} text-left font-mono`} {...register(`feed_batches.${index}.price_per_ton`)} />
-              </FormField>
-              <FormField label="مستودع العلف" error={errors.feed_batches?.[index]?.warehouse_id?.message}>
-                <select disabled={isBusy} className={fieldBase} {...register(`feed_batches.${index}.warehouse_id`)}>
-                  <option value="">استخدام الافتراضي: {warehouseName(warehouses, defaultFeedWarehouseId)}</option>
-                  {warehouses.map((warehouse) => (
-                    <option key={warehouse.id} value={warehouse.id}>{warehouse.name}</option>
-                  ))}
-                </select>
-              </FormField>
+          {/* دفعات العلف */}
+          <div className="rounded-2xl border border-slate-100 bg-white p-5 shadow-sm space-y-5">
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between border-b border-slate-100 pb-3">
+              <div>
+                <h3 className="text-base font-bold text-slate-800 flex items-center gap-2">
+                  <Warehouse className="h-5 w-5 text-emerald-700" />
+                  دفعات استهلاك العلف
+                </h3>
+                <p className="text-xs font-semibold text-slate-400 mt-1">سجل أوقات تقديم العلف والكميات بالطن بدقة متناهية.</p>
+              </div>
               <button
                 type="button"
-                onClick={() => feedArray.fields.length > 1 && feedArray.remove(index)}
-                disabled={isBusy || feedArray.fields.length === 1}
-                className={`mt-6 flex h-11 w-11 items-center justify-center rounded-xl border border-red-100 bg-red-50 text-red-700 hover:bg-red-100 ${buttonPress}`}
-                aria-label="حذف دفعة العلف"
+                onClick={() => feedArray.append({ log_time: '', quantity_ton: 0, price_per_ton: 0, warehouse_id: undefined, item_id: 0 })}
+                className="inline-flex h-9 items-center justify-center gap-2 rounded-xl bg-slate-900 px-4 text-xs font-bold text-white hover:bg-slate-800 active:scale-[0.98] transition-transform duration-150"
               >
-                <Trash2 className="h-4 w-4" />
+                <CirclePlus className="h-4 w-4" />
+                إضافة دفعة علف
               </button>
             </div>
-          ))}
+
+            <div className="space-y-4">
+              {feedArray.fields.map((field, index) => (
+                <div key={field.id} className="relative rounded-2xl border border-slate-100 bg-slate-50/50 p-4 pt-8 lg:pt-4 grid gap-4 lg:grid-cols-[100px_1fr_100px_100px_1fr_40px] items-start hover:border-slate-200 transition-colors duration-200">
+                  <FormField label="الوقت" error={errors.feed_batches?.[index]?.log_time?.message}>
+                    <input type="time" disabled={isBusy} className={`${fieldBase} bg-white h-10`} {...register(`feed_batches.${index}.log_time`)} />
+                  </FormField>
+                  
+                  <FormField label="صنف المخزون" error={errors.feed_batches?.[index]?.item_id?.message}>
+                    <select disabled={isBusy} className={`${fieldBase} bg-white h-10`} {...register(`feed_batches.${index}.item_id`)}>
+                      <option value="">اختر الصنف</option>
+                      {feedItems.map((item) => (
+                        <option key={item.id} value={item.id}>{item.name}</option>
+                      ))}
+                    </select>
+                  </FormField>
+                  
+                  <FormField label="الكمية طن" error={errors.feed_batches?.[index]?.quantity_ton?.message}>
+                    <input type="number" min="0" step="0.001" disabled={isBusy} className={`${fieldBase} bg-white h-10 text-left font-mono`} {...register(`feed_batches.${index}.quantity_ton`)} />
+                  </FormField>
+                  
+                  <FormField label="السعر/طن" error={errors.feed_batches?.[index]?.price_per_ton?.message}>
+                    <input type="number" min="0" step="0.01" disabled={isBusy} className={`${fieldBase} bg-white h-10 text-left font-mono`} {...register(`feed_batches.${index}.price_per_ton`)} />
+                  </FormField>
+                  
+                  <FormField label="المستودع" error={errors.feed_batches?.[index]?.warehouse_id?.message}>
+                    <select disabled={isBusy} className={`${fieldBase} bg-white h-10`} {...register(`feed_batches.${index}.warehouse_id`)}>
+                      <option value="">الافتراضي: {warehouseName(warehouses, defaultFeedWarehouseId)}</option>
+                      {warehouses.map((warehouse) => (
+                        <option key={warehouse.id} value={warehouse.id}>{warehouse.name}</option>
+                      ))}
+                    </select>
+                  </FormField>
+
+                  <div className="absolute top-2 left-2 lg:relative lg:top-0 lg:left-0 lg:mt-5 flex justify-end">
+                    <button
+                      type="button"
+                      onClick={() => feedArray.fields.length > 1 && feedArray.remove(index)}
+                      disabled={isBusy || feedArray.fields.length === 1}
+                      className="flex h-9 w-9 items-center justify-center rounded-xl bg-red-50 text-red-600 hover:bg-red-100 disabled:opacity-30 active:scale-95 transition-transform"
+                      aria-label="حذف دفعة العلف"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            <div className="grid gap-3 grid-cols-1 md:grid-cols-3 pt-2">
+              <div className="rounded-xl border border-slate-100 bg-slate-50/50 p-3 flex flex-col justify-center">
+                <span className="text-[10px] font-bold text-slate-400">إجمالي العلف بالطن</span>
+                <span className="mt-1 font-mono text-base font-bold text-slate-800">{totalFeedTon.toLocaleString('ar-EG', { maximumFractionDigits: 3 })} طن</span>
+              </div>
+              <div className="rounded-xl border border-slate-100 bg-slate-50/50 p-3 flex flex-col justify-center">
+                <span className="text-[10px] font-bold text-slate-400">إجمالي العلف بالكجم</span>
+                <span className="mt-1 font-mono text-base font-bold text-slate-800">{totalFeedKg.toLocaleString('ar-EG', { maximumFractionDigits: 2 })} كجم</span>
+              </div>
+              <div className="rounded-xl border border-slate-100 bg-slate-50/50 p-3 flex flex-col justify-center">
+                <span className="text-[10px] font-bold text-slate-400">إجمالي التكلفة</span>
+                <span className="mt-1 font-mono text-base font-bold text-[#c2410c]">{totalFeedCost.toLocaleString('ar-EG', { maximumFractionDigits: 2 })} ر.س</span>
+              </div>
+            </div>
+          </div>
         </div>
+      </div>
 
-        <div className="grid gap-3 rounded-xl border border-slate-200 bg-slate-50 p-3 md:grid-cols-3">
-          <ReadOnlyMetric label="إجمالي العلف بالطن" value={totalFeedTon.toLocaleString('ar-EG', { maximumFractionDigits: 3 })} />
-          <ReadOnlyMetric label="إجمالي العلف بالكجم" value={totalFeedKg.toLocaleString('ar-EG', { maximumFractionDigits: 2 })} />
-          <ReadOnlyMetric label="إجمالي تكلفة العلف" value={totalFeedCost.toLocaleString('ar-EG', { maximumFractionDigits: 2 })} />
-        </div>
-      </section>
-
-      <FormField label="ملاحظات تشغيلية" error={errors.ai_observation?.message}>
-        <textarea
-          rows={3}
-          disabled={isBusy}
-          className="w-full resize-none rounded-xl border border-slate-100 bg-slate-50 px-4 py-3 text-sm font-semibold text-slate-900 outline-none transition-colors focus:border-[#c2410c] focus:ring-2 focus:ring-[#c2410c]/20 disabled:opacity-60"
-          placeholder="ملاحظات اختيارية..."
-          {...register('ai_observation')}
-        />
-      </FormField>
-
-      <div className="flex flex-col-reverse gap-3 border-t border-slate-100 pt-4 sm:flex-row sm:justify-end">
+      <div className="flex flex-col-reverse gap-3 border-t border-slate-100 pt-5 sm:flex-row sm:justify-end">
         <button
           type="button"
           onClick={onCancel}
           disabled={isBusy}
-          className={`min-h-11 rounded-xl border border-slate-100 bg-slate-50 px-5 py-2 text-sm font-bold text-slate-700 hover:bg-slate-100 ${buttonPress}`}
+          className="min-h-11 rounded-xl border border-slate-200/60 bg-white px-6 py-2 text-sm font-bold text-slate-700 hover:bg-slate-50 active:scale-[0.98] transition-transform duration-150"
         >
           إلغاء
         </button>
         <button
           type="submit"
           disabled={isBusy}
-          className={`inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-[#c2410c] px-6 py-2 text-sm font-bold text-white hover:bg-[#9a3412] ${buttonPress}`}
+          className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-slate-900 px-8 py-2 text-sm font-bold text-white hover:bg-slate-800 active:scale-[0.98] transition-all shadow-sm"
         >
           {createEntry.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
           حفظ تسجيل الإنتاج

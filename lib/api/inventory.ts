@@ -24,8 +24,8 @@ export const inventoryApi = {
     apiRequest<void>(`/warehouses/${id}`, { method: 'DELETE' }),
 
   // Items
-  listItems: (page = 1, perPage = 20) =>
-    apiRequest<PaginatedResponse<Item>>(`/items?page=${page}&per_page=${perPage}`),
+  listItems: (page = 1, perPage = 20, activeOnly = false) =>
+    apiRequest<PaginatedResponse<Item>>(`/items?page=${page}&per_page=${perPage}${activeOnly ? '&active_only=true' : ''}`),
   getItem: (id: number) =>
     wrapResponse<Item>(apiRequest(`/items/${id}`)),
   createItem: (data: { name: string; unit?: string; category?: string }) =>

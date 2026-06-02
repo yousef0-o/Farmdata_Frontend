@@ -37,7 +37,7 @@ export default function DailyEntryNewPage() {
   const section = barn?.section
 
   return (
-    <div className="max-w-3xl mx-auto space-y-6">
+    <div className="w-full space-y-6 px-2 md:px-4">
       {/* Breadcrumb */}
       <div>
         <div className="flex items-center gap-2 text-sm text-gray-500 mb-2">

@@ -60,27 +60,30 @@ function warehouseName(warehouses: WarehouseType[], warehouseId?: number | null)
   return warehouses.find((warehouse) => warehouse.id === warehouseId)?.name ?? `#${warehouseId}`
 }
 
-function buildFeedPayload(feedBatches: BreedingEntryValues['feed_batches']): PoultryFeedBatch[] {
+function buildFeedPayload(feedBatches: BreedingEntryValues['feed_batches'], items: Item[]): PoultryFeedBatch[] {
   return feedBatches
     .filter((row) => row.quantity_ton > 0)
-    .map((row) => ({
-      log_time: row.log_time || null,
-      feed_type: row.feed_type || null,
-      quantity_ton: Number(row.quantity_ton.toFixed(3)),
-      quantity_kg: Number((row.quantity_ton * 1000).toFixed(2)),
-      price_per_ton: Number(row.price_per_ton || 0),
-      amount: Number((row.quantity_ton * (row.price_per_ton || 0)).toFixed(2)),
-      warehouse_id: row.warehouse_id ?? null,
-      item_id: row.item_id,
-      inventory_item_id: row.item_id,
-    }))
+    .map((row) => {
+      const item = items.find((it) => it.id === Number(row.item_id))
+      return {
+        log_time: row.log_time || null,
+        feed_type: item?.name || null,
+        quantity_ton: Number(row.quantity_ton.toFixed(3)),
+        quantity_kg: Number((row.quantity_ton * 1000).toFixed(2)),
+        price_per_ton: Number(row.price_per_ton || 0),
+        amount: Number((row.quantity_ton * (row.price_per_ton || 0)).toFixed(2)),
+        warehouse_id: row.warehouse_id ?? null,
+        item_id: row.item_id,
+        inventory_item_id: row.item_id,
+      }
+    })
 }
 
 export default function BreedingEntryForm({ flockId, onSuccess, onCancel }: BreedingEntryFormProps) {
   const createEntry = useCreateBreedingEntry(flockId)
   const { data: flockData } = useFlock(flockId)
   const { data: warehousesData, isLoading: isLoadingWarehouses } = useWarehouses(1, 200)
-  const { data: itemsData, isLoading: isLoadingItems } = useItems(1, 300)
+  const { data: itemsData, isLoading: isLoadingItems } = useItems(1, 300, true)
 
   const flock = flockData?.data as FlockDetail | undefined
   const warehouses = unwrapData<WarehouseType>(warehousesData)
@@ -111,7 +114,6 @@ export default function BreedingEntryForm({ flockId, onSuccess, onCancel }: Bree
       feed_batches: [
         {
           log_time: '08:00',
-          feed_type: '',
           quantity_ton: 0,
           price_per_ton: 0,
           warehouse_id: undefined,
@@ -131,7 +133,7 @@ export default function BreedingEntryForm({ flockId, onSuccess, onCancel }: Bree
   )
 
   const onSubmit = (values: BreedingEntryValues) => {
-    const feedBatches = buildFeedPayload(values.feed_batches)
+    const feedBatches = buildFeedPayload(values.feed_batches, items)
     const firstFeedBatch = feedBatches[0]
     const feedSummary = feedBatches
       .map((row) => `${row.log_time ?? 'بدون وقت'} / ${row.feed_type || 'علف'} / ${row.quantity_ton} طن / ${row.price_per_ton ?? 0} ريال`)
@@ -195,7 +197,7 @@ export default function BreedingEntryForm({ flockId, onSuccess, onCancel }: Bree
           </div>
           <button
             type="button"
-            onClick={() => feedArray.append({ log_time: '', feed_type: '', quantity_ton: 0, price_per_ton: 0, warehouse_id: undefined, item_id: 0 })}
+            onClick={() => feedArray.append({ log_time: '', quantity_ton: 0, price_per_ton: 0, warehouse_id: undefined, item_id: 0 })}
             className={`inline-flex min-h-10 items-center justify-center gap-2 rounded-xl bg-[#1c3b2b] px-4 py-2 text-sm font-bold text-white hover:bg-[#244936] ${buttonPress}`}
           >
             <CirclePlus className="h-4 w-4" />
@@ -212,12 +214,9 @@ export default function BreedingEntryForm({ flockId, onSuccess, onCancel }: Bree
 
         <div className="space-y-3">
           {feedArray.fields.map((field, index) => (
-            <div key={field.id} className="grid gap-3 rounded-xl border border-slate-100 bg-slate-50 p-3 lg:grid-cols-[120px_150px_minmax(180px,1fr)_130px_130px_minmax(180px,1fr)_44px]">
+            <div key={field.id} className="grid gap-3 rounded-xl border border-slate-100 bg-slate-50 p-3 lg:grid-cols-[120px_minmax(180px,1fr)_130px_130px_minmax(180px,1fr)_44px]">
               <FormField label="الوقت" error={errors.feed_batches?.[index]?.log_time?.message}>
                 <input type="time" disabled={isBusy} className={fieldBase} {...register(`feed_batches.${index}.log_time`)} />
-              </FormField>
-              <FormField label="نوع العلف" error={errors.feed_batches?.[index]?.feed_type?.message}>
-                <input disabled={isBusy} className={fieldBase} placeholder="بادئ، نامي..." {...register(`feed_batches.${index}.feed_type`)} />
               </FormField>
               <FormField label="صنف المخزون" error={errors.feed_batches?.[index]?.item_id?.message}>
                 <select disabled={isBusy} className={fieldBase} {...register(`feed_batches.${index}.item_id`)}>

@@ -37,6 +37,17 @@ export default function ProductionEntryEditPage() {
     return items.filter((it: any) => it.category === 'بيض منتج')
   }, [items])
 
+  const eggItemsSorted = useMemo(() => {
+    const order = ['F2', 'SSS', 'B', 'B-D', 'S-D', 'SS', 'S', 'M', 'L2', 'L1', 'XL', 'XXL', 'J']
+    return [...eggItems].sort((a: any, b: any) => {
+      const idxA = order.indexOf(a.name)
+      const idxB = order.indexOf(b.name)
+      if (idxA === -1) return 1
+      if (idxB === -1) return -1
+      return idxA - idxB
+    })
+  }, [eggItems])
+
   // Form states
   const [mortality, setMortality] = useState('')
   const [eggQuantities, setEggQuantities] = useState<Record<number, string>>({})
@@ -146,7 +157,7 @@ export default function ProductionEntryEditPage() {
     `w-full border rounded-xl px-4 py-2.5 bg-gray-50 focus:outline-none focus:ring-2 focus:ring-farm-blue ${errors[f] ? 'border-red-500' : 'border-gray-200'}`
 
   return (
-    <div className="max-w-3xl mx-auto space-y-6" dir="rtl">
+    <div className="w-full space-y-6 px-2 md:px-4" dir="rtl">
       {/* Breadcrumb */}
       <div>
         <div className="flex items-center gap-2 text-sm text-gray-500 mb-2">
@@ -236,7 +247,7 @@ export default function ProductionEntryEditPage() {
           {/* Show previous total from legacy data */}
           {entry.total_eggs > 0 && totalEggs === 0 && (
             <div className="mb-4 p-3 bg-blue-50 border border-blue-100 rounded-xl text-sm text-blue-700">
-              <p className="font-semibold">الإجمالي السابق: {entry.total_eggs.toLocaleString()} بيضة</p>
+              <p className="font-semibold">الإجمالي السابق: {entry.total_eggs.toLocaleString()} طبق</p>
               <p className="mt-1 text-xs">يرجى إعادة توزيع الكميات على الأصناف أدناه.</p>
             </div>
           )}
@@ -253,17 +264,17 @@ export default function ProductionEntryEditPage() {
             </div>
           ) : (
             <>
-              <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                {eggItems.map((item: any) => (
-                  <div key={item.id}>
-                    <label className="text-sm font-semibold text-gray-700 block mb-1 flex items-center gap-1.5">
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-7 gap-4">
+                {eggItemsSorted.map((item: any) => (
+                  <div key={item.id} className="rounded-xl border border-gray-100 bg-gray-50/50 p-3 hover:border-amber-200 transition-all duration-200">
+                    <label className="text-xs font-bold text-gray-700 block mb-1.5 flex items-center gap-1.5">
                       <Egg className="w-3.5 h-3.5 text-amber-500" />
                       {item.name}
                     </label>
                     <input 
                       type="number" 
                       min="0" 
-                      className="w-full border border-gray-200 rounded-xl px-4 py-2.5 bg-gray-50 focus:outline-none focus:ring-2 focus:ring-farm-blue transition-colors"
+                      className="w-full border border-gray-200 rounded-xl px-3 py-2 bg-white focus:outline-none focus:ring-2 focus:ring-farm-blue transition-colors text-left font-mono text-sm font-semibold"
                       value={eggQuantities[item.id] || ''} 
                       onChange={(e) => setEggQty(item.id, e.target.value)} 
                       placeholder="0" 
@@ -274,7 +285,7 @@ export default function ProductionEntryEditPage() {
 
               <div className="mt-4 p-3 bg-gray-50 rounded-xl flex items-center justify-between text-sm">
                 <span className="font-semibold text-gray-600">إجمالي البيض المحسوب:</span>
-                <span className="font-bold text-gray-950 text-lg">{totalEggs.toLocaleString('en-US')} بيضة</span>
+                <span className="font-bold text-gray-950 text-lg">{totalEggs.toLocaleString('en-US')} طبق</span>
               </div>
             </>
           )}

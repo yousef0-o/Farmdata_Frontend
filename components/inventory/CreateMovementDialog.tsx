@@ -146,7 +146,7 @@ export function CreateMovementDialog({ open, onOpenChange, defaultType = 'in', d
 
   const createMutation = useCreateMovement()
   const { data: warehousesData, isLoading: isWarehousesLoading } = useWarehouses(1, 100)
-  const { data: itemsData, isLoading: isItemsLoading } = useItems(1, 100)
+  const { data: itemsData, isLoading: isItemsLoading } = useItems(1, 100, true)
   const { data: balanceData, isLoading: isBalanceLoading } = useItemBalance(warehouseId, itemId)
 
   const warehouses = useMemo(() => {

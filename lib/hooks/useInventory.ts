@@ -26,10 +26,10 @@ export function useWarehouseBalances(warehouseId: number) {
   })
 }
 
-export function useItems(page = 1, perPage = 20) {
+export function useItems(page = 1, perPage = 20, activeOnly = false) {
   return useQuery({
-    queryKey: ['items', page, perPage],
-    queryFn: () => inventoryApi.listItems(page, perPage),
+    queryKey: ['items', page, perPage, activeOnly],
+    queryFn: () => inventoryApi.listItems(page, perPage, activeOnly),
   })
 }
 
@@ -75,3 +75,20 @@ export function useCreateItem() {
     onSuccess: () => qc.invalidateQueries({ queryKey: ['items'] }),
   })
 }
+
+export function useUpdateItem() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: ({ id, data }: { id: number; data: Partial<any> }) => inventoryApi.updateItem(id, data),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['items'] }),
+  })
+}
+
+export function useDeleteItem() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: inventoryApi.deleteItem,
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['items'] }),
+  })
+}
+
