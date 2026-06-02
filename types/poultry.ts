@@ -19,6 +19,17 @@ export interface Flock {
   chick_total_cost: number | string | null
   breed: string | null
   supplier: string | null
+  rearing_entry_date?: string | null
+  rearing_exit_date?: string | null
+  rearing_entered_count?: number | null
+  rearing_mortality_count?: number | null
+  rearing_mortality_value?: number | string | null
+  chicks_value?: number | string | null
+  feed_value?: number | string | null
+  vet_value?: number | string | null
+  other_value?: number | string | null
+  flock_value?: number | string | null
+  bird_value?: number | string | null
 }
 
 export interface PoultryFeedBatch {
