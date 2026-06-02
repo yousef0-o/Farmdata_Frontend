@@ -490,6 +490,24 @@ export interface EntityStatistics {
     mortality_value: number
     average_production_rate: number
     mortality_rate: number
+    target_carton?: number
+    standard_target_carton?: number
+    operational_target_carton?: number
+    egg_sizes_distribution?: {
+      B: number
+      BD: number
+      SD: number
+      SS: number
+      S: number
+      M: number
+      L2: number
+      L1: number
+      XL: number
+      XXL: number
+      J: number
+      F2: number
+      SSS: number
+    }
   }
   annual_production: {
     year: number

@@ -316,7 +316,7 @@ export default function SectionDetailPage() {
           ) : stats ? (
             <>
               {/* Unified Stats Cards */}
-              <UnifiedStatsCards stats={stats} />
+              <UnifiedStatsCards stats={stats} isBreedingOnly={section?.section_type === 'breeding'} />
 
               {/* Ledger Summary */}
               <LedgerSummaryCard ledger={stats.ledger_summary} />
