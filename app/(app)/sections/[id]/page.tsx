@@ -8,8 +8,6 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { z } from 'zod'
 import { organizationApi } from '@/lib/api/organization'
 import UnifiedStatsCards from '@/components/statistics/UnifiedStatsCards'
-import AnnualProductionTable from '@/components/statistics/AnnualProductionTable'
-import LedgerSummaryCard from '@/components/statistics/LedgerSummaryCard'
 
 const barnSchema = z.object({
   barn_name: z.string().min(1, 'اسم العنبر مطلوب'),
@@ -316,13 +314,7 @@ export default function SectionDetailPage() {
           ) : stats ? (
             <>
               {/* Unified Stats Cards */}
-              <UnifiedStatsCards stats={stats} isBreedingOnly={section?.section_type === 'breeding'} />
-
-              {/* Ledger Summary */}
-              <LedgerSummaryCard ledger={stats.ledger_summary} />
-
-              {/* Annual Production */}
-              <AnnualProductionTable data={stats.annual_production} />
+              <UnifiedStatsCards stats={stats} isBreedingOnly={section?.section_type === 'breeding'} title={section?.section_name} />
             </>
           ) : (
             <div className="text-center py-10 text-slate-500">فشل في تحميل التقارير الإحصائية للقسم.</div>

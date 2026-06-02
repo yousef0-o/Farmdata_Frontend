@@ -514,6 +514,18 @@ export interface EntityStatistics {
     month: number
     cartons: number
   }[]
+  annual_movement?: {
+    year: number
+    cartons_produced: number
+    eggs_produced: number
+    birds_entering_production: number
+    cumulative_birds: number
+    production_rate: number
+    mortality_count: number
+    feed_consumption: number
+    target_cartons: number
+    cartons_difference: number
+  }[]
   ledger_summary: {
     total_debit: number
     total_credit: number

@@ -8,8 +8,6 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { z } from 'zod'
 import { organizationApi } from '@/lib/api/organization'
 import UnifiedStatsCards from '@/components/statistics/UnifiedStatsCards'
-import AnnualProductionTable from '@/components/statistics/AnnualProductionTable'
-import LedgerSummaryCard from '@/components/statistics/LedgerSummaryCard'
 
 const sectionSchema = z.object({
   section_name: z.string().min(1, 'اسم القسم مطلوب'),
@@ -302,13 +300,7 @@ export default function ProjectDetailPage() {
           ) : stats ? (
             <>
               {/* Unified Stats Cards */}
-              <UnifiedStatsCards stats={stats} />
-
-              {/* Ledger Summary */}
-              <LedgerSummaryCard ledger={stats.ledger_summary} />
-
-              {/* Annual Production */}
-              <AnnualProductionTable data={stats.annual_production} />
+              <UnifiedStatsCards stats={stats} title={project?.project_name} />
             </>
           ) : (
             <div className="text-center py-10 text-slate-500">فشل في تحميل التقارير الإحصائية للمشروع.</div>

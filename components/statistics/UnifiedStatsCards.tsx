@@ -18,6 +18,7 @@ import SaudiRiyalIcon from '@/components/icons/SaudiRiyalIcon'
 interface UnifiedStatsCardsProps {
   stats: EntityStatistics
   isBreedingOnly?: boolean
+  title?: string
 }
 
 type MetricTone = {
@@ -95,7 +96,7 @@ function StatTile({
   )
 }
 
-export default function UnifiedStatsCards({ stats, isBreedingOnly: propIsBreedingOnly }: UnifiedStatsCardsProps) {
+export default function UnifiedStatsCards({ stats, isBreedingOnly: propIsBreedingOnly, title }: UnifiedStatsCardsProps) {
   const formatNumber = (num: number) =>
     new Intl.NumberFormat('en-US', {
       maximumFractionDigits: 2,
@@ -334,7 +335,7 @@ export default function UnifiedStatsCards({ stats, isBreedingOnly: propIsBreedin
                       className="flex-1 min-w-[100px] rounded-xl bg-slate-50 border border-slate-100 p-3 text-center flex flex-col justify-between items-center gap-1"
                     >
                       <span className="text-xs font-bold text-farm-blue">{item.label}</span>
-                      <span className="text-sm font-bold text-slate-800">{formatNumber(item.value)}</span>
+                      <span className="text-sm font-bold text-slate-800">{formatNumber(item.value / 360)}</span>
                       <span className="text-xs font-semibold text-emerald-600">{pct}%</span>
                     </div>
                   )
@@ -342,6 +343,116 @@ export default function UnifiedStatsCards({ stats, isBreedingOnly: propIsBreedin
               })()}
             </div>
           </div>
+        </div>
+      )}
+
+      {/* 4. حركة الإنتاج السنوية */}
+      {!isBreedingOnly && stats.annual_movement && stats.annual_movement.length > 0 && (
+        <div className="space-y-4 mt-8">
+          <div className="flex items-center gap-3 border-b border-line pb-2">
+            <div className="p-2 bg-blue-50 text-farm-blue rounded-lg">
+              <TrendingUp className="h-5 w-5" />
+            </div>
+            <h2 className="text-lg font-bold text-ink">
+              حركة الإنتاج السنوية لـ {title || 'الموقع'}
+            </h2>
+          </div>
+
+          {/* Cards for totals */}
+          {(() => {
+            const annualMovement = stats.annual_movement || []
+            const totalCartons = annualMovement.reduce((sum, row) => sum + row.cartons_produced, 0)
+            const totalEggs = annualMovement.reduce((sum, row) => sum + row.eggs_produced, 0)
+            const totalCumulativeBirds = annualMovement.reduce((sum, row) => sum + row.cumulative_birds, 0)
+            const totalEntering = annualMovement.reduce((sum, row) => sum + row.birds_entering_production, 0)
+            const totalMortality = annualMovement.reduce((sum, row) => sum + row.mortality_count, 0)
+            const totalFeed = annualMovement.reduce((sum, row) => sum + row.feed_consumption, 0)
+            const totalTarget = annualMovement.reduce((sum, row) => sum + row.target_cartons, 0)
+            const totalDiff = totalCartons - totalTarget
+            const totalRate = totalCumulativeBirds > 0 ? (totalEggs / totalCumulativeBirds) * 100 : 0
+
+            return (
+              <>
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                  <div className="rounded-xl border border-line bg-surface p-4 text-center shadow-sm">
+                    <div className="text-xs font-semibold text-slate-500 mb-1">إجمالي الكراتين</div>
+                    <div className="text-xl font-bold text-farm-blue">{formatNumber(totalCartons)}</div>
+                  </div>
+                  <div className="rounded-xl border border-line bg-surface p-4 text-center shadow-sm">
+                    <div className="text-xs font-semibold text-slate-500 mb-1">إجمالي البيض</div>
+                    <div className="text-xl font-bold text-emerald-600">{formatNumber(totalEggs)}</div>
+                  </div>
+                  <div className="rounded-xl border border-line bg-surface p-4 text-center shadow-sm">
+                    <div className="text-xs font-semibold text-slate-500 mb-1">نسبة الإنتاج الكلية</div>
+                    <div className="text-xl font-bold text-sky-500">{totalRate.toFixed(2)}%</div>
+                  </div>
+                  <div className="rounded-xl border border-line bg-surface p-4 text-center shadow-sm">
+                    <div className="text-xs font-semibold text-slate-500 mb-1">إجمالي الأعلاف</div>
+                    <div className="text-xl font-bold text-amber-600">{formatNumber(totalFeed)} طن</div>
+                  </div>
+                </div>
+
+                <div className="rounded-2xl border border-line bg-surface p-4 shadow-sm overflow-x-auto">
+                  <table className="w-full text-sm border-collapse text-right">
+                    <thead>
+                      <tr className="border-b border-line bg-slate-50 text-slate-700 font-bold">
+                        <th className="p-3 text-center">السنة</th>
+                        <th className="p-3 text-center">الكرتون المنتج</th>
+                        <th className="p-3 text-center">البيض المنتج</th>
+                        <th className="p-3 text-center">عدد الطيور الداخل</th>
+                        <th className="p-3 text-center">العدد التراكمي</th>
+                        <th className="p-3 text-center">نسبة الإنتاج %</th>
+                        <th className="p-3 text-center">النافق</th>
+                        <th className="p-3 text-center">الأعلاف (طن)</th>
+                        <th className="p-3 text-center">المستهدف</th>
+                        <th className="p-3 text-center">الفرق</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-line">
+                      {annualMovement.map((row) => {
+                        const isDiffPositive = row.cartons_difference >= 0
+                        const rateColor = row.production_rate >= 80 ? 'text-emerald-600' : (row.production_rate >= 70 ? 'text-amber-500' : 'text-rose-600')
+                        return (
+                          <tr key={row.year} className="hover:bg-slate-50 transition-colors">
+                            <td className="p-3 text-center font-bold bg-slate-50 text-slate-800">{row.year}</td>
+                            <td className="p-3 text-center text-slate-700 font-semibold">{formatNumber(row.cartons_produced)}</td>
+                            <td className="p-3 text-center text-slate-700">{formatNumber(row.eggs_produced)}</td>
+                            <td className="p-3 text-center text-slate-700">{formatNumber(row.birds_entering_production)}</td>
+                            <td className="p-3 text-center text-slate-800 font-semibold">{formatNumber(row.cumulative_birds)}</td>
+                            <td className={`p-3 text-center font-bold ${rateColor}`}>{row.production_rate.toFixed(2)}%</td>
+                            <td className="p-3 text-center text-rose-600 font-bold">{formatNumber(row.mortality_count)}</td>
+                            <td className="p-3 text-center text-slate-700">{formatNumber(row.feed_consumption)}</td>
+                            <td className="p-3 text-center text-slate-700">{formatNumber(row.target_cartons)}</td>
+                            <td className={`p-3 text-center font-bold ${isDiffPositive ? 'text-emerald-600' : 'text-rose-600'}`}>
+                              {formatNumber(Math.abs(row.cartons_difference))}
+                              {!isDiffPositive && '-'}
+                            </td>
+                          </tr>
+                        )
+                      })}
+                    </tbody>
+                    <tfoot>
+                      <tr className="bg-emerald-50 text-emerald-950 font-bold border-t border-line">
+                        <td className="p-3 text-center">الإجمالي</td>
+                        <td className="p-3 text-center">{formatNumber(totalCartons)}</td>
+                        <td className="p-3 text-center">{formatNumber(totalEggs)}</td>
+                        <td className="p-3 text-center">{formatNumber(totalEntering)}</td>
+                        <td className="p-3 text-center">{formatNumber(totalCumulativeBirds)}</td>
+                        <td className="p-3 text-center">{totalRate.toFixed(2)}%</td>
+                        <td className="p-3 text-center text-rose-600">{formatNumber(totalMortality)}</td>
+                        <td className="p-3 text-center">{formatNumber(totalFeed)}</td>
+                        <td className="p-3 text-center">{formatNumber(totalTarget)}</td>
+                        <td className={`p-3 text-center ${totalDiff >= 0 ? 'text-emerald-700' : 'text-rose-700'}`}>
+                          {formatNumber(Math.abs(totalDiff))}
+                          {totalDiff < 0 && '-'}
+                        </td>
+                      </tr>
+                    </tfoot>
+                  </table>
+                </div>
+              </>
+            )
+          })()}
         </div>
       )}
     </section>
