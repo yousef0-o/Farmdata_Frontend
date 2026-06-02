@@ -96,7 +96,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
     <AuthGuard>
       <div className="min-h-screen bg-background font-sans text-foreground transition-colors duration-200" dir="rtl">
         <div className="flex min-h-screen w-full lg:flex-row">
-          <Sidebar className="hidden lg:flex lg:w-72 xl:w-80 lg:sticky lg:top-0 lg:h-screen lg:shrink-0" />
+          <Sidebar className="hidden lg:flex lg:w-64 xl:w-64 lg:sticky lg:top-0 lg:h-screen lg:shrink-0" />
 
           <div className="flex min-w-0 flex-1 flex-col overflow-hidden">
             <TopBar

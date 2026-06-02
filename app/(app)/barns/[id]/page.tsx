@@ -622,10 +622,10 @@ export default function BarnDetailPage() {
 
   const breedingRows: FlockLedgerRow[] = allFlocks.map((flock) => {
     const summary = summariesByFlock.get(flock.id)
-    const chickCost = parseNumeric(flock.chick_unit_cost) * flock.entry_birds
-    const feedCost = (summary?.total_feed_kg ?? 0) * 1.25
-    const vetCost = (medicalRecordsByFlock.get(flock.id) ?? []).length * 0
-    const otherCost = (flockExpensesByFlock.get(flock.id) ?? []).reduce(
+    const chickCost = summary?.chick_cost ?? (parseNumeric(flock.chick_unit_cost) * flock.entry_birds)
+    const feedCost = summary?.feed_cost ?? ((summary?.total_feed_kg ?? 0) * 1.25)
+    const vetCost = summary?.vet_cost ?? 0
+    const otherCost = summary?.other_cost ?? (flockExpensesByFlock.get(flock.id) ?? []).reduce(
       (total, expense) => total + parseNumeric(expense.amount),
       0
     )
@@ -637,7 +637,7 @@ export default function BarnDetailPage() {
       vetCost,
       otherCost,
       totalValue,
-      birdValue: flock.current_count > 0 ? totalValue / flock.current_count : 0,
+      birdValue: flock.entry_birds > 0 ? totalValue / flock.entry_birds : 0,
     }
   })
 
@@ -1299,7 +1299,7 @@ function BreedingLedgerTable({
               <td className="px-4 py-4 font-mono">{formatCurrency(summary.otherCost)}</td>
               <td className="px-4 py-4 font-mono text-action-primary">{formatCurrency(summary.totalValue)}</td>
               <td className="px-4 py-4 font-mono text-action-primary">
-                {formatCurrency(summary.currentBirds > 0 ? summary.totalValue / summary.currentBirds : 0)}
+                {formatCurrency(summary.entryBirds > 0 ? summary.totalValue / summary.entryBirds : 0)}
               </td>
             </tr>
           </tfoot>
