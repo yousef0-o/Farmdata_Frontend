@@ -31,6 +31,7 @@ function SheetTable({ records, formatBalance, onView, onEdit, onDelete }: {
             <th className="p-3 font-sans">اسم السجل</th>
             <th className="p-3 font-sans">الحساب المحاسبي</th>
             <th className="p-3 font-sans">الرصيد</th>
+            <th className="p-3 font-sans">الأوراق</th>
             <th className="p-3 font-sans text-center">الإجراءات</th>
           </tr>
         </thead>
@@ -58,6 +59,9 @@ function SheetTable({ records, formatBalance, onView, onEdit, onDelete }: {
                 </td>
                 <td className={`p-3 font-bold ${bal.isPositive ? 'text-success' : 'text-danger'}`}>
                   {bal.value} ر.س
+                </td>
+                <td className="p-3 text-ink-soft">
+                  {sheet.transactions_count ?? 0}
                 </td>
                 <td className="p-3">
                   <div className="flex items-center justify-center gap-1">

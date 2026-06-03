@@ -113,6 +113,8 @@ export default function AccountingPage() {
   const [txDragActive, setTxDragActive] = useState(false)
   const [txImportSuccess, setTxImportSuccess] = useState<string | null>(null)
   const [txImportError, setTxImportError] = useState<string | null>(null)
+  const [txSearch, setTxSearch] = useState('')
+  const [activeSheetTab, setActiveSheetTab] = useState<'transactions' | 'post' | 'import'>('transactions')
 
   // --- Archive Nodes: Folder hierarchy for sheets tab ---
   const { data: institutionsRes } = useArchiveNodes()
@@ -188,6 +190,8 @@ export default function AccountingPage() {
     setTxImportSuccess(null)
     setTxImportError(null)
     setEntryMode('manual')
+    setTxSearch('')
+    setActiveSheetTab('transactions')
   }, [activeSheetId])
 
   // Annual matrix stats query
@@ -532,6 +536,30 @@ export default function AccountingPage() {
       setTxRef('')
     } catch (err: any) {
       setTxError(err?.message || 'فشل تسجيل القيد المحاسبي')
+    }
+  }
+
+  const handleImportTransactions = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setTxImportError(null)
+    setTxImportSuccess(null)
+    if (!txFile) {
+      setTxImportError('الرجاء اختيار ملف Excel للاستيراد')
+      return
+    }
+
+    const formData = new FormData()
+    formData.append('file', txFile)
+
+    try {
+      await importTxMutation.mutateAsync(formData)
+      setTxImportSuccess('تم استيراد جميع المعاملات من ملف Excel بنجاح!')
+      setTxFile(null)
+      setTimeout(() => {
+        setActiveSheetTab('transactions')
+      }, 1500)
+    } catch (err: any) {
+      setTxImportError(err?.message || 'فشل استيراد المعاملات من ملف Excel. يرجى التحقق من صياغة الملف والبيانات.')
     }
   }
 
@@ -1347,6 +1375,465 @@ export default function AccountingPage() {
           </AppDialog>
         )
       })()}
+
+      {/* ===== Active Sheet Transactions Log & Posting Modal ===== */}
+      <AppDialog open={activeSheetId !== null} onClose={() => setActiveSheetId(null)} panelClassName="max-w-6xl animate-fade-in font-sans">
+        <div className="flex w-full flex-col overflow-hidden rounded-3xl border border-line bg-surface shadow-2xl" dir="rtl">
+          {/* Header */}
+          <div className="p-6 flex items-center justify-between border-b border-line bg-surface-subtle">
+            <div className="flex items-center gap-3">
+              <div className="p-3 bg-action-primary text-ink-inverse rounded-2xl shadow-sm">
+                <Receipt className="w-6 h-6" />
+              </div>
+              <div>
+                <h3 className="text-base font-extrabold text-ink font-sans">
+                  {currentSheet?.title || 'دفتر المعاملات اليومية'}
+                </h3>
+                <p className="text-xs text-ink-muted mt-1">
+                  الحساب المرتبط: {currentSheet?.account?.name} ({currentSheet?.account?.code}) &bull; الفترة: {currentSheet?.period_start} إلى {currentSheet?.period_end}
+                </p>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-2">
+              {currentSheet?.status === 'closed' ? (
+                <span className="px-3 py-1 text-xs font-bold bg-surface-muted text-ink-muted border border-line rounded-lg">
+                  مغلق ومرحل
+                </span>
+              ) : (
+                <>
+                  <span className="px-3 py-1 text-xs font-bold bg-success-soft text-success border border-success-soft rounded-lg">
+                    نشط ومفتوح
+                  </span>
+                  <button
+                    onClick={handleCloseSheet}
+                    disabled={closeSheetMutation.isPending}
+                    className="px-3 py-1 text-xs font-bold bg-danger-soft text-danger border border-danger-soft rounded-lg hover:bg-danger hover:text-ink-inverse transition-colors disabled:opacity-50"
+                  >
+                    {closeSheetMutation.isPending ? 'جاري الإقفال...' : 'إقفال الفترة'}
+                  </button>
+                </>
+              )}
+              <button
+                onClick={() => setActiveSheetId(null)}
+                className="p-2 hover:bg-surface-muted rounded-xl text-ink-muted transition-colors"
+              >
+                ✕
+              </button>
+            </div>
+          </div>
+
+          {/* Body */}
+          {loadingSheetDetail ? (
+            <div className="flex flex-col items-center justify-center py-24 gap-3">
+              <Loader2 className="w-10 h-10 animate-spin text-action-primary" />
+              <p className="text-xs text-ink-muted font-bold">جاري تحميل المعاملات والبيانات المالية...</p>
+            </div>
+          ) : (() => {
+            const sheetTransactions = currentSheet?.transactions ?? []
+            const filteredTransactions = sheetTransactions.filter((tx: any) => {
+              if (!txSearch.trim()) return true
+              const q = txSearch.toLowerCase()
+              return (
+                tx.description?.toLowerCase().includes(q) ||
+                tx.reference?.toLowerCase().includes(q) ||
+                tx.account?.name?.toLowerCase().includes(q) ||
+                tx.account?.code?.toLowerCase().includes(q)
+              )
+            })
+
+            // Calculate running balance chronologically (oldest to newest)
+            const sortedForBalance = [...sheetTransactions].sort((a, b) => {
+              const dateDiff = new Date(a.transaction_date).getTime() - new Date(b.transaction_date).getTime()
+              if (dateDiff !== 0) return dateDiff
+              return a.id - b.id
+            })
+
+            let running = 0
+            const balanceMap: Record<number, number> = {}
+            const isDebitNormal = currentSheet?.account?.type === 'asset' || currentSheet?.account?.type === 'expense'
+
+            sortedForBalance.forEach((tx: any) => {
+              const d = parseFloat(tx.debit) || 0
+              const c = parseFloat(tx.credit) || 0
+              running += isDebitNormal ? (d - c) : (c - d)
+              balanceMap[tx.id] = running
+            })
+
+            // Sort for display (newest first)
+            const displayTransactions = [...filteredTransactions].sort((a, b) => {
+              const dateDiff = new Date(b.transaction_date).getTime() - new Date(a.transaction_date).getTime()
+              if (dateDiff !== 0) return dateDiff
+              return b.id - a.id
+            })
+
+            const totalDebit = sheetTransactions.reduce((acc: number, tx: any) => acc + (parseFloat(tx.debit) || 0), 0)
+            const totalCredit = sheetTransactions.reduce((acc: number, tx: any) => acc + (parseFloat(tx.credit) || 0), 0)
+            const netBalance = isDebitNormal ? (totalDebit - totalCredit) : (totalCredit - totalDebit)
+
+            return (
+              <div className="flex flex-col lg:flex-row h-[550px] divide-y lg:divide-y-0 lg:divide-x lg:divide-x-reverse divide-line">
+                
+                {/* Right Panel: Transaction Log Table (65%) */}
+                <div className="w-full lg:w-2/3 p-6 flex flex-col h-full overflow-hidden">
+                  <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mb-4 shrink-0">
+                    <div className="relative w-full sm:w-64">
+                      <input
+                        type="text"
+                        placeholder="بحث في البيان أو المرجع..."
+                        value={txSearch}
+                        onChange={(e) => setTxSearch(e.target.value)}
+                        className="w-full pl-3 pr-9 py-2 bg-surface-muted border border-line rounded-xl text-xs focus:outline-none"
+                      />
+                      <Search className="absolute right-3 top-2.5 w-4 h-4 text-ink-muted" />
+                    </div>
+
+                    {/* Summary Badges */}
+                    <div className="flex gap-2 text-[10px] font-bold">
+                      <div className="px-2.5 py-1.5 rounded-lg border border-danger-soft bg-danger-soft text-danger">
+                        إجمالي المدين: {totalDebit.toLocaleString('ar-EG', { minimumFractionDigits: 2 })}
+                      </div>
+                      <div className="px-2.5 py-1.5 rounded-lg border border-success-soft bg-success-soft text-success">
+                        إجمالي الدائن: {totalCredit.toLocaleString('ar-EG', { minimumFractionDigits: 2 })}
+                      </div>
+                      <div className={`px-2.5 py-1.5 rounded-lg border ${netBalance >= 0 ? 'border-info-soft bg-info-soft text-info' : 'border-danger-soft bg-danger-soft text-danger'}`}>
+                        الرصيد: {Math.abs(netBalance).toLocaleString('ar-EG', { minimumFractionDigits: 2 })} {isDebitNormal ? 'مدين' : 'دائن'}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Table Container */}
+                  <div className="flex-1 overflow-y-auto border border-line rounded-xl">
+                    {displayTransactions.length === 0 ? (
+                      <div className="flex flex-col items-center justify-center h-full text-ink-muted text-xs p-6">
+                        لا توجد معاملات مسجلة تطابق البحث
+                      </div>
+                    ) : (
+                      <table className="w-full text-right border-collapse text-xs">
+                        <thead className="sticky top-0 bg-surface-raised border-b border-line z-10">
+                          <tr className="text-ink-muted font-bold bg-surface-subtle">
+                            <th className="p-2.5">التاريخ</th>
+                            <th className="p-2.5">الحساب المقابل</th>
+                            <th className="p-2.5">البيان</th>
+                            <th className="p-2.5">المرجع</th>
+                            <th className="p-2.5">مدين</th>
+                            <th className="p-2.5">دائن</th>
+                            <th className="p-2.5">الرصيد التراكمي</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {displayTransactions.map((tx: any) => {
+                            const balanceVal = balanceMap[tx.id] ?? 0
+                            return (
+                              <tr key={tx.id} className="border-b border-line hover:bg-surface-subtle/50 transition-colors">
+                                <td className="p-2.5 font-mono text-[11px] text-ink-soft">{tx.transaction_date}</td>
+                                <td className="p-2.5 text-ink-soft">
+                                  {tx.account?.name} ({tx.account?.code})
+                                </td>
+                                <td className="p-2.5 text-ink">{tx.description || '-'}</td>
+                                <td className="p-2.5 font-mono text-ink-muted">{tx.reference || '-'}</td>
+                                <td className="p-2.5 font-semibold text-danger">
+                                  {parseFloat(tx.debit) > 0 ? parseFloat(tx.debit).toLocaleString('ar-EG', { minimumFractionDigits: 2 }) : '-'}
+                                </td>
+                                <td className="p-2.5 font-semibold text-success">
+                                  {parseFloat(tx.credit) > 0 ? parseFloat(tx.credit).toLocaleString('ar-EG', { minimumFractionDigits: 2 }) : '-'}
+                                </td>
+                                <td className={`p-2.5 font-bold ${balanceVal >= 0 ? 'text-ink' : 'text-danger'}`}>
+                                  {Math.abs(balanceVal).toLocaleString('ar-EG', { minimumFractionDigits: 2 })}
+                                </td>
+                              </tr>
+                            )
+                          })}
+                        </tbody>
+                      </table>
+                    )}
+                  </div>
+                </div>
+
+                {/* Left Panel: Actions & Tab Forms (35%) */}
+                <div className="w-full lg:w-1/3 p-6 flex flex-col h-full bg-surface-subtle/30 overflow-y-auto">
+                  {currentSheet?.status === 'closed' ? (
+                    <div className="flex flex-col items-center justify-center text-center h-full space-y-4">
+                      <div className="w-12 h-12 rounded-full bg-surface-muted border border-line flex items-center justify-center">
+                        <Ban className="w-6 h-6 text-ink-muted" />
+                      </div>
+                      <div>
+                        <h4 className="text-sm font-bold text-ink">هذا الدفتر مقفل ومحمي</h4>
+                        <p className="text-xs text-ink-muted mt-2 leading-relaxed">
+                          تم إغلاق الفترة المحاسبية لهذا السجل بشكل نهائي، مما يعني حظر إدخال القيود اليدوية أو الاستيراد لحماية سلامة البيانات المالية.
+                        </p>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="space-y-4">
+                      {/* Tab Navigation */}
+                      <div className="flex border border-line rounded-xl p-1 bg-surface-muted shrink-0 text-[11px] font-bold">
+                        <button
+                          type="button"
+                          onClick={() => setActiveSheetTab('transactions')}
+                          className={`flex-1 py-2 text-center rounded-lg transition-colors ${
+                            activeSheetTab === 'transactions' ? 'bg-surface text-action-primary shadow-sm' : 'text-ink-muted hover:text-ink'
+                          }`}
+                        >
+                          معلومات السجل
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setActiveSheetTab('post')}
+                          className={`flex-1 py-2 text-center rounded-lg transition-colors ${
+                            activeSheetTab === 'post' ? 'bg-surface text-action-primary shadow-sm' : 'text-ink-muted hover:text-ink'
+                          }`}
+                        >
+                          إدخال قيد يدوي
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setActiveSheetTab('import')}
+                          className={`flex-1 py-2 text-center rounded-lg transition-colors ${
+                            activeSheetTab === 'import' ? 'bg-surface text-action-primary shadow-sm' : 'text-ink-muted hover:text-ink'
+                          }`}
+                        >
+                          استيراد إكسيل
+                        </button>
+                      </div>
+
+                      {/* Tab Content 1: Metadata Sheet Settings */}
+                      {activeSheetTab === 'transactions' && (
+                        <div className="space-y-3 text-xs leading-relaxed">
+                          <div className="p-4 bg-surface rounded-2xl border border-line space-y-3">
+                            <h4 className="font-bold text-ink flex items-center gap-1.5">
+                              <Info className="w-4 h-4 text-action-primary" /> تفاصيل السجل المحاسبي
+                            </h4>
+                            <div className="space-y-2 text-ink-soft">
+                              <div className="flex justify-between border-b border-dashed border-line pb-1.5">
+                                <span>اسم الدفتر:</span>
+                                <strong className="text-ink">{currentSheet?.title}</strong>
+                              </div>
+                              <div className="flex justify-between border-b border-dashed border-line pb-1.5">
+                                <span>الحساب الأساسي:</span>
+                                <strong className="text-ink">{currentSheet?.account?.name} ({currentSheet?.account?.code})</strong>
+                              </div>
+                              <div className="flex justify-between border-b border-dashed border-line pb-1.5">
+                                <span>تاريخ البداية:</span>
+                                <strong className="text-ink font-mono">{currentSheet?.period_start}</strong>
+                              </div>
+                              <div className="flex justify-between border-b border-dashed border-line pb-1.5">
+                                <span>تاريخ النهاية:</span>
+                                <strong className="text-ink font-mono">{currentSheet?.period_end}</strong>
+                              </div>
+                              <div className="flex justify-between">
+                                <span>توزيع الإنتاج التلقائي:</span>
+                                <strong className={isAutoDistribute ? 'text-success' : 'text-ink-muted'}>
+                                  {isAutoDistribute ? 'نشط ومفعّل للقسم' : 'غير نشط'}
+                                </strong>
+                              </div>
+                            </div>
+                          </div>
+                          
+                          {isAutoDistribute && (
+                            <div className="p-3.5 bg-warning-soft border border-warning-soft text-warning-strong rounded-2xl">
+                              <h5 className="font-bold mb-1">تنبيه الربط التلقائي للشركات:</h5>
+                              <p className="text-[11px] leading-relaxed">
+                                هذا الدفتر يتبع لقسم مرتبط بشركة ({currentSheet?.folder?.name}). سيقوم النظام تلقائياً بتوزيع جميع التكاليف والقيود المدخلة على مشاريع الشركة النشطة بناءً على إنتاج البيض خلال فترة الحركة.
+                              </p>
+                            </div>
+                          )}
+                        </div>
+                      )}
+
+                      {/* Tab Content 2: Manual Posting Form */}
+                      {activeSheetTab === 'post' && (
+                        <form onSubmit={handlePostTransaction} className="space-y-3.5 text-xs">
+                          {txError && (
+                            <div className="flex items-start gap-2 p-3 bg-danger-soft border border-danger-soft text-danger rounded-xl font-semibold">
+                              <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
+                              <span>{txError}</span>
+                            </div>
+                          )}
+
+                          <div>
+                            <label className="block font-semibold text-ink-soft mb-1.5">تاريخ الحركة *</label>
+                            <input
+                              type="date"
+                              required
+                              value={txDate}
+                              onChange={(e) => setTxDate(e.target.value)}
+                              className="w-full p-2.5 bg-surface border border-line rounded-xl focus:outline-none text-xs"
+                            />
+                          </div>
+
+                          <div>
+                            <label className="block font-semibold text-ink-soft mb-1.5">الحساب المقابل *</label>
+                            <select
+                              required
+                              value={txAccountId || ''}
+                              onChange={(e) => setTxAccountId(Number(e.target.value))}
+                              className="w-full p-2.5 bg-surface border border-line rounded-xl focus:outline-none text-xs"
+                            >
+                              <option value="">اختر الحساب المقابل...</option>
+                              {accounts.filter((a: any) => a.is_active !== false).map((a: any) => (
+                                <option key={a.id} value={a.id}>
+                                  {a.code} - {a.name}
+                                </option>
+                              ))}
+                            </select>
+                          </div>
+
+                          <div>
+                            <label className="block font-semibold text-ink-soft mb-1.5">البيان / الوصف</label>
+                            <input
+                              type="text"
+                              value={txDesc}
+                              onChange={(e) => setTxDesc(e.target.value)}
+                              placeholder="تفاصيل القيد..."
+                              className="w-full p-2.5 bg-surface border border-line rounded-xl focus:outline-none text-xs"
+                            />
+                          </div>
+
+                          <div className="flex gap-2">
+                            <div className="flex-1">
+                              <label className="block font-semibold text-ink-soft mb-1.5">مبلغ مدين</label>
+                              <input
+                                type="number"
+                                step="0.01"
+                                min="0"
+                                value={txDebit || ''}
+                                onChange={(e) => setTxDebit(parseFloat(e.target.value) || 0)}
+                                placeholder="0.00"
+                                className="w-full p-2.5 bg-surface border border-line rounded-xl focus:outline-none text-xs font-mono"
+                              />
+                            </div>
+                            <div className="flex-1">
+                              <label className="block font-semibold text-ink-soft mb-1.5">مبلغ دائن</label>
+                              <input
+                                type="number"
+                                step="0.01"
+                                min="0"
+                                value={txCredit || ''}
+                                onChange={(e) => setTxCredit(parseFloat(e.target.value) || 0)}
+                                placeholder="0.00"
+                                className="w-full p-2.5 bg-surface border border-line rounded-xl focus:outline-none text-xs font-mono"
+                              />
+                            </div>
+                          </div>
+
+                          <div>
+                            <label className="block font-semibold text-ink-soft mb-1.5">الرقم المرجعي</label>
+                            <input
+                              type="text"
+                              value={txRef}
+                              onChange={(e) => setTxRef(e.target.value)}
+                              placeholder="رقم الفاتورة أو السند..."
+                              className="w-full p-2.5 bg-surface border border-line rounded-xl focus:outline-none text-xs font-mono"
+                            />
+                          </div>
+
+                          <button
+                            type="submit"
+                            disabled={createTxMutation.isPending}
+                            className="w-full py-3 bg-action-primary text-ink-inverse font-bold rounded-xl shadow-md disabled:opacity-50 hover:scale-[1.01] transition-transform flex items-center justify-center gap-2"
+                          >
+                            {createTxMutation.isPending ? (
+                              <>
+                                <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                                <span>جاري ترحيل القيد...</span>
+                              </>
+                            ) : (
+                              <span>تسجيل القيد المالي</span>
+                            )}
+                          </button>
+                        </form>
+                      )}
+
+                      {/* Tab Content 3: Excel Import Form */}
+                      {activeSheetTab === 'import' && (
+                        <form onSubmit={handleImportTransactions} className="space-y-4 text-xs">
+                          {txImportError && (
+                            <div className="flex items-start gap-2 p-3 bg-danger-soft border border-danger-soft text-danger rounded-xl font-semibold leading-relaxed">
+                              <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
+                              <span>{txImportError}</span>
+                            </div>
+                          )}
+
+                          {txImportSuccess && (
+                            <div className="flex items-start gap-2 p-3 bg-success-soft border border-success-soft text-success rounded-xl font-semibold">
+                              <CheckCircle className="w-4 h-4 shrink-0 mt-0.5" />
+                              <span>{txImportSuccess}</span>
+                            </div>
+                          )}
+
+                          <div
+                            onDragOver={(e) => { e.preventDefault(); setTxDragActive(true) }}
+                            onDragLeave={() => setTxDragActive(false)}
+                            onDrop={(e) => {
+                              e.preventDefault()
+                              setTxDragActive(false)
+                              if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+                                setTxFile(e.dataTransfer.files[0])
+                              }
+                            }}
+                            className={`border-2 border-dashed rounded-2xl p-6 text-center transition-colors cursor-pointer flex flex-col items-center justify-center ${
+                              txDragActive
+                                ? 'border-action-primary bg-info-soft/10'
+                                : txFile
+                                ? 'border-success bg-success-soft/10'
+                                : 'border-line hover:bg-surface-muted/50'
+                            }`}
+                          >
+                            <input
+                              type="file"
+                              accept=".xlsx, .xls"
+                              className="hidden"
+                              id="tx-file-input"
+                              onChange={(e) => {
+                                if (e.target.files && e.target.files[0]) {
+                                  setTxFile(e.target.files[0])
+                                }
+                              }}
+                            />
+                            <label htmlFor="tx-file-input" className="cursor-pointer w-full flex flex-col items-center justify-center gap-2">
+                              <div className={`p-3 rounded-2xl bg-surface shadow-sm ${txFile ? 'text-success' : 'text-ink-muted'}`}>
+                                <UploadCloud className="w-6 h-6" />
+                              </div>
+                              {txFile ? (
+                                <div>
+                                  <strong className="text-ink text-xs block truncate max-w-[200px]">{txFile.name}</strong>
+                                  <span className="text-[10px] text-ink-muted mt-1 block">{(txFile.size / 1024).toFixed(1)} KB</span>
+                                </div>
+                              ) : (
+                                <div>
+                                  <strong className="text-ink text-xs block">اسحب ملف Excel هنا أو اضغط للاختيار</strong>
+                                  <span className="text-[10px] text-ink-muted mt-1 block">يدعم الامتدادات .xlsx أو .xls حتى 10 ميجابايت</span>
+                                </div>
+                              )}
+                            </label>
+                          </div>
+
+                          <button
+                            type="submit"
+                            disabled={importTxMutation.isPending || !txFile}
+                            className="w-full py-3 bg-action-primary text-ink-inverse font-bold rounded-xl shadow-md disabled:opacity-50 hover:scale-[1.01] transition-transform flex items-center justify-center gap-2"
+                          >
+                            {importTxMutation.isPending ? (
+                              <>
+                                <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                                <span>جاري الاستيراد والمعالجة...</span>
+                              </>
+                            ) : (
+                              <span>بدء استيراد القيود</span>
+                            )}
+                          </button>
+                        </form>
+                      )}
+                    </div>
+                  )}
+                </div>
+
+              </div>
+            )
+          })()}
+        </div>
+      </AppDialog>
     </div>
   )
 }
