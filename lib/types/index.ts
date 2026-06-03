@@ -467,6 +467,28 @@ export interface FlockMedicalRecord {
   medications: FlockMedication[]
 }
 
+export interface EggWeightDistribution {
+  summary: {
+    total_eggs: number
+    total_cartons: number
+    total_plates: number
+  }
+  rows: {
+    size_code: string
+    label_ar: string
+    label_en: string
+    cartons: number
+    plates: number
+    eggs: number
+    percentage: number
+    weight_from: number | null
+    weight_to: number | null
+    avg_weight: number | null
+    egg_weight_gram: number
+    total_weight_ton: number
+  }[]
+}
+
 export interface EntityStatistics {
   level: 'projects' | 'project' | 'section' | 'barn'
   section_type: 'production' | 'breeding' | null
@@ -532,6 +554,7 @@ export interface EntityStatistics {
     net_balance: number
   }
   flock_count: number
+  egg_weight_distribution?: EggWeightDistribution
 }
 
 export type AnalyticsScopeLevel = 'company' | 'project' | 'section' | 'barn' | 'flock'
@@ -666,27 +689,7 @@ export interface FlockAnalyticsResponse {
       achievement_ratio: number
     }
   }
-  egg_weight_distribution: {
-    summary: {
-      total_eggs: number
-      total_cartons: number
-      total_plates: number
-    }
-    rows: {
-      size_code: string
-      label_ar: string
-      label_en: string
-      cartons: number
-      plates: number
-      eggs: number
-      percentage: number
-      weight_from: number | null
-      weight_to: number | null
-      avg_weight: number | null
-      egg_weight_gram: number
-      total_weight_ton: number
-    }[]
-  }
+  egg_weight_distribution: EggWeightDistribution
   series: {
     axis: AnalyticsAxis
     aggregation: AnalyticsAggregation

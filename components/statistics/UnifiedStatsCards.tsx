@@ -14,6 +14,7 @@ import {
   Target,
 } from 'lucide-react'
 import SaudiRiyalIcon from '@/components/icons/SaudiRiyalIcon'
+import { EggWeightDistributionMatrix } from '@/components/analytics/EggWeightDistributionMatrix'
 
 interface UnifiedStatsCardsProps {
   stats: EntityStatistics
@@ -280,69 +281,10 @@ export default function UnifiedStatsCards({ stats, isBreedingOnly: propIsBreedin
         </div>
       )}
 
-      {/* 3. توزيع أحجام البيض */}
-      {!isBreedingOnly && stats.production_stats.egg_sizes_distribution && (
+      {/* 3. توزيع أحجام البيض بالتفصيل */}
+      {!isBreedingOnly && stats.egg_weight_distribution && (
         <div className="space-y-4">
-          <div className="flex items-center gap-3 border-b border-line pb-2">
-            <div className="p-2 bg-blue-50 text-farm-blue rounded-lg">
-              <Egg className="h-5 w-5" />
-            </div>
-            <h2 className="text-lg font-bold text-ink">توزيع أحجام البيض</h2>
-          </div>
-
-          <div className="rounded-2xl border border-line bg-surface p-4 shadow-sm overflow-x-auto">
-            <div className="flex gap-3 min-w-max">
-              {(() => {
-                const distribution = stats.production_stats.egg_sizes_distribution || {
-                  B: 0,
-                  BD: 0,
-                  SD: 0,
-                  SS: 0,
-                  S: 0,
-                  M: 0,
-                  L2: 0,
-                  L1: 0,
-                  XL: 0,
-                  XXL: 0,
-                  J: 0,
-                  F2: 0,
-                  SSS: 0,
-                }
-
-                const distItems = [
-                  { label: 'B', value: distribution.B },
-                  { label: 'B-D', value: distribution.BD },
-                  { label: 'S-D', value: distribution.SD },
-                  { label: 'SS', value: distribution.SS },
-                  { label: 'S', value: distribution.S },
-                  { label: 'M', value: distribution.M },
-                  { label: 'L2', value: distribution.L2 },
-                  { label: 'L1', value: distribution.L1 },
-                  { label: 'XL', value: distribution.XL },
-                  { label: 'XXL', value: distribution.XXL },
-                  { label: 'J', value: distribution.J },
-                  { label: 'F2', value: distribution.F2 },
-                  { label: 'SSS', value: distribution.SSS },
-                ]
-
-                const totalDistQuantity = distItems.reduce((acc, item) => acc + item.value, 0)
-
-                return distItems.map((item) => {
-                  const pct = totalDistQuantity > 0 ? ((item.value / totalDistQuantity) * 100).toFixed(1) : '0.0'
-                  return (
-                    <div
-                      key={item.label}
-                      className="flex-1 min-w-[100px] rounded-xl bg-slate-50 border border-slate-100 p-3 text-center flex flex-col justify-between items-center gap-1"
-                    >
-                      <span className="text-xs font-bold text-farm-blue">{item.label}</span>
-                      <span className="text-sm font-bold text-slate-800">{formatNumber(item.value / 360)}</span>
-                      <span className="text-xs font-semibold text-emerald-600">{pct}%</span>
-                    </div>
-                  )
-                })
-              })()}
-            </div>
-          </div>
+          <EggWeightDistributionMatrix analytics={{ egg_weight_distribution: stats.egg_weight_distribution }} />
         </div>
       )}
 
@@ -424,8 +366,7 @@ export default function UnifiedStatsCards({ stats, isBreedingOnly: propIsBreedin
                             <td className="p-3 text-center text-slate-700">{formatNumber(row.feed_consumption)}</td>
                             <td className="p-3 text-center text-slate-700">{formatNumber(row.target_cartons)}</td>
                             <td className={`p-3 text-center font-bold ${isDiffPositive ? 'text-emerald-600' : 'text-rose-600'}`}>
-                              {formatNumber(Math.abs(row.cartons_difference))}
-                              {!isDiffPositive && '-'}
+                              {!isDiffPositive && '-'}{formatNumber(Math.abs(row.cartons_difference))}
                             </td>
                           </tr>
                         )
@@ -443,8 +384,7 @@ export default function UnifiedStatsCards({ stats, isBreedingOnly: propIsBreedin
                         <td className="p-3 text-center">{formatNumber(totalFeed)}</td>
                         <td className="p-3 text-center">{formatNumber(totalTarget)}</td>
                         <td className={`p-3 text-center ${totalDiff >= 0 ? 'text-emerald-700' : 'text-rose-700'}`}>
-                          {formatNumber(Math.abs(totalDiff))}
-                          {totalDiff < 0 && '-'}
+                          {totalDiff < 0 && '-'}{formatNumber(Math.abs(totalDiff))}
                         </td>
                       </tr>
                     </tfoot>
