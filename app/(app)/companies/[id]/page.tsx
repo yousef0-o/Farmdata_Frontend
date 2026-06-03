@@ -8,6 +8,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { z } from 'zod'
 import { organizationApi } from '@/lib/api/organization'
 import UnifiedStatsCards from '@/components/statistics/UnifiedStatsCards'
+import EntityLedgerTree from '@/components/archive/EntityLedgerTree'
 
 const projectSchema = z.object({
   project_name: z.string().min(1, 'اسم المشروع مطلوب'),
@@ -248,6 +249,14 @@ export default function CompanyDetailPage() {
             <>
               {/* Unified Stats Cards */}
               <UnifiedStatsCards stats={stats} title={company?.name} />
+
+              {/* Entity Ledger Tree */}
+              <EntityLedgerTree
+                entityType="company"
+                entityId={companyId}
+                companyProjectIds={projects.map((p) => p.id)}
+                annualMovement={stats?.annual_movement}
+              />
             </>
           ) : (
             <div className="text-center py-10 text-slate-500">فشل في تحميل التقارير الإحصائية.</div>
