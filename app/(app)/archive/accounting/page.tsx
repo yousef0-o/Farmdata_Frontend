@@ -13,7 +13,15 @@ import {
   useImportChartOfAccounts,
   useImportRecordTransactions,
   useDeleteAccountingAccount,
-  useToggleAccountingAccountStatus
+  useToggleAccountingAccountStatus,
+  useArchiveNodes,
+  useNodeChildren,
+  useCreateNode,
+  useUpdateNode,
+  useDeleteNode,
+  useDeleteRecordSheet,
+  useCompanies,
+  useProjects
 } from '@/lib/hooks/useArchive'
 import {
   BookOpen,
@@ -36,9 +44,17 @@ import {
   Search,
   Trash2,
   Power,
-  Ban
+  Ban,
+  Settings,
+  FolderPlus,
+  Eye,
+  Edit3,
+  Link,
+  HelpCircle,
+  FileText
 } from 'lucide-react'
 import AppDialog from '@/components/ui/AppDialog'
+import SheetsTabContent from './SheetsTabContent'
 
 export default function AccountingPage() {
   const [activeTab, setActiveTab] = useState<'matrix' | 'accounts' | 'sheets'>('matrix')
@@ -97,6 +113,59 @@ export default function AccountingPage() {
   const [txDragActive, setTxDragActive] = useState(false)
   const [txImportSuccess, setTxImportSuccess] = useState<string | null>(null)
   const [txImportError, setTxImportError] = useState<string | null>(null)
+
+  // --- Archive Nodes: Folder hierarchy for sheets tab ---
+  const { data: institutionsRes } = useArchiveNodes()
+  const institutions = institutionsRes?.data ?? []
+  // Find the financial archive institution
+  const finInst = institutions.find((n: any) => n.name?.includes('المالي') || n.name?.includes('المحاسب'))
+  const finInstId = finInst?.id ?? 0
+  const { data: yearsRes } = useNodeChildren(finInstId)
+  const yearNodes = yearsRes?.data ?? []
+  const yearNode = yearNodes.find((n: any) => n.name?.includes(String(selectedYear)))
+  const yearNodeId = yearNode?.id ?? 0
+  const { data: foldersRes, isLoading: loadingFolders } = useNodeChildren(yearNodeId)
+  const folderNodes = foldersRes?.data ?? []
+
+  // Companies and Projects for section settings
+  const { data: companiesRes } = useCompanies()
+  const { data: projectsRes } = useProjects()
+  const companies = (companiesRes as any)?.data ?? []
+  const projects = (projectsRes as any)?.data ?? []
+
+  // Node CRUD mutations
+  const createNodeMutation = useCreateNode()
+  const deleteNodeMutation = useDeleteNode()
+  const deleteSheetMutation = useDeleteRecordSheet()
+
+  // Section (folder) CRUD modal state
+  const [sectionModalOpen, setSectionModalOpen] = useState(false)
+  const [editingSection, setEditingSection] = useState<any | null>(null)
+  const [sectionName, setSectionName] = useState('')
+  const [sectionLinkType, setSectionLinkType] = useState<'none' | 'company' | 'project'>('none')
+  const [sectionCompanyId, setSectionCompanyId] = useState<number | null>(null)
+  const [sectionProjectId, setSectionProjectId] = useState<number | null>(null)
+  const [sectionDistribute, setSectionDistribute] = useState(false)
+  const [sectionError, setSectionError] = useState('')
+  const [sectionSubmitting, setSectionSubmitting] = useState(false)
+
+  // Record Sheet CRUD modal state
+  const [sheetModalOpen, setSheetModalOpen] = useState(false)
+  const [editingSheet, setEditingSheet] = useState<any | null>(null)
+  const [sheetModalTitle, setSheetModalTitle] = useState('')
+  const [sheetModalAccountId, setSheetModalAccountId] = useState<number>(0)
+  const [sheetModalFolderId, setSheetModalFolderId] = useState<number | null>(null)
+  const [sheetModalStart, setSheetModalStart] = useState(`${selectedYear}-01-01`)
+  const [sheetModalEnd, setSheetModalEnd] = useState(`${selectedYear}-12-31`)
+  const [sheetModalError, setSheetModalError] = useState('')
+  const [sheetModalSubmitting, setSheetModalSubmitting] = useState(false)
+
+  // Delete confirmations
+  const [deletingSection, setDeletingSection] = useState<any | null>(null)
+  const [deletingSheet, setDeletingSheet] = useState<any | null>(null)
+
+  // Sheets search
+  const [sheetsSearch, setSheetsSearch] = useState('')
 
   // Clean stale states on page/tab/sheet change to guarantee E. State Safety
   useEffect(() => {
@@ -473,6 +542,203 @@ export default function AccountingPage() {
       alert('تم إغلاق الفترة المحاسبية بنجاح وتثبيت السجلات!')
     } catch (err: any) {
       alert('فشل إغلاق الدفتر: ' + err?.message)
+    }
+  }
+
+  // --- Section (Folder) CRUD Handlers ---
+  const openAddSectionModal = () => {
+    setEditingSection(null)
+    setSectionName('')
+    setSectionLinkType('none')
+    setSectionCompanyId(null)
+    setSectionProjectId(null)
+    setSectionDistribute(false)
+    setSectionError('')
+    setSectionModalOpen(true)
+  }
+
+  const openEditSectionModal = (folder: any) => {
+    setEditingSection(folder)
+    setSectionName(folder.name)
+    setSectionLinkType(folder.meta?.link_type ?? 'none')
+    setSectionCompanyId(folder.meta?.company_id ?? null)
+    setSectionProjectId(folder.meta?.project_id ?? null)
+    setSectionDistribute(folder.meta?.distribute_by_production ?? false)
+    setSectionError('')
+    setSectionModalOpen(true)
+  }
+
+  const handleSaveSection = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!sectionName.trim()) { setSectionError('اسم القسم مطلوب'); return }
+    setSectionSubmitting(true)
+    setSectionError('')
+    const meta: any = { link_type: sectionLinkType }
+    if (sectionLinkType === 'company') {
+      meta.company_id = sectionCompanyId
+      meta.distribute_by_production = sectionDistribute
+    } else if (sectionLinkType === 'project') {
+      meta.project_id = sectionProjectId
+    }
+
+    try {
+      if (editingSection) {
+        // Use updateNode via archiveApi directly since useUpdateNode needs id at hook level
+        const { archiveApi } = await import('@/lib/api/archive')
+        await archiveApi.updateNode(editingSection.id, { name: sectionName.trim(), meta })
+        // Invalidate queries manually
+        const { useQueryClient } = await import('@tanstack/react-query')
+      } else {
+        if (!yearNodeId) { setSectionError('لم يتم تهيئة السنة المالية بعد'); setSectionSubmitting(false); return }
+        await createNodeMutation.mutateAsync({
+          parent_id: yearNodeId,
+          type: 'folder',
+          name: sectionName.trim(),
+          meta
+        })
+      }
+      setSectionModalOpen(false)
+      // Force refetch folder children
+      window.location.reload()
+    } catch (err: any) {
+      setSectionError(err?.message || 'فشل حفظ القسم')
+    } finally {
+      setSectionSubmitting(false)
+    }
+  }
+
+  const handleDeleteSection = async () => {
+    if (!deletingSection) return
+    try {
+      await deleteNodeMutation.mutateAsync(deletingSection.id)
+      setDeletingSection(null)
+      window.location.reload()
+    } catch (err: any) {
+      alert('فشل حذف القسم: ' + err?.message)
+    }
+  }
+
+  // --- Record Sheet CRUD Handlers ---
+  const openAddSheetModal = (preselectedFolderId?: number) => {
+    setEditingSheet(null)
+    setSheetModalTitle('')
+    setSheetModalAccountId(0)
+    setSheetModalFolderId(preselectedFolderId ?? null)
+    setSheetModalStart(`${selectedYear}-01-01`)
+    setSheetModalEnd(`${selectedYear}-12-31`)
+    setSheetModalError('')
+    setSheetModalOpen(true)
+  }
+
+  const openEditSheetModal = (sheet: any) => {
+    setEditingSheet(sheet)
+    setSheetModalTitle(sheet.title)
+    setSheetModalAccountId(sheet.account_id)
+    setSheetModalFolderId(sheet.folder_id ?? null)
+    setSheetModalStart(sheet.period_start?.split('T')[0] ?? `${selectedYear}-01-01`)
+    setSheetModalEnd(sheet.period_end?.split('T')[0] ?? `${selectedYear}-12-31`)
+    setSheetModalError('')
+    setSheetModalOpen(true)
+  }
+
+  const handleSaveSheet = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!sheetModalTitle.trim() || !sheetModalAccountId) {
+      setSheetModalError('العنوان والحساب المحاسبي مطلوبان')
+      return
+    }
+    setSheetModalSubmitting(true)
+    setSheetModalError('')
+    try {
+      if (editingSheet) {
+        const { archiveApi } = await import('@/lib/api/archive')
+        await archiveApi.updateRecordSheet(editingSheet.id, {
+          folder_id: sheetModalFolderId,
+          account_id: sheetModalAccountId,
+          title: sheetModalTitle.trim(),
+          period_start: sheetModalStart,
+          period_end: sheetModalEnd,
+          status: editingSheet.status ?? 'open'
+        })
+      } else {
+        await createSheetMutation.mutateAsync({
+          folder_id: sheetModalFolderId,
+          account_id: sheetModalAccountId,
+          title: sheetModalTitle.trim(),
+          period_start: sheetModalStart,
+          period_end: sheetModalEnd
+        })
+      }
+      setSheetModalOpen(false)
+      window.location.reload()
+    } catch (err: any) {
+      setSheetModalError(err?.message || 'فشل حفظ الدفتر')
+    } finally {
+      setSheetModalSubmitting(false)
+    }
+  }
+
+  const handleDeleteSheet = async () => {
+    if (!deletingSheet) return
+    try {
+      await deleteSheetMutation.mutateAsync(deletingSheet.id)
+      setDeletingSheet(null)
+      if (activeSheetId === deletingSheet.id) setActiveSheetId(null)
+      window.location.reload()
+    } catch (err: any) {
+      alert('فشل حذف الدفتر: ' + err?.message)
+    }
+  }
+
+  // --- Initialize year node ---
+  const handleInitYear = async () => {
+    if (!finInstId) {
+      alert('لا يوجد أرشيف مالي مهيأ في النظام.')
+      return
+    }
+    try {
+      await createNodeMutation.mutateAsync({
+        parent_id: finInstId,
+        type: 'year',
+        name: `السنة المالية ${selectedYear} م`
+      })
+      window.location.reload()
+    } catch (err: any) {
+      alert('فشل تهيئة السنة: ' + err?.message)
+    }
+  }
+
+  // --- Helper: Group sheets by folder ---
+  const sheetsGroupedByFolder = React.useMemo(() => {
+    const folderIds = new Set(folderNodes.map((f: any) => f.id))
+    const grouped: Record<number, any[]> = {}
+    const uncategorized: any[] = []
+    const search = sheetsSearch.toLowerCase()
+
+    for (const sheet of sheets) {
+      // Apply search filter
+      if (search && !sheet.title?.toLowerCase().includes(search) && !sheet.account?.name?.toLowerCase().includes(search)) {
+        continue
+      }
+      if (sheet.folder_id && folderIds.has(sheet.folder_id)) {
+        if (!grouped[sheet.folder_id]) grouped[sheet.folder_id] = []
+        grouped[sheet.folder_id].push(sheet)
+      } else {
+        uncategorized.push(sheet)
+      }
+    }
+    return { grouped, uncategorized }
+  }, [sheets, folderNodes, sheetsSearch])
+
+  // --- Helper: Balance formatter ---
+  const formatBalance = (sheet: any) => {
+    const debit = parseFloat(sheet.total_debit ?? '0')
+    const credit = parseFloat(sheet.total_credit ?? '0')
+    const balance = debit - credit
+    return {
+      value: Math.abs(balance).toLocaleString('ar-EG', { minimumFractionDigits: 2, maximumFractionDigits: 2 }),
+      isPositive: balance >= 0,
+      raw: balance
     }
   }
 
@@ -874,511 +1140,69 @@ export default function AccountingPage() {
 
       {/* SHEETS TAB CONTENT */}
       {activeTab === 'sheets' && (
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Active Sheets List */}
-          <div className="bg-surface border border-line p-6 rounded-2xl shadow-sm space-y-4">
-            <div className="flex items-center justify-between border-b border-line pb-3">
-              <h3 className="text-sm font-bold text-ink font-sans flex items-center gap-1.5">
-                <Receipt className="w-5 h-5 text-action-primary" />
-                <span>دفاتر السجلات المفتوحة</span>
-              </h3>
-              
-              <select
-                value={sheetFilterStatus ?? ''}
-                onChange={(e) => setSheetFilterStatus(e.target.value ? e.target.value as any : undefined)}
-                className="p-1 border border-line rounded bg-surface-muted text-xs"
-              >
-                <option value="">الكل</option>
-                <option value="open">مفتوح</option>
-                <option value="closed">مغلق</option>
-              </select>
-            </div>
-
-            {loadingSheets ? (
-              <div className="flex justify-center"><Loader2 className="w-6 h-6 animate-spin text-action-primary" /></div>
-            ) : sheets.length === 0 ? (
-              <p className="text-ink-muted text-xs">لا يوجد دفاتر قيود مسجلة.</p>
-            ) : (
-              <div className="space-y-2">
-                {sheets.map((sheet) => (
-                  <div
-                    key={sheet.id}
-                    onClick={() => setActiveSheetId(sheet.id)}
-                    className={`p-4 bg-surface-muted hover:bg-surface-muted hover:bg-surface-raised rounded-xl border cursor-pointer transition-colors ${
-                      activeSheetId === sheet.id ? 'border-action-primary bg-info-soft/10' : 'border-line'
-                    }`}
-                  >
-                    <div className="flex items-center justify-between text-xs">
-                      <span className="font-bold text-ink">{sheet.title}</span>
-                      <span className={`px-2 py-0.5 rounded text-xs font-bold ${
-                        sheet.status === 'open' ? 'bg-success-soft text-success' : 'bg-surface-muted text-ink-muted'
-                      }`}>
-                        {sheet.status === 'open' ? 'نشط ومفتوح' : 'مغلق ومؤرشف'}
-                      </span>
-                    </div>
-
-                    <div className="flex justify-between items-center text-xs text-ink-muted mt-2">
-                      <span>الحساب: {sheet.account?.name}</span>
-                      <span>الفترة: {sheet.period_start}</span>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-
-            {/* Quick Open Sheet Form */}
-            <div className="border-t border-line pt-4 mt-6">
-              <h4 className="text-xs font-bold text-ink font-sans">فتح دفتر يومية محاسبي جديد</h4>
-              <form onSubmit={handleCreateSheet} className="mt-3 space-y-3 text-xs">
-                {sheetError && <p className="text-danger font-bold">{sheetError}</p>}
-                
-                <input
-                  type="text"
-                  required
-                  placeholder="عنوان السجل (مثال: دفاتر يناير 2026)"
-                  value={newSheetTitle}
-                  onChange={(e) => setNewSheetTitle(e.target.value)}
-                  className="w-full p-2 bg-surface-muted border border-line rounded-lg focus:outline-none"
-                />
-
-                <select
-                  required
-                  value={newSheetAccountId}
-                  onChange={(e) => setNewSheetAccountId(parseInt(e.target.value))}
-                  className="w-full p-2 bg-surface-muted border border-line rounded-lg focus:outline-none"
-                >
-                  <option value="">اختر حساب الربط...</option>
-                  {accounts.filter(acc => acc.is_active !== false).map(acc => (
-                    <option key={acc.id} value={acc.id}>{acc.code} - {acc.name}</option>
-                  ))}
-                </select>
-
-                <div className="flex items-center gap-2">
-                  <input
-                    type="date"
-                    required
-                    value={newSheetStart}
-                    onChange={(e) => setNewSheetStart(e.target.value)}
-                    className="w-1/2 p-2 bg-surface-muted border border-line rounded-lg text-xs"
-                  />
-                  <input
-                    type="date"
-                    required
-                    value={newSheetEnd}
-                    onChange={(e) => setNewSheetEnd(e.target.value)}
-                    className="w-1/2 p-2 bg-surface-muted border border-line rounded-lg text-xs"
-                  />
-                </div>
-
-                <button
-                  type="submit"
-                  disabled={createSheetMutation.isPending}
-                  className="w-full py-2 bg-action-primary text-ink-inverse font-bold rounded-lg hover:bg-opacity-95"
-                >
-                  فتح الدفتر الآن
-                </button>
-              </form>
-            </div>
-          </div>
-
-          {/* Sheet transactions Explorer & Ledger Postings */}
-          <div className="bg-surface border border-line p-6 rounded-2xl shadow-sm lg:col-span-2 space-y-6">
-            {!activeSheetId ? (
-              <div className="flex flex-col items-center justify-center py-20 text-ink-muted text-xs font-semibold">
-                <FolderOpen className="w-12 h-12 text-ink-muted" />
-                <span className="mt-3">يرجى تحديد أحد دفاتر القيود النشطة من القائمة الجانبية لاستعراض قيود اليومية.</span>
-              </div>
-            ) : loadingSheetDetail ? (
-              <div className="flex justify-center py-20"><Loader2 className="w-8 h-8 animate-spin text-action-primary" /></div>
-            ) : !currentSheet ? (
-              <p className="text-danger text-xs">تعذر جلب تفاصيل السجل المالي.</p>
-            ) : (
-              <div className="space-y-6">
-                <div className="flex items-center justify-between border-b border-line pb-4">
-                  <div>
-                    <h3 className="text-sm font-bold text-ink font-sans">{currentSheet.title}</h3>
-                    <p className="text-xs text-ink-muted mt-1">
-                      حساب السيطرة: {currentSheet.account?.name} | حالة الدفتر: {currentSheet.status === 'open' ? 'نشط' : 'مغلق ومثبت'}
-                    </p>
-                  </div>
-
-                  {currentSheet.status === 'open' && (
-                    <button
-                      onClick={handleCloseSheet}
-                      disabled={closeSheetMutation.isPending}
-                      className="px-4 py-2 bg-warning hover:bg-warning-strong text-ink-inverse font-bold text-xs rounded-xl shadow transition-colors"
-                    >
-                      إغلاق وتجميد الفترة
-                    </button>
-                  )}
-                </div>
-
-                {/* Transactions Ledger Table */}
-                <div className="space-y-2">
-                  <h4 className="text-xs font-bold text-ink-soft font-sans">جدول قيود اليومية المقيدة ({currentSheet.transactions?.length ?? 0})</h4>
-                  {currentSheet.transactions?.length === 0 ? (
-                    <div className="rounded-2xl border border-line bg-surface-subtle p-4 text-center text-sm text-ink-muted">
-                      لا يوجد قيود يومية مقيدة في هذا الدفتر بعد.
-                    </div>
-                  ) : (
-                    <>
-                      <div className="hidden overflow-x-auto rounded-xl border border-line text-xs lg:block">
-                        <table className="w-full text-right border-collapse">
-                          <thead>
-                            <tr className="bg-surface-subtle border-b border-line text-ink-muted font-bold">
-                              <th className="p-3 font-sans">التاريخ</th>
-                              <th className="p-3 font-sans">البيان / الوصف</th>
-                              <th className="p-3 font-sans">الحساب المقابل</th>
-                              <th className="p-3 font-sans text-center">مدين (+)</th>
-                              <th className="p-3 font-sans text-center">دائن (-)</th>
-                              <th className="p-3 font-sans">المرجع</th>
-                            </tr>
-                          </thead>
-                          <tbody>
-                            {currentSheet.transactions?.map((tx) => (
-                              <tr key={tx.id} className="border-b border-line">
-                                <td className="p-3 font-medium">{tx.transaction_date}</td>
-                                <td className="p-3 text-ink-soft">{tx.description ?? '-'}</td>
-                                <td className="p-3 font-bold">{tx.account?.name}</td>
-                                <td className="p-3 text-center text-success font-bold">{tx.debit > 0 ? tx.debit.toLocaleString('ar-EG') : '-'}</td>
-                                <td className="p-3 text-center text-danger font-bold">{tx.credit > 0 ? tx.credit.toLocaleString('ar-EG') : '-'}</td>
-                                <td className="p-3 text-ink-muted font-semibold">{tx.reference ?? '-'}</td>
-                              </tr>
-                            ))}
-                          </tbody>
-                        </table>
-                      </div>
-
-                      <div className="grid grid-cols-1 gap-4 lg:hidden">
-                      {currentSheet.transactions?.map((tx) => (
-                        <article
-                          key={tx.id}
-                          className="rounded-2xl border border-line bg-surface p-4 shadow-sm"
-                        >
-                          <div className="flex items-start justify-between gap-3">
-                            <div className="space-y-1">
-                              <p className="text-sm font-semibold text-ink">{tx.account?.name}</p>
-                              <p className="text-xs text-ink-muted">{tx.transaction_date}</p>
-                            </div>
-                            <div className="rounded-xl bg-surface-subtle px-3 py-2 text-right">
-                              <span className="block text-xs text-ink-muted">المرجع</span>
-                              <span className="text-sm font-semibold text-ink">{tx.reference ?? '-'}</span>
-                            </div>
-                          </div>
-
-                          <div className="mt-4 rounded-xl bg-surface-subtle px-3 py-2">
-                            <span className="block text-xs text-ink-muted">البيان / الوصف</span>
-                            <span className="text-sm text-ink-soft">{tx.description ?? '-'}</span>
-                          </div>
-
-                          <div className="mt-4 grid grid-cols-2 gap-3 text-sm">
-                            <div className="rounded-xl bg-surface-subtle px-3 py-2">
-                              <span className="block text-xs text-ink-muted">مدين (+)</span>
-                              <span className="font-semibold text-success">
-                                {tx.debit > 0 ? tx.debit.toLocaleString('ar-EG') : '-'}
-                              </span>
-                            </div>
-                            <div className="rounded-xl bg-surface-subtle px-3 py-2">
-                              <span className="block text-xs text-ink-muted">دائن (-)</span>
-                              <span className="font-semibold text-danger">
-                                {tx.credit > 0 ? tx.credit.toLocaleString('ar-EG') : '-'}
-                              </span>
-                            </div>
-                          </div>
-                        </article>
-                      ))}
-                      </div>
-                    </>
-                  )}
-                </div>
-
-                {/* Post Transaction Form or Excel Ingest */}
-                {currentSheet.status === 'open' && (
-                  <div className="p-5 bg-surface border border-line rounded-2xl space-y-4 shadow-sm">
-                    {/* Horizontal switcher for Manual Post vs Excel Import */}
-                    <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-line pb-3 gap-2">
-                      <div className="flex items-center gap-1 bg-surface-muted p-1 rounded-xl w-fit">
-                        <button
-                          type="button"
-                          onClick={() => setEntryMode('manual')}
-                          className={`px-3.5 py-1.5 text-xs font-bold rounded-lg transition-colors ${
-                            entryMode === 'manual'
-                              ? 'bg-surface text-action-primary shadow-sm border border-line'
-                              : 'text-ink-muted hover:text-ink-soft'
-                          }`}
-                        >
-                          تسجيل قيد يدوي
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => setEntryMode('import')}
-                          className={`px-3.5 py-1.5 text-xs font-bold rounded-lg transition-colors ${
-                            entryMode === 'import'
-                              ? 'bg-surface text-action-primary shadow-sm border border-line'
-                              : 'text-ink-muted hover:text-ink-soft'
-                          }`}
-                        >
-                          استيراد قيود من Excel
-                        </button>
-                      </div>
-
-                      {/* Display warning if auto-distribution is enabled for this sheet's folder */}
-                      {isAutoDistribute && (
-                        <span className="flex items-center gap-1 rounded-lg border border-warning-soft bg-warning-soft px-2.5 py-1 text-xs font-bold text-warning animate-pulse">
-                          <AlertCircle className="w-3.5 h-3.5 text-warning" />
-                          <span>توزيع تلقائي تناسبي</span>
-                        </span>
-                      )}
-                    </div>
-
-                    {!isLeafAccount ? (
-                      <div className="flex items-start gap-2.5 p-3.5 bg-danger-soft bg-danger-soft border border-danger-soft text-danger rounded-xl text-xs">
-                        <AlertCircle className="w-4.5 h-4.5 mt-0.5 flex-shrink-0" />
-                        <div>
-                          <span className="font-bold">تنبيه الحساب الرئيسي غير الطرفي:</span>
-                          <p className="text-xs mt-1 text-danger/90 leading-relaxed">
-                            لا يمكن تسجيل قيود أو استيراد حركات مالية على الحساب المحاسبي الحالي [{currentSheet.account?.code}] {currentSheet.account?.name} لأنه حساب رئيسي.
-                            التسجيل والتكامل المالي مسموح فقط على الحسابات الفرعية الطرفية (Terminal Leaf Nodes).
-                          </p>
-                        </div>
-                      </div>
-                    ) : (
-                      <>
-                        {/* MANUAL ENTRY */}
-                        {entryMode === 'manual' && (
-                          <div className="space-y-3 font-sans">
-                            {txError && <p className="text-danger font-bold text-xs">{txError}</p>}
-                            
-                            <form onSubmit={handlePostTransaction} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 text-xs">
-                              <div>
-                                <label className="block text-xs text-ink-muted font-semibold mb-1">الحساب المقابل</label>
-                                <select
-                                  required
-                                  value={txAccountId}
-                                  onChange={(e) => setTxAccountId(parseInt(e.target.value))}
-                                  className="w-full p-2 border border-line bg-surface rounded-lg text-xs"
-                                >
-                                  <option value="">اختر حساب...</option>
-                                  {accounts.filter(acc => acc.is_active !== false).map(acc => (
-                                    <option key={acc.id} value={acc.id}>{acc.code} - {acc.name}</option>
-                                  ))}
-                                </select>
-                              </div>
-
-                              <div>
-                                <label className="block text-xs text-ink-muted font-semibold mb-1">البيان / الوصف</label>
-                                <input
-                                  type="text"
-                                  placeholder="مثال: دفعة فواتير مشتريات الأعلاف"
-                                  value={txDesc}
-                                  onChange={(e) => setTxDesc(e.target.value)}
-                                  className="w-full p-2 border border-line bg-surface rounded-lg text-xs"
-                                />
-                              </div>
-
-                              <div className="flex gap-2">
-                                <div className="w-1/2">
-                                  <label className="block text-xs text-ink-muted font-semibold mb-1">مدين (+)</label>
-                                  <input
-                                    type="number"
-                                    step="any"
-                                    value={txDebit === 0 ? '' : txDebit}
-                                    onChange={(e) => setTxDebit(e.target.value === '' ? 0 : parseFloat(e.target.value))}
-                                    className="w-full p-2 border border-line bg-surface rounded-lg text-xs font-bold text-success"
-                                  />
-                                </div>
-                                <div className="w-1/2">
-                                  <label className="block text-xs text-ink-muted font-semibold mb-1">دائن (-)</label>
-                                  <input
-                                    type="number"
-                                    step="any"
-                                    value={txCredit === 0 ? '' : txCredit}
-                                    onChange={(e) => setTxCredit(e.target.value === '' ? 0 : parseFloat(e.target.value))}
-                                    className="w-full p-2 border border-line bg-surface rounded-lg text-xs font-bold text-danger"
-                                  />
-                                </div>
-                              </div>
-
-                              <div>
-                                <label className="block text-xs text-ink-muted font-semibold mb-1">تاريخ القيد</label>
-                                <input
-                                  type="date"
-                                  required
-                                  value={txDate}
-                                  onChange={(e) => setTxDate(e.target.value)}
-                                  className="w-full p-2 border border-line bg-surface rounded-lg text-xs"
-                                />
-                              </div>
-
-                              <div>
-                                <label className="block text-xs text-ink-muted font-semibold mb-1">الرقم المرجعي / الفاتورة</label>
-                                <input
-                                  type="text"
-                                  placeholder="مثال: INV-9821"
-                                  value={txRef}
-                                  onChange={(e) => setTxRef(e.target.value)}
-                                  className="w-full p-2 border border-line bg-surface rounded-lg text-xs"
-                                />
-                              </div>
-
-                              <div className="flex items-end">
-                                <button
-                                  type="submit"
-                                  disabled={createTxMutation.isPending}
-                                  className="w-full py-2 bg-action-primary text-ink-inverse font-bold rounded-lg hover:bg-opacity-95 flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-50"
-                                >
-                                  {createTxMutation.isPending && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
-                                  <span>ترحيل القيد</span>
-                                </button>
-                              </div>
-                            </form>
-                          </div>
-                        )}
-
-                        {/* EXCEL BULK UPLOAD */}
-                        {entryMode === 'import' && (
-                          <div className="space-y-4 font-sans text-xs">
-                            <div className="space-y-1">
-                              <p className="text-xs text-ink-muted leading-relaxed">
-                                قم برفع ورقة عمل قيود اليومية. يجب أن يحتوي الملف على أعمدة باسم (التاريخ، الوصف، مدين، دائن، الحساب المقابل، الرقم المرجعي).
-                              </p>
-                            </div>
-
-                            {txImportSuccess && (
-                              <div className="flex items-start gap-2 rounded-xl border border-success-soft bg-success-soft p-3 text-success">
-                                <CheckCircle className="w-4 h-4 mt-0.5 flex-shrink-0" />
-                                <div className="space-y-1">
-                                  <span className="font-bold">{txImportSuccess}</span>
-                                  <p className="text-xs text-success">تم تسجيل كافة المعاملات وتحديث أرصدة الحسابات بنجاح.</p>
-                                </div>
-                              </div>
-                            )}
-
-                            {txImportError && (
-                              <div className="flex items-start gap-2 p-3 bg-danger-soft bg-danger-soft border border-danger-soft text-danger rounded-xl">
-                                <AlertCircle className="w-4 h-4 mt-0.5 flex-shrink-0" />
-                                <div className="space-y-1">
-                                  <span className="font-bold">فشل الاستيراد:</span>
-                                  <p className="text-xs whitespace-pre-wrap">{txImportError}</p>
-                                </div>
-                              </div>
-                            )}
-
-                            {isAutoDistribute && (
-                              <div className="flex items-start gap-2 rounded-xl border border-warning-soft bg-warning-soft p-3 text-warning leading-relaxed">
-                                <Info className="w-4 h-4 mt-0.5 flex-shrink-0 text-warning" />
-                                <div>
-                                  <span className="font-bold">تنبيه التوزيع التلقائي للمصاريف:</span>
-                                  <p className="text-xs mt-0.5 text-warning">
-                                    هذا الدفتر مهيأ للتوزيع التلقائي التناسبى (Egg Production Cost Splitting). سيقوم النظام آلياً باحتساب نسب التوزيع لكل مشروع بناءً على أعداد وإنتاج البيض، ثم تقسيم كل معاملة يتم رفعها وحفظها موزعة بين المشاريع النشطة!
-                                  </p>
-                                </div>
-                              </div>
-                            )}
-
-                            <div
-                              onDragOver={(e) => { e.preventDefault(); setTxDragActive(true) }}
-                              onDragLeave={() => setTxDragActive(false)}
-                              onDrop={(e) => {
-                                e.preventDefault()
-                                setTxDragActive(false)
-                                if (e.dataTransfer.files && e.dataTransfer.files[0]) {
-                                  setTxFile(e.dataTransfer.files[0])
-                                }
-                              }}
-                              className={`border-2 border-dashed rounded-2xl p-6 text-center transition-colors cursor-pointer ${
-                                txDragActive
-                                  ? 'border-action-primary bg-info-soft/10'
-                                  : txFile
-                                  ? 'border-success bg-success-soft/5'
-                                  : 'border-line hover:border-action-primary'
-                              }`}
-                              onClick={() => document.getElementById('tx-file-input')?.click()}
-                            >
-                              <input
-                                id="tx-file-input"
-                                type="file"
-                                accept=".xlsx,.xls"
-                                className="hidden"
-                                onChange={(e) => {
-                                  if (e.target.files && e.target.files[0]) {
-                                    setTxFile(e.target.files[0])
-                                  }
-                                }}
-                              />
-                              
-                              <div className="flex flex-col items-center justify-center space-y-2">
-                                <div className={`p-2.5 rounded-xl ${txFile ? 'bg-success-soft text-success' : 'bg-success-soft/10 text-success'}`}>
-                                  <UploadCloud className="w-5.5 h-5.5" />
-                                </div>
-                                {txFile ? (
-                                  <div className="space-y-1">
-                                    <p className="font-bold text-ink max-w-[200px] truncate mx-auto">{txFile.name}</p>
-                                    <p className="text-xs text-ink-muted">{(txFile.size / 1024).toFixed(1)} KB</p>
-                                  </div>
-                                ) : (
-                                  <div className="space-y-1">
-                                    <p className="font-bold text-ink-soft">اسحب وأفلت ورقة عمل قيود اليومية هنا</p>
-                                    <p className="text-xs text-ink-muted font-medium">أو اضغط لتصفح الملفات من جهازك (.xlsx, .xls)</p>
-                                  </div>
-                                )}
-                              </div>
-                            </div>
-
-                            <div className="flex justify-between gap-2.5">
-                              {txFile && (
-                                <button
-                                  type="button"
-                                  onClick={() => setTxFile(null)}
-                                  disabled={importTxMutation.isPending}
-                                  className="px-3.5 py-2 bg-surface-muted hover:bg-surface-subtle border border-line text-ink-muted font-bold rounded-xl transition-colors disabled:opacity-50"
-                                >
-                                  إلغاء
-                                </button>
-                              )}
-                              <button
-                                type="button"
-                                onClick={async () => {
-                                  if (!txFile || !activeSheetId) return
-                                  setTxImportSuccess(null)
-                                  setTxImportError(null)
-                                  const fd = new FormData()
-                                  fd.append('file', txFile)
-                                  try {
-                                    const res = await importTxMutation.mutateAsync(fd)
-                                    setTxImportSuccess(`تم استيراد قيود المعاملات بنجاح! تم تسجيل ${res.data.inserted_transactions} قيد محاسبي موزون بنجاح من أصل ${res.data.total_rows_read} صف تم معالجته.`);
-                                    setTxFile(null)
-                                  } catch (err: any) {
-                                    setTxImportError(err?.message || 'حدث خطأ أثناء معالجة وقراءة ملف قيود اليومية. يرجى مراجعة هيكل البيانات.')
-                                  }
-                                }}
-                                disabled={!txFile || importTxMutation.isPending}
-                                className="flex-1 py-2 bg-action-primary text-ink-inverse font-bold rounded-xl shadow-md hover:bg-opacity-95 disabled:opacity-50 flex items-center justify-center gap-1.5 cursor-pointer"
-                              >
-                                {importTxMutation.isPending ? (
-                                  <>
-                                    <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                                    <span>جاري معالجة وتوزيع الحركات المالية...</span>
-                                  </>
-                                ) : (
-                                  <>
-                                    <Check className="w-3.5 h-3.5" />
-                                    <span>بدء استيراد قيود اليومية</span>
-                                  </>
-                                )}
-                              </button>
-                            </div>
-                          </div>
-                        )}
-                      </>
-                    )}
-                  </div>
-                )}
-              </div>
-            )}
-          </div>
-        </div>
+        <SheetsTabContent
+          folderNodes={folderNodes}
+          loadingFolders={loadingFolders}
+          sheetsGroupedByFolder={sheetsGroupedByFolder}
+          yearNodeId={yearNodeId}
+          finInstId={finInstId}
+          selectedYear={selectedYear}
+          accounts={accounts}
+          companies={companies}
+          projects={projects}
+          formatBalance={formatBalance}
+          openAddSectionModal={openAddSectionModal}
+          openEditSectionModal={openEditSectionModal}
+          setDeletingSection={setDeletingSection}
+          openAddSheetModal={() => openAddSheetModal()}
+          openEditSheetModal={openEditSheetModal}
+          setDeletingSheet={setDeletingSheet}
+          setActiveSheetId={(id: number) => { setActiveSheetId(id); setActiveTab('sheets') }}
+          sheetsSearch={sheetsSearch}
+          setSheetsSearch={setSheetsSearch}
+          handleInitYear={handleInitYear}
+          createNodeMutation={createNodeMutation}
+          sectionModalOpen={sectionModalOpen}
+          setSectionModalOpen={setSectionModalOpen}
+          editingSection={editingSection}
+          sectionName={sectionName}
+          setSectionName={setSectionName}
+          sectionLinkType={sectionLinkType}
+          setSectionLinkType={setSectionLinkType}
+          sectionCompanyId={sectionCompanyId}
+          setSectionCompanyId={setSectionCompanyId}
+          sectionProjectId={sectionProjectId}
+          setSectionProjectId={setSectionProjectId}
+          sectionDistribute={sectionDistribute}
+          setSectionDistribute={setSectionDistribute}
+          sectionError={sectionError}
+          sectionSubmitting={sectionSubmitting}
+          handleSaveSection={handleSaveSection}
+          sheetModalOpen={sheetModalOpen}
+          setSheetModalOpen={setSheetModalOpen}
+          editingSheet={editingSheet}
+          sheetModalTitle={sheetModalTitle}
+          setSheetModalTitle={setSheetModalTitle}
+          sheetModalAccountId={sheetModalAccountId}
+          setSheetModalAccountId={setSheetModalAccountId}
+          sheetModalFolderId={sheetModalFolderId}
+          setSheetModalFolderId={setSheetModalFolderId}
+          sheetModalStart={sheetModalStart}
+          setSheetModalStart={setSheetModalStart}
+          sheetModalEnd={sheetModalEnd}
+          setSheetModalEnd={setSheetModalEnd}
+          sheetModalError={sheetModalError}
+          sheetModalSubmitting={sheetModalSubmitting}
+          handleSaveSheet={handleSaveSheet}
+          deletingSection={deletingSection}
+          handleDeleteSection={handleDeleteSection}
+          deleteNodeMutation={deleteNodeMutation}
+          deletingSheet={deletingSheet}
+          handleDeleteSheet={handleDeleteSheet}
+          deleteSheetMutation={deleteSheetMutation}
+        />
       )}
+
 
       {/* Custom Account Deletion Confirm Modal (Arabic RTL Glassmorphism) */}
       {deletingAccount && (() => {

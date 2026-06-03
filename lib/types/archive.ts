@@ -115,6 +115,8 @@ export interface RecordSheet {
   created_by_user?: {
     name: string
   }
+  total_debit?: number | string
+  total_credit?: number | string
 }
 
 export interface RecordTransaction {

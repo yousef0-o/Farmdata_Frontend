@@ -29,14 +29,14 @@ export const archiveApi = {
     return apiRequest<{ data: ArchiveNode }>(`/archive/nodes/${id}`)
   },
 
-  createNode(data: { parent_id?: number | null; type: 'institution' | 'year' | 'folder'; name: string; description?: string }): Promise<{ data: ArchiveNode }> {
+  createNode(data: { parent_id?: number | null; type: 'institution' | 'year' | 'folder'; name: string; description?: string; meta?: any }): Promise<{ data: ArchiveNode }> {
     return apiRequest<{ data: ArchiveNode }>('/archive/nodes', {
       method: 'POST',
       body: JSON.stringify(data),
     })
   },
 
-  updateNode(id: number, data: { name: string; description?: string }): Promise<{ data: ArchiveNode }> {
+  updateNode(id: number, data: { name?: string; description?: string; meta?: any }): Promise<{ data: ArchiveNode }> {
     return apiRequest<{ data: ArchiveNode }>(`/archive/nodes/${id}`, {
       method: 'PUT',
       body: JSON.stringify(data),
@@ -269,6 +269,19 @@ export const archiveApi = {
   closeRecordSheet(id: number): Promise<{ message: string; data: RecordSheet }> {
     return apiRequest<{ message: string; data: RecordSheet }>(`/archive/record-sheets/${id}/close`, {
       method: 'POST',
+    })
+  },
+
+  updateRecordSheet(id: number, data: { folder_id?: number | null; account_id: number; title: string; period_start: string; period_end: string; status: 'open' | 'closed' }): Promise<{ data: RecordSheet }> {
+    return apiRequest<{ data: RecordSheet }>(`/archive/record-sheets/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    })
+  },
+
+  deleteRecordSheet(id: number): Promise<{ message: string }> {
+    return apiRequest<{ message: string }>(`/archive/record-sheets/${id}`, {
+      method: 'DELETE',
     })
   },
 

@@ -52,7 +52,7 @@ export function useCreateNode() {
 export function useUpdateNode(id: number) {
   const qc = useQueryClient()
   return useMutation({
-    mutationFn: (data: { name: string; description?: string }) => archiveApi.updateNode(id, data),
+    mutationFn: (data: { name?: string; description?: string; meta?: any }) => archiveApi.updateNode(id, data),
     onSuccess: (res) => {
       qc.invalidateQueries({ queryKey: ['archive-nodes'] })
       qc.invalidateQueries({ queryKey: ['archive-node', id] })
@@ -282,6 +282,28 @@ export function useCloseRecordSheet(id: number) {
   })
 }
 
+export function useUpdateRecordSheet(id: number) {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: (data: { folder_id?: number | null; account_id: number; title: string; period_start: string; period_end: string; status: 'open' | 'closed' }) =>
+      archiveApi.updateRecordSheet(id, data),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['record-sheet', id] })
+      qc.invalidateQueries({ queryKey: ['record-sheets'] })
+    },
+  })
+}
+
+export function useDeleteRecordSheet() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: (id: number) => archiveApi.deleteRecordSheet(id),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['record-sheets'] })
+    },
+  })
+}
+
 export function useCreateTransaction(sheetId: number) {
   const qc = useQueryClient()
   return useMutation({
@@ -325,6 +347,13 @@ export function useCompanies() {
   return useQuery({
     queryKey: ['companies-list'],
     queryFn: () => import('../api/organization').then(m => m.organizationApi.listCompanies()),
+  })
+}
+
+export function useProjects() {
+  return useQuery({
+    queryKey: ['projects-list'],
+    queryFn: () => import('../api/organization').then(m => m.organizationApi.listProjects()),
   })
 }
 
