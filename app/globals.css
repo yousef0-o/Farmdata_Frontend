@@ -134,6 +134,10 @@
   --neutral-900: #e6ebe8;
   --neutral-950: #050807;
 
+  /* Theme color overrides for dark mode borders */
+  --color-slate-100: var(--neutral-200);
+  --color-gray-100: var(--neutral-200);
+
   /* Brand and auxiliary accents */
   --brand-clay: #e25822;
   --brand-clay-hover: #f06c39;
