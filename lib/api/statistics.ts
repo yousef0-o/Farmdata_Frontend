@@ -25,7 +25,7 @@ export const statisticsApi = {
 
     Object.entries(params).forEach(([key, value]) => {
       if (value === undefined || value === null || value === '') return
-      search.set(key, String(value))
+      search.set(key, typeof value === 'boolean' ? (value ? '1' : '0') : String(value))
     })
 
     return apiRequest<FlockAnalyticsResponse>(`/statistics?${search.toString()}`)

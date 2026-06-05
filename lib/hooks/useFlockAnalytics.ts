@@ -19,13 +19,6 @@ export function useFlockAnalytics(params: FlockAnalyticsParams) {
   return useQuery({
     queryKey: buildFlockAnalyticsQueryKey(debouncedParams),
     queryFn: () => statisticsApi.getFlockAnalytics(debouncedParams),
-    enabled: Boolean(
-      debouncedParams.flock_id ||
-        debouncedParams.barn_id ||
-        debouncedParams.section_id ||
-        debouncedParams.project_id ||
-        debouncedParams.company_id
-    ),
     staleTime: 60 * 1000,
   })
 }

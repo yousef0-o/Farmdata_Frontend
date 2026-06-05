@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useMemo, useState } from 'react'
-import { Filter, RefreshCw } from 'lucide-react'
+import { AlertCircle, Filter, RefreshCw } from 'lucide-react'
 import { useQuery } from '@tanstack/react-query'
 import { CriticalAlertStrip } from '@/components/dashboard/CriticalAlertStrip'
 import { TodaySummaryRow } from '@/components/dashboard/TodaySummaryRow'
@@ -12,16 +12,21 @@ import { BarnOccupancyWidget } from '@/components/dashboard/BarnOccupancyWidget'
 import { LifecycleEventsWidget } from '@/components/dashboard/LifecycleEventsWidget'
 import { EggDistributionWidget } from '@/components/dashboard/EggDistributionWidget'
 import { useMorningSummary } from '@/lib/hooks/useMorningSummary'
-import { useFlocks } from '@/lib/hooks/useFlock'
 import { useFlockAnalytics } from '@/lib/hooks/useFlockAnalytics'
 import { organizationApi } from '@/lib/api/organization'
 import type { AnalyticsScopeLevel } from '@/lib/types'
 import type { MorningSummaryFilters } from '@/types/morningSummary'
 
-type ScopeKind = Exclude<AnalyticsScopeLevel, 'flock'>
+type ScopeKind = Exclude<AnalyticsScopeLevel, 'all' | 'flock'>
 
 function todayDate() {
   return new Date().toISOString().slice(0, 10)
+}
+
+function daysBefore(date: string, days: number) {
+  const value = new Date(`${date}T00:00:00`)
+  value.setDate(value.getDate() - days)
+  return value.toISOString().slice(0, 10)
 }
 
 function numberOrUndefined(value: string) {
@@ -48,13 +53,48 @@ function scopeLabel(level?: ScopeKind) {
   return 'كل النطاق'
 }
 
+function MorningSummaryErrorCard({
+  title,
+  message,
+  onRetry,
+  isRetrying,
+  className = '',
+}: {
+  title: string
+  message: string
+  onRetry: () => void
+  isRetrying: boolean
+  className?: string
+}) {
+  return (
+    <section className={`rounded-2xl border border-danger/30 bg-danger-soft p-5 text-danger-strong shadow-sm ${className}`} dir="rtl">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex items-center gap-3">
+          <AlertCircle className="h-5 w-5 shrink-0" />
+          <div>
+            <h2 className="text-sm font-bold">{title}</h2>
+            <p className="text-xs">{message}</p>
+          </div>
+        </div>
+        <button
+          type="button"
+          onClick={onRetry}
+          className="inline-flex items-center justify-center gap-2 rounded-xl border border-danger/30 bg-surface px-3 py-2 text-xs font-bold text-danger-strong transition-colors duration-150 hover:bg-danger-soft"
+        >
+          <RefreshCw className={`h-3.5 w-3.5 ${isRetrying ? 'animate-spin' : ''}`} />
+          إعادة المحاولة
+        </button>
+      </div>
+    </section>
+  )
+}
+
 export default function DashboardPage() {
   const [filters, setFilters] = useState<MorningSummaryFilters>({
     date: todayDate(),
   })
 
   const morningSummary = useMorningSummary(filters)
-  const activeFlocks = useFlocks('active', 1)
   const scope = activeScope(filters)
 
   const analyticsParams = useMemo(() => ({
@@ -62,6 +102,7 @@ export default function DashboardPage() {
     project_id: scope.level === 'project' ? scope.id : undefined,
     section_id: scope.level === 'section' ? scope.id : undefined,
     barn_id: scope.level === 'barn' ? scope.id : undefined,
+    date_from: daysBefore(filters.date ?? todayDate(), 29),
     date_to: filters.date,
     aggregation: 'daily' as const,
     axis: 'date' as const,
@@ -75,21 +116,27 @@ export default function DashboardPage() {
     queryFn: organizationApi.listCompanies,
   })
 
-  const projects = useQuery({
-    queryKey: ['dashboard-filter-projects'],
-    queryFn: organizationApi.listProjects,
+  const companyProjects = useQuery({
+    queryKey: ['dashboard-filter-company-projects', filters.company_id],
+    queryFn: () => organizationApi.getCompany(filters.company_id!),
+    enabled: Boolean(filters.company_id),
   })
 
-  const selectedCompany = companies.data?.data.find((company) => company.id === filters.company_id)
-  const selectedProject = projects.data?.data.find((project) => project.id === filters.project_id)
-  const sections =
-    selectedProject?.sections ??
-    selectedCompany?.projects?.flatMap((project) => project.sections ?? []) ??
-    []
-  const selectedSection = sections.find((section) => section.id === filters.section_id)
-  const barns =
-    selectedSection?.barns ??
-    sections.flatMap((section) => section.barns ?? [])
+  const projectSections = useQuery({
+    queryKey: ['dashboard-filter-project-sections', filters.project_id],
+    queryFn: () => organizationApi.getProject(filters.project_id!),
+    enabled: Boolean(filters.project_id),
+  })
+
+  const sectionBarns = useQuery({
+    queryKey: ['dashboard-filter-section-barns', filters.section_id],
+    queryFn: () => organizationApi.getSection(filters.section_id!),
+    enabled: Boolean(filters.section_id),
+  })
+
+  const projects = companyProjects.data?.data.projects ?? []
+  const sections = projectSections.data?.data.sections ?? []
+  const barns = sectionBarns.data?.data.barns ?? []
 
   const handleFilterChange = (key: keyof MorningSummaryFilters, value: string) => {
     setFilters((current) => {
@@ -122,6 +169,9 @@ export default function DashboardPage() {
   }
 
   const clearFilters = () => setFilters({ date: todayDate() })
+  const hasMorningSummaryError = morningSummary.isError
+  const morningSummaryData = hasMorningSummaryError ? undefined : morningSummary.data
+  const watchlist = morningSummaryData?.watchlist
 
   return (
     <div className="space-y-6" dir="rtl">
@@ -154,10 +204,15 @@ export default function DashboardPage() {
                 onChange={(event) => handleFilterChange('company_id', event.target.value)}
                 className="h-10 w-full rounded-xl border border-line bg-surface px-3 text-sm text-ink outline-none transition-colors focus:border-action-primary"
               >
-                <option value="">كل الشركات</option>
+                <option value="">
+                  {companies.isLoading ? 'جاري تحميل الشركات...' : 'كل الشركات'}
+                </option>
                 {companies.data?.data.map((company) => (
                   <option key={company.id} value={company.id}>{company.name}</option>
                 ))}
+                {!companies.isLoading && companies.data?.data.length === 0 && (
+                  <option value="" disabled>لا توجد شركات متاحة</option>
+                )}
               </select>
             </label>
 
@@ -166,10 +221,19 @@ export default function DashboardPage() {
               <select
                 value={filters.project_id ?? ''}
                 onChange={(event) => handleFilterChange('project_id', event.target.value)}
+                disabled={!filters.company_id || companyProjects.isLoading || projects.length === 0}
                 className="h-10 w-full rounded-xl border border-line bg-surface px-3 text-sm text-ink outline-none transition-colors focus:border-action-primary"
               >
-                <option value="">كل المشاريع</option>
-                {(selectedCompany?.projects ?? projects.data?.data ?? []).map((project) => (
+                <option value="">
+                  {!filters.company_id
+                    ? 'اختر شركة أولاً'
+                    : companyProjects.isLoading
+                      ? 'جاري تحميل المشاريع...'
+                      : projects.length === 0
+                        ? 'لا توجد مشاريع لهذه الشركة'
+                        : 'كل المشاريع'}
+                </option>
+                {projects.map((project) => (
                   <option key={project.id} value={project.id}>{project.project_name}</option>
                 ))}
               </select>
@@ -180,9 +244,18 @@ export default function DashboardPage() {
               <select
                 value={filters.section_id ?? ''}
                 onChange={(event) => handleFilterChange('section_id', event.target.value)}
+                disabled={!filters.project_id || projectSections.isLoading || sections.length === 0}
                 className="h-10 w-full rounded-xl border border-line bg-surface px-3 text-sm text-ink outline-none transition-colors focus:border-action-primary"
               >
-                <option value="">كل الأقسام</option>
+                <option value="">
+                  {!filters.project_id
+                    ? 'اختر مشروعاً أولاً'
+                    : projectSections.isLoading
+                      ? 'جاري تحميل الأقسام...'
+                      : sections.length === 0
+                        ? 'لا توجد أقسام لهذا المشروع'
+                        : 'كل الأقسام'}
+                </option>
                 {sections.map((section) => (
                   <option key={section.id} value={section.id}>
                     {section.section_name ?? section.name ?? `قسم #${section.id}`}
@@ -196,9 +269,18 @@ export default function DashboardPage() {
               <select
                 value={filters.barn_id ?? ''}
                 onChange={(event) => handleFilterChange('barn_id', event.target.value)}
+                disabled={!filters.section_id || sectionBarns.isLoading || barns.length === 0}
                 className="h-10 w-full rounded-xl border border-line bg-surface px-3 text-sm text-ink outline-none transition-colors focus:border-action-primary"
               >
-                <option value="">كل الحظائر</option>
+                <option value="">
+                  {!filters.section_id
+                    ? 'اختر قسماً أولاً'
+                    : sectionBarns.isLoading
+                      ? 'جاري تحميل الحظائر...'
+                      : barns.length === 0
+                        ? 'لا توجد حظائر لهذا القسم'
+                        : 'كل الحظائر'}
+                </option>
                 {barns.map((barn) => (
                   <option key={barn.id} value={barn.id}>
                     {barn.barn_name ?? barn.name ?? `عنبر #${barn.id}`}
@@ -231,41 +313,100 @@ export default function DashboardPage() {
 
       <CriticalAlertStrip filters={filters} />
 
-      <TodaySummaryRow
-        summary={morningSummary.data?.summary}
-        isLoading={morningSummary.isLoading}
-      />
-
-      <FlockWatchlistTable
-        watchlist={morningSummary.data?.watchlist ?? []}
-        isLoading={morningSummary.isLoading}
-      />
-
-      <DashboardTrendsSection
-        analytics={analytics.data}
-        watchlist={morningSummary.data?.watchlist ?? []}
-        isLoading={analytics.isLoading}
-      />
-
-      <FeedRunwayWidget
-        items={morningSummary.data?.feed_runway ?? []}
-        isLoading={morningSummary.isLoading}
-      />
-
-      <div className="grid grid-cols-1 gap-4 xl:grid-cols-3">
-        <BarnOccupancyWidget
-          flocks={activeFlocks.data?.data ?? []}
-          isLoading={activeFlocks.isLoading}
+      {hasMorningSummaryError ? (
+        <MorningSummaryErrorCard
+          title="تعذر تحميل مؤشرات الصباح"
+          message="لم يتم عرض قيم صفرية بديلة لأن بيانات المؤشرات لم تصل من الخادم."
+          onRetry={() => morningSummary.refetch()}
+          isRetrying={morningSummary.isFetching}
         />
-        <LifecycleEventsWidget
-          watchlist={morningSummary.data?.watchlist ?? []}
+      ) : (
+        <TodaySummaryRow
+          summary={morningSummaryData?.summary}
           isLoading={morningSummary.isLoading}
         />
-        <EggDistributionWidget
-          distribution={analytics.data?.egg_weight_distribution}
-          isLoading={analytics.isLoading}
-          className="xl:col-span-1"
+      )}
+
+      {hasMorningSummaryError ? (
+        <MorningSummaryErrorCard
+          title="تعذر تحميل قائمة متابعة الأفواج"
+          message="لم يتم عرض جدول فارغ بديل لأن بيانات المتابعة لم تصل من الخادم."
+          onRetry={() => morningSummary.refetch()}
+          isRetrying={morningSummary.isFetching}
         />
+      ) : (
+        <FlockWatchlistTable
+          watchlist={watchlist ?? []}
+          isLoading={morningSummary.isLoading}
+        />
+      )}
+
+      {hasMorningSummaryError ? (
+        <MorningSummaryErrorCard
+          title="تعذر تحميل بيانات النفوق للرسوم"
+          message="لم يتم عرض مخطط نفوق فارغ لأن بيانات المتابعة لم تصل من الخادم."
+          onRetry={() => morningSummary.refetch()}
+          isRetrying={morningSummary.isFetching}
+        />
+      ) : analytics.isError ? (
+        <MorningSummaryErrorCard
+          title="تعذر تحميل تحليلات الإنتاج"
+          message="طلب /api/statistics لم يكتمل بنجاح للنطاق المختار أو كل النطاق. لم يتم عرض رسم فارغ حتى لا يبدو كأنه بيانات فعلية."
+          onRetry={() => analytics.refetch()}
+          isRetrying={analytics.isFetching}
+        />
+      ) : (
+        <DashboardTrendsSection
+          analytics={analytics.data}
+          watchlist={watchlist ?? []}
+          isLoading={analytics.isLoading}
+        />
+      )}
+
+      {hasMorningSummaryError ? (
+        <MorningSummaryErrorCard
+          title="تعذر تحميل مدى كفاية الأعلاف"
+          message="لم يتم عرض مخزون أعلاف فارغ لأن بيانات feed runway لم تصل من الخادم."
+          onRetry={() => morningSummary.refetch()}
+          isRetrying={morningSummary.isFetching}
+        />
+      ) : (
+        <FeedRunwayWidget
+          items={morningSummaryData?.feed_runway ?? []}
+          isLoading={morningSummary.isLoading}
+        />
+      )}
+
+      <div className="grid grid-cols-1 gap-4 xl:grid-cols-2">
+        <BarnOccupancyWidget />
+        {hasMorningSummaryError ? (
+          <MorningSummaryErrorCard
+            title="تعذر تحميل أحداث دورة الحياة"
+            message="لم يتم عرض حالة فارغة لأن بيانات الأفواج لم تصل من الخادم."
+            onRetry={() => morningSummary.refetch()}
+            isRetrying={morningSummary.isFetching}
+          />
+        ) : (
+          <LifecycleEventsWidget
+            watchlist={watchlist ?? []}
+            isLoading={morningSummary.isLoading}
+          />
+        )}
+        {analytics.isError ? (
+          <MorningSummaryErrorCard
+            title="تعذر تحميل توزيع أوزان البيض"
+            message="طلب /api/statistics لم يكتمل بنجاح للنطاق المختار أو كل النطاق."
+            onRetry={() => analytics.refetch()}
+            isRetrying={analytics.isFetching}
+            className="xl:col-span-2"
+          />
+        ) : (
+          <EggDistributionWidget
+            distribution={analytics.data?.egg_weight_distribution}
+            isLoading={analytics.isLoading}
+            className="xl:col-span-2"
+          />
+        )}
       </div>
     </div>
   )

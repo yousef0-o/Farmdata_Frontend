@@ -557,7 +557,7 @@ export interface EntityStatistics {
   egg_weight_distribution?: EggWeightDistribution
 }
 
-export type AnalyticsScopeLevel = 'company' | 'project' | 'section' | 'barn' | 'flock'
+export type AnalyticsScopeLevel = 'all' | 'company' | 'project' | 'section' | 'barn' | 'flock'
 export type AnalyticsStage = 'production' | 'breeding' | 'mixed'
 export type AnalyticsAggregation = 'daily' | 'weekly' | 'monthly'
 export type AnalyticsAxis = 'date' | 'age'

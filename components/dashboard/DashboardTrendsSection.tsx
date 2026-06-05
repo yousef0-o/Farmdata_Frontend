@@ -20,6 +20,29 @@ function buildPolyline(points: Array<{ x: number; y: number }>) {
   return points.map((point) => `${point.x},${point.y}`).join(' ')
 }
 
+function buildAreaPath(points: Array<{ x: number; y: number }>, height: number, padding: { bottom: number }) {
+  if (points.length === 0) return ''
+  const line = buildPolyline(points)
+  const first = points[0]
+  const last = points[points.length - 1]
+  return `M ${first.x},${height - padding.bottom} L ${line} L ${last.x},${height - padding.bottom} Z`
+}
+
+function formatDateLabel(value: string) {
+  return new Date(`${value}T00:00:00`).toLocaleDateString('ar-EG', {
+    day: 'numeric',
+    month: 'short',
+  })
+}
+
+function buildTickIndexes(length: number) {
+  if (length <= 1) return [0]
+  const indexes = new Set<number>([0, length - 1])
+  indexes.add(Math.floor((length - 1) / 3))
+  indexes.add(Math.floor(((length - 1) * 2) / 3))
+  return Array.from(indexes).sort((a, b) => a - b)
+}
+
 export function DashboardTrendsSection({
   analytics,
   watchlist = [],
@@ -44,37 +67,55 @@ export function DashboardTrendsSection({
 
   if (isLoading) {
     return (
-      <section className={`grid grid-cols-1 gap-4 xl:grid-cols-2 ${className}`} dir="rtl">
-        <div className="h-80 animate-pulse rounded-2xl border border-line bg-surface" />
-        <div className="h-80 animate-pulse rounded-2xl border border-line bg-surface" />
+      <section className={`grid grid-cols-1 gap-4 xl:grid-cols-[1.35fr_0.9fr] ${className}`} dir="rtl">
+        <div className="h-96 animate-pulse rounded-2xl border border-line bg-surface" />
+        <div className="h-96 animate-pulse rounded-2xl border border-line bg-surface" />
       </section>
     )
   }
 
-  const maxEggs = Math.max(...points.map((point) => point.total_eggs), 1)
-  const width = 680
-  const height = 220
-  const step = points.length > 1 ? width / (points.length - 1) : width
+  const eggsValues = points.map((point) => point.total_eggs)
+  const maxEggs = Math.max(...eggsValues, 1)
+  const minEggs = Math.min(...eggsValues, 0)
+  const eggsRange = Math.max(maxEggs - minEggs, 1)
+  const averageEggs = eggsValues.length > 0
+    ? eggsValues.reduce((sum, value) => sum + value, 0) / eggsValues.length
+    : 0
+  const lastPoint = points[points.length - 1]
+  const width = 760
+  const height = 300
+  const padding = { top: 26, right: 18, bottom: 42, left: 76 }
+  const plotWidth = width - padding.left - padding.right
+  const plotHeight = height - padding.top - padding.bottom
+  const step = points.length > 1 ? plotWidth / (points.length - 1) : plotWidth
   const linePoints = points.map((point, index) => ({
-    x: index * step,
-    y: height - (point.total_eggs / maxEggs) * (height - 28) - 14,
+    x: padding.left + index * step,
+    y: padding.top + ((maxEggs - point.total_eggs) / eggsRange) * plotHeight,
   }))
+  const xTickIndexes = buildTickIndexes(points.length)
+  const yTicks = [0, 0.5, 1].map((ratio) => {
+    const value = maxEggs - eggsRange * ratio
+    return {
+      value,
+      y: padding.top + plotHeight * ratio,
+    }
+  })
   const maxMortality = Math.max(...mortalityByBarn.map((row) => row.mortality), 1)
 
   return (
-    <section className={`grid grid-cols-1 gap-4 xl:grid-cols-2 ${className}`} dir="rtl">
+    <section className={`grid grid-cols-1 gap-4 xl:grid-cols-[1.35fr_0.9fr] ${className}`} dir="rtl">
       <div className="rounded-2xl border border-line bg-surface p-5 shadow-sm">
-        <div className="flex flex-col gap-3 border-b border-line pb-4 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex flex-col gap-4 border-b border-line pb-4 lg:flex-row lg:items-center lg:justify-between">
           <div className="flex items-center gap-3">
             <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-info-soft text-info">
               <LineChart className="h-5 w-5" />
             </span>
             <div>
               <h2 className="text-base font-bold text-ink">اتجاه الإنتاج</h2>
-              <p className="text-xs text-ink-muted">إجمالي البيض حسب آخر نقاط متاحة من الإحصائيات.</p>
+              <p className="text-xs text-ink-muted">إجمالي البيض اليومي داخل النطاق المختار.</p>
             </div>
           </div>
-          <div className="inline-flex rounded-xl border border-line bg-surface-muted p-1">
+          <div className="inline-flex self-start rounded-xl border border-line bg-surface-muted p-1 lg:self-auto">
             {[7, 30].map((value) => (
               <button
                 key={value}
@@ -93,51 +134,90 @@ export function DashboardTrendsSection({
         </div>
 
         {points.length > 0 ? (
-          <div className="mt-5 overflow-x-auto">
-            <svg viewBox={`0 0 ${width} ${height + 34}`} className="min-w-[620px]">
-              <g transform="translate(0 6)">
-                {[0, 1, 2, 3].map((index) => {
-                  const y = 14 + (height - 28) * (index / 3)
-                  return (
+          <>
+            <div className="mt-5 grid grid-cols-1 gap-3 sm:grid-cols-3">
+              <div className="rounded-xl bg-surface-muted px-4 py-3">
+                <p className="text-xs font-semibold text-ink-muted">آخر قراءة</p>
+                <p className="mt-1 font-mono text-lg font-bold text-ink">{formatNumber(lastPoint.total_eggs)}</p>
+              </div>
+              <div className="rounded-xl bg-surface-muted px-4 py-3">
+                <p className="text-xs font-semibold text-ink-muted">المتوسط</p>
+                <p className="mt-1 font-mono text-lg font-bold text-ink">{formatNumber(averageEggs)}</p>
+              </div>
+              <div className="rounded-xl bg-surface-muted px-4 py-3">
+                <p className="text-xs font-semibold text-ink-muted">أعلى يوم</p>
+                <p className="mt-1 font-mono text-lg font-bold text-ink">{formatNumber(maxEggs)}</p>
+              </div>
+            </div>
+
+            <div className="mt-5 rounded-xl border border-line bg-surface-subtle p-3">
+              <svg viewBox={`0 0 ${width} ${height}`} className="h-72 w-full" role="img" aria-label="اتجاه إنتاج البيض">
+                <defs>
+                  <linearGradient id="dashboardProductionArea" x1="0" x2="0" y1="0" y2="1">
+                    <stop offset="0%" stopColor="rgb(194 65 12)" stopOpacity="0.18" />
+                    <stop offset="100%" stopColor="rgb(194 65 12)" stopOpacity="0.02" />
+                  </linearGradient>
+                </defs>
+
+                {yTicks.map((tick) => (
+                  <g key={tick.y}>
                     <line
-                      key={index}
-                      x1="0"
-                      y1={y}
-                      x2={width}
-                      y2={y}
-                      stroke="rgba(199,195,183,0.55)"
-                      strokeDasharray="4 6"
+                      x1={padding.left}
+                      y1={tick.y}
+                      x2={width - padding.right}
+                      y2={tick.y}
+                      stroke="rgb(229 226 218)"
                     />
-                  )
-                })}
+                    <text
+                      x={padding.left - 12}
+                      y={tick.y + 4}
+                      textAnchor="end"
+                      className="fill-current text-xs font-medium text-ink-muted"
+                    >
+                      {formatNumber(tick.value)}
+                    </text>
+                  </g>
+                ))}
+
+                <path
+                  d={buildAreaPath(linePoints, height, padding)}
+                  fill="url(#dashboardProductionArea)"
+                />
                 <polyline
                   fill="none"
                   stroke="rgb(194 65 12)"
                   strokeLinecap="round"
                   strokeLinejoin="round"
-                  strokeWidth="4"
+                  strokeWidth="3"
                   points={buildPolyline(linePoints)}
                 />
                 {linePoints.map((point, index) => (
-                  <circle key={points[index].bucket} cx={point.x} cy={point.y} r="4" fill="rgb(194 65 12)" />
+                  <circle
+                    key={points[index].bucket}
+                    cx={point.x}
+                    cy={point.y}
+                    r={range === 30 ? 2.5 : 4}
+                    fill="rgb(194 65 12)"
+                  />
                 ))}
-              </g>
-              {points.map((point, index) => (
-                <text
-                  key={`${point.bucket}-label`}
-                  x={index * step}
-                  y={height + 28}
-                  textAnchor={index === 0 ? 'start' : index === points.length - 1 ? 'end' : 'middle'}
-                  className="fill-current text-[11px] font-medium text-ink-muted"
-                >
-                  {point.label}
-                </text>
-              ))}
-            </svg>
-          </div>
+
+                {xTickIndexes.map((index) => (
+                  <text
+                    key={`${points[index].bucket}-label`}
+                    x={linePoints[index].x}
+                    y={height - 12}
+                    textAnchor={index === 0 ? 'start' : index === points.length - 1 ? 'end' : 'middle'}
+                    className="fill-current text-xs font-medium text-ink-muted"
+                  >
+                    {formatDateLabel(points[index].date)}
+                  </text>
+                ))}
+              </svg>
+            </div>
+          </>
         ) : (
           <div className="mt-5 rounded-xl bg-surface-muted p-6 text-center text-sm text-ink-muted">
-            اختر نطاق شركة أو مشروع أو قسم أو عنبر لعرض ترند الإنتاج من `/api/statistics`.
+            لا توجد نقاط إنتاج ضمن النطاق والتاريخ المحددين.
           </div>
         )}
       </div>
@@ -158,12 +238,14 @@ export function DashboardTrendsSection({
             {mortalityByBarn.map((row) => {
               const widthPercent = Math.max(4, (row.mortality / maxMortality) * 100)
               return (
-                <div key={row.barn} className="space-y-1">
-                  <div className="flex items-center justify-between gap-3 text-sm">
-                    <span className="truncate font-semibold text-ink">{row.barn}</span>
-                    <span className="font-mono text-ink-muted">{formatNumber(row.mortality)}</span>
+                <div key={row.barn} className="rounded-xl border border-line bg-surface-subtle p-3">
+                  <div className="flex items-start justify-between gap-3 text-sm">
+                    <span className="min-w-0 flex-1 leading-6 text-ink">{row.barn}</span>
+                    <span className="rounded-lg bg-danger-soft px-2.5 py-1 font-mono text-xs font-bold text-danger-strong">
+                      {formatNumber(row.mortality)}
+                    </span>
                   </div>
-                  <div className="h-2.5 overflow-hidden rounded-full bg-surface-muted">
+                  <div className="mt-3 h-2.5 overflow-hidden rounded-full bg-surface-muted">
                     <div
                       className="h-full rounded-full bg-danger transition-all duration-200"
                       style={{ width: `${widthPercent}%` }}
