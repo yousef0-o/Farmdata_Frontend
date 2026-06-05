@@ -177,7 +177,7 @@ export default function DashboardPage() {
         <div className="flex flex-col gap-5 xl:flex-row xl:items-end xl:justify-between">
           <div>
             <p className="text-xs font-bold text-ink-muted">Morning Command</p>
-            <h1 className="mt-1 text-2xl font-bold text-dash-heading">لوحة قيادة الصباح</h1>
+            <h1 className="mt-1 text-2xl font-bold text-dash-heading">لوحة التحكم</h1>
             <p className="mt-1 text-sm text-ink-muted">
               نطاق العرض: {scopeLabel(scope.level)}
               {scope.id ? ` #${scope.id}` : ''}
