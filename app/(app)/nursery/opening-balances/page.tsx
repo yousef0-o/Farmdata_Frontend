@@ -124,11 +124,11 @@ function SummaryTile({
 }) {
   const toneClass =
     tone === 'clay'
-      ? 'bg-[#fff4ed] text-[#c2410c] dark:bg-orange-950/40 dark:text-orange-300'
+      ? 'bg-orange-50 text-terracotta'
       : tone === 'emerald'
-        ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300'
+        ? 'bg-emerald-50 text-emerald-700'
         : tone === 'amber'
-          ? 'bg-amber-50 text-amber-700 dark:bg-amber-950/40 dark:text-amber-300'
+          ? 'bg-amber-50 text-amber-700'
           : 'bg-slate-50 text-slate-600 dark:bg-slate-900 dark:text-slate-300'
 
   return (
@@ -230,7 +230,7 @@ export default function NurseryOpeningBalancesPage() {
 
   if (isLoading) {
     return (
-      <main className="min-h-full bg-[#fafafa] px-4 py-6 sm:px-6 lg:px-8" dir="rtl">
+      <main className="min-h-full bg-background px-4 py-6 sm:px-6 lg:px-8" dir="rtl">
         <OpeningBalancesSkeleton />
       </main>
     )
@@ -238,7 +238,7 @@ export default function NurseryOpeningBalancesPage() {
 
   if (isError) {
     return (
-      <main className="min-h-full bg-[#fafafa] px-4 py-6 sm:px-6 lg:px-8" dir="rtl">
+      <main className="min-h-full bg-background px-4 py-6 sm:px-6 lg:px-8" dir="rtl">
         <div className="rounded-2xl border border-red-100 bg-white p-6 text-red-700 shadow-sm dark:border-red-900 dark:bg-slate-950 dark:text-red-300">
           <div className="flex items-center gap-3">
             <AlertCircle className="h-5 w-5" />
@@ -250,7 +250,7 @@ export default function NurseryOpeningBalancesPage() {
   }
 
   return (
-    <main className="min-h-full bg-[#fafafa] px-4 py-6 sm:px-6 lg:px-8" dir="rtl">
+    <main className="min-h-full bg-background px-4 py-6 sm:px-6 lg:px-8" dir="rtl">
       <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-5">
         <section className="rounded-2xl border border-slate-100 bg-white p-5 shadow-sm dark:border-slate-800 dark:bg-slate-950">
           <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
@@ -451,7 +451,7 @@ export default function NurseryOpeningBalancesPage() {
                           <td className="border-b border-slate-100 px-4 py-4 font-semibold dark:border-slate-800">
                             {formatCurrency(Number(row?.item_value ?? 0))}
                           </td>
-                          <td className="border-b border-slate-100 px-4 py-4 font-bold text-[#c2410c] dark:border-slate-800 dark:text-orange-300">
+                          <td className="border-b border-slate-100 px-4 py-4 font-bold text-terracotta dark:border-slate-800">
                             {formatCurrency(rowTotal)}
                           </td>
                         </tr>
@@ -480,7 +480,7 @@ export default function NurseryOpeningBalancesPage() {
                             {row?.category_name ?? 'غير مصنف'}
                           </p>
                         </div>
-                        <span className="rounded-lg bg-[#fff4ed] px-2.5 py-1 text-xs font-bold text-[#c2410c] dark:bg-orange-950/40 dark:text-orange-300">
+                        <span className="rounded-lg bg-orange-50 px-2.5 py-1 text-xs font-bold text-terracotta">
                           {formatCurrency(rowTotal)}
                         </span>
                       </div>

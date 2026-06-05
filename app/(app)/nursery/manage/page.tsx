@@ -158,9 +158,9 @@ function Button({
   tone?: 'primary' | 'neutral' | 'green' | 'danger'
 }) {
   const toneClass = {
-    primary: 'bg-[#c2410c] text-white hover:bg-[#9a3412]',
+    primary: 'bg-terracotta text-white hover:bg-terracotta-hover',
     neutral:
-      'border border-slate-100 bg-white text-slate-700 hover:bg-slate-50 dark:border-slate-800 dark:bg-slate-950 dark:text-slate-200 dark:hover:bg-slate-900',
+      'border border-slate-100 bg-white text-slate-700 hover:bg-slate-50    ',
     green: 'bg-emerald-600 text-white hover:bg-emerald-700',
     danger: 'bg-red-600 text-white hover:bg-red-700',
   }[tone]
@@ -182,12 +182,12 @@ function TextField({
 }: React.InputHTMLAttributes<HTMLInputElement> & { label: string; error?: string }) {
   return (
     <label className="block">
-      <span className="mb-1.5 block text-xs font-bold text-slate-600 dark:text-slate-300">
+      <span className="mb-1.5 block text-xs font-bold text-slate-600">
         {label}
       </span>
       <input
         {...props}
-        className="min-h-11 w-full rounded-xl border border-slate-100 bg-slate-50 px-3 py-2 text-sm font-semibold text-slate-900 outline-none transition-all focus:border-[#c2410c] focus:bg-white focus:ring-2 focus:ring-orange-200 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-100"
+        className="min-h-11 w-full rounded-xl border border-slate-100 bg-slate-50 px-3 py-2 text-sm font-semibold text-slate-900 outline-none transition-all focus:border-terracotta focus:bg-white focus:ring-2 focus:ring-orange-100"
       />
       {error ? <p className="mt-1 text-xs font-bold text-red-600">{error}</p> : null}
     </label>
@@ -202,12 +202,12 @@ function SelectField({
 }: React.SelectHTMLAttributes<HTMLSelectElement> & { label: string; error?: string }) {
   return (
     <label className="block">
-      <span className="mb-1.5 block text-xs font-bold text-slate-600 dark:text-slate-300">
+      <span className="mb-1.5 block text-xs font-bold text-slate-600">
         {label}
       </span>
       <select
         {...props}
-        className="min-h-11 w-full rounded-xl border border-slate-100 bg-slate-50 px-3 py-2 text-sm font-semibold text-slate-900 outline-none transition-all focus:border-[#c2410c] focus:bg-white focus:ring-2 focus:ring-orange-200 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-100"
+        className="min-h-11 w-full rounded-xl border border-slate-100 bg-slate-50 px-3 py-2 text-sm font-semibold text-slate-900 outline-none transition-all focus:border-terracotta focus:bg-white focus:ring-2 focus:ring-orange-100"
       >
         {children}
       </select>
@@ -232,17 +232,17 @@ function SummaryTile({
   const color =
     tone === 'green'
       ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300'
-      : 'bg-orange-50 text-[#c2410c] dark:bg-orange-950/40 dark:text-orange-300'
+      : 'bg-orange-50 text-terracotta'
 
   return (
-    <div className="rounded-2xl border border-slate-100 bg-white p-4 shadow-sm dark:border-slate-800 dark:bg-slate-950">
+    <div className="rounded-2xl border border-slate-100 bg-white p-4 shadow-sm">
       <div className="flex items-center gap-3">
         <span className={`flex h-10 w-10 items-center justify-center rounded-xl ${color}`}>
           <Icon className="h-5 w-5" />
         </span>
         <div>
-          <div className="text-xs font-bold text-slate-500 dark:text-slate-400">{label}</div>
-          <div className="mt-1 font-mono text-xl font-bold text-slate-950 dark:text-slate-50">
+          <div className="text-xs font-bold text-slate-500">{label}</div>
+          <div className="mt-1 font-mono text-xl font-bold text-slate-900">
             {value}
             {unit ? <span className="mr-1 font-sans text-xs text-slate-500">{unit}</span> : null}
           </div>
@@ -255,7 +255,7 @@ function SummaryTile({
 function StatusBadge({ status }: { status: NurseryCycleStatus }) {
   const className = {
     active: 'bg-emerald-50 text-emerald-700 ring-emerald-100 dark:bg-emerald-950/40 dark:text-emerald-300 dark:ring-emerald-900',
-    completed: 'bg-slate-100 text-slate-700 ring-slate-200 dark:bg-slate-900 dark:text-slate-200 dark:ring-slate-800',
+    completed: 'bg-slate-100 text-slate-700 ring-slate-200   dark:ring-slate-800',
     cancelled: 'bg-red-50 text-red-700 ring-red-100 dark:bg-red-950/40 dark:text-red-300 dark:ring-red-900',
   }[status]
 
@@ -278,7 +278,7 @@ function FilterBar({
   const [search, setSearch] = useState(filters.search ?? '')
 
   return (
-    <div className="rounded-2xl border border-slate-100 bg-white p-4 shadow-sm dark:border-slate-800 dark:bg-slate-950">
+    <div className="rounded-2xl border border-slate-100 bg-white p-4 shadow-sm">
       <div className="grid gap-3 lg:grid-cols-[1.4fr_1fr_1fr_1fr_auto]">
         <label className="relative block">
           <Search className="pointer-events-none absolute right-3 top-3 h-5 w-5 text-slate-400" />
@@ -286,7 +286,7 @@ function FilterBar({
             value={search}
             onChange={(event) => setSearch(event.target.value)}
             placeholder="بحث باسم الدورة أو المصدر"
-            className="min-h-11 w-full rounded-xl border border-slate-100 bg-slate-50 py-2 pl-3 pr-10 text-sm font-semibold outline-none transition-all focus:border-[#c2410c] focus:bg-white focus:ring-2 focus:ring-orange-200 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-100"
+            className="min-h-11 w-full rounded-xl border border-slate-100 bg-slate-50 py-2 pl-3 pr-10 text-sm font-semibold outline-none transition-all focus:border-terracotta focus:bg-white focus:ring-2 focus:ring-orange-100"
           />
         </label>
 
@@ -299,7 +299,7 @@ function FilterBar({
               status: (event.target.value || null) as NurseryCycleStatus | null,
             }))
           }
-          className="min-h-11 rounded-xl border border-slate-100 bg-slate-50 px-3 py-2 text-sm font-semibold outline-none transition-all focus:border-[#c2410c] focus:bg-white focus:ring-2 focus:ring-orange-200 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-100"
+          className="min-h-11 rounded-xl border border-slate-100 bg-slate-50 px-3 py-2 text-sm font-semibold outline-none transition-all focus:border-terracotta focus:bg-white focus:ring-2 focus:ring-orange-100"
         >
           <option value="">كل الحالات</option>
           <option value="active">نشطة</option>
@@ -316,7 +316,7 @@ function FilterBar({
               variety_id: event.target.value ? Number(event.target.value) : null,
             }))
           }
-          className="min-h-11 rounded-xl border border-slate-100 bg-slate-50 px-3 py-2 text-sm font-semibold outline-none transition-all focus:border-[#c2410c] focus:bg-white focus:ring-2 focus:ring-orange-200 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-100"
+          className="min-h-11 rounded-xl border border-slate-100 bg-slate-50 px-3 py-2 text-sm font-semibold outline-none transition-all focus:border-terracotta focus:bg-white focus:ring-2 focus:ring-orange-100"
         >
           <option value="">كل الأصناف</option>
           {options?.varieties.map((variety) => (
@@ -335,7 +335,7 @@ function FilterBar({
             ]
             setFilters((current) => ({ ...current, sort, direction, page: 1 }))
           }}
-          className="min-h-11 rounded-xl border border-slate-100 bg-slate-50 px-3 py-2 text-sm font-semibold outline-none transition-all focus:border-[#c2410c] focus:bg-white focus:ring-2 focus:ring-orange-200 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-100"
+          className="min-h-11 rounded-xl border border-slate-100 bg-slate-50 px-3 py-2 text-sm font-semibold outline-none transition-all focus:border-terracotta focus:bg-white focus:ring-2 focus:ring-orange-100"
         >
           <option value="created_at:desc">الأحدث</option>
           <option value="start_date:desc">تاريخ البداية الأحدث</option>
@@ -363,7 +363,7 @@ function HierarchyPanel({
 }) {
   if (!hierarchy.length) {
     return (
-      <div className="rounded-2xl border border-slate-100 bg-white p-8 text-center shadow-sm dark:border-slate-800 dark:bg-slate-950">
+      <div className="rounded-2xl border border-slate-100 bg-white p-8 text-center shadow-sm">
         <Warehouse className="mx-auto h-10 w-10 text-slate-300" />
         <p className="mt-3 text-sm font-bold text-slate-500">لا توجد بيانات هيكلية لعرضها حاليا.</p>
       </div>
@@ -371,30 +371,30 @@ function HierarchyPanel({
   }
 
   const themes = [
-    { bg: '#f0f9ff', border: '#0ea5e9', icon: '#e0f2fe', text: '#0369a1' },
-    { bg: '#f0fdf4', border: '#22c55e', icon: '#dcfce7', text: '#15803d' },
-    { bg: '#fefce8', border: '#eab308', icon: '#fef9c3', text: '#a16207' },
-    { bg: '#fef2f2', border: '#ef4444', icon: '#fee2e2', text: '#b91c1c' },
-    { bg: '#faf5ff', border: '#a855f7', icon: '#f3e8ff', text: '#7e22ce' },
-    { bg: '#fff7ed', border: '#f97316', icon: '#ffedd5', text: '#c2410c' },
-    { bg: '#f6f8fa', border: '#64748b', icon: '#e2e8f0', text: '#334155' },
-    { bg: '#ecfeff', border: '#06b6d4', icon: '#cffafe', text: '#0e7490' },
+    { bg: '#f0f9ff', bgDark: 'rgba(14,165,233,0.15)', border: '#0ea5e9', icon: '#e0f2fe', iconDark: 'rgba(14,165,233,0.25)', text: '#0369a1', textDark: '#38bdf8' },
+    { bg: '#f0fdf4', bgDark: 'rgba(34,197,94,0.15)', border: '#22c55e', icon: '#dcfce7', iconDark: 'rgba(34,197,94,0.25)', text: '#15803d', textDark: '#4ade80' },
+    { bg: '#fefce8', bgDark: 'rgba(234,179,8,0.12)', border: '#eab308', icon: '#fef9c3', iconDark: 'rgba(234,179,8,0.22)', text: '#a16207', textDark: '#facc15' },
+    { bg: '#fef2f2', bgDark: 'rgba(239,68,68,0.15)', border: '#ef4444', icon: '#fee2e2', iconDark: 'rgba(239,68,68,0.25)', text: '#b91c1c', textDark: '#f87171' },
+    { bg: '#faf5ff', bgDark: 'rgba(168,85,247,0.15)', border: '#a855f7', icon: '#f3e8ff', iconDark: 'rgba(168,85,247,0.25)', text: '#7e22ce', textDark: '#c084fc' },
+    { bg: '#fff7ed', bgDark: 'rgba(249,115,22,0.15)', border: '#f97316', icon: '#ffedd5', iconDark: 'rgba(249,115,22,0.25)', text: '#c2410c', textDark: '#fb923c' },
+    { bg: '#f6f8fa', bgDark: 'rgba(100,116,139,0.15)', border: '#64748b', icon: '#e2e8f0', iconDark: 'rgba(100,116,139,0.25)', text: '#334155', textDark: '#94a3b8' },
+    { bg: '#ecfeff', bgDark: 'rgba(6,182,212,0.15)', border: '#06b6d4', icon: '#cffafe', iconDark: 'rgba(6,182,212,0.25)', text: '#0e7490', textDark: '#22d3ee' },
   ]
   return (
     <div className="mb-12 flex flex-col gap-8">
       {hierarchy.map((nursery, nurseryIndex) => (
         <div
           key={nursery.id}
-          className="overflow-hidden rounded-2xl border border-slate-100 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-950"
+          className="overflow-hidden rounded-2xl border border-slate-100 bg-white shadow-sm"
         >
-          <div className="flex min-h-16 flex-wrap items-center gap-3 border-b border-slate-100 bg-slate-50 px-6 py-4 dark:border-slate-800 dark:bg-slate-900">
-            <Warehouse className="h-5 w-5 text-slate-500 dark:text-slate-400" />
-            <div className="text-base font-extrabold text-slate-950 dark:text-slate-50">
+          <div className="flex min-h-16 flex-wrap items-center gap-3 border-b border-slate-100 bg-slate-50 px-6 py-4">
+            <Warehouse className="h-5 w-5 text-slate-500" />
+            <div className="text-base font-extrabold text-slate-900">
               {nursery.name}
             </div>
             <a
               href={`/nursery/manage/general-operations?type=nursery&id=${nursery.id}`}
-              className="mr-auto inline-flex min-h-8 items-center justify-center gap-2 rounded-lg border border-[#c2410c]/25 bg-white px-3 py-1 text-xs font-bold text-[#c2410c] transition-all active:scale-[0.98] hover:bg-orange-50 dark:border-orange-900 dark:bg-slate-950 dark:text-orange-300"
+              className="mr-auto inline-flex min-h-8 items-center justify-center gap-2 rounded-lg border border-terracotta/25 bg-white px-3 py-1 text-xs font-bold text-terracotta transition-all active:scale-[0.98] hover:bg-orange-50 dark:border-orange-900"
             >
               <ClipboardList className="h-3.5 w-3.5" />
               عمليات عامة
@@ -408,33 +408,41 @@ function HierarchyPanel({
               return (
                 <div
                   key={location.id}
-                  className="m-6 rounded-lg border-r-[3px] bg-white dark:bg-slate-950"
-                  style={{ borderRightColor: theme.border }}
+                  className="m-6 rounded-lg border-r-[3px] bg-white"
+                  style={{
+                    borderRightColor: theme.border,
+                    ['--theme-bg-light' as any]: theme.bg,
+                    ['--theme-bg-dark' as any]: theme.bgDark,
+                    ['--theme-icon-light' as any]: theme.icon,
+                    ['--theme-icon-dark' as any]: theme.iconDark,
+                    ['--theme-text-light' as any]: theme.text,
+                    ['--theme-text-dark' as any]: theme.textDark,
+                  }}
                 >
                   <div
                     className="flex min-h-14 flex-wrap items-center gap-3 px-4 py-3"
                     style={{
-                      background: `linear-gradient(to left, ${theme.bg}, rgba(255,255,255,0))`,
+                      background: 'linear-gradient(to left, var(--theme-bg), transparent)',
                     }}
                   >
                     <span
                       className="flex h-7 w-7 items-center justify-center rounded-md"
-                      style={{ background: theme.icon, color: theme.text }}
+                      style={{ background: 'var(--theme-icon)', color: 'var(--theme-text)' }}
                     >
                       <MapPin className="h-4 w-4" />
                     </span>
-                    <div style={{ color: theme.text }}>
+                    <div style={{ color: 'var(--theme-text)' }}>
                       <div className="text-xs font-semibold opacity-80">{nursery.name}</div>
                       <div className="text-base font-extrabold">{location.name}</div>
                     </div>
                     <div className="mr-auto flex items-center gap-2">
-                      <span className="rounded-md border border-slate-100 bg-white px-2.5 py-1 text-xs font-bold text-slate-600 shadow-sm dark:border-slate-800 dark:bg-slate-950 dark:text-slate-300">
+                      <span className="rounded-md border border-slate-100 bg-white px-2.5 py-1 text-xs font-bold text-slate-600 shadow-sm">
                         {location.sections.length} قسم
                       </span>
                       <a
                         href={`/nursery/manage/general-operations?type=location&id=${location.id}`}
-                        className="inline-flex h-8 w-8 items-center justify-center rounded-lg border bg-white transition-all active:scale-[0.98] dark:bg-slate-950"
-                        style={{ borderColor: theme.border, color: theme.text }}
+                        className="inline-flex h-8 w-8 items-center justify-center rounded-lg border bg-white transition-all active:scale-[0.98]"
+                        style={{ borderColor: theme.border, color: 'var(--theme-text)' }}
                         title="عمليات عامة على الموقع"
                       >
                         <ClipboardList className="h-4 w-4" />
@@ -446,18 +454,18 @@ function HierarchyPanel({
                     {location.sections.map((section) => (
                       <div key={section.id} className="relative pr-6">
                         <div className="absolute bottom-0 right-0 top-0 w-px bg-slate-200 dark:bg-slate-800" />
-                        <span className="absolute right-[-4px] top-1 h-2.5 w-2.5 rounded-full border-2 border-[#c2410c] bg-white dark:bg-slate-950" />
+                        <span className="absolute right-[-4px] top-1 h-2.5 w-2.5 rounded-full border-2 border-terracotta bg-white" />
 
-                        <div className="mb-3 flex min-h-8 flex-wrap items-center gap-2 text-sm font-bold text-slate-500 dark:text-slate-300">
+                        <div className="mb-3 flex min-h-8 flex-wrap items-center gap-2 text-sm font-bold text-slate-500">
                           <div className="flex items-center gap-2">
                             {section.name}
-                            <span className="text-xs font-semibold text-slate-300 dark:text-slate-600">
+                            <span className="text-xs font-semibold text-slate-400">
                               ({section.basins.length} حوض)
                             </span>
                           </div>
                           <a
                             href={`/nursery/manage/general-operations?type=section&id=${section.id}`}
-                            className="mr-auto inline-flex h-7 w-7 items-center justify-center rounded-md border border-slate-100 bg-white text-sky-600 transition-all active:scale-[0.98] dark:border-slate-800 dark:bg-slate-950 dark:text-sky-300"
+                            className="mr-auto inline-flex h-7 w-7 items-center justify-center rounded-md border border-slate-100 bg-white text-sky-600 transition-all active:scale-[0.98] dark:text-sky-300"
                             title="عمليات عامة على القسم"
                           >
                             <ClipboardList className="h-3.5 w-3.5" />
@@ -469,20 +477,20 @@ function HierarchyPanel({
                             <a
                               key={basin.id}
                               href={`/nursery/manage/basins/${basin.id}`}
-                              className="block min-h-[68px] rounded-[10px] border border-slate-200 bg-white p-3 text-inherit shadow-sm transition-all active:scale-[0.98] hover:-translate-y-0.5 hover:border-[#c2410c] hover:shadow-md dark:border-slate-800 dark:bg-slate-950"
+                              className="block min-h-[68px] rounded-[10px] border border-slate-200 bg-white p-3 text-inherit shadow-sm transition-all active:scale-[0.98] hover:-translate-y-0.5 hover:border-terracotta hover:shadow-md"
                             >
                               <div className="overflow-hidden">
-                                <span className="float-left rounded bg-slate-100 px-2 py-0.5 font-mono text-xs font-bold text-slate-500 dark:bg-slate-900 dark:text-slate-400">
+                                <span className="float-left rounded bg-slate-100 px-2 py-0.5 font-mono text-xs font-bold text-slate-500">
                                   {formatNumber(basin.total_trees)}
                                 </span>
-                                <div className="mb-1 flex items-center gap-1.5 text-sm font-extrabold text-slate-950 dark:text-slate-50">
+                                <div className="mb-1 flex items-center gap-1.5 text-sm font-extrabold text-slate-900">
                                   <span
                                     className="h-2 w-2 rounded-sm"
                                     style={{ background: theme.border }}
                                   />
                                   {basin.name}
                                 </div>
-                                <div className="text-xs font-semibold text-slate-500 dark:text-slate-400">
+                                <div className="text-xs font-semibold text-slate-500">
                                   {formatNumber(basin.length, 2)}×{formatNumber(basin.width, 2)}م
                                 </div>
                               </div>
@@ -511,7 +519,7 @@ function VarietyCards({
 }) {
   if (!sizes.length) {
     return (
-      <div className="rounded-2xl border border-slate-100 bg-white p-8 text-center shadow-sm dark:border-slate-800 dark:bg-slate-950">
+      <div className="rounded-2xl border border-slate-100 bg-white p-8 text-center shadow-sm">
         <Sprout className="mx-auto h-10 w-10 text-slate-300" />
         <p className="mt-3 text-sm font-bold text-slate-500">لا توجد أشجار مسجلة حاليا.</p>
       </div>
@@ -523,11 +531,11 @@ function VarietyCards({
       {sizes.map((size) => (
         <div
           key={`${size.variety_id}-${size.pot_size ?? 'empty'}`}
-          className="rounded-2xl border border-slate-100 bg-white p-4 shadow-sm dark:border-slate-800 dark:bg-slate-950"
+          className="rounded-2xl border border-slate-100 bg-white p-4 shadow-sm"
         >
           <div className="flex items-start justify-between gap-3">
             <div>
-              <h3 className="text-base font-bold text-slate-950 dark:text-slate-50">
+              <h3 className="text-base font-bold text-slate-900">
                 {size.variety_name}
               </h3>
               <p className="mt-1 text-xs font-bold text-slate-500">
@@ -544,27 +552,27 @@ function VarietyCards({
             </button>
           </div>
           <div className="mt-4 grid grid-cols-2 gap-3">
-            <div className="rounded-xl bg-slate-50 p-3 dark:bg-slate-900">
+            <div className="rounded-xl bg-slate-50 p-3">
               <div className="text-xs font-bold text-slate-500">الكمية</div>
               <div className="mt-1 font-mono text-lg font-bold text-emerald-700 dark:text-emerald-300">
                 {formatNumber(size.total_quantity)}
               </div>
             </div>
-            <div className="rounded-xl bg-slate-50 p-3 dark:bg-slate-900">
+            <div className="rounded-xl bg-slate-50 p-3">
               <div className="text-xs font-bold text-slate-500">قيمة المراكن</div>
-              <div className="mt-1 font-mono text-lg font-bold text-[#c2410c] dark:text-orange-300">
+              <div className="mt-1 font-mono text-lg font-bold text-terracotta">
                 {formatNumber(size.pot_total_value, 2)}
               </div>
             </div>
-            <div className="rounded-xl bg-slate-50 p-3 dark:bg-slate-900">
+            <div className="rounded-xl bg-slate-50 p-3">
               <div className="text-xs font-bold text-slate-500">متوسط الطول</div>
-              <div className="mt-1 font-mono text-sm font-bold text-slate-900 dark:text-slate-100">
+              <div className="mt-1 font-mono text-sm font-bold text-slate-900">
                 {formatNumber(size.avg_height, 2)} م
               </div>
             </div>
-            <div className="rounded-xl bg-slate-50 p-3 dark:bg-slate-900">
+            <div className="rounded-xl bg-slate-50 p-3">
               <div className="text-xs font-bold text-slate-500">متوسط السماكة</div>
-              <div className="mt-1 font-mono text-sm font-bold text-slate-900 dark:text-slate-100">
+              <div className="mt-1 font-mono text-sm font-bold text-slate-900">
                 {formatNumber(size.avg_thickness, 2)} بوصة
               </div>
             </div>
@@ -584,12 +592,12 @@ function LegacyHierarchyList({ hierarchy }: { hierarchy: NurseryManageHierarchyN
 
   if (!hierarchy.length) {
     return (
-      <div className="rounded-2xl border border-slate-100 bg-white p-8 text-center shadow-sm dark:border-slate-800 dark:bg-slate-950">
+      <div className="rounded-2xl border border-slate-100 bg-white p-8 text-center shadow-sm">
         <Layers3 className="mx-auto h-10 w-10 text-slate-300" />
         <p className="mt-3 text-sm font-bold text-slate-500">لا توجد بيانات لعرضها حاليا.</p>
         <a
           href="/nursery/locations"
-          className="mt-4 inline-flex min-h-11 items-center justify-center rounded-xl bg-[#c2410c] px-4 py-2 text-sm font-bold text-white transition-all active:scale-[0.98] hover:bg-[#9a3412]"
+          className="mt-4 inline-flex min-h-11 items-center justify-center rounded-xl bg-terracotta px-4 py-2 text-sm font-bold text-white transition-all active:scale-[0.98] hover:bg-terracotta-hover"
         >
           إعداد هيكل المشتل
         </a>
@@ -606,18 +614,18 @@ function LegacyHierarchyList({ hierarchy }: { hierarchy: NurseryManageHierarchyN
         return (
           <div
             key={nursery.id}
-            className="overflow-hidden rounded-2xl border border-slate-100 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-950"
+            className="overflow-hidden rounded-2xl border border-slate-100 bg-white shadow-sm"
           >
             <button
               type="button"
               onClick={() => toggle(nurseryKey)}
-              className="flex w-full flex-wrap items-center gap-3 border-b border-slate-100 bg-slate-50 px-4 py-3 text-right transition-all active:scale-[0.99] dark:border-slate-800 dark:bg-slate-900"
+              className="flex w-full flex-wrap items-center gap-3 border-b border-slate-100 bg-slate-50 px-4 py-3 text-right transition-all active:scale-[0.99]"
             >
               <ChevronLeft
-                className={`h-4 w-4 text-slate-400 transition-transform ${nurseryOpen ? '-rotate-90' : ''}`}
+                className={`h-4 w-4 text-slate-400 transition-transform ${nurseryOpen ?'-rotate-90':''}`}
               />
-              <Warehouse className="h-5 w-5 text-[#c2410c]" />
-              <span className="text-sm font-bold text-slate-950 dark:text-slate-50">
+              <Warehouse className="h-5 w-5 text-terracotta" />
+              <span className="text-sm font-bold text-slate-900">
                 {nursery.name}
               </span>
               <span className="rounded-xl bg-emerald-600 px-2.5 py-1 text-xs font-bold text-white">
@@ -626,7 +634,7 @@ function LegacyHierarchyList({ hierarchy }: { hierarchy: NurseryManageHierarchyN
               <a
                 href={`/nursery/lines?nursery_id=${nursery.id}`}
                 onClick={(event) => event.stopPropagation()}
-                className="mr-auto inline-flex min-h-8 items-center justify-center gap-1 rounded-lg border border-slate-100 bg-white px-3 py-1 text-xs font-bold text-slate-700 transition-all active:scale-[0.98] dark:border-slate-800 dark:bg-slate-950 dark:text-slate-200"
+                className="mr-auto inline-flex min-h-8 items-center justify-center gap-1 rounded-lg border border-slate-100 bg-white px-3 py-1 text-xs font-bold text-slate-700 transition-all active:scale-[0.98]"
               >
                 عرض الخطوط
               </a>
@@ -639,14 +647,14 @@ function LegacyHierarchyList({ hierarchy }: { hierarchy: NurseryManageHierarchyN
                   const locationOpen = Boolean(open[locationKey])
 
                   return (
-                    <div key={location.id} className="border-b border-slate-100 pb-4 last:border-b-0 last:pb-0 dark:border-slate-800">
+                    <div key={location.id} className="border-b border-slate-100 pb-4 last:border-b-0 last:pb-0">
                       <button
                         type="button"
                         onClick={() => toggle(locationKey)}
                         className="flex w-full flex-wrap items-center gap-2 rounded-xl px-3 py-2 text-right text-sky-700 transition-all active:scale-[0.99] hover:bg-sky-50 dark:text-sky-300 dark:hover:bg-sky-950/30"
                       >
                         <ChevronLeft
-                          className={`h-4 w-4 transition-transform ${locationOpen ? '-rotate-90' : ''}`}
+                          className={`h-4 w-4 transition-transform ${locationOpen ?'-rotate-90':''}`}
                         />
                         <MapPin className="h-4 w-4" />
                         <span className="text-sm font-bold">{location.name}</span>
@@ -656,7 +664,7 @@ function LegacyHierarchyList({ hierarchy }: { hierarchy: NurseryManageHierarchyN
                         <a
                           href={`/nursery/lines?location_id=${location.id}`}
                           onClick={(event) => event.stopPropagation()}
-                          className="mr-auto inline-flex min-h-8 items-center justify-center rounded-lg border border-slate-100 bg-white px-3 py-1 text-xs font-bold text-slate-700 transition-all active:scale-[0.98] dark:border-slate-800 dark:bg-slate-950 dark:text-slate-200"
+                          className="mr-auto inline-flex min-h-8 items-center justify-center rounded-lg border border-slate-100 bg-white px-3 py-1 text-xs font-bold text-slate-700 transition-all active:scale-[0.98]"
                         >
                           عرض الخطوط
                         </a>
@@ -671,7 +679,7 @@ function LegacyHierarchyList({ hierarchy }: { hierarchy: NurseryManageHierarchyN
                             return (
                               <div
                                 key={section.id}
-                                className="rounded-xl border border-slate-100 bg-slate-50 p-3 dark:border-slate-800 dark:bg-slate-900"
+                                className="rounded-xl border border-slate-100 bg-slate-50 p-3"
                               >
                                 <button
                                   type="button"
@@ -679,28 +687,28 @@ function LegacyHierarchyList({ hierarchy }: { hierarchy: NurseryManageHierarchyN
                                   className="flex w-full flex-wrap items-center gap-2 text-right transition-all active:scale-[0.99]"
                                 >
                                   <ChevronLeft
-                                    className={`h-4 w-4 text-slate-400 transition-transform ${sectionOpen ? '-rotate-90' : ''}`}
+                                    className={`h-4 w-4 text-slate-400 transition-transform ${sectionOpen ?'-rotate-90':''}`}
                                   />
                                   <Layers3 className="h-4 w-4 text-slate-500" />
-                                  <span className="text-sm font-bold text-slate-700 dark:text-slate-200">
+                                  <span className="text-sm font-bold text-slate-700">
                                     {section.name}
                                   </span>
-                                  <span className="rounded-lg border border-slate-100 bg-white px-2 py-1 text-xs font-bold text-slate-500 dark:border-slate-800 dark:bg-slate-950">
+                                  <span className="rounded-lg border border-slate-100 bg-white px-2 py-1 text-xs font-bold text-slate-500">
                                     {formatNumber(section.total_trees)}
                                   </span>
                                   <a
                                     href={`/nursery/lines?section_id=${section.id}`}
                                     onClick={(event) => event.stopPropagation()}
-                                    className="mr-auto inline-flex min-h-8 items-center justify-center rounded-lg border border-slate-100 bg-white px-3 py-1 text-xs font-bold text-slate-700 transition-all active:scale-[0.98] dark:border-slate-800 dark:bg-slate-950 dark:text-slate-200"
+                                    className="mr-auto inline-flex min-h-8 items-center justify-center rounded-lg border border-slate-100 bg-white px-3 py-1 text-xs font-bold text-slate-700 transition-all active:scale-[0.98]"
                                   >
                                     عرض الخطوط
                                   </a>
                                 </button>
 
                                 {sectionOpen ? (
-                                  <div className="mt-3 overflow-x-auto rounded-xl border border-slate-100 bg-white dark:border-slate-800 dark:bg-slate-950">
+                                  <div className="mt-3 overflow-x-auto rounded-xl border border-slate-100 bg-white">
                                     <table className="min-w-full divide-y divide-slate-100 text-right dark:divide-slate-800">
-                                      <thead className="bg-slate-50 dark:bg-slate-900">
+                                      <thead className="bg-slate-50">
                                         <tr>
                                           <th className="px-4 py-3 text-xs font-bold text-slate-500">الحوض</th>
                                           <th className="px-4 py-3 text-xs font-bold text-slate-500">الأبعاد</th>
@@ -711,17 +719,17 @@ function LegacyHierarchyList({ hierarchy }: { hierarchy: NurseryManageHierarchyN
                                       </thead>
                                       <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
                                         {section.basins.map((basin) => (
-                                          <tr key={basin.id} className="hover:bg-slate-50 dark:hover:bg-slate-900">
-                                            <td className="px-4 py-3 text-sm font-bold text-slate-950 dark:text-slate-50">
+                                          <tr key={basin.id} className="hover:bg-slate-50">
+                                            <td className="px-4 py-3 text-sm font-bold text-slate-900">
                                               {basin.name}
                                             </td>
-                                            <td className="px-4 py-3 text-sm font-semibold text-slate-600 dark:text-slate-300">
+                                            <td className="px-4 py-3 text-sm font-semibold text-slate-600">
                                               {formatNumber(basin.length, 2)}م x {formatNumber(basin.width, 2)}م
                                             </td>
                                             <td className="px-4 py-3 font-mono text-sm font-bold text-emerald-700 dark:text-emerald-300">
                                               {formatNumber(basin.total_trees)}
                                             </td>
-                                            <td className="px-4 py-3 text-sm font-semibold text-slate-600 dark:text-slate-300">
+                                            <td className="px-4 py-3 text-sm font-semibold text-slate-600">
                                               {basin.irrigation_method || '-'}
                                             </td>
                                             <td className="px-4 py-3">
@@ -771,7 +779,7 @@ function CycleTable({
 }) {
   if (!cycles.length) {
     return (
-      <div className="rounded-2xl border border-slate-100 bg-white p-8 text-center shadow-sm dark:border-slate-800 dark:bg-slate-950">
+      <div className="rounded-2xl border border-slate-100 bg-white p-8 text-center shadow-sm">
         <CalendarDays className="mx-auto h-10 w-10 text-slate-300" />
         <p className="mt-3 text-sm font-bold text-slate-500">لا توجد دورات إنتاج مطابقة.</p>
       </div>
@@ -779,10 +787,10 @@ function CycleTable({
   }
 
   return (
-    <div className="overflow-hidden rounded-2xl border border-slate-100 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-950">
+    <div className="overflow-hidden rounded-2xl border border-slate-100 bg-white shadow-sm">
       <div className="hidden overflow-x-auto lg:block">
         <table className="min-w-full divide-y divide-slate-100 text-right dark:divide-slate-800">
-          <thead className="bg-slate-50 dark:bg-slate-900">
+          <thead className="bg-slate-50">
             <tr>
               {['الدورة', 'الصنف', 'المكان', 'الإكثار', 'العدد', 'المركن', 'التواريخ', 'الحالة', 'تتبع', 'إجراءات'].map((heading) => (
                 <th key={heading} className="px-4 py-3 text-xs font-bold text-slate-500">
@@ -793,9 +801,9 @@ function CycleTable({
           </thead>
           <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
             {cycles.map((cycle) => (
-              <tr key={cycle.id} className="hover:bg-slate-50/70 dark:hover:bg-slate-900/70">
+              <tr key={cycle.id} className="hover:bg-slate-50/70 /70">
                 <td className="px-4 py-3">
-                  <div className="font-bold text-slate-950 dark:text-slate-50">{cycle.name}</div>
+                  <div className="font-bold text-slate-900">{cycle.name}</div>
                   <div className="text-xs font-semibold text-slate-500">{cycle.source || '-'}</div>
                 </td>
                 <td className="px-4 py-3 text-sm font-semibold">{cycle.variety_name || '-'}</td>
@@ -820,7 +828,7 @@ function CycleTable({
                 </td>
                 <td className="px-4 py-3">
                   <div className="flex flex-wrap gap-2">
-                    <button className="rounded-lg border border-slate-100 p-2 text-slate-600 transition-all active:scale-[0.98] dark:border-slate-800 dark:text-slate-300" onClick={() => onEdit(cycle)} aria-label="تعديل">
+                    <button className="rounded-lg border border-slate-100 p-2 text-slate-600 transition-all active:scale-[0.98]" onClick={() => onEdit(cycle)} aria-label="تعديل">
                       <Edit3 className="h-4 w-4" />
                     </button>
                     <button className="rounded-lg border border-emerald-100 bg-emerald-50 p-2 text-emerald-700 transition-all active:scale-[0.98] dark:border-emerald-900 dark:bg-emerald-950/40 dark:text-emerald-300" onClick={() => onTransfer(cycle)} aria-label="نقل">
@@ -845,7 +853,7 @@ function CycleTable({
           <div key={cycle.id} className="p-4">
             <div className="flex items-start justify-between gap-3">
               <div>
-                <h3 className="text-sm font-bold text-slate-950 dark:text-slate-50">{cycle.name}</h3>
+                <h3 className="text-sm font-bold text-slate-900">{cycle.name}</h3>
                 <p className="mt-1 text-xs font-semibold text-slate-500">{cycle.variety_name || '-'}</p>
               </div>
               <StatusBadge status={cycle.status} />
@@ -932,18 +940,18 @@ function CycleDialog({
     <AppDialog open={open} onClose={onClose} panelClassName="max-w-3xl">
       <form
         onSubmit={form.handleSubmit(submit)}
-        className="rounded-2xl border border-slate-100 bg-white p-5 shadow-xl dark:border-slate-800 dark:bg-slate-950"
+        className="rounded-2xl border border-slate-100 bg-white p-5 shadow-xl"
       >
         <div className="mb-5 flex items-center justify-between gap-3">
           <div>
-            <h2 className="text-xl font-bold text-slate-950 dark:text-slate-50">
+            <h2 className="text-xl font-bold text-slate-900">
               {cycle ? 'تعديل دورة إنتاج' : 'إضافة دورة إنتاج'}
             </h2>
             <p className="mt-1 text-sm font-semibold text-slate-500">
               الحقول مطابقة لنموذج إضافة دورة الإنتاج في النظام القديم.
             </p>
           </div>
-          <Sprout className="h-6 w-6 text-[#c2410c]" />
+          <Sprout className="h-6 w-6 text-terracotta" />
         </div>
 
         <div className="grid gap-4 md:grid-cols-2">
@@ -1070,11 +1078,11 @@ function TransferDialog({
     <AppDialog open={open} onClose={onClose} panelClassName="max-w-5xl">
       <form
         onSubmit={form.handleSubmit((values) => mutation.mutate(values))}
-        className="max-h-[90vh] overflow-y-auto rounded-2xl border border-slate-100 bg-white p-5 shadow-xl dark:border-slate-800 dark:bg-slate-950"
+        className="max-h-[90vh] overflow-y-auto rounded-2xl border border-slate-100 bg-white p-5 shadow-xl"
       >
         <div className="mb-5 flex items-start justify-between gap-3">
           <div>
-            <h2 className="text-xl font-bold text-slate-950 dark:text-slate-50">نقل دورة الإنتاج</h2>
+            <h2 className="text-xl font-bold text-slate-900">نقل دورة الإنتاج</h2>
             <p className="mt-1 text-sm font-semibold text-slate-500">
               {cycle?.name || '-'}، من أصل {formatNumber(cycle?.count)} شتلة.
             </p>
@@ -1085,15 +1093,15 @@ function TransferDialog({
         <div className="grid gap-4 md:grid-cols-4">
           <TextField label="عدد الشتلات الناجحة" type="number" min={0} max={cycle?.count ?? undefined} {...form.register('successful_count')} error={form.formState.errors.successful_count?.message} />
           <TextField label="تاريخ النقل" type="date" {...form.register('transfer_date')} />
-          <div className="rounded-xl bg-slate-50 p-3 dark:bg-slate-900">
+          <div className="rounded-xl bg-slate-50 p-3">
             <div className="text-xs font-bold text-slate-500">نسبة الإنبات</div>
             <div className="mt-1 font-mono text-lg font-bold text-emerald-700 dark:text-emerald-300">
               {formatNumber(germinationRate, 2)}%
             </div>
           </div>
-          <div className="rounded-xl bg-slate-50 p-3 dark:bg-slate-900">
+          <div className="rounded-xl bg-slate-50 p-3">
             <div className="text-xs font-bold text-slate-500">المتبقي للتوزيع</div>
-            <div className="mt-1 font-mono text-lg font-bold text-[#c2410c] dark:text-orange-300">
+            <div className="mt-1 font-mono text-lg font-bold text-terracotta">
               {formatNumber(remaining)}
             </div>
           </div>
@@ -1107,9 +1115,9 @@ function TransferDialog({
             const basins: NurseryManageBasinOption[] = options?.basins.filter((item) => item.section_id === Number(line?.section_id)) ?? []
 
             return (
-              <div key={field.id} className="rounded-2xl border border-slate-100 bg-slate-50 p-4 dark:border-slate-800 dark:bg-slate-900">
+              <div key={field.id} className="rounded-2xl border border-slate-100 bg-slate-50 p-4">
                 <div className="mb-4 flex items-center justify-between">
-                  <h3 className="text-sm font-bold text-slate-950 dark:text-slate-50">خط #{index + 1}</h3>
+                  <h3 className="text-sm font-bold text-slate-900">خط #{index + 1}</h3>
                   {fields.length > 1 ? (
                     <button
                       type="button"
@@ -1173,7 +1181,7 @@ function TransferDialog({
         </div>
 
         <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
-          <label className="flex items-center gap-2 text-sm font-bold text-slate-600 dark:text-slate-300">
+          <label className="flex items-center gap-2 text-sm font-bold text-slate-600">
             <input type="checkbox" className="h-4 w-4 rounded border-slate-300" {...form.register('mark_remaining_failed')} />
             تحويل الكمية المتبقية إلى غير ناجح
           </label>
@@ -1267,10 +1275,10 @@ function ProcedureDialog({
     <AppDialog open={open} onClose={onClose} panelClassName="max-w-2xl">
       <form
         onSubmit={form.handleSubmit((values) => mutation.mutate(values))}
-        className="rounded-2xl border border-slate-100 bg-white p-5 shadow-xl dark:border-slate-800 dark:bg-slate-950"
+        className="rounded-2xl border border-slate-100 bg-white p-5 shadow-xl"
       >
         <div className="mb-5">
-          <h2 className="text-xl font-bold text-slate-950 dark:text-slate-50">تسجيل إجراء دورة إنتاج</h2>
+          <h2 className="text-xl font-bold text-slate-900">تسجيل إجراء دورة إنتاج</h2>
           <p className="mt-1 text-sm font-semibold text-slate-500">{cycle?.name || '-'}</p>
         </div>
 
@@ -1336,10 +1344,10 @@ function LocationsDialog({
 
   return (
     <AppDialog open={Boolean(size)} onClose={onClose} panelClassName="max-w-2xl">
-      <div className="rounded-2xl border border-slate-100 bg-white p-5 shadow-xl dark:border-slate-800 dark:bg-slate-950">
+      <div className="rounded-2xl border border-slate-100 bg-white p-5 shadow-xl">
         <div className="mb-5 flex items-center justify-between">
           <div>
-            <h2 className="text-xl font-bold text-slate-950 dark:text-slate-50">تفاصيل المواقع</h2>
+            <h2 className="text-xl font-bold text-slate-900">تفاصيل المواقع</h2>
             <p className="mt-1 text-sm font-semibold text-slate-500">
               {size?.variety_name}، مقاس {size?.pot_size || '-'}
             </p>
@@ -1350,7 +1358,7 @@ function LocationsDialog({
         {query.isLoading ? (
           <div className="space-y-2">
             {[0, 1, 2].map((item) => (
-              <div key={item} className="h-14 animate-pulse rounded-xl bg-slate-100 dark:bg-slate-900" />
+              <div key={item} className="h-14 animate-pulse rounded-xl bg-slate-100" />
             ))}
           </div>
         ) : rows.length ? (
@@ -1358,7 +1366,7 @@ function LocationsDialog({
             {rows.map((row) => (
               <div key={`${row.basin_id}-${row.quantity}`} className="flex items-center justify-between gap-3 py-3">
                 <div>
-                  <div className="text-sm font-bold text-slate-950 dark:text-slate-50">{row.basin_name}</div>
+                  <div className="text-sm font-bold text-slate-900">{row.basin_name}</div>
                   <div className="mt-1 text-xs font-semibold text-slate-500">
                     {row.nursery_name} / {row.location_name} / {row.section_name}
                   </div>
@@ -1370,7 +1378,7 @@ function LocationsDialog({
             ))}
           </div>
         ) : (
-          <p className="rounded-xl bg-slate-50 p-4 text-center text-sm font-bold text-slate-500 dark:bg-slate-900">
+          <p className="rounded-xl bg-slate-50 p-4 text-center text-sm font-bold text-slate-500">
             لا توجد بيانات.
           </p>
         )}
@@ -1405,28 +1413,28 @@ export default function NurseryManagePage() {
   })
 
   return (
-    <main dir="rtl" className="min-h-screen w-full bg-[#f8fafc] px-3 py-6 text-slate-900 dark:bg-slate-950 dark:text-slate-100 sm:px-4 lg:px-6">
+    <main dir="rtl" className="min-h-screen w-full bg-slate-50 px-3 py-6 text-slate-900 sm:px-4 lg:px-6">
       <div className="w-full max-w-none space-y-6">
-        <header className="rounded-2xl border border-slate-100 bg-white p-5 shadow-sm dark:border-slate-800 dark:bg-slate-950">
+        <header className="rounded-2xl border border-slate-100 bg-white p-5 shadow-sm">
           <div className="flex flex-wrap items-center justify-between gap-4">
             <div>
-              <div className="mb-2 inline-flex items-center gap-2 rounded-xl bg-orange-50 px-3 py-1 text-xs font-bold text-[#c2410c] dark:bg-orange-950/40 dark:text-orange-300">
+              <div className="mb-2 inline-flex items-center gap-2 rounded-xl bg-orange-50 px-3 py-1 text-xs font-bold text-terracotta">
                 <Sprout className="h-4 w-4" />
                 إدارة المشتل
               </div>
-              <h1 className="text-2xl font-bold text-slate-950 dark:text-slate-50">إدارة المشتل</h1>
+              <h1 className="text-2xl font-bold text-slate-900">إدارة المشتل</h1>
               <p className="mt-1 text-sm font-semibold text-slate-500">
                 عرض هيكل المشتل بالكامل بطريقة تفاعلية.
               </p>
             </div>
             <div className="flex flex-wrap gap-3">
               <Button type="button" tone="neutral" onClick={() => refetch()}>
-                <RefreshCw className={`h-4 w-4 ${isFetching ? 'animate-spin' : ''}`} />
+                <RefreshCw className={`h-4 w-4 ${isFetching ?'animate-spin':''}`} />
                 تحديث
               </Button>
               <a
                 href="/nursery/locations"
-                className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-[#c2410c] px-4 py-2 text-sm font-bold text-white transition-all active:scale-[0.98] hover:bg-[#9a3412]"
+                className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-terracotta px-4 py-2 text-sm font-bold text-white transition-all active:scale-[0.98] hover:bg-terracotta-hover"
               >
                 <Layers3 className="h-4 w-4" />
                 إدارة الهيكل
@@ -1444,14 +1452,14 @@ export default function NurseryManagePage() {
         {isLoading ? (
           <div className="grid gap-4 md:grid-cols-3">
             {[0, 1, 2, 3, 4, 5].map((item) => (
-              <div key={item} className="h-24 animate-pulse rounded-2xl bg-white dark:bg-slate-900" />
+              <div key={item} className="h-24 animate-pulse rounded-2xl bg-white" />
             ))}
           </div>
         ) : payload ? (
           <>
             <section className="space-y-3">
-              <h2 className="flex items-center gap-2 text-lg font-bold text-slate-950 dark:text-slate-50">
-                <Activity className="h-5 w-5 text-[#c2410c]" />
+              <h2 className="flex items-center gap-2 text-lg font-bold text-slate-900">
+                <Activity className="h-5 w-5 text-terracotta" />
                 الإجماليات الكلية
               </h2>
               <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-6">
@@ -1466,8 +1474,8 @@ export default function NurseryManagePage() {
 
             <section className="space-y-3">
               <div className="flex items-center justify-between">
-                <h2 className="flex items-center gap-2 text-lg font-bold text-slate-950 dark:text-slate-50">
-                  <Layers3 className="h-5 w-5 text-[#c2410c]" />
+                <h2 className="flex items-center gap-2 text-lg font-bold text-slate-900">
+                  <Layers3 className="h-5 w-5 text-terracotta" />
                   لوحة التحكم بالأحواض
                 </h2>
               </div>
@@ -1475,16 +1483,16 @@ export default function NurseryManagePage() {
             </section>
 
             <section className="space-y-3">
-              <h2 className="flex items-center gap-2 text-lg font-bold text-slate-950 dark:text-slate-50">
-                <Sprout className="h-5 w-5 text-[#c2410c]" />
+              <h2 className="flex items-center gap-2 text-lg font-bold text-slate-900">
+                <Sprout className="h-5 w-5 text-terracotta" />
                 إحصائيات الأصناف حسب مقاس المركن
               </h2>
               <VarietyCards sizes={varietySizes} onShowLocations={setLocationSize} />
             </section>
 
             <section className="space-y-3">
-              <h2 className="flex items-center gap-2 text-lg font-bold text-slate-950 dark:text-slate-50">
-                <Layers3 className="h-5 w-5 text-[#c2410c]" />
+              <h2 className="flex items-center gap-2 text-lg font-bold text-slate-900">
+                <Layers3 className="h-5 w-5 text-terracotta" />
                 هيكل المشتل والأحواض
               </h2>
               <LegacyHierarchyList hierarchy={payload.hierarchy} />

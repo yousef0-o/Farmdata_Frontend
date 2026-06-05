@@ -1,167 +1,271 @@
 'use client'
 
-import React from 'react'
-import { Bird, Building2, Egg, TrendingUp, ArrowLeftRight, Warehouse, PlusCircle, AlertCircle, RefreshCw } from 'lucide-react'
-import { useDashboardStats } from '@/lib/hooks/useDashboard'
-import { StatCard } from '@/components/dashboard/StatCard'
-import { ActiveFlocksTable } from '@/components/dashboard/ActiveFlocksTable'
-import { StatCardSkeleton } from '@/components/ui/Skeleton'
-import Link from 'next/link'
+import React, { useMemo, useState } from 'react'
+import { Filter, RefreshCw } from 'lucide-react'
+import { useQuery } from '@tanstack/react-query'
+import { CriticalAlertStrip } from '@/components/dashboard/CriticalAlertStrip'
+import { TodaySummaryRow } from '@/components/dashboard/TodaySummaryRow'
+import { FlockWatchlistTable } from '@/components/dashboard/FlockWatchlistTable'
+import { DashboardTrendsSection } from '@/components/dashboard/DashboardTrendsSection'
+import { FeedRunwayWidget } from '@/components/dashboard/FeedRunwayWidget'
+import { BarnOccupancyWidget } from '@/components/dashboard/BarnOccupancyWidget'
+import { LifecycleEventsWidget } from '@/components/dashboard/LifecycleEventsWidget'
+import { EggDistributionWidget } from '@/components/dashboard/EggDistributionWidget'
+import { useMorningSummary } from '@/lib/hooks/useMorningSummary'
+import { useFlocks } from '@/lib/hooks/useFlock'
+import { useFlockAnalytics } from '@/lib/hooks/useFlockAnalytics'
+import { organizationApi } from '@/lib/api/organization'
+import type { AnalyticsScopeLevel } from '@/lib/types'
+import type { MorningSummaryFilters } from '@/types/morningSummary'
+
+type ScopeKind = Exclude<AnalyticsScopeLevel, 'flock'>
+
+function todayDate() {
+  return new Date().toISOString().slice(0, 10)
+}
+
+function numberOrUndefined(value: string) {
+  const parsed = Number(value)
+  return Number.isFinite(parsed) && parsed > 0 ? parsed : undefined
+}
+
+function activeScope(filters: MorningSummaryFilters): {
+  level?: ScopeKind
+  id?: number
+} {
+  if (filters.barn_id) return { level: 'barn', id: filters.barn_id }
+  if (filters.section_id) return { level: 'section', id: filters.section_id }
+  if (filters.project_id) return { level: 'project', id: filters.project_id }
+  if (filters.company_id) return { level: 'company', id: filters.company_id }
+  return {}
+}
+
+function scopeLabel(level?: ScopeKind) {
+  if (level === 'company') return 'شركة'
+  if (level === 'project') return 'مشروع'
+  if (level === 'section') return 'قسم'
+  if (level === 'barn') return 'عنبر'
+  return 'كل النطاق'
+}
 
 export default function DashboardPage() {
-  const { data: stats, isLoading, isError, refetch } = useDashboardStats()
-
-  const currentTimeArabic = new Date().toLocaleDateString('ar-EG', {
-    weekday: 'long',
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric',
-    hour: 'numeric',
-    minute: 'numeric',
+  const [filters, setFilters] = useState<MorningSummaryFilters>({
+    date: todayDate(),
   })
 
-  if (isError) {
-    return (
-      <div className="flex flex-col items-center justify-center py-20 bg-white rounded-3xl border border-red-100 shadow-sm space-y-4" dir="rtl">
-        <div className="p-4 bg-red-50 text-red-600 rounded-full">
-          <AlertCircle className="w-10 h-10" />
-        </div>
-        <h3 className="text-xl font-bold text-gray-800">تعذر تحميل البيانات</h3>
-        <p className="text-gray-500 text-sm">يرجى التحقق من الاتصال بالخادم والمحاولة مرة أخرى.</p>
-        <button
-          onClick={() => refetch()}
-          className="flex items-center gap-2 bg-farm-blue hover:bg-blue-800 text-white px-6 py-2.5 rounded-xl transition-colors font-semibold shadow-sm"
-        >
-          <RefreshCw className="w-4 h-4" />
-          <span>إعادة المحاولة</span>
-        </button>
-      </div>
-    )
+  const morningSummary = useMorningSummary(filters)
+  const activeFlocks = useFlocks('active', 1)
+  const scope = activeScope(filters)
+
+  const analyticsParams = useMemo(() => ({
+    company_id: scope.level === 'company' ? scope.id : undefined,
+    project_id: scope.level === 'project' ? scope.id : undefined,
+    section_id: scope.level === 'section' ? scope.id : undefined,
+    barn_id: scope.level === 'barn' ? scope.id : undefined,
+    date_to: filters.date,
+    aggregation: 'daily' as const,
+    axis: 'date' as const,
+    active_flocks_only: true,
+  }), [filters.date, scope.id, scope.level])
+
+  const analytics = useFlockAnalytics(analyticsParams)
+
+  const companies = useQuery({
+    queryKey: ['dashboard-filter-companies'],
+    queryFn: organizationApi.listCompanies,
+  })
+
+  const projects = useQuery({
+    queryKey: ['dashboard-filter-projects'],
+    queryFn: organizationApi.listProjects,
+  })
+
+  const selectedCompany = companies.data?.data.find((company) => company.id === filters.company_id)
+  const selectedProject = projects.data?.data.find((project) => project.id === filters.project_id)
+  const sections =
+    selectedProject?.sections ??
+    selectedCompany?.projects?.flatMap((project) => project.sections ?? []) ??
+    []
+  const selectedSection = sections.find((section) => section.id === filters.section_id)
+  const barns =
+    selectedSection?.barns ??
+    sections.flatMap((section) => section.barns ?? [])
+
+  const handleFilterChange = (key: keyof MorningSummaryFilters, value: string) => {
+    setFilters((current) => {
+      const next: MorningSummaryFilters = { ...current }
+
+      if (key === 'date') {
+        next.date = value || todayDate()
+        return next
+      }
+
+      const parsed = numberOrUndefined(value)
+      if (parsed) next[key] = parsed
+      else delete next[key]
+
+      if (key === 'company_id') {
+        delete next.project_id
+        delete next.section_id
+        delete next.barn_id
+      }
+      if (key === 'project_id') {
+        delete next.section_id
+        delete next.barn_id
+      }
+      if (key === 'section_id') {
+        delete next.barn_id
+      }
+
+      return next
+    })
   }
 
+  const clearFilters = () => setFilters({ date: todayDate() })
+
   return (
-    <div className="space-y-8" dir="rtl">
-      {/* Row 1 — Page Header */}
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-        <div>
-          <h1 className="text-2xl font-bold text-dash-heading">لوحة التحكم</h1>
-          <p className="text-sm text-gray-500 mt-1">
-            مرحباً بك في نظام إدارة مزارع الدواجن
-          </p>
-        </div>
-        <div className="text-xs text-gray-400 font-medium bg-gray-50 border border-gray-100 px-3 py-1.5 rounded-lg flex items-center gap-2">
-          <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-ping" />
-          <span>آخر تحديث: {currentTimeArabic}</span>
-        </div>
-      </div>
+    <div className="space-y-6" dir="rtl">
+      <section className="rounded-2xl border border-line bg-surface p-5 shadow-sm">
+        <div className="flex flex-col gap-5 xl:flex-row xl:items-end xl:justify-between">
+          <div>
+            <p className="text-xs font-bold text-ink-muted">Morning Command</p>
+            <h1 className="mt-1 text-2xl font-bold text-dash-heading">لوحة قيادة الصباح</h1>
+            <p className="mt-1 text-sm text-ink-muted">
+              نطاق العرض: {scopeLabel(scope.level)}
+              {scope.id ? ` #${scope.id}` : ''}
+            </p>
+          </div>
 
-      {/* Row 2 — KPI Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-        {isLoading ? (
-          <>
-            <StatCardSkeleton />
-            <StatCardSkeleton />
-            <StatCardSkeleton />
-            <StatCardSkeleton />
-          </>
-        ) : (
-          <>
-            <StatCard
-              title="الأفواج النشطة"
-              value={stats?.activeFlockCount ?? 0}
-              subtitle="فوج نشط حالياً"
-              icon={<Bird className="w-6 h-6 text-green-600" />}
-            />
-            <StatCard
-              title="إجمالي الشركات"
-              value={stats?.totalCompanies ?? 0}
-              subtitle="شركة مسجلة"
-              icon={<Building2 className="w-6 h-6 text-blue-600" />}
-            />
-            <StatCard
-              title="إجمالي البيض اليوم"
-              value="—"
-              subtitle="سيتوفر قريباً"
-              icon={<Egg className="w-6 h-6 text-amber-500" />}
-            />
-            <StatCard
-              title="متوسط معدل الإنتاج"
-              value="—"
-              subtitle="سيتوفر قريباً"
-              icon={<TrendingUp className="w-6 h-6 text-purple-600" />}
-            />
-          </>
-        )}
-      </div>
+          <div className="grid grid-cols-1 gap-3 md:grid-cols-3 xl:grid-cols-6">
+            <label className="space-y-1">
+              <span className="text-xs font-bold text-ink-muted">التاريخ</span>
+              <input
+                type="date"
+                value={filters.date ?? todayDate()}
+                onChange={(event) => handleFilterChange('date', event.target.value)}
+                className="h-10 w-full rounded-xl border border-line bg-surface px-3 text-sm text-ink outline-none transition-colors focus:border-action-primary"
+              />
+            </label>
 
-      {/* Row 3 — Active Flocks Table */}
-      <div className="space-y-4">
-        <div className="flex justify-between items-center">
-          <h2 className="text-lg font-bold text-dash-heading">الأفواج النشطة</h2>
-          {!isLoading && stats && stats.flocks.length > 0 && (
-            <Link
-              href="/flocks"
-              className="text-sm font-semibold text-farm-blue hover:underline"
-            >
-              عرض جميع الأفواج
-            </Link>
-          )}
-        </div>
-        <ActiveFlocksTable flocks={stats?.flocks ?? []} loading={isLoading} />
-      </div>
+            <label className="space-y-1">
+              <span className="text-xs font-bold text-ink-muted">الشركة</span>
+              <select
+                value={filters.company_id ?? ''}
+                onChange={(event) => handleFilterChange('company_id', event.target.value)}
+                className="h-10 w-full rounded-xl border border-line bg-surface px-3 text-sm text-ink outline-none transition-colors focus:border-action-primary"
+              >
+                <option value="">كل الشركات</option>
+                {companies.data?.data.map((company) => (
+                  <option key={company.id} value={company.id}>{company.name}</option>
+                ))}
+              </select>
+            </label>
 
-      {/* Row 4 — Quick Links */}
-      <div className="space-y-4">
-        <h2 className="text-lg font-bold text-dash-heading">روابط سريعة</h2>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <Link
-            href="/companies"
-            className="flex items-center justify-between p-5 bg-surface border border-border rounded-2xl shadow-sm hover:shadow-md transition-colors group"
-          >
-            <div className="flex items-center gap-4">
-              <div className="p-3 bg-quick-blue-bg text-quick-blue-text rounded-xl transition-colors">
-                <PlusCircle className="w-6 h-6" />
-              </div>
-              <div className="text-right">
-                <p className="font-bold text-gray-900">إضافة شركة جديدة</p>
-                <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">إضافة وإدارة الشركات والمنشآت</p>
-              </div>
+            <label className="space-y-1">
+              <span className="text-xs font-bold text-ink-muted">المشروع</span>
+              <select
+                value={filters.project_id ?? ''}
+                onChange={(event) => handleFilterChange('project_id', event.target.value)}
+                className="h-10 w-full rounded-xl border border-line bg-surface px-3 text-sm text-ink outline-none transition-colors focus:border-action-primary"
+              >
+                <option value="">كل المشاريع</option>
+                {(selectedCompany?.projects ?? projects.data?.data ?? []).map((project) => (
+                  <option key={project.id} value={project.id}>{project.project_name}</option>
+                ))}
+              </select>
+            </label>
+
+            <label className="space-y-1">
+              <span className="text-xs font-bold text-ink-muted">القسم</span>
+              <select
+                value={filters.section_id ?? ''}
+                onChange={(event) => handleFilterChange('section_id', event.target.value)}
+                className="h-10 w-full rounded-xl border border-line bg-surface px-3 text-sm text-ink outline-none transition-colors focus:border-action-primary"
+              >
+                <option value="">كل الأقسام</option>
+                {sections.map((section) => (
+                  <option key={section.id} value={section.id}>
+                    {section.section_name ?? section.name ?? `قسم #${section.id}`}
+                  </option>
+                ))}
+              </select>
+            </label>
+
+            <label className="space-y-1">
+              <span className="text-xs font-bold text-ink-muted">العنبر</span>
+              <select
+                value={filters.barn_id ?? ''}
+                onChange={(event) => handleFilterChange('barn_id', event.target.value)}
+                className="h-10 w-full rounded-xl border border-line bg-surface px-3 text-sm text-ink outline-none transition-colors focus:border-action-primary"
+              >
+                <option value="">كل الحظائر</option>
+                {barns.map((barn) => (
+                  <option key={barn.id} value={barn.id}>
+                    {barn.barn_name ?? barn.name ?? `عنبر #${barn.id}`}
+                  </option>
+                ))}
+              </select>
+            </label>
+
+            <div className="flex items-end gap-2">
+              <button
+                type="button"
+                onClick={() => morningSummary.refetch()}
+                className="inline-flex h-10 flex-1 items-center justify-center gap-2 rounded-xl bg-action-primary px-3 text-sm font-bold text-ink-inverse transition-colors hover:bg-action-primary-hover"
+              >
+                <RefreshCw className={`h-4 w-4 ${morningSummary.isFetching ? 'animate-spin' : ''}`} />
+                تحديث
+              </button>
+              <button
+                type="button"
+                onClick={clearFilters}
+                className="inline-flex h-10 items-center justify-center rounded-xl border border-line bg-surface px-3 text-ink-muted transition-colors hover:text-ink"
+                aria-label="مسح الفلاتر"
+              >
+                <Filter className="h-4 w-4" />
+              </button>
             </div>
-            <span className="text-gray-400 group-hover:translate-x-[-4px] transition-transform">←</span>
-          </Link>
-
-          <Link
-            href="/warehouses"
-            className="flex items-center justify-between p-5 bg-surface border border-border rounded-2xl shadow-sm hover:shadow-md transition-colors group"
-          >
-            <div className="flex items-center gap-4">
-              <div className="p-3 bg-quick-green-bg text-quick-green-text rounded-xl transition-colors">
-                <Warehouse className="w-6 h-6" />
-              </div>
-              <div className="text-right">
-                <p className="font-bold text-gray-900">إدارة المستودعات</p>
-                <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">عرض ومراقبة أرصدة المخازن</p>
-              </div>
-            </div>
-            <span className="text-gray-400 group-hover:translate-x-[-4px] transition-transform">←</span>
-          </Link>
-
-          <Link
-            href="/inventory/movements"
-            className="flex items-center justify-between p-5 bg-surface border border-border rounded-2xl shadow-sm hover:shadow-md transition-colors group"
-          >
-            <div className="flex items-center gap-4">
-              <div className="p-3 bg-quick-purple-bg text-quick-purple-text rounded-xl transition-colors">
-                <ArrowLeftRight className="w-6 h-6" />
-              </div>
-              <div className="text-right">
-                <p className="font-bold text-gray-900">حركة المخزون</p>
-                <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">تتبع الوارد والمنصرف من الأعلاف والبيض</p>
-              </div>
-            </div>
-            <span className="text-gray-400 group-hover:translate-x-[-4px] transition-transform">←</span>
-          </Link>
+          </div>
         </div>
+      </section>
+
+      <CriticalAlertStrip filters={filters} />
+
+      <TodaySummaryRow
+        summary={morningSummary.data?.summary}
+        isLoading={morningSummary.isLoading}
+      />
+
+      <FlockWatchlistTable
+        watchlist={morningSummary.data?.watchlist ?? []}
+        isLoading={morningSummary.isLoading}
+      />
+
+      <DashboardTrendsSection
+        analytics={analytics.data}
+        watchlist={morningSummary.data?.watchlist ?? []}
+        isLoading={analytics.isLoading}
+      />
+
+      <FeedRunwayWidget
+        items={morningSummary.data?.feed_runway ?? []}
+        isLoading={morningSummary.isLoading}
+      />
+
+      <div className="grid grid-cols-1 gap-4 xl:grid-cols-3">
+        <BarnOccupancyWidget
+          flocks={activeFlocks.data?.data ?? []}
+          isLoading={activeFlocks.isLoading}
+        />
+        <LifecycleEventsWidget
+          watchlist={morningSummary.data?.watchlist ?? []}
+          isLoading={morningSummary.isLoading}
+        />
+        <EggDistributionWidget
+          distribution={analytics.data?.egg_weight_distribution}
+          isLoading={analytics.isLoading}
+          className="xl:col-span-1"
+        />
       </div>
     </div>
   )

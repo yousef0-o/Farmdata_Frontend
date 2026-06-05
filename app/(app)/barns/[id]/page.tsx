@@ -1584,7 +1584,7 @@ function FeedLedgerTable({
                 return (
                   <tr key={row.id} className="transition-colors hover:bg-surface-subtle">
                     <td className="px-4 py-3">
-                      <Link href={`/flocks/${row.flock.id}`} className="inline-flex rounded-lg border border-orange-100 bg-orange-50 px-2.5 py-1 font-mono text-xs font-bold text-[#c2410c] transition-colors hover:bg-orange-100">
+                      <Link href={`/flocks/${row.flock.id}`} className="inline-flex rounded-lg border border-orange-100 bg-orange-50 px-2.5 py-1 font-mono text-xs font-bold text-terracotta transition-colors hover:bg-orange-100">
                         {flockCode(row.flock)}
                       </Link>
                     </td>

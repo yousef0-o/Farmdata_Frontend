@@ -122,16 +122,16 @@ type NurserySelection = {
 }
 
 const toneClasses: Record<MetricTile['tone'], string> = {
-  emerald: 'bg-emerald-50 text-[#10b981] border-emerald-100 dark:bg-emerald-950/20 dark:border-emerald-900/30',
-  blue: 'bg-blue-50 text-blue-600 border-blue-100 dark:bg-blue-950/20 dark:border-blue-900/30',
-  orange: 'bg-orange-50 text-[#c2410c] border-orange-100 dark:bg-orange-950/20 dark:border-orange-900/30',
-  purple: 'bg-purple-50 text-purple-600 border-purple-100 dark:bg-purple-950/20 dark:border-purple-900/30',
-  amber: 'bg-amber-50 text-amber-600 border-amber-100 dark:bg-amber-950/20 dark:border-amber-900/30',
-  slate: 'bg-slate-50 text-slate-600 border-slate-100 dark:bg-slate-900/20 dark:border-slate-800/30',
+  emerald: 'bg-emerald-50 text-[#10b981] border-emerald-100 dark:bg-emerald-950/20 dark:text-emerald-400 dark:border-emerald-900/30',
+  blue: 'bg-blue-50 text-blue-600 border-blue-100 dark:bg-blue-950/20 dark:text-blue-455/80 dark:text-blue-400 dark:border-blue-900/30',
+  orange: 'bg-orange-50 text-terracotta border-orange-100 dark:bg-orange-950/20 dark:text-orange-400 dark:border-orange-900/30',
+  purple: 'bg-purple-50 text-purple-600 border-purple-100 dark:bg-purple-950/20 dark:text-purple-400 dark:border-purple-900/30',
+  amber: 'bg-amber-50 text-amber-600 border-amber-100 dark:bg-amber-950/20 dark:text-amber-400 dark:border-amber-900/30',
+  slate: 'bg-slate-50 text-slate-600 border-slate-100 dark:bg-slate-900/20 dark:text-slate-400 dark:border-slate-800/30',
 }
 
 const selectBaseClassName =
-  'h-12 w-full appearance-none rounded-xl border border-slate-200 bg-white px-4 pl-10 text-sm font-semibold text-slate-800 outline-none transition-all duration-200 hover:border-slate-300 focus:border-[#10b981] focus:ring-4 focus:ring-emerald-500/10 disabled:cursor-not-allowed disabled:bg-slate-50 disabled:text-slate-400 dark:border-slate-800 dark:bg-slate-950 dark:text-slate-100 dark:disabled:bg-slate-900'
+  'h-12 w-full appearance-none rounded-xl border border-slate-200 bg-white px-4 pl-10 text-sm font-semibold text-slate-800 outline-none transition-all duration-200 hover:border-slate-300 focus:border-[#10b981] focus:ring-4 focus:ring-emerald-500/10 disabled:cursor-not-allowed disabled:bg-slate-50 disabled:text-slate-400'
 
 function formatPercent(value: number) {
   return `${value.toFixed(2)}%`
@@ -141,17 +141,17 @@ function MetricCard({ metric }: { metric: MetricTile }) {
   const Icon = metric.icon
 
   return (
-    <article className="flex min-h-32 items-start justify-between gap-4 rounded-2xl border border-slate-100 bg-white p-5 shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:border-slate-200 hover:shadow-md dark:border-slate-800 dark:bg-surface">
+    <article className="flex min-h-32 items-start justify-between gap-4 rounded-2xl border border-slate-100 bg-white p-5 shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:border-slate-200 hover:shadow-md">
       <div className="min-w-0 text-right">
-        <p className="text-xs font-bold leading-5 text-slate-500 dark:text-slate-400">
+        <p className="text-xs font-bold leading-5 text-slate-500">
           {metric.label}
         </p>
         <div className="mt-3 flex flex-wrap items-baseline justify-start gap-2">
-          <span className="font-mono text-2xl font-extrabold leading-none text-slate-950 dark:text-slate-50">
+          <span className="font-mono text-2xl font-extrabold leading-none text-slate-900">
             {metric.value}
           </span>
           {metric.unit ? (
-            <span className="text-sm font-bold text-slate-500 dark:text-slate-400">
+            <span className="text-sm font-bold text-slate-500">
               {metric.unit}
             </span>
           ) : null}
@@ -181,8 +181,8 @@ function ProgressRow({
   return (
     <div className="space-y-2">
       <div className="flex items-center justify-between gap-4 text-xs font-extrabold">
-        <span className="text-slate-700 dark:text-slate-300">{label}</span>
-        <span className="font-mono text-slate-900 dark:text-slate-100">{value}</span>
+        <span className="text-slate-700">{label}</span>
+        <span className="font-mono text-slate-900">{value}</span>
       </div>
       <div className="h-3.5 overflow-hidden rounded-full bg-slate-100 p-0.5 ring-1 ring-inset ring-slate-200/50 dark:bg-slate-800 dark:ring-slate-700/50">
         <div
@@ -198,13 +198,13 @@ function CapacityCard({ capacity }: { capacity: CapacityOverview }) {
   const utilization = capacity.total > 0 ? (capacity.planted / capacity.total) * 100 : 0
 
   return (
-    <section className="rounded-2xl border border-slate-100 bg-white p-5 shadow-sm dark:border-slate-800 dark:bg-surface sm:p-6">
+    <section className="rounded-2xl border border-slate-100 bg-white p-5 shadow-sm sm:p-6">
       <div className="mb-7 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex items-center gap-3">
           <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-50 text-[#10b981] ring-1 ring-emerald-100 dark:bg-emerald-950/20 dark:ring-emerald-900/30">
             <ChartPie className="h-5 w-5" />
           </span>
-          <h2 className="text-lg font-extrabold text-slate-950 dark:text-slate-50">
+          <h2 className="text-lg font-extrabold text-slate-900">
             مقارنة السعة والزراعة
           </h2>
         </div>
@@ -218,13 +218,13 @@ function CapacityCard({ capacity }: { capacity: CapacityOverview }) {
           label={`الطاقة الاستيعابية (${capacity.totalDisplay})`}
           value={capacity.totalDisplay}
           percent={100}
-          toneClassName="bg-[#10b981]"
+          toneClassName="bg-emerald-500"
         />
         <ProgressRow
           label={`الأشجار القائمة (${capacity.plantedDisplay})`}
           value={formatPercent(utilization)}
           percent={utilization}
-          toneClassName="bg-[#c2410c]"
+          toneClassName="bg-terracotta"
         />
       </div>
     </section>
@@ -241,7 +241,7 @@ function ChartsCard({
   speciesDistribution: ChartDatum[]
 }) {
   return (
-    <section className="rounded-2xl border border-slate-100 bg-white p-5 shadow-sm dark:border-slate-800 dark:bg-surface sm:p-6">
+    <section className="rounded-2xl border border-slate-100 bg-white p-5 shadow-sm sm:p-6">
       <div className="grid gap-5 xl:grid-cols-2">
         <PotSizeChart data={potDistribution} />
         <SpeciesDonutChart data={speciesDistribution} />
@@ -260,17 +260,17 @@ function FinancialChartsCard({
   pinnedAccounts: NurseryPinnedExpenseAccount[]
 }) {
   return (
-    <section className="rounded-2xl border border-slate-100 bg-white p-5 shadow-sm dark:border-slate-800 dark:bg-surface sm:p-6">
+    <section className="rounded-2xl border border-slate-100 bg-white p-5 shadow-sm sm:p-6">
       <div className="mb-5 flex items-center justify-between gap-4">
         <div className="flex items-center gap-3">
           <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-50 text-blue-600 ring-1 ring-blue-100 dark:bg-blue-950/20 dark:ring-blue-900/30">
             <Landmark className="h-5 w-5" />
           </span>
           <div className="text-right">
-            <h2 className="text-lg font-extrabold text-slate-950 dark:text-slate-50">
+            <h2 className="text-lg font-extrabold text-slate-900">
               التحليلات المالية للأصول والمصروفات
             </h2>
-            <p className="mt-0.5 text-xs font-semibold text-slate-500 dark:text-slate-400">
+            <p className="mt-0.5 text-xs font-semibold text-slate-500">
               رسم بياني لتوزيع قيم الأصول الثابتة والمصروفات الجارية
             </p>
           </div>
@@ -300,17 +300,17 @@ function ActiveCyclesCard({ cycles }: { cycles: NurseryCycle[] }) {
   }
 
   return (
-    <section className="rounded-2xl border border-slate-100 bg-white p-5 shadow-sm dark:border-slate-800 dark:bg-surface sm:p-6">
+    <section className="rounded-2xl border border-slate-100 bg-white p-5 shadow-sm sm:p-6">
       <div className="mb-5 flex items-center justify-between gap-4">
         <div className="flex items-center gap-3">
           <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-50 text-[#10b981] ring-1 ring-emerald-100 dark:bg-emerald-950/20 dark:ring-emerald-900/30">
             <Sprout className="h-5 w-5" />
           </span>
           <div className="text-right">
-            <h2 className="text-lg font-extrabold text-slate-950 dark:text-slate-50">
+            <h2 className="text-lg font-extrabold text-slate-900">
               دورات الإنتاج النشطة بالمشتل
             </h2>
-            <p className="mt-0.5 text-xs font-semibold text-slate-500 dark:text-slate-400">
+            <p className="mt-0.5 text-xs font-semibold text-slate-500">
               متابعة كميات وتواريخ وعمليات الإنتاج الجارية
             </p>
           </div>
@@ -320,10 +320,10 @@ function ActiveCyclesCard({ cycles }: { cycles: NurseryCycle[] }) {
         </span>
       </div>
 
-      <div className="overflow-x-auto rounded-xl border border-slate-100 dark:border-slate-800">
+      <div className="overflow-x-auto rounded-xl border border-slate-100">
         <table className="w-full min-w-[700px] border-collapse text-right text-sm">
           <thead>
-            <tr className="bg-slate-50/70 text-slate-600 dark:bg-slate-900/50 dark:text-slate-400">
+            <tr className="bg-slate-50/70 text-slate-600">
               <th className="p-4 font-extrabold">اسم الدورة</th>
               <th className="p-4 font-extrabold">النوع / الصنف</th>
               <th className="p-4 font-extrabold text-center">الكمية القائمة</th>
@@ -333,7 +333,7 @@ function ActiveCyclesCard({ cycles }: { cycles: NurseryCycle[] }) {
               <th className="p-4 font-extrabold text-center">الحالة</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+          <tbody className="divide-y divide-slate-100">
             {cycles.length === 0 ? (
               <tr>
                 <td colSpan={7} className="p-8 text-center font-semibold text-slate-400">
@@ -344,15 +344,15 @@ function ActiveCyclesCard({ cycles }: { cycles: NurseryCycle[] }) {
               cycles.map((cycle) => (
                 <tr
                   key={cycle.id}
-                  className="transition-colors duration-150 hover:bg-slate-50/50 dark:hover:bg-slate-900/30"
+                  className="transition-colors duration-150 hover:bg-slate-50/50"
                 >
-                  <td className="p-4 font-extrabold text-slate-900 dark:text-slate-100">
+                  <td className="p-4 font-extrabold text-slate-900">
                     {cycle.name}
                   </td>
-                  <td className="p-4 font-semibold text-slate-600 dark:text-slate-300">
+                  <td className="p-4 font-semibold text-slate-600">
                     {cycle.variety_name || 'غير محدد'}
                   </td>
-                  <td className="p-4 text-center font-mono font-extrabold text-slate-950 dark:text-slate-50">
+                  <td className="p-4 text-center font-mono font-extrabold text-slate-900">
                     {cycle.count.toLocaleString('ar-SA')}
                   </td>
                   <td className="p-4">
@@ -360,10 +360,10 @@ function ActiveCyclesCard({ cycles }: { cycles: NurseryCycle[] }) {
                       {cycle.propagation_type ? propagationLabels[cycle.propagation_type] : 'غير محدد'}
                     </span>
                   </td>
-                  <td className="p-4 text-xs font-semibold text-slate-500 dark:text-slate-400">
+                  <td className="p-4 text-xs font-semibold text-slate-500">
                     {cycle.nursery?.name || ''} - {cycle.basin?.name || 'غير محدد'}
                   </td>
-                  <td className="p-4 font-mono text-xs font-semibold text-slate-500 dark:text-slate-400">
+                  <td className="p-4 font-mono text-xs font-semibold text-slate-500">
                     {cycle.start_date || 'غير محدد'}
                   </td>
                   <td className="p-4 text-center">
@@ -387,26 +387,26 @@ function ActiveCyclesCard({ cycles }: { cycles: NurseryCycle[] }) {
 
 function StructureCard({ structure }: { structure: StructureMetric[] }) {
   return (
-    <section className="rounded-2xl border border-slate-100 bg-white p-5 shadow-sm dark:border-slate-800 dark:bg-surface">
+    <section className="rounded-2xl border border-slate-100 bg-white p-5 shadow-sm">
       <div className="mb-5 flex items-center gap-3">
-        <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-slate-50 text-slate-600 ring-1 ring-slate-100 dark:bg-slate-900 dark:text-slate-300 dark:ring-slate-800">
+        <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-slate-50 text-slate-600 ring-1 ring-slate-100">
           <Warehouse className="h-5 w-5" />
         </span>
-        <h2 className="text-lg font-extrabold text-slate-950 dark:text-slate-50">
+        <h2 className="text-lg font-extrabold text-slate-900">
           هيكل المشتل
         </h2>
       </div>
 
-      <div className="divide-y divide-slate-100 dark:divide-slate-800">
+      <div className="divide-y divide-slate-100">
         {structure.map((item) => (
           <div key={item.id} className="flex items-center justify-between gap-4 py-3">
             <div className="flex items-center gap-3">
               <span className={`h-2.5 w-2.5 rounded-full ${item.dotClassName}`} />
-              <span className="text-sm font-bold text-slate-600 dark:text-slate-300">
+              <span className="text-sm font-bold text-slate-600">
                 {item.label}
               </span>
             </div>
-            <span className="font-mono text-base font-extrabold text-slate-950 dark:text-slate-50">
+            <span className="font-mono text-base font-extrabold text-slate-900">
               {item.value}
             </span>
           </div>
@@ -418,12 +418,12 @@ function StructureCard({ structure }: { structure: StructureMetric[] }) {
 
 function InventoryCategoriesCard({ categories }: { categories: NurseryInventoryCategoryTotal[] }) {
   return (
-    <section className="flex flex-col flex-1 rounded-2xl border border-slate-100 bg-white p-5 shadow-sm dark:border-slate-800 dark:bg-surface">
+    <section className="flex flex-col flex-1 rounded-2xl border border-slate-100 bg-white p-5 shadow-sm">
       <div className="mb-5 flex items-center gap-3">
-        <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-slate-50 text-slate-600 ring-1 ring-slate-100 dark:bg-slate-900 dark:text-slate-300 dark:ring-slate-800">
+        <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-slate-50 text-slate-600 ring-1 ring-slate-100">
           <Boxes className="h-5 w-5" />
         </span>
-        <h2 className="text-lg font-extrabold text-slate-950 dark:text-slate-50">
+        <h2 className="text-lg font-extrabold text-slate-900">
           فئات مخزون المشتل
         </h2>
       </div>
@@ -438,7 +438,7 @@ function InventoryCategoriesCard({ categories }: { categories: NurseryInventoryC
             const colors = [
               'border-r-[#10b981]',
               'border-r-blue-500',
-              'border-r-[#c2410c]',
+              'border-r-terracotta',
               'border-r-purple-500',
               'border-r-amber-500',
             ]
@@ -446,17 +446,17 @@ function InventoryCategoriesCard({ categories }: { categories: NurseryInventoryC
             return (
               <div
                 key={cat.category_id || index}
-                className={`flex items-center justify-between gap-4 border-r-4 ${borderCol} bg-slate-50/50 px-3.5 py-3 dark:bg-slate-900/40 rounded-l-xl transition-all duration-200 hover:bg-slate-100 dark:hover:bg-slate-800/60`}
+                className={`flex items-center justify-between gap-4 border-r-4 ${borderCol} bg-slate-50/50 px-3.5 py-3 rounded-l-xl transition-all duration-200 hover:bg-slate-100`}
               >
                 <div className="text-right">
-                  <p className="text-sm font-extrabold text-slate-800 dark:text-slate-100">
+                  <p className="text-sm font-extrabold text-slate-800">
                     {cat.category_name}
                   </p>
                   <p className="mt-0.5 text-xs font-semibold text-slate-400">
                     عدد المواد: {cat.items_count.toLocaleString('ar-SA')}
                   </p>
                 </div>
-                <div className="text-left font-mono text-sm font-extrabold text-slate-950 dark:text-slate-50 flex items-center gap-0.5">
+                <div className="text-left font-mono text-sm font-extrabold text-slate-900 flex items-center gap-0.5">
                   <span>{cat.total_value.toLocaleString('ar-SA')}</span>
                   <SaudiRiyalIcon size={12} className="text-emerald-700 mr-0.5" />
                 </div>
@@ -479,14 +479,14 @@ function NurseryInventoryCard({
   onToggleDetails: () => void
 }) {
   return (
-    <section className="flex flex-col flex-1 rounded-2xl border border-slate-100 bg-white p-5 shadow-sm dark:border-slate-800 dark:bg-surface">
+    <section className="flex flex-col flex-1 rounded-2xl border border-slate-100 bg-white p-5 shadow-sm">
       <div className="mb-4 flex items-center justify-between gap-4">
         <div className="flex items-center gap-3">
           <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-amber-50 text-amber-600 ring-1 ring-amber-100 dark:bg-amber-950/20 dark:ring-amber-900/30">
             <AlertTriangle className="h-5 w-5" />
           </span>
           <div className="text-right">
-            <h2 className="text-lg font-extrabold text-slate-950 dark:text-slate-50">
+            <h2 className="text-lg font-extrabold text-slate-900">
               مخزون المشتل
             </h2>
             <p className="mt-1 text-xs font-bold text-amber-700">
@@ -515,7 +515,7 @@ function NurseryInventoryCard({
               className="flex items-center justify-between gap-4 rounded-xl border border-amber-100 bg-amber-50/40 px-4 py-3 dark:border-amber-900/30 dark:bg-amber-950/20"
             >
               <div className="min-w-0 text-right">
-                <p className="truncate text-sm font-extrabold text-slate-800 dark:text-slate-100">
+                <p className="truncate text-sm font-extrabold text-slate-800">
                   {item.name}
                 </p>
                 {showDetails ? (
@@ -625,7 +625,7 @@ function QuickAccessModal({
       describedBy="quick-access-description"
       panelClassName="max-w-xl"
     >
-      <div className="max-h-[90vh] overflow-y-auto rounded-2xl border border-slate-100 bg-white p-6 shadow-2xl dark:border-slate-800 dark:bg-surface">
+      <div className="max-h-[90vh] overflow-y-auto rounded-2xl border border-slate-100 bg-white p-6 shadow-2xl">
         <button
           type="button"
           onClick={onClose}
@@ -639,10 +639,10 @@ function QuickAccessModal({
           <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-emerald-50 text-[#10b981] ring-1 ring-emerald-100 dark:bg-emerald-950/20 dark:ring-emerald-900/30">
             <Grid3X3 className="h-7 w-7" />
           </div>
-          <h2 id="quick-access-title" className="text-xl font-extrabold text-slate-950 dark:text-slate-50">
+          <h2 id="quick-access-title" className="text-xl font-extrabold text-slate-900">
             الوصول السريع للأحواض
           </h2>
-          <p id="quick-access-description" className="mt-2 text-sm font-semibold text-slate-500 dark:text-slate-400">
+          <p id="quick-access-description" className="mt-2 text-sm font-semibold text-slate-500">
             اختر المشتل ثم الموقع والقسم والحوض للوصول إلى مسار الإدارة.
           </p>
         </div>
@@ -914,7 +914,7 @@ export default function NurseryPage() {
         id: 'sections',
         label: 'الأقسام الرئيسية',
         value: sectionsCount.toLocaleString('ar-SA'),
-        dotClassName: 'bg-[#c2410c]',
+        dotClassName: 'bg-terracotta',
       },
       {
         id: 'basins',
@@ -972,9 +972,9 @@ export default function NurseryPage() {
   // Skeletons during data fetching
   if (isLoading) {
     return (
-      <div className="min-h-full space-y-6 bg-[#f8fafc] p-6 text-slate-950 dark:bg-background dark:text-slate-50" dir="rtl">
+      <div className="min-h-full space-y-6 bg-slate-50 p-6 text-slate-900" dir="rtl">
         {/* Header Skeleton */}
-        <header className="flex flex-col gap-4 rounded-2xl border border-slate-100 bg-white p-5 shadow-sm dark:border-slate-800 dark:bg-surface sm:flex-row sm:items-center sm:justify-between">
+        <header className="flex flex-col gap-4 rounded-2xl border border-slate-100 bg-white p-5 shadow-sm sm:flex-row sm:items-center sm:justify-between">
           <div className="space-y-2 text-right">
             <Skeleton className="h-7 w-32" />
             <Skeleton className="h-4 w-56" />
@@ -985,7 +985,7 @@ export default function NurseryPage() {
         {/* Metrics Grid Skeleton */}
         <section className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-6">
           {[...Array(6)].map((_, index) => (
-            <div key={index} className="flex min-h-32 items-start justify-between gap-4 rounded-2xl border border-slate-100 bg-white p-5 shadow-sm dark:border-slate-800 dark:bg-surface">
+            <div key={index} className="flex min-h-32 items-start justify-between gap-4 rounded-2xl border border-slate-100 bg-white p-5 shadow-sm">
               <div className="space-y-3 min-w-0 text-right w-full">
                 <Skeleton className="h-4 w-24" />
                 <Skeleton className="h-7 w-20" />
@@ -999,7 +999,7 @@ export default function NurseryPage() {
         <div className="grid gap-6 xl:grid-cols-[3fr_2fr]">
           <div className="space-y-6">
             {/* Capacity Card Skeleton */}
-            <div className="rounded-2xl border border-slate-100 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-surface space-y-5">
+            <div className="rounded-2xl border border-slate-100 bg-white p-6 shadow-sm space-y-5">
               <div className="flex items-center justify-between">
                 <Skeleton className="h-6 w-40" />
                 <Skeleton className="h-8 w-28 rounded-xl" />
@@ -1017,13 +1017,13 @@ export default function NurseryPage() {
             </div>
 
             {/* Charts Skeleton */}
-            <div className="rounded-2xl border border-slate-100 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-surface">
+            <div className="rounded-2xl border border-slate-100 bg-white p-6 shadow-sm">
               <div className="grid gap-5 xl:grid-cols-2">
-                <div className="h-[320px] rounded-2xl border border-slate-100 bg-slate-50/60 p-5 dark:border-slate-800 dark:bg-slate-900/40 space-y-4">
+                <div className="h-[320px] rounded-2xl border border-slate-100 bg-slate-50/60 p-5 space-y-4">
                   <Skeleton className="h-5 w-48" />
                   <Skeleton className="h-40 w-full rounded-xl" />
                 </div>
-                <div className="h-[320px] rounded-2xl border border-slate-100 bg-slate-50/60 p-5 dark:border-slate-800 dark:bg-slate-900/40 space-y-4">
+                <div className="h-[320px] rounded-2xl border border-slate-100 bg-slate-50/60 p-5 space-y-4">
                   <Skeleton className="h-5 w-48" />
                   <Skeleton className="h-40 w-full rounded-xl" />
                 </div>
@@ -1033,7 +1033,7 @@ export default function NurseryPage() {
 
           <div className="space-y-6">
             {/* Structure Card Skeleton */}
-            <div className="rounded-2xl border border-slate-100 bg-white p-5 shadow-sm dark:border-slate-800 dark:bg-surface space-y-4">
+            <div className="rounded-2xl border border-slate-100 bg-white p-5 shadow-sm space-y-4">
               <Skeleton className="h-6 w-32" />
               <div className="space-y-3 divide-y divide-slate-100 dark:divide-slate-800">
                 {[...Array(5)].map((_, i) => (
@@ -1051,14 +1051,14 @@ export default function NurseryPage() {
   }
 
   return (
-    <div className="min-h-full space-y-6 bg-[#f8fafc] text-slate-950 dark:bg-background dark:text-slate-50" dir="rtl">
+    <div className="min-h-full space-y-6 bg-slate-50 text-slate-900" dir="rtl">
       {/* Banner / Header */}
-      <header className="flex flex-col gap-4 rounded-2xl border border-slate-100 bg-white p-5 shadow-sm dark:border-slate-800 dark:bg-surface sm:flex-row sm:items-center sm:justify-between">
+      <header className="flex flex-col gap-4 rounded-2xl border border-slate-100 bg-white p-5 shadow-sm sm:flex-row sm:items-center sm:justify-between">
         <div className="text-right">
-          <h1 className="text-2xl font-extrabold tracking-normal text-slate-950 dark:text-slate-50">
+          <h1 className="text-2xl font-extrabold tracking-normal text-slate-900">
             نظام إدارة المشتل
           </h1>
-          <p className="mt-1 text-sm font-semibold text-slate-500 dark:text-slate-400">
+          <p className="mt-1 text-sm font-semibold text-slate-500">
             لوحة التحكم الرئيسية وإحصائيات المشتل
           </p>
         </div>

@@ -89,7 +89,7 @@ function TextField({
       </span>
       <input
         {...props}
-        className="min-h-11 w-full rounded-xl border border-slate-100 bg-slate-50 px-3 py-2 text-sm font-semibold text-slate-900 outline-none transition-colors focus:border-[#c2410c] focus:bg-white focus:ring-2 focus:ring-orange-200 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-100"
+        className="min-h-11 w-full rounded-xl border border-slate-100 bg-slate-50 px-3 py-2 text-sm font-semibold text-slate-900 outline-none transition-colors focus:border-terracotta focus:bg-white focus:ring-2 focus:ring-orange-100 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-100"
       />
     </label>
   )
@@ -107,7 +107,7 @@ function SelectField({
       </span>
       <select
         {...props}
-        className="min-h-11 w-full rounded-xl border border-slate-100 bg-slate-50 px-3 py-2 text-sm font-semibold text-slate-900 outline-none transition-colors focus:border-[#c2410c] focus:bg-white focus:ring-2 focus:ring-orange-200 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-100"
+        className="min-h-11 w-full rounded-xl border border-slate-100 bg-slate-50 px-3 py-2 text-sm font-semibold text-slate-900 outline-none transition-colors focus:border-terracotta focus:bg-white focus:ring-2 focus:ring-orange-100 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-100"
       >
         {children}
       </select>
@@ -132,7 +132,7 @@ function OperationOption({
       onClick={onClick}
       className={`flex min-h-20 items-center gap-3 rounded-xl border px-4 py-3 text-right transition-colors ${
         active
-          ? 'border-[#c2410c] bg-orange-50 text-[#c2410c] dark:border-orange-800 dark:bg-orange-950/40 dark:text-orange-300'
+          ? 'border-terracotta bg-orange-50 text-terracotta'
           : 'border-slate-100 bg-white text-slate-700 hover:bg-slate-50 dark:border-slate-800 dark:bg-slate-950 dark:text-slate-200 dark:hover:bg-slate-900'
       }`}
     >
@@ -230,7 +230,7 @@ export default function NurseryGeneralOperationsWorkspace({
         <header className="rounded-2xl border border-slate-100 bg-white p-5 shadow-sm dark:border-slate-800 dark:bg-slate-950">
           <div className="flex flex-wrap items-center justify-between gap-4">
             <div>
-              <div className="mb-2 inline-flex items-center gap-2 rounded-xl bg-orange-50 px-3 py-1 text-xs font-bold text-[#c2410c] dark:bg-orange-950/40 dark:text-orange-300">
+              <div className="mb-2 inline-flex items-center gap-2 rounded-xl bg-orange-50 px-3 py-1 text-xs font-bold text-terracotta">
                 <Activity className="h-4 w-4" />
                 عمليات عامة
               </div>

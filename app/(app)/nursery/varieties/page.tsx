@@ -346,7 +346,7 @@ function VarietyFormDialog({
             <input
               {...form.register('name')}
               placeholder="مثال: برتقال سكري"
-              className="h-11 w-full rounded-lg border border-slate-100 bg-slate-50 px-3 text-sm text-ink outline-none focus:border-[#c2410c] focus:ring-2 focus:ring-orange-100"
+              className="h-11 w-full rounded-lg border border-slate-100 bg-slate-50 px-3 text-sm text-ink outline-none focus:border-terracotta focus:ring-2 focus:ring-orange-100"
             />
             <ErrorText message={form.formState.errors.name?.message} />
           </div>
@@ -356,7 +356,7 @@ function VarietyFormDialog({
               {...form.register('scientific_name')}
               dir="ltr"
               placeholder="Citrus sinensis"
-              className="h-11 w-full rounded-lg border border-slate-100 bg-slate-50 px-3 text-left text-sm text-ink outline-none focus:border-[#c2410c] focus:ring-2 focus:ring-orange-100"
+              className="h-11 w-full rounded-lg border border-slate-100 bg-slate-50 px-3 text-left text-sm text-ink outline-none focus:border-terracotta focus:ring-2 focus:ring-orange-100"
             />
             <ErrorText message={form.formState.errors.scientific_name?.message} />
           </div>
@@ -364,7 +364,7 @@ function VarietyFormDialog({
             <FieldLabel>الفئة</FieldLabel>
             <select
               {...form.register('category')}
-              className="h-11 w-full rounded-lg border border-slate-100 bg-slate-50 px-3 text-sm text-ink outline-none focus:border-[#c2410c] focus:ring-2 focus:ring-orange-100"
+              className="h-11 w-full rounded-lg border border-slate-100 bg-slate-50 px-3 text-sm text-ink outline-none focus:border-terracotta focus:ring-2 focus:ring-orange-100"
             >
               {categories.map((category) => (
                 <option key={category} value={category}>
@@ -381,7 +381,7 @@ function VarietyFormDialog({
               type="number"
               min="0"
               placeholder="12"
-              className="h-11 w-full rounded-lg border border-slate-100 bg-slate-50 px-3 text-sm text-ink outline-none focus:border-[#c2410c] focus:ring-2 focus:ring-orange-100"
+              className="h-11 w-full rounded-lg border border-slate-100 bg-slate-50 px-3 text-sm text-ink outline-none focus:border-terracotta focus:ring-2 focus:ring-orange-100"
             />
             <ErrorText message={form.formState.errors.growth_period?.message} />
           </div>
@@ -391,7 +391,7 @@ function VarietyFormDialog({
               {...form.register('description')}
               rows={4}
               placeholder="وصف مختصر للصنف..."
-              className="w-full rounded-lg border border-slate-100 bg-slate-50 px-3 py-3 text-sm text-ink outline-none focus:border-[#c2410c] focus:ring-2 focus:ring-orange-100"
+              className="w-full rounded-lg border border-slate-100 bg-slate-50 px-3 py-3 text-sm text-ink outline-none focus:border-terracotta focus:ring-2 focus:ring-orange-100"
             />
             <ErrorText message={form.formState.errors.description?.message} />
           </div>
@@ -414,7 +414,7 @@ function VarietyFormDialog({
           <button
             type="submit"
             disabled={submitting}
-            className="inline-flex min-h-11 items-center justify-center gap-2 rounded-lg bg-[#c2410c] px-5 text-sm font-semibold text-white hover:bg-[#9a3412] disabled:opacity-60 active:scale-[0.98] transition-all"
+            className="inline-flex min-h-11 items-center justify-center gap-2 rounded-lg bg-terracotta px-5 text-sm font-semibold text-white hover:bg-terracotta/90 disabled:opacity-60 active:scale-[0.98] transition-all"
           >
             {submitting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
             حفظ
@@ -470,7 +470,7 @@ function GuideFormDialog({
 
         <div className="space-y-7 p-6">
           <section>
-            <h3 className="mb-4 flex items-center gap-2 text-sm font-bold text-[#c2410c]">
+            <h3 className="mb-4 flex items-center gap-2 text-sm font-bold text-terracotta">
               <Leaf className="h-4 w-4" />
               البيانات الأساسية
             </h3>
@@ -510,7 +510,7 @@ function GuideFormDialog({
                 <textarea
                   {...form.register('general_care')}
                   rows={4}
-                  className="w-full rounded-lg border border-slate-100 bg-slate-50 px-3 py-3 text-sm text-ink outline-none focus:border-[#c2410c] focus:ring-2 focus:ring-orange-100"
+                  className="w-full rounded-lg border border-slate-100 bg-slate-50 px-3 py-3 text-sm text-ink outline-none focus:border-terracotta focus:ring-2 focus:ring-orange-100"
                 />
                 <ErrorText message={form.formState.errors.general_care?.message} />
               </div>
@@ -519,7 +519,7 @@ function GuideFormDialog({
                 <textarea
                   {...form.register('notes')}
                   rows={3}
-                  className="w-full rounded-lg border border-slate-100 bg-slate-50 px-3 py-3 text-sm text-ink outline-none focus:border-[#c2410c] focus:ring-2 focus:ring-orange-100"
+                  className="w-full rounded-lg border border-slate-100 bg-slate-50 px-3 py-3 text-sm text-ink outline-none focus:border-terracotta focus:ring-2 focus:ring-orange-100"
                 />
                 <ErrorText message={form.formState.errors.notes?.message} />
               </div>
@@ -544,7 +544,7 @@ function GuideFormDialog({
           <button
             type="submit"
             disabled={submitting}
-            className="inline-flex min-h-11 items-center justify-center gap-2 rounded-lg bg-[#c2410c] px-5 text-sm font-semibold text-white hover:bg-[#9a3412] disabled:opacity-60 active:scale-[0.98] transition-all"
+            className="inline-flex min-h-11 items-center justify-center gap-2 rounded-lg bg-terracotta px-5 text-sm font-semibold text-white hover:bg-terracotta/90 disabled:opacity-60 active:scale-[0.98] transition-all"
           >
             {submitting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
             حفظ الدليل
@@ -580,7 +580,7 @@ function GuideInput({
         type={type}
         step={step}
         dir={ltr ? 'ltr' : 'rtl'}
-        className={`h-11 w-full rounded-lg border border-slate-100 bg-slate-50 px-3 text-sm text-ink outline-none focus:border-[#c2410c] focus:ring-2 focus:ring-orange-100 ${ltr ? 'text-left' : 'text-right'}`}
+        className={`h-11 w-full rounded-lg border border-slate-100 bg-slate-50 px-3 text-sm text-ink outline-none focus:border-terracotta focus:ring-2 focus:ring-orange-100 ${ltr ? 'text-left' : 'text-right'}`}
       />
       <ErrorText message={typeof error === 'string' ? error : undefined} />
     </div>
@@ -772,7 +772,7 @@ export default function NurseryVarietiesPage() {
           <button
             type="button"
             onClick={activeTab === 'guide' ? openCreateGuide : openCreateVariety}
-            className="inline-flex min-h-11 items-center justify-center gap-2 rounded-lg bg-[#c2410c] px-4 text-sm font-semibold text-white shadow-sm hover:bg-[#9a3412] active:scale-[0.98] transition-all"
+            className="inline-flex min-h-11 items-center justify-center gap-2 rounded-lg bg-terracotta px-4 text-sm font-semibold text-white shadow-sm hover:bg-terracotta/90 active:scale-[0.98] transition-all"
           >
             <Plus className="h-4 w-4" />
             {activeTab === 'guide' ? 'إضافة دليل شجرة' : 'إضافة صنف جديد'}
@@ -818,7 +818,7 @@ export default function NurseryVarietiesPage() {
                   }
                 }}
                 placeholder="بحث..."
-                className="h-11 w-full rounded-lg border border-slate-100 bg-slate-50 px-10 text-sm text-ink outline-none focus:border-[#c2410c] focus:ring-2 focus:ring-orange-100 sm:w-72"
+                className="h-11 w-full rounded-lg border border-slate-100 bg-slate-50 px-10 text-sm text-ink outline-none focus:border-terracotta focus:ring-2 focus:ring-orange-100 sm:w-72"
               />
             </div>
             {activeTab === 'varieties' ? (
@@ -828,7 +828,7 @@ export default function NurseryVarietiesPage() {
                   setCategory(event.target.value)
                   setVarietyPage(1)
                 }}
-                className="h-11 rounded-lg border border-slate-100 bg-slate-50 px-3 text-sm text-ink outline-none focus:border-[#c2410c] focus:ring-2 focus:ring-orange-100"
+                className="h-11 rounded-lg border border-slate-100 bg-slate-50 px-3 text-sm text-ink outline-none focus:border-terracotta focus:ring-2 focus:ring-orange-100"
               >
                 <option value="">كل الفئات</option>
                 {categories.map((item) => (
@@ -844,7 +844,7 @@ export default function NurseryVarietiesPage() {
                 if (activeTab === 'guide') setGuideSort(event.target.value as NurseryGuideListParams['sort'])
                 else setVarietySort(event.target.value as NurseryVarietyListParams['sort'])
               }}
-              className="h-11 rounded-lg border border-slate-100 bg-slate-50 px-3 text-sm text-ink outline-none focus:border-[#c2410c] focus:ring-2 focus:ring-orange-100"
+              className="h-11 rounded-lg border border-slate-100 bg-slate-50 px-3 text-sm text-ink outline-none focus:border-terracotta focus:ring-2 focus:ring-orange-100"
             >
               {activeTab === 'guide' ? (
                 <>
@@ -980,7 +980,7 @@ function SummaryCard({
 }) {
   const toneClass =
     tone === 'clay'
-      ? 'bg-orange-50 text-[#c2410c]'
+      ? 'bg-orange-50 text-terracotta'
       : tone === 'emerald'
         ? 'bg-emerald-50 text-emerald-700'
         : 'bg-slate-50 text-ink-soft'
@@ -1013,7 +1013,7 @@ function TabButton({
       onClick={onClick}
       className={`inline-flex min-h-11 items-center justify-center gap-2 rounded-lg border px-4 text-sm font-semibold active:scale-[0.98] transition-all ${
         active
-          ? 'border-[#c2410c] bg-[#c2410c] text-white'
+          ? 'border-terracotta bg-terracotta text-white'
           : 'border-slate-100 bg-white text-ink-soft hover:bg-slate-50'
       }`}
     >
@@ -1088,14 +1088,14 @@ function VarietiesLedger({
                   <span className="line-clamp-2">{variety.description || '-'}</span>
                 </td>
                 <td className="px-4 py-4 font-semibold text-ink">{formatNumber(variety.tree_lines_count)}</td>
-                <td className="px-4 py-4 font-semibold text-[#c2410c]">{formatNumber(variety.total_quantity)}</td>
+                <td className="px-4 py-4 font-semibold text-terracotta">{formatNumber(variety.total_quantity)}</td>
                 <td className="px-4 py-4 text-ink-soft">{formatDate(variety.created_at)}</td>
                 <td className="px-4 py-4">
                   <div className="flex gap-2">
                     <button
                       type="button"
                       onClick={() => onEdit(variety)}
-                      className="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-slate-100 text-ink-soft hover:text-[#c2410c] active:scale-[0.98] transition-all"
+                      className="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-slate-100 text-ink-soft hover:text-terracotta active:scale-[0.98] transition-all"
                       aria-label="تعديل"
                     >
                       <Edit3 className="h-4 w-4" />
@@ -1213,7 +1213,7 @@ function GuideLedger({
                     <button type="button" onClick={() => onCopy(guide.id)} disabled={copyingId === guide.id} className="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-emerald-100 text-emerald-700 hover:bg-emerald-50 disabled:opacity-60 active:scale-[0.98] transition-all" aria-label="إضافة للأصناف">
                       {copyingId === guide.id ? <Loader2 className="h-4 w-4 animate-spin" /> : <CopyPlus className="h-4 w-4" />}
                     </button>
-                    <button type="button" onClick={() => onEdit(guide)} className="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-slate-100 text-ink-soft hover:text-[#c2410c] active:scale-[0.98] transition-all" aria-label="تعديل">
+                    <button type="button" onClick={() => onEdit(guide)} className="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-slate-100 text-ink-soft hover:text-terracotta active:scale-[0.98] transition-all" aria-label="تعديل">
                       <Edit3 className="h-4 w-4" />
                     </button>
                     <button type="button" onClick={() => onDelete(guide.id)} disabled={deletingId === guide.id} className="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-red-100 text-red-600 hover:bg-red-50 disabled:opacity-60 active:scale-[0.98] transition-all" aria-label="حذف">
@@ -1234,7 +1234,7 @@ function GuideLedger({
                 <button
                   type="button"
                   onClick={() => onToggle(guide.id)}
-                  className="mt-4 inline-flex items-center gap-2 text-sm font-semibold text-[#c2410c] active:scale-[0.98] transition-all"
+                  className="mt-4 inline-flex items-center gap-2 text-sm font-semibold text-terracotta active:scale-[0.98] transition-all"
                 >
                   <Eye className="h-4 w-4" />
                   {expanded ? 'إخفاء التفاصيل' : 'عرض كل التفاصيل'}

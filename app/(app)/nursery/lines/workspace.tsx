@@ -118,7 +118,7 @@ function Button({
   ...props
 }: React.ButtonHTMLAttributes<HTMLButtonElement> & { tone?: 'primary' | 'neutral' | 'green' }) {
   const toneClass = {
-    primary: 'bg-[#c2410c] text-white hover:bg-[#9a3412]',
+    primary: 'bg-terracotta text-white hover:bg-terracotta/90',
     neutral: 'border border-slate-100 bg-white text-slate-700 hover:bg-slate-50 dark:border-slate-800 dark:bg-slate-950 dark:text-slate-200 dark:hover:bg-slate-900',
     green: 'bg-emerald-600 text-white hover:bg-emerald-700',
   }[tone]
@@ -144,7 +144,7 @@ function SelectField({
       <span className="mb-1.5 block text-xs font-bold text-slate-600 dark:text-slate-300">{label}</span>
       <select
         {...props}
-        className="min-h-11 w-full rounded-xl border border-slate-100 bg-slate-50 px-3 py-2 text-sm font-semibold text-slate-900 outline-none transition-all focus:border-[#c2410c] focus:bg-white focus:ring-2 focus:ring-orange-200 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-100"
+        className="min-h-11 w-full rounded-xl border border-slate-100 bg-slate-50 px-3 py-2 text-sm font-semibold text-slate-900 outline-none transition-all focus:border-terracotta focus:bg-white focus:ring-2 focus:ring-orange-100 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-100"
       >
         {children}
       </select>
@@ -164,7 +164,7 @@ function DateField({
       <input
         {...props}
         type="date"
-        className="min-h-11 w-full rounded-xl border border-slate-100 bg-slate-50 px-3 py-2 text-sm font-semibold text-slate-900 outline-none transition-all focus:border-[#c2410c] focus:bg-white focus:ring-2 focus:ring-orange-200 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-100"
+        className="min-h-11 w-full rounded-xl border border-slate-100 bg-slate-50 px-3 py-2 text-sm font-semibold text-slate-900 outline-none transition-all focus:border-terracotta focus:bg-white focus:ring-2 focus:ring-orange-100 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-100"
       />
       {error ? <p className="mt-1 text-xs font-bold text-red-600">{error}</p> : null}
     </label>
@@ -185,7 +185,7 @@ function SummaryTile({
   return (
     <div className="rounded-2xl border border-slate-100 bg-white p-4 shadow-sm dark:border-slate-800 dark:bg-slate-950">
       <div className="flex items-center gap-3">
-        <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-orange-50 text-[#c2410c]">
+        <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-orange-50 text-terracotta">
           <Icon className="h-5 w-5" />
         </span>
         <div>
@@ -316,7 +316,7 @@ export default function NurseryLinesWorkspace({ initialFilters }: { initialFilte
         noValidate
       >
         <div className="mb-4 flex items-center gap-2 text-base font-bold text-slate-950 dark:text-slate-50">
-          <Filter className="h-5 w-5 text-[#c2410c]" />
+          <Filter className="h-5 w-5 text-terracotta" />
           الفلاتر
         </div>
         <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
@@ -478,7 +478,7 @@ export default function NurseryLinesWorkspace({ initialFilters }: { initialFilte
                     </td>
                     <td className="px-4 py-4">
                       <div className="flex min-w-[320px] flex-wrap items-center gap-1 text-xs font-bold text-slate-500 dark:text-slate-400">
-                        <MapPin className="h-4 w-4 text-[#c2410c]" />
+                        <MapPin className="h-4 w-4 text-terracotta" />
                         <span>{line.nursery.name}</span>
                         <ChevronLeft className="h-3 w-3" />
                         <span>{line.location.name}</span>

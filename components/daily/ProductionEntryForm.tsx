@@ -75,7 +75,7 @@ const productionEntrySchema = z.object({
 type ProductionEntryValues = z.infer<typeof productionEntrySchema>
 
 const fieldBase =
-  'h-11 w-full rounded-xl border border-slate-100 bg-slate-50 px-3 text-sm font-semibold text-slate-900 outline-none transition-colors focus:border-[#c2410c] focus:ring-2 focus:ring-[#c2410c]/20 disabled:opacity-60'
+  'h-11 w-full rounded-xl border border-slate-100 bg-slate-50 px-3 text-sm font-semibold text-slate-900 outline-none transition-colors focus:border-terracotta focus:ring-2 focus:ring-orange-100 disabled:opacity-60'
 
 const buttonPress =
   'transition-transform duration-150 active:scale-[0.98] disabled:pointer-events-none disabled:opacity-60'
@@ -295,7 +295,7 @@ export default function ProductionEntryForm({ flockId, onSuccess, onCancel }: Pr
               <textarea
                 rows={4}
                 disabled={isBusy}
-                className="w-full resize-none rounded-xl border border-slate-100 bg-slate-50 px-3 py-2 text-sm font-semibold text-slate-900 outline-none transition-colors focus:border-[#c2410c] focus:ring-2 focus:ring-[#c2410c]/20 disabled:opacity-60"
+                className="w-full resize-none rounded-xl border border-slate-100 bg-slate-50 px-3 py-2 text-sm font-semibold text-slate-900 outline-none transition-colors focus:border-terracotta focus:ring-2 focus:ring-orange-100 disabled:opacity-60"
                 placeholder="اكتب أي ملاحظات أو توصيات هنا..."
                 {...register('ai_observation')}
               />
@@ -310,12 +310,12 @@ export default function ProductionEntryForm({ flockId, onSuccess, onCancel }: Pr
             <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between border-b border-slate-100 pb-3">
               <div>
                 <h3 className="text-base font-bold text-slate-800 flex items-center gap-2">
-                  <Egg className="h-5 w-5 text-[#c2410c]" />
+                  <Egg className="h-5 w-5 text-terracotta" />
                   إنتاج البيض حسب المقاسات القياسية
                 </h3>
                 <p className="text-xs font-semibold text-slate-400 mt-1">يتم ربط وحفظ الإنتاج تلقائياً بـ 13 مقاساً قياسياً معتمداً.</p>
               </div>
-              <div className="rounded-xl border border-orange-100 bg-orange-50/50 px-4 py-2 text-sm font-bold text-[#c2410c] shadow-sm">
+              <div className="rounded-xl border border-orange-100 bg-orange-50/50 px-4 py-2 text-sm font-bold text-terracotta shadow-sm">
                 الإجمالي: {totalEggs.toLocaleString('ar-EG')} طبق
               </div>
             </div>
@@ -325,7 +325,7 @@ export default function ProductionEntryForm({ flockId, onSuccess, onCancel }: Pr
                 <div key={size.code} className="rounded-xl border border-slate-100 bg-slate-50/50 p-3 hover:border-orange-200 transition-all duration-200">
                   <div className="mb-2 flex items-center justify-between gap-2">
                     <span className="inline-flex items-center gap-1.5 text-xs font-bold text-slate-800">
-                      <span className="h-2 w-2 rounded-full bg-[#c2410c]" />
+                      <span className="h-2 w-2 rounded-full bg-terracotta" />
                       {size.label}
                     </span>
                     <span className="rounded bg-slate-100 px-1.5 py-0.5 font-mono text-[10px] font-bold text-slate-500">
@@ -341,7 +341,7 @@ export default function ProductionEntryForm({ flockId, onSuccess, onCancel }: Pr
                       min="0"
                       inputMode="numeric"
                       disabled={isBusy}
-                      className="h-10 w-full rounded-xl border border-slate-100 bg-white px-3 text-left font-mono text-sm font-semibold text-slate-900 outline-none transition-all focus:border-[#c2410c] focus:ring-2 focus:ring-[#c2410c]/10"
+                      className="h-10 w-full rounded-xl border border-slate-100 bg-white px-3 text-left font-mono text-sm font-semibold text-slate-900 outline-none transition-all focus:border-terracotta focus:ring-2 focus:ring-orange-100"
                       placeholder="0"
                       {...register(`egg_items.${index}.quantity`)}
                     />
@@ -442,7 +442,7 @@ export default function ProductionEntryForm({ flockId, onSuccess, onCancel }: Pr
               </div>
               <div className="rounded-xl border border-slate-100 bg-slate-50/50 p-3 flex flex-col justify-center">
                 <span className="text-[10px] font-bold text-slate-400">إجمالي التكلفة</span>
-                <span className="mt-1 font-mono text-base font-bold text-[#c2410c]">{totalFeedCost.toLocaleString('ar-EG', { maximumFractionDigits: 2 })} ر.س</span>
+                <span className="mt-1 font-mono text-base font-bold text-terracotta">{totalFeedCost.toLocaleString('ar-EG', { maximumFractionDigits: 2 })} ر.س</span>
               </div>
             </div>
           </div>

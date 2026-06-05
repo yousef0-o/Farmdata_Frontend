@@ -32,6 +32,13 @@
   --accent-plum-surface: #faf5ff;
   --accent-plum-ink: #9333ea;
 
+  --orange-50: #fff7ed;
+  --orange-100: #ffedd5;
+  --indigo-50: #eef2ff;
+  --indigo-700: #4338ca;
+  --pink-50: #fdf2f8;
+  --pink-700: #be185d;
+
   /* Semantic state colors */
   --status-danger-soft: #fee2e2;
   --status-danger: #dc2626;
@@ -99,10 +106,19 @@
   --duration-page: 150ms;
   --duration-alert: 250ms;
   --duration-highlight: 400ms;
+
+  /* Theme-aware variables for dynamic location gradients/icons */
+  --theme-bg: var(--theme-bg-light);
+  --theme-icon: var(--theme-icon-light);
+  --theme-text: var(--theme-text-light);
 }
 
 .dark {
   color-scheme: dark;
+
+  --theme-bg: var(--theme-bg-dark);
+  --theme-icon: var(--theme-icon-dark);
+  --theme-text: var(--theme-text-dark);
 
   /* Primitive neutrals */
   --neutral-0: #141a17;
@@ -110,11 +126,11 @@
   --neutral-100: #141a17;
   --neutral-200: #212b26;
   --neutral-300: #2d3b34;
-  --neutral-400: #4a5e54;
-  --neutral-500: #6d8579;
-  --neutral-600: #8fa397;
-  --neutral-700: #b1c0b6;
-  --neutral-800: #d4ddd8;
+  --neutral-400: #7e9488;
+  --neutral-500: #9cb0a4;
+  --neutral-600: #b9c9c0;
+  --neutral-700: #d4ddd8;
+  --neutral-800: #e3eae6;
   --neutral-900: #e6ebe8;
   --neutral-950: #050807;
 
@@ -130,6 +146,13 @@
   --accent-leaf-ink: #4ade80;
   --accent-plum-surface: #2c1642;
   --accent-plum-ink: #c084fc;
+
+  --orange-50: #2c1409;
+  --orange-100: #3d1c0b;
+  --indigo-50: #1e1b4b;
+  --indigo-700: #818cf8;
+  --pink-50: #50072b;
+  --pink-700: #f472b6;
 
   /* Semantic state colors */
   --status-danger-soft: #351a15;
@@ -309,17 +332,57 @@
   --color-zinc-950: var(--neutral-950);
 
   /* Curated semantic overrides for frequently used status utilities */
+  --color-blue-50: var(--status-info-soft);
+  --color-blue-100: var(--status-info-soft);
+  --color-blue-200: var(--status-info-soft);
+  --color-blue-600: var(--status-info);
+  --color-blue-700: var(--status-info-strong);
+
+  --color-emerald-50: var(--status-success-soft);
   --color-emerald-100: var(--status-success-soft);
+  --color-emerald-200: var(--status-success-soft);
   --color-emerald-600: var(--status-success);
   --color-emerald-700: var(--status-success-strong);
 
-  --color-amber-100: var(--status-warning-soft);
-  --color-amber-600: var(--status-warning);
-  --color-amber-700: var(--status-warning-strong);
+  --color-green-50: var(--status-success-soft);
+  --color-green-100: var(--status-success-soft);
+  --color-green-200: var(--status-success-soft);
+  --color-green-600: var(--status-success);
+  --color-green-700: var(--status-success-strong);
+  --color-green-800: var(--status-success-strong);
 
+  --color-red-50: var(--status-danger-soft);
   --color-red-100: var(--status-danger-soft);
+  --color-red-200: var(--status-danger-soft);
   --color-red-600: var(--status-danger);
   --color-red-700: var(--status-danger-strong);
+  --color-red-800: var(--status-danger-strong);
+
+  --color-amber-50: var(--status-warning-soft);
+  --color-amber-100: var(--status-warning-soft);
+  --color-amber-200: var(--status-warning-soft);
+  --color-amber-600: var(--status-warning);
+  --color-amber-700: var(--status-warning-strong);
+  --color-amber-800: var(--status-warning-strong);
+
+  --color-orange-50: var(--orange-50);
+  --color-orange-100: var(--orange-100);
+
+  --color-purple-50: var(--accent-plum-surface);
+  --color-purple-100: var(--accent-plum-surface);
+  --color-purple-700: var(--accent-plum-ink);
+
+  --color-indigo-50: var(--indigo-50);
+  --color-indigo-700: var(--indigo-700);
+
+  --color-pink-50: var(--pink-50);
+  --color-pink-700: var(--pink-700);
+
+  --color-sky-50: var(--accent-sky-surface);
+  --color-sky-100: var(--accent-sky-surface);
+  --color-sky-200: var(--accent-sky-surface);
+  --color-sky-700: var(--accent-sky-ink);
+  --color-sky-800: var(--accent-sky-ink);
 
   /* Compatibility aliases for invalid legacy utilities */
   --color-amber-150: var(--status-warning-soft);

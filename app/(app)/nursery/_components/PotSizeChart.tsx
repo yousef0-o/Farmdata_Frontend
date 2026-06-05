@@ -29,7 +29,7 @@ export default function PotSizeChart({ data }: { data: ChartDatum[] }) {
           <p className="text-xs font-extrabold text-slate-800 dark:text-slate-100">{item.label}</p>
           <p className="mt-1 text-xs font-bold text-slate-500 dark:text-slate-400 text-right">
             العدد:{' '}
-            <span className="font-mono font-extrabold text-[#c2410c] dark:text-orange-400">
+            <span className="font-mono font-extrabold text-terracotta dark:text-orange-400">
               {item.value.toLocaleString('ar-SA')}
             </span>{' '}
             شجرة
@@ -46,7 +46,7 @@ export default function PotSizeChart({ data }: { data: ChartDatum[] }) {
         <h3 className="text-base font-extrabold text-slate-950 dark:text-slate-50">
           توزيع الأشجار حسب حجم المركن
         </h3>
-        <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-white text-[#c2410c] ring-1 ring-slate-100 dark:bg-slate-950 dark:ring-slate-800">
+        <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-white text-terracotta ring-1 ring-slate-100 dark:bg-slate-950 dark:ring-slate-800">
           <ChartColumn className="h-4 w-4" />
         </span>
       </div>
@@ -57,8 +57,7 @@ export default function PotSizeChart({ data }: { data: ChartDatum[] }) {
             <CartesianGrid
               strokeDasharray="3 3"
               vertical={false}
-              stroke="#f1f5f9"
-              className="dark:stroke-slate-800"
+              stroke="var(--neutral-100)"
             />
             <XAxis
               dataKey="label"
@@ -72,7 +71,7 @@ export default function PotSizeChart({ data }: { data: ChartDatum[] }) {
               orientation="right"
               tick={{ fill: '#64748b', fontSize: 10, fontFamily: 'monospace' }}
             />
-            <RechartsTooltip content={<CustomTooltip />} cursor={{ fill: '#f8fafc', radius: 8 }} />
+            <RechartsTooltip content={<CustomTooltip />} cursor={{ fill: 'var(--neutral-100)', radius: 8 }} />
             <Bar dataKey="value" radius={[6, 6, 0, 0]} barSize={32} animationDuration={1000}>
               {data.map((entry, index) => (
                 <Cell
