@@ -131,7 +131,7 @@ const toneClasses: Record<MetricTile['tone'], string> = {
 }
 
 const selectBaseClassName =
-  'h-12 w-full appearance-none rounded-xl border border-slate-200 bg-white px-4 pl-10 text-sm font-semibold text-slate-800 outline-none transition-all duration-200 hover:border-slate-300 focus:border-[#10b981] focus:ring-4 focus:ring-emerald-500/10 disabled:cursor-not-allowed disabled:bg-slate-50 disabled:text-slate-400'
+  'h-12 w-full appearance-none rounded-xl border border-slate-200 bg-white dark:bg-surface px-4 pl-10 text-sm font-semibold text-slate-800 outline-none transition-all duration-200 hover:border-slate-300 focus:border-[#10b981] focus:ring-4 focus:ring-emerald-500/10 disabled:cursor-not-allowed disabled:bg-slate-50 disabled:text-slate-400'
 
 function formatPercent(value: number) {
   return `${value.toFixed(2)}%`
@@ -141,7 +141,7 @@ function MetricCard({ metric }: { metric: MetricTile }) {
   const Icon = metric.icon
 
   return (
-    <article className="flex min-h-32 items-start justify-between gap-4 rounded-2xl border border-slate-100 bg-white p-5 shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:border-slate-200 hover:shadow-md">
+    <article className="flex min-h-32 items-start justify-between gap-4 rounded-2xl border border-slate-100 bg-white dark:bg-surface p-5 shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:border-slate-200 hover:shadow-md">
       <div className="min-w-0 text-right">
         <p className="text-xs font-bold leading-5 text-slate-500">
           {metric.label}
@@ -198,7 +198,7 @@ function CapacityCard({ capacity }: { capacity: CapacityOverview }) {
   const utilization = capacity.total > 0 ? (capacity.planted / capacity.total) * 100 : 0
 
   return (
-    <section className="rounded-2xl border border-slate-100 bg-white p-5 shadow-sm sm:p-6">
+    <section className="rounded-2xl border border-slate-100 bg-white dark:bg-surface p-5 shadow-sm sm:p-6">
       <div className="mb-7 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex items-center gap-3">
           <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-50 text-[#10b981] ring-1 ring-emerald-100 dark:bg-emerald-950/20 dark:ring-emerald-900/30">
@@ -241,7 +241,7 @@ function ChartsCard({
   speciesDistribution: ChartDatum[]
 }) {
   return (
-    <section className="rounded-2xl border border-slate-100 bg-white p-5 shadow-sm sm:p-6">
+    <section className="rounded-2xl border border-slate-100 bg-white dark:bg-surface p-5 shadow-sm sm:p-6">
       <div className="grid gap-5 xl:grid-cols-2">
         <PotSizeChart data={potDistribution} />
         <SpeciesDonutChart data={speciesDistribution} />
@@ -260,7 +260,7 @@ function FinancialChartsCard({
   pinnedAccounts: NurseryPinnedExpenseAccount[]
 }) {
   return (
-    <section className="rounded-2xl border border-slate-100 bg-white p-5 shadow-sm sm:p-6">
+    <section className="rounded-2xl border border-slate-100 bg-white dark:bg-surface p-5 shadow-sm sm:p-6">
       <div className="mb-5 flex items-center justify-between gap-4">
         <div className="flex items-center gap-3">
           <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-50 text-blue-600 ring-1 ring-blue-100 dark:bg-blue-950/20 dark:ring-blue-900/30">
@@ -300,7 +300,7 @@ function ActiveCyclesCard({ cycles }: { cycles: NurseryCycle[] }) {
   }
 
   return (
-    <section className="rounded-2xl border border-slate-100 bg-white p-5 shadow-sm sm:p-6">
+    <section className="rounded-2xl border border-slate-100 bg-white dark:bg-surface p-5 shadow-sm sm:p-6">
       <div className="mb-5 flex items-center justify-between gap-4">
         <div className="flex items-center gap-3">
           <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-50 text-[#10b981] ring-1 ring-emerald-100 dark:bg-emerald-950/20 dark:ring-emerald-900/30">
@@ -387,7 +387,7 @@ function ActiveCyclesCard({ cycles }: { cycles: NurseryCycle[] }) {
 
 function StructureCard({ structure }: { structure: StructureMetric[] }) {
   return (
-    <section className="rounded-2xl border border-slate-100 bg-white p-5 shadow-sm">
+    <section className="rounded-2xl border border-slate-100 bg-white dark:bg-surface p-5 shadow-sm">
       <div className="mb-5 flex items-center gap-3">
         <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-slate-50 text-slate-600 ring-1 ring-slate-100">
           <Warehouse className="h-5 w-5" />
@@ -418,7 +418,7 @@ function StructureCard({ structure }: { structure: StructureMetric[] }) {
 
 function InventoryCategoriesCard({ categories }: { categories: NurseryInventoryCategoryTotal[] }) {
   return (
-    <section className="flex flex-col flex-1 rounded-2xl border border-slate-100 bg-white p-5 shadow-sm">
+    <section className="flex flex-col flex-1 rounded-2xl border border-slate-100 bg-white dark:bg-surface p-5 shadow-sm">
       <div className="mb-5 flex items-center gap-3">
         <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-slate-50 text-slate-600 ring-1 ring-slate-100">
           <Boxes className="h-5 w-5" />
@@ -479,7 +479,7 @@ function NurseryInventoryCard({
   onToggleDetails: () => void
 }) {
   return (
-    <section className="flex flex-col flex-1 rounded-2xl border border-slate-100 bg-white p-5 shadow-sm">
+    <section className="flex flex-col flex-1 rounded-2xl border border-slate-100 bg-white dark:bg-surface p-5 shadow-sm">
       <div className="mb-4 flex items-center justify-between gap-4">
         <div className="flex items-center gap-3">
           <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-amber-50 text-amber-600 ring-1 ring-amber-100 dark:bg-amber-950/20 dark:ring-amber-900/30">
@@ -625,7 +625,7 @@ function QuickAccessModal({
       describedBy="quick-access-description"
       panelClassName="max-w-xl"
     >
-      <div className="max-h-[90vh] overflow-y-auto rounded-2xl border border-slate-100 bg-white p-6 shadow-2xl">
+      <div className="max-h-[90vh] overflow-y-auto rounded-2xl border border-slate-100 bg-white dark:bg-surface p-6 shadow-2xl">
         <button
           type="button"
           onClick={onClose}
@@ -972,9 +972,9 @@ export default function NurseryPage() {
   // Skeletons during data fetching
   if (isLoading) {
     return (
-      <div className="min-h-full space-y-6 bg-slate-50 p-6 text-slate-900" dir="rtl">
+      <div className="min-h-full space-y-6 bg-background p-6 text-slate-900" dir="rtl">
         {/* Header Skeleton */}
-        <header className="flex flex-col gap-4 rounded-2xl border border-slate-100 bg-white p-5 shadow-sm sm:flex-row sm:items-center sm:justify-between">
+        <header className="flex flex-col gap-4 rounded-2xl border border-slate-100 bg-white dark:bg-surface p-5 shadow-sm sm:flex-row sm:items-center sm:justify-between">
           <div className="space-y-2 text-right">
             <Skeleton className="h-7 w-32" />
             <Skeleton className="h-4 w-56" />
@@ -985,7 +985,7 @@ export default function NurseryPage() {
         {/* Metrics Grid Skeleton */}
         <section className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-6">
           {[...Array(6)].map((_, index) => (
-            <div key={index} className="flex min-h-32 items-start justify-between gap-4 rounded-2xl border border-slate-100 bg-white p-5 shadow-sm">
+            <div key={index} className="flex min-h-32 items-start justify-between gap-4 rounded-2xl border border-slate-100 bg-white dark:bg-surface p-5 shadow-sm">
               <div className="space-y-3 min-w-0 text-right w-full">
                 <Skeleton className="h-4 w-24" />
                 <Skeleton className="h-7 w-20" />
@@ -999,7 +999,7 @@ export default function NurseryPage() {
         <div className="grid gap-6 xl:grid-cols-[3fr_2fr]">
           <div className="space-y-6">
             {/* Capacity Card Skeleton */}
-            <div className="rounded-2xl border border-slate-100 bg-white p-6 shadow-sm space-y-5">
+            <div className="rounded-2xl border border-slate-100 bg-white dark:bg-surface p-6 shadow-sm space-y-5">
               <div className="flex items-center justify-between">
                 <Skeleton className="h-6 w-40" />
                 <Skeleton className="h-8 w-28 rounded-xl" />
@@ -1017,7 +1017,7 @@ export default function NurseryPage() {
             </div>
 
             {/* Charts Skeleton */}
-            <div className="rounded-2xl border border-slate-100 bg-white p-6 shadow-sm">
+            <div className="rounded-2xl border border-slate-100 bg-white dark:bg-surface p-6 shadow-sm">
               <div className="grid gap-5 xl:grid-cols-2">
                 <div className="h-[320px] rounded-2xl border border-slate-100 bg-slate-50/60 p-5 space-y-4">
                   <Skeleton className="h-5 w-48" />
@@ -1033,7 +1033,7 @@ export default function NurseryPage() {
 
           <div className="space-y-6">
             {/* Structure Card Skeleton */}
-            <div className="rounded-2xl border border-slate-100 bg-white p-5 shadow-sm space-y-4">
+            <div className="rounded-2xl border border-slate-100 bg-white dark:bg-surface p-5 shadow-sm space-y-4">
               <Skeleton className="h-6 w-32" />
               <div className="space-y-3 divide-y divide-slate-100 dark:divide-slate-800">
                 {[...Array(5)].map((_, i) => (
@@ -1051,9 +1051,9 @@ export default function NurseryPage() {
   }
 
   return (
-    <div className="min-h-full space-y-6 bg-slate-50 text-slate-900" dir="rtl">
+    <div className="min-h-full space-y-6 bg-background p-6 text-slate-900" dir="rtl">
       {/* Banner / Header */}
-      <header className="flex flex-col gap-4 rounded-2xl border border-slate-100 bg-white p-5 shadow-sm sm:flex-row sm:items-center sm:justify-between">
+      <header className="flex flex-col gap-4 rounded-2xl border border-slate-100 bg-white dark:bg-surface p-5 shadow-sm sm:flex-row sm:items-center sm:justify-between">
         <div className="text-right">
           <h1 className="text-2xl font-extrabold tracking-normal text-slate-900">
             نظام إدارة المشتل

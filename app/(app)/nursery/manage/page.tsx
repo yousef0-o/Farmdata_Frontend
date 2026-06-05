@@ -235,7 +235,7 @@ function SummaryTile({
       : 'bg-orange-50 text-terracotta'
 
   return (
-    <div className="rounded-2xl border border-slate-100 bg-white p-4 shadow-sm">
+    <div className="rounded-2xl border border-slate-100 bg-white dark:bg-surface p-4 shadow-sm">
       <div className="flex items-center gap-3">
         <span className={`flex h-10 w-10 items-center justify-center rounded-xl ${color}`}>
           <Icon className="h-5 w-5" />
@@ -278,7 +278,7 @@ function FilterBar({
   const [search, setSearch] = useState(filters.search ?? '')
 
   return (
-    <div className="rounded-2xl border border-slate-100 bg-white p-4 shadow-sm">
+    <div className="rounded-2xl border border-slate-100 bg-white dark:bg-surface p-4 shadow-sm">
       <div className="grid gap-3 lg:grid-cols-[1.4fr_1fr_1fr_1fr_auto]">
         <label className="relative block">
           <Search className="pointer-events-none absolute right-3 top-3 h-5 w-5 text-slate-400" />
@@ -363,7 +363,7 @@ function HierarchyPanel({
 }) {
   if (!hierarchy.length) {
     return (
-      <div className="rounded-2xl border border-slate-100 bg-white p-8 text-center shadow-sm">
+      <div className="rounded-2xl border border-slate-100 bg-white dark:bg-surface p-8 text-center shadow-sm">
         <Warehouse className="mx-auto h-10 w-10 text-slate-300" />
         <p className="mt-3 text-sm font-bold text-slate-500">لا توجد بيانات هيكلية لعرضها حاليا.</p>
       </div>
@@ -385,7 +385,7 @@ function HierarchyPanel({
       {hierarchy.map((nursery, nurseryIndex) => (
         <div
           key={nursery.id}
-          className="overflow-hidden rounded-2xl border border-slate-100 bg-white shadow-sm"
+          className="overflow-hidden rounded-2xl border border-slate-100 bg-white dark:bg-surface shadow-sm"
         >
           <div className="flex min-h-16 flex-wrap items-center gap-3 border-b border-slate-100 bg-slate-50 px-6 py-4">
             <Warehouse className="h-5 w-5 text-slate-500" />
@@ -394,7 +394,7 @@ function HierarchyPanel({
             </div>
             <a
               href={`/nursery/manage/general-operations?type=nursery&id=${nursery.id}`}
-              className="mr-auto inline-flex min-h-8 items-center justify-center gap-2 rounded-lg border border-terracotta/25 bg-white px-3 py-1 text-xs font-bold text-terracotta transition-all active:scale-[0.98] hover:bg-orange-50 dark:border-orange-900"
+              className="mr-auto inline-flex min-h-8 items-center justify-center gap-2 rounded-lg border border-terracotta/25 bg-white dark:bg-surface px-3 py-1 text-xs font-bold text-terracotta transition-all active:scale-[0.98] hover:bg-orange-50 dark:border-orange-900"
             >
               <ClipboardList className="h-3.5 w-3.5" />
               عمليات عامة
@@ -436,7 +436,7 @@ function HierarchyPanel({
                       <div className="text-base font-extrabold">{location.name}</div>
                     </div>
                     <div className="mr-auto flex items-center gap-2">
-                      <span className="rounded-md border border-slate-100 bg-white px-2.5 py-1 text-xs font-bold text-slate-600 shadow-sm">
+                      <span className="rounded-md border border-slate-100 bg-white dark:bg-surface px-2.5 py-1 text-xs font-bold text-slate-600 shadow-sm">
                         {location.sections.length} قسم
                       </span>
                       <a
@@ -477,7 +477,7 @@ function HierarchyPanel({
                             <a
                               key={basin.id}
                               href={`/nursery/manage/basins/${basin.id}`}
-                              className="block min-h-[68px] rounded-[10px] border border-slate-200 bg-white p-3 text-inherit shadow-sm transition-all active:scale-[0.98] hover:-translate-y-0.5 hover:border-terracotta hover:shadow-md"
+                              className="block min-h-[68px] rounded-[10px] border border-slate-200 bg-white dark:bg-surface p-3 text-inherit shadow-sm transition-all active:scale-[0.98] hover:-translate-y-0.5 hover:border-terracotta hover:shadow-md"
                             >
                               <div className="overflow-hidden">
                                 <span className="float-left rounded bg-slate-100 px-2 py-0.5 font-mono text-xs font-bold text-slate-500">
@@ -519,7 +519,7 @@ function VarietyCards({
 }) {
   if (!sizes.length) {
     return (
-      <div className="rounded-2xl border border-slate-100 bg-white p-8 text-center shadow-sm">
+      <div className="rounded-2xl border border-slate-100 bg-white dark:bg-surface p-8 text-center shadow-sm">
         <Sprout className="mx-auto h-10 w-10 text-slate-300" />
         <p className="mt-3 text-sm font-bold text-slate-500">لا توجد أشجار مسجلة حاليا.</p>
       </div>
@@ -531,7 +531,7 @@ function VarietyCards({
       {sizes.map((size) => (
         <div
           key={`${size.variety_id}-${size.pot_size ?? 'empty'}`}
-          className="rounded-2xl border border-slate-100 bg-white p-4 shadow-sm"
+          className="rounded-2xl border border-slate-100 bg-white dark:bg-surface p-4 shadow-sm"
         >
           <div className="flex items-start justify-between gap-3">
             <div>
@@ -592,7 +592,7 @@ function LegacyHierarchyList({ hierarchy }: { hierarchy: NurseryManageHierarchyN
 
   if (!hierarchy.length) {
     return (
-      <div className="rounded-2xl border border-slate-100 bg-white p-8 text-center shadow-sm">
+      <div className="rounded-2xl border border-slate-100 bg-white dark:bg-surface p-8 text-center shadow-sm">
         <Layers3 className="mx-auto h-10 w-10 text-slate-300" />
         <p className="mt-3 text-sm font-bold text-slate-500">لا توجد بيانات لعرضها حاليا.</p>
         <a
@@ -614,7 +614,7 @@ function LegacyHierarchyList({ hierarchy }: { hierarchy: NurseryManageHierarchyN
         return (
           <div
             key={nursery.id}
-            className="overflow-hidden rounded-2xl border border-slate-100 bg-white shadow-sm"
+            className="overflow-hidden rounded-2xl border border-slate-100 bg-white dark:bg-surface shadow-sm"
           >
             <button
               type="button"
@@ -779,7 +779,7 @@ function CycleTable({
 }) {
   if (!cycles.length) {
     return (
-      <div className="rounded-2xl border border-slate-100 bg-white p-8 text-center shadow-sm">
+      <div className="rounded-2xl border border-slate-100 bg-white dark:bg-surface p-8 text-center shadow-sm">
         <CalendarDays className="mx-auto h-10 w-10 text-slate-300" />
         <p className="mt-3 text-sm font-bold text-slate-500">لا توجد دورات إنتاج مطابقة.</p>
       </div>
@@ -787,7 +787,7 @@ function CycleTable({
   }
 
   return (
-    <div className="overflow-hidden rounded-2xl border border-slate-100 bg-white shadow-sm">
+    <div className="overflow-hidden rounded-2xl border border-slate-100 bg-white dark:bg-surface shadow-sm">
       <div className="hidden overflow-x-auto lg:block">
         <table className="min-w-full divide-y divide-slate-100 text-right dark:divide-slate-800">
           <thead className="bg-slate-50">
@@ -940,7 +940,7 @@ function CycleDialog({
     <AppDialog open={open} onClose={onClose} panelClassName="max-w-3xl">
       <form
         onSubmit={form.handleSubmit(submit)}
-        className="rounded-2xl border border-slate-100 bg-white p-5 shadow-xl"
+        className="rounded-2xl border border-slate-100 bg-white dark:bg-surface p-5 shadow-xl"
       >
         <div className="mb-5 flex items-center justify-between gap-3">
           <div>
@@ -1078,7 +1078,7 @@ function TransferDialog({
     <AppDialog open={open} onClose={onClose} panelClassName="max-w-5xl">
       <form
         onSubmit={form.handleSubmit((values) => mutation.mutate(values))}
-        className="max-h-[90vh] overflow-y-auto rounded-2xl border border-slate-100 bg-white p-5 shadow-xl"
+        className="max-h-[90vh] overflow-y-auto rounded-2xl border border-slate-100 bg-white dark:bg-surface p-5 shadow-xl"
       >
         <div className="mb-5 flex items-start justify-between gap-3">
           <div>
@@ -1275,7 +1275,7 @@ function ProcedureDialog({
     <AppDialog open={open} onClose={onClose} panelClassName="max-w-2xl">
       <form
         onSubmit={form.handleSubmit((values) => mutation.mutate(values))}
-        className="rounded-2xl border border-slate-100 bg-white p-5 shadow-xl"
+        className="rounded-2xl border border-slate-100 bg-white dark:bg-surface p-5 shadow-xl"
       >
         <div className="mb-5">
           <h2 className="text-xl font-bold text-slate-900">تسجيل إجراء دورة إنتاج</h2>
@@ -1344,7 +1344,7 @@ function LocationsDialog({
 
   return (
     <AppDialog open={Boolean(size)} onClose={onClose} panelClassName="max-w-2xl">
-      <div className="rounded-2xl border border-slate-100 bg-white p-5 shadow-xl">
+      <div className="rounded-2xl border border-slate-100 bg-white dark:bg-surface p-5 shadow-xl">
         <div className="mb-5 flex items-center justify-between">
           <div>
             <h2 className="text-xl font-bold text-slate-900">تفاصيل المواقع</h2>
@@ -1413,9 +1413,9 @@ export default function NurseryManagePage() {
   })
 
   return (
-    <main dir="rtl" className="min-h-screen w-full bg-slate-50 px-3 py-6 text-slate-900 sm:px-4 lg:px-6">
+    <main dir="rtl" className="min-h-screen w-full bg-background px-3 py-6 text-slate-900 sm:px-4 lg:px-6">
       <div className="w-full max-w-none space-y-6">
-        <header className="rounded-2xl border border-slate-100 bg-white p-5 shadow-sm">
+        <header className="rounded-2xl border border-slate-100 bg-white dark:bg-surface p-5 shadow-sm">
           <div className="flex flex-wrap items-center justify-between gap-4">
             <div>
               <div className="mb-2 inline-flex items-center gap-2 rounded-xl bg-orange-50 px-3 py-1 text-xs font-bold text-terracotta">
