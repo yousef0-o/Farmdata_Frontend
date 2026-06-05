@@ -8,8 +8,6 @@ import { TodaySummaryRow } from '@/components/dashboard/TodaySummaryRow'
 import { FlockWatchlistTable } from '@/components/dashboard/FlockWatchlistTable'
 import { DashboardTrendsSection } from '@/components/dashboard/DashboardTrendsSection'
 import { FeedRunwayWidget } from '@/components/dashboard/FeedRunwayWidget'
-import { BarnOccupancyWidget } from '@/components/dashboard/BarnOccupancyWidget'
-import { LifecycleEventsWidget } from '@/components/dashboard/LifecycleEventsWidget'
 import { EggDistributionWidget } from '@/components/dashboard/EggDistributionWidget'
 import { useMorningSummary } from '@/lib/hooks/useMorningSummary'
 import { useFlockAnalytics } from '@/lib/hooks/useFlockAnalytics'
@@ -377,37 +375,19 @@ export default function DashboardPage() {
         />
       )}
 
-      <div className="grid grid-cols-1 gap-4 xl:grid-cols-2">
-        <BarnOccupancyWidget />
-        {hasMorningSummaryError ? (
-          <MorningSummaryErrorCard
-            title="تعذر تحميل أحداث دورة الحياة"
-            message="لم يتم عرض حالة فارغة لأن بيانات الأفواج لم تصل من الخادم."
-            onRetry={() => morningSummary.refetch()}
-            isRetrying={morningSummary.isFetching}
-          />
-        ) : (
-          <LifecycleEventsWidget
-            watchlist={watchlist ?? []}
-            isLoading={morningSummary.isLoading}
-          />
-        )}
-        {analytics.isError ? (
-          <MorningSummaryErrorCard
-            title="تعذر تحميل توزيع أوزان البيض"
-            message="طلب /api/statistics لم يكتمل بنجاح للنطاق المختار أو كل النطاق."
-            onRetry={() => analytics.refetch()}
-            isRetrying={analytics.isFetching}
-            className="xl:col-span-2"
-          />
-        ) : (
-          <EggDistributionWidget
-            distribution={analytics.data?.egg_weight_distribution}
-            isLoading={analytics.isLoading}
-            className="xl:col-span-2"
-          />
-        )}
-      </div>
+      {analytics.isError ? (
+        <MorningSummaryErrorCard
+          title="تعذر تحميل توزيع أوزان البيض"
+          message="طلب /api/statistics لم يكتمل بنجاح للنطاق المختار أو كل النطاق."
+          onRetry={() => analytics.refetch()}
+          isRetrying={analytics.isFetching}
+        />
+      ) : (
+        <EggDistributionWidget
+          distribution={analytics.data?.egg_weight_distribution}
+          isLoading={analytics.isLoading}
+        />
+      )}
     </div>
   )
 }
