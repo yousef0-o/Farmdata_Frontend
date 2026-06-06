@@ -101,3 +101,10 @@ export function useCopyNurseryTreeGuideToVarieties() {
     onSuccess: invalidate,
   })
 }
+
+export function useAutofillNurseryTreeGuide() {
+  return useMutation({
+    mutationFn: (payload: { name: string; current_data?: Record<string, unknown> }) =>
+      nurseryVarietiesApi.autofillGuide(payload),
+  })
+}

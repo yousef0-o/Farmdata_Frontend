@@ -25,6 +25,15 @@ import {
   TreePalm,
   Trees,
   X,
+  Sparkles,
+  Dna,
+  ArrowDownUp,
+  Shapes,
+  Shuffle,
+  FlaskConical,
+  Apple,
+  Flower2,
+  Clock,
 } from 'lucide-react'
 import AppDialog from '@/components/ui/AppDialog'
 import {
@@ -37,6 +46,7 @@ import {
   useNurseryVarieties,
   useUpdateNurseryTreeGuide,
   useUpdateNurseryVariety,
+  useAutofillNurseryTreeGuide,
 } from '@/lib/hooks/useNurseryVarieties'
 import type {
   ApiError,
@@ -445,113 +455,293 @@ function GuideFormDialog({
     values: guide ? guideToDefaults(guide) : guideDefaults,
   })
 
+  const autofillMutation = useAutofillNurseryTreeGuide()
+  const [isAutofilling, setIsAutofilling] = useState(false)
+  const [corrections, setCorrections] = useState<any[]>([])
+  const [reviewOpen, setReviewOpen] = useState(false)
+  const [acceptedCorrections, setAcceptedCorrections] = useState<Record<number, boolean>>({})
+
+  const fieldArabicLabels: Record<string, string> = {
+    scientific_name: 'الاسم العلمي',
+    family: 'الفصيلة',
+    common_name: 'الاسم الشائع',
+    origin: 'الموطن الأصلي',
+    growth_habit: 'طبيعة النمو',
+    height: 'الارتفاع',
+    spread: 'امتداد التاج',
+    leaf_type: 'طبيعة الورق',
+    leaf_color: 'لون الورق',
+    usage_location: 'موقع الاستخدام',
+    usage_type: 'نوع الاستخدام',
+    light: 'الضوء',
+    temperature: 'الحرارة',
+    humidity: 'الرطوبة',
+    salinity: 'الملوحة',
+    irrigation: 'الري',
+    propagation: 'التكاثر',
+    general_care: 'الرعاية العامة',
+    notes: 'الملاحظات',
+  }
+
+  const handleAiAutofill = async () => {
+    const name = form.getValues('name')
+    if (!name) return
+
+    setIsAutofilling(true)
+    try {
+      const currentValues = form.getValues()
+      const current_data = {
+        scientific_name: currentValues.scientific_name,
+        family: currentValues.family,
+        common_name: currentValues.common_name,
+        origin: currentValues.origin,
+        growth_habit: currentValues.growth_habit,
+        height: currentValues.height,
+        spread: currentValues.spread,
+        leaf_type: currentValues.leaf_type,
+        leaf_color: currentValues.leaf_color,
+        usage_location: currentValues.usage_location,
+        usage_type: currentValues.usage_type,
+        light: currentValues.light,
+        temperature: currentValues.temperature,
+        humidity: currentValues.humidity,
+        salinity: currentValues.salinity,
+        irrigation: currentValues.irrigation,
+        propagation: currentValues.propagation,
+        general_care: currentValues.general_care,
+        notes: currentValues.notes,
+      }
+
+      const res = await autofillMutation.mutateAsync({ name, current_data })
+      if (res.success) {
+        // 1. Fill empty fields
+        const filled = res.data.filled
+        if (filled) {
+          Object.entries(filled).forEach(([key, value]) => {
+            if (value && !form.getValues(key as any)) {
+              form.setValue(key as any, value, { shouldDirty: true, shouldValidate: true })
+            }
+          })
+        }
+
+        // 2. Handle corrections
+        const suggestedCorrections = res.data.corrections
+        if (suggestedCorrections && suggestedCorrections.length > 0) {
+          setCorrections(suggestedCorrections)
+          const initialAccepts: Record<number, boolean> = {}
+          suggestedCorrections.forEach((_, idx) => {
+            initialAccepts[idx] = true
+          })
+          setAcceptedCorrections(initialAccepts)
+          setReviewOpen(true)
+        }
+      } else {
+        alert((res as any).message || 'حدث خطأ أثناء الاتصال بالذكاء الاصطناعي')
+      }
+    } catch (err: any) {
+      alert(err.message || 'حدث خطأ في الاتصال بالذكاء الاصطناعي')
+    } finally {
+      setIsAutofilling(false)
+    }
+  }
+
+  const applyCorrections = () => {
+    corrections.forEach((c, idx) => {
+      if (acceptedCorrections[idx]) {
+        form.setValue(c.field as any, c.suggested_value, { shouldDirty: true, shouldValidate: true })
+      }
+    })
+    setReviewOpen(false)
+    setCorrections([])
+  }
+
   return (
-    <AppDialog open={open} onClose={onClose} panelClassName="max-w-5xl">
-      <form
-        onSubmit={form.handleSubmit(onSubmit)}
-        className="max-h-[90vh] overflow-y-auto rounded-2xl border border-slate-100 bg-white shadow-xl"
-      >
-        <div className="flex items-start justify-between gap-4 border-b border-slate-100 px-6 py-5">
-          <div>
-            <h2 id="guide-form-title" className="text-xl font-bold text-ink">
-              {guide ? 'تعديل دليل شجرة' : 'إضافة دليل شجرة'}
-            </h2>
-            <p className="mt-1 text-sm text-ink-soft">البيانات الأساسية ونصائح العناية كما وردت في دليل أصناف الظل و الزينة.</p>
-          </div>
-          <button
-            type="button"
-            onClick={onClose}
-            className="inline-flex h-10 w-10 items-center justify-center rounded-lg border border-slate-100 text-ink-soft hover:bg-slate-50 active:scale-[0.98] transition-all"
-            aria-label="إغلاق"
-          >
-            <X className="h-4 w-4" />
-          </button>
-        </div>
-
-        <div className="space-y-7 p-6">
-          <section>
-            <h3 className="mb-4 flex items-center gap-2 text-sm font-bold text-terracotta">
-              <Leaf className="h-4 w-4" />
-              البيانات الأساسية
-            </h3>
-            <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-              <GuideInput form={form} name="name" label="اسم الشجرة" required />
-              <GuideInput form={form} name="scientific_name" label="الاسم العلمي" ltr />
-              <GuideInput form={form} name="family" label="الفصيلة" />
-              <GuideInput form={form} name="common_name" label="الاسم الشائع" />
-              <GuideInput form={form} name="origin" label="الموطن الأصلي" />
-              <GuideInput form={form} name="growth_habit" label="طبيعة النمو" />
-              <GuideInput form={form} name="height" label="الارتفاع (م)" type="number" step="0.1" />
-              <GuideInput form={form} name="spread" label="امتداد التاج (م)" type="number" step="0.1" />
-              <GuideInput form={form} name="leaf_type" label="طبيعة الورق" />
-              <GuideInput form={form} name="leaf_color" label="لون الورق" />
-              <GuideInput form={form} name="usage_location" label="موقع الاستخدام" />
-              <GuideInput form={form} name="usage_type" label="نوع الاستخدام" />
-              <div className="lg:col-span-3">
-                <GuideInput form={form} name="image_url" label="رابط الصورة" ltr />
-              </div>
+    <>
+      <AppDialog open={open} onClose={onClose} panelClassName="max-w-5xl">
+        <form
+          onSubmit={form.handleSubmit(onSubmit)}
+          className="max-h-[90vh] overflow-y-auto rounded-2xl border border-slate-100 bg-white shadow-xl"
+        >
+          <div className="flex items-start justify-between gap-4 border-b border-slate-100 px-6 py-5">
+            <div>
+              <h2 id="guide-form-title" className="text-xl font-bold text-ink">
+                {guide ? 'تعديل دليل شجرة' : 'إضافة دليل شجرة'}
+              </h2>
+              <p className="mt-1 text-sm text-ink-soft">البيانات الأساسية ونصائح العناية كما وردت في دليل أصناف الظل و الزينة.</p>
             </div>
-          </section>
-
-          <section>
-            <h3 className="mb-4 flex items-center gap-2 text-sm font-bold text-emerald-700">
-              <Sprout className="h-4 w-4" />
-              نصائح العناية
-            </h3>
-            <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-              <GuideInput form={form} name="light" label="الضوء" />
-              <GuideInput form={form} name="temperature" label="الحرارة" />
-              <GuideInput form={form} name="humidity" label="الرطوبة" />
-              <GuideInput form={form} name="salinity" label="الملوحة (ppm)" />
-              <GuideInput form={form} name="irrigation" label="الري" />
-              <GuideInput form={form} name="propagation" label="التكاثر" />
-              <div className="lg:col-span-3">
-                <FieldLabel>الرعاية العامة</FieldLabel>
-                <textarea
-                  {...form.register('general_care')}
-                  rows={4}
-                  className="w-full rounded-lg border border-slate-100 bg-slate-50 px-3 py-3 text-sm text-ink outline-none focus:border-terracotta focus:ring-2 focus:ring-orange-100"
-                />
-                <ErrorText message={form.formState.errors.general_care?.message} />
-              </div>
-              <div className="lg:col-span-3">
-                <FieldLabel>ملاحظات إضافية</FieldLabel>
-                <textarea
-                  {...form.register('notes')}
-                  rows={3}
-                  className="w-full rounded-lg border border-slate-100 bg-slate-50 px-3 py-3 text-sm text-ink outline-none focus:border-terracotta focus:ring-2 focus:ring-orange-100"
-                />
-                <ErrorText message={form.formState.errors.notes?.message} />
-              </div>
-            </div>
-          </section>
-        </div>
-
-        {error ? (
-          <div className="mx-6 mb-4 rounded-lg border border-red-100 bg-red-50 px-4 py-3 text-sm font-semibold text-red-700">
-            {getErrorMessage(error)}
+            <button
+              type="button"
+              onClick={onClose}
+              className="inline-flex h-10 w-10 items-center justify-center rounded-lg border border-slate-100 text-ink-soft hover:bg-slate-50 active:scale-[0.98] transition-all"
+              aria-label="إغلاق"
+            >
+              <X className="h-4 w-4" />
+            </button>
           </div>
-        ) : null}
 
-        <div className="flex flex-col-reverse gap-3 border-t border-slate-100 px-6 py-5 sm:flex-row sm:justify-end">
-          <button
-            type="button"
-            onClick={onClose}
-            className="inline-flex min-h-11 items-center justify-center rounded-lg border border-slate-100 bg-white px-5 text-sm font-semibold text-ink-soft active:scale-[0.98] transition-all"
-          >
-            إلغاء
-          </button>
-          <button
-            type="submit"
-            disabled={submitting}
-            className="inline-flex min-h-11 items-center justify-center gap-2 rounded-lg bg-terracotta px-5 text-sm font-semibold text-white hover:bg-terracotta/90 disabled:opacity-60 active:scale-[0.98] transition-all"
-          >
-            {submitting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
-            حفظ الدليل
-          </button>
-        </div>
-      </form>
-    </AppDialog>
+          <div className="space-y-7 p-6">
+            <section>
+              <h3 className="mb-4 flex items-center gap-2 text-sm font-bold text-terracotta">
+                <Leaf className="h-4 w-4" />
+                البيانات الأساسية
+              </h3>
+              <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+                <div className="sm:col-span-2 lg:col-span-3">
+                  <FieldLabel>اسم الشجرة</FieldLabel>
+                  <div className="flex gap-2">
+                    <input
+                      {...form.register('name')}
+                      placeholder="مثال: فيكس نيتدا"
+                      className="h-11 flex-1 rounded-lg border border-slate-100 bg-slate-50 px-3 text-sm text-ink outline-none focus:border-terracotta focus:ring-2 focus:ring-orange-100"
+                    />
+                    <button
+                      type="button"
+                      onClick={handleAiAutofill}
+                      disabled={isAutofilling || !form.watch('name')?.trim()}
+                      className="inline-flex h-11 items-center justify-center gap-2 rounded-lg bg-emerald-600 px-4 text-sm font-semibold text-white hover:bg-emerald-700 disabled:opacity-60 active:scale-[0.98] transition-all whitespace-nowrap"
+                    >
+                      {isAutofilling ? (
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                      ) : (
+                        <Sparkles className="h-4 w-4" />
+                      )}
+                      تعبئة بالذكاء الاصطناعي
+                    </button>
+                  </div>
+                  <ErrorText message={form.formState.errors.name?.message} />
+                </div>
+
+                <GuideInput form={form} name="scientific_name" label="الاسم العلمي" ltr />
+                <GuideInput form={form} name="family" label="الفصيلة" />
+                <GuideInput form={form} name="common_name" label="الاسم الشائع" />
+                <GuideInput form={form} name="origin" label="الموطن الأصلي" />
+                <GuideInput form={form} name="growth_habit" label="طبيعة النمو" />
+                <GuideInput form={form} name="height" label="الارتفاع (م)" type="number" step="0.1" />
+                <GuideInput form={form} name="spread" label="امتداد التاج (م)" type="number" step="0.1" />
+                <GuideInput form={form} name="leaf_type" label="طبيعة الورق" />
+                <GuideInput form={form} name="leaf_color" label="لون الورق" />
+                <GuideInput form={form} name="usage_location" label="موقع الاستخدام" />
+                <GuideInput form={form} name="usage_type" label="نوع الاستخدام" />
+                <div className="lg:col-span-3">
+                  <GuideInput form={form} name="image_url" label="رابط الصورة" ltr />
+                </div>
+              </div>
+            </section>
+
+            <section>
+              <h3 className="mb-4 flex items-center gap-2 text-sm font-bold text-emerald-700">
+                <Sprout className="h-4 w-4" />
+                نصائح العناية
+              </h3>
+              <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+                <GuideInput form={form} name="light" label="الضوء" />
+                <GuideInput form={form} name="temperature" label="الحرارة" />
+                <GuideInput form={form} name="humidity" label="الرطوبة" />
+                <GuideInput form={form} name="salinity" label="الملوحة (ppm)" />
+                <GuideInput form={form} name="irrigation" label="الري" />
+                <GuideInput form={form} name="propagation" label="التكاثر" />
+                <div className="lg:col-span-3">
+                  <FieldLabel>الرعاية العامة</FieldLabel>
+                  <textarea
+                    {...form.register('general_care')}
+                    rows={4}
+                    className="w-full rounded-lg border border-slate-100 bg-slate-50 px-3 py-3 text-sm text-ink outline-none focus:border-terracotta focus:ring-2 focus:ring-orange-100"
+                  />
+                  <ErrorText message={form.formState.errors.general_care?.message} />
+                </div>
+                <div className="lg:col-span-3">
+                  <FieldLabel>ملاحظات إضافية</FieldLabel>
+                  <textarea
+                    {...form.register('notes')}
+                    rows={3}
+                    className="w-full rounded-lg border border-slate-100 bg-slate-50 px-3 py-3 text-sm text-ink outline-none focus:border-terracotta focus:ring-2 focus:ring-orange-100"
+                  />
+                  <ErrorText message={form.formState.errors.notes?.message} />
+                </div>
+              </div>
+            </section>
+          </div>
+
+          {error ? (
+            <div className="mx-6 mb-4 rounded-lg border border-red-100 bg-red-50 px-4 py-3 text-sm font-semibold text-red-700">
+              {getErrorMessage(error)}
+            </div>
+          ) : null}
+
+          <div className="flex flex-col-reverse gap-3 border-t border-slate-100 px-6 py-5 sm:flex-row sm:justify-end">
+            <button
+              type="button"
+              onClick={onClose}
+              className="inline-flex min-h-11 items-center justify-center rounded-lg border border-slate-100 bg-white px-5 text-sm font-semibold text-ink-soft active:scale-[0.98] transition-all"
+            >
+              إلغاء
+            </button>
+            <button
+              type="submit"
+              disabled={submitting}
+              className="inline-flex min-h-11 items-center justify-center gap-2 rounded-lg bg-terracotta px-5 text-sm font-semibold text-white hover:bg-terracotta/90 disabled:opacity-60 active:scale-[0.98] transition-all"
+            >
+              {submitting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
+              حفظ الدليل
+            </button>
+          </div>
+        </form>
+      </AppDialog>
+
+      {reviewOpen && (
+        <AppDialog open={reviewOpen} onClose={() => setReviewOpen(false)} panelClassName="max-w-2xl">
+          <div className="rounded-2xl border border-slate-100 bg-white p-6 shadow-xl text-right" dir="rtl">
+            <h3 className="text-lg font-bold text-ink mb-2">مراجعة مقترحات الذكاء الاصطناعي</h3>
+            <p className="text-sm text-ink-soft mb-4">اقترح الذكاء الاصطناعي تصحيح القيم التالية بناءً على اسم الشجرة والمناخ المحلي للمملكة العربية السعودية:</p>
+
+            <div className="space-y-4 max-h-[50vh] overflow-y-auto mb-6 p-1">
+              {corrections.map((c, idx) => (
+                <div key={idx} className="rounded-xl border border-amber-100 bg-amber-50/50 p-4">
+                  <div className="flex items-center justify-between font-semibold text-ink">
+                    <span>{fieldArabicLabels[c.field] || c.field}</span>
+                    <label className="flex items-center gap-2 cursor-pointer text-xs font-bold text-emerald-700">
+                      <input
+                        type="checkbox"
+                        checked={!!acceptedCorrections[idx]}
+                        onChange={(e) => setAcceptedCorrections(prev => ({ ...prev, [idx]: e.target.checked }))}
+                        className="rounded border-slate-300 text-emerald-600 focus:ring-emerald-500 h-4 w-4"
+                      />
+                      قبول المقترح
+                    </label>
+                  </div>
+                  <div className="mt-2 flex gap-4 text-sm">
+                    <div className="line-through text-red-500">{c.current_value || '(فارغ)'}</div>
+                    <div className="font-bold text-emerald-600">← {c.suggested_value}</div>
+                  </div>
+                  {c.reason && (
+                    <div className="mt-2 text-xs text-ink-soft bg-white/60 p-2 rounded">
+                      <strong>السبب:</strong> {c.reason}
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+
+            <div className="flex justify-end gap-3">
+              <button
+                type="button"
+                onClick={() => setReviewOpen(false)}
+                className="inline-flex min-h-10 items-center justify-center rounded-lg border border-slate-100 bg-white px-4 text-sm font-semibold text-ink-soft active:scale-[0.98] transition-all"
+              >
+                تجاهل
+              </button>
+              <button
+                type="button"
+                onClick={applyCorrections}
+                className="inline-flex min-h-10 items-center justify-center gap-2 rounded-lg bg-emerald-600 px-4 text-sm font-semibold text-white hover:bg-emerald-700 active:scale-[0.98] transition-all"
+              >
+                تطبيق التصحيحات المقبولة
+              </button>
+            </div>
+          </div>
+        </AppDialog>
+      )}
+    </>
   )
 }
 
@@ -1055,103 +1245,84 @@ function VarietiesLedger({
   }
 
   return (
-    <>
-      <div className="hidden overflow-x-auto lg:block">
-        <table className="min-w-[1120px] w-full text-right text-sm">
-          <thead className="bg-slate-50 text-xs font-bold text-ink-soft">
-            <tr>
-              <th className="px-4 py-3">اسم الصنف</th>
-              <th className="px-4 py-3">الاسم العلمي</th>
-              <th className="px-4 py-3">الفئة</th>
-              <th className="px-4 py-3">فترة النمو</th>
-              <th className="px-4 py-3">الوصف</th>
-              <th className="px-4 py-3">خطوط الأشجار</th>
-              <th className="px-4 py-3">إجمالي الأشجار</th>
-              <th className="px-4 py-3">تاريخ الإنشاء</th>
-              <th className="px-4 py-3">الإجراءات</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-slate-100">
-            {varieties.map((variety) => (
-              <tr key={variety.id} className="bg-white hover:bg-slate-50">
-                <td className="px-4 py-4 font-bold text-ink">{variety.name}</td>
-                <td className="px-4 py-4 text-left italic text-ink-soft" dir="ltr">
-                  {variety.scientific_name || '-'}
-                </td>
-                <td className="px-4 py-4">
-                  <span className="rounded-full bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-700">
-                    {variety.category || '-'}
-                  </span>
-                </td>
-                <td className="px-4 py-4 text-ink-soft">{formatNumber(variety.growth_period, variety.growth_period ? ' شهر' : '')}</td>
-                <td className="max-w-xs px-4 py-4 text-ink-soft">
-                  <span className="line-clamp-2">{variety.description || '-'}</span>
-                </td>
-                <td className="px-4 py-4 font-semibold text-ink">{formatNumber(variety.tree_lines_count)}</td>
-                <td className="px-4 py-4 font-semibold text-terracotta">{formatNumber(variety.total_quantity)}</td>
-                <td className="px-4 py-4 text-ink-soft">{formatDate(variety.created_at)}</td>
-                <td className="px-4 py-4">
-                  <div className="flex gap-2">
-                    <button
-                      type="button"
-                      onClick={() => onEdit(variety)}
-                      className="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-slate-100 text-ink-soft hover:text-terracotta active:scale-[0.98] transition-all"
-                      aria-label="تعديل"
-                    >
-                      <Edit3 className="h-4 w-4" />
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => onDelete(variety.id)}
-                      disabled={deletingId === variety.id}
-                      className="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-red-100 text-red-600 hover:bg-red-50 disabled:opacity-60 active:scale-[0.98] transition-all"
-                      aria-label="حذف"
-                    >
-                      {deletingId === variety.id ? <Loader2 className="h-4 w-4 animate-spin" /> : <Trash2 className="h-4 w-4" />}
-                    </button>
-                  </div>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+    <div className="grid gap-6 p-4 grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 2xl:grid-cols-5">
+      {varieties.map((variety) => {
+        let IconComponent = Trees
+        if (variety.category === 'أشجار مثمرة') {
+          IconComponent = Apple
+        } else if (variety.category === 'نخيل') {
+          IconComponent = TreePalm
+        } else if (variety.category === 'أشجار زينة') {
+          IconComponent = Flower2
+        }
 
-      <div className="grid gap-3 p-4 lg:hidden">
-        {varieties.map((variety) => (
-          <article key={variety.id} className="rounded-xl border border-slate-100 bg-white p-4">
-            <div className="flex items-start justify-between gap-3">
-              <div>
-                <h3 className="font-bold text-ink">{variety.name}</h3>
-                <p className="mt-1 text-left text-xs italic text-ink-soft" dir="ltr">
-                  {variety.scientific_name || '-'}
-                </p>
+        return (
+          <div key={variety.id} className="group relative flex gap-4 rounded-2xl border border-slate-100 bg-white p-5 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 text-right">
+            {/* Category Icon */}
+            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-emerald-50 text-emerald-700">
+              <IconComponent className="h-6 w-6" />
+            </div>
+
+            {/* Content area */}
+            <div className="flex-1 min-w-0">
+              <div className="mb-2">
+                <h3 className="text-base font-bold text-ink truncate">{variety.name}</h3>
+                {variety.scientific_name && (
+                  <p className="mt-0.5 text-left text-xs italic text-ink-soft" dir="ltr">
+                    {variety.scientific_name}
+                  </p>
+                )}
               </div>
-              <span className="rounded-full bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-700">
-                {variety.category || '-'}
-              </span>
+
+              {/* Meta Tags */}
+              <div className="mb-3 flex flex-wrap gap-1.5">
+                <span className="rounded-full bg-slate-100 px-2.5 py-0.5 text-xs font-semibold text-ink-soft">
+                  {variety.category || '-'}
+                </span>
+                {variety.growth_period ? (
+                  <span className="inline-flex items-center gap-1 rounded-full bg-slate-100 px-2.5 py-0.5 text-xs font-semibold text-ink-soft">
+                    <Clock className="h-3.5 w-3.5" />
+                    {variety.growth_period} شهر
+                  </span>
+                ) : null}
+              </div>
+
+              {/* Description */}
+              {variety.description && (
+                <p className="text-xs leading-5 text-ink-soft line-clamp-2">
+                  {variety.description}
+                </p>
+              )}
             </div>
-            <div className="mt-4 grid grid-cols-2 gap-3 text-sm">
-              <Info label="فترة النمو" value={formatNumber(variety.growth_period, variety.growth_period ? ' شهر' : '')} />
-              <Info label="إجمالي الأشجار" value={formatNumber(variety.total_quantity)} />
-              <Info label="خطوط الأشجار" value={formatNumber(variety.tree_lines_count)} />
-              <Info label="تاريخ الإنشاء" value={formatDate(variety.created_at)} />
-            </div>
-            <p className="mt-3 text-sm leading-6 text-ink-soft">{variety.description || '-'}</p>
-            <div className="mt-4 flex gap-2 border-t border-slate-100 pt-3">
-              <button type="button" onClick={() => onEdit(variety)} className="inline-flex h-9 items-center gap-2 rounded-lg border border-slate-100 px-3 text-sm font-semibold text-ink-soft active:scale-[0.98] transition-all">
+
+            {/* Actions overlay on top-left (RTL opposite) */}
+            <div className="absolute top-4 left-4 flex gap-1 bg-white/90 backdrop-blur-sm p-1 rounded-lg border border-slate-50 shadow-sm opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+              <button
+                type="button"
+                onClick={() => onEdit(variety)}
+                className="inline-flex h-8 w-8 items-center justify-center rounded-md text-ink-soft hover:text-terracotta active:scale-[0.98] transition-all"
+                title="تعديل"
+              >
                 <Edit3 className="h-4 w-4" />
-                تعديل
               </button>
-              <button type="button" onClick={() => onDelete(variety.id)} className="inline-flex h-9 items-center gap-2 rounded-lg border border-red-100 px-3 text-sm font-semibold text-red-600 active:scale-[0.98] transition-all">
-                <Trash2 className="h-4 w-4" />
-                حذف
+              <button
+                type="button"
+                onClick={() => onDelete(variety.id)}
+                disabled={deletingId === variety.id}
+                className="inline-flex h-8 w-8 items-center justify-center rounded-md text-red-600 hover:bg-red-50 disabled:opacity-60 active:scale-[0.98] transition-all"
+                title="حذف"
+              >
+                {deletingId === variety.id ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  <Trash2 className="h-4 w-4" />
+                )}
               </button>
             </div>
-          </article>
-        ))}
-      </div>
-    </>
+          </div>
+        )
+      })}
+    </div>
   )
 }
 
@@ -1187,65 +1358,118 @@ function GuideLedger({
   }
 
   return (
-    <div className="grid gap-4 p-4 xl:grid-cols-2">
+    <div className="grid gap-6 p-4 grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 2xl:grid-cols-5">
       {guides.map((guide) => {
         const expanded = expandedIds.has(guide.id)
 
         return (
-          <article key={guide.id} className="overflow-hidden rounded-xl border border-slate-100 bg-white">
-            <div className="grid sm:grid-cols-[180px_1fr]">
-              <div className="relative flex min-h-44 items-center justify-center bg-slate-50">
-                {guide.image_url ? (
-                  <img src={guide.image_url} alt={guide.name} className="h-full min-h-44 w-full object-cover" />
-                ) : (
-                  <ImageIcon className="h-10 w-10 text-ink-muted" />
-                )}
-              </div>
-              <div className="p-4">
-                <div className="flex items-start justify-between gap-3">
-                  <div>
-                    <h3 className="text-lg font-bold text-ink">{guide.name}</h3>
-                    <p className="mt-1 text-left text-sm italic text-ink-soft" dir="ltr">
-                      {guide.scientific_name || '-'}
-                    </p>
-                  </div>
-                  <div className="flex gap-1">
-                    <button type="button" onClick={() => onCopy(guide.id)} disabled={copyingId === guide.id} className="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-emerald-100 text-emerald-700 hover:bg-emerald-50 disabled:opacity-60 active:scale-[0.98] transition-all" aria-label="إضافة للأصناف">
-                      {copyingId === guide.id ? <Loader2 className="h-4 w-4 animate-spin" /> : <CopyPlus className="h-4 w-4" />}
-                    </button>
-                    <button type="button" onClick={() => onEdit(guide)} className="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-slate-100 text-ink-soft hover:text-terracotta active:scale-[0.98] transition-all" aria-label="تعديل">
-                      <Edit3 className="h-4 w-4" />
-                    </button>
-                    <button type="button" onClick={() => onDelete(guide.id)} disabled={deletingId === guide.id} className="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-red-100 text-red-600 hover:bg-red-50 disabled:opacity-60 active:scale-[0.98] transition-all" aria-label="حذف">
-                      {deletingId === guide.id ? <Loader2 className="h-4 w-4 animate-spin" /> : <Trash2 className="h-4 w-4" />}
-                    </button>
-                  </div>
+          <article key={guide.id} className="group relative overflow-hidden rounded-2xl border border-slate-100 bg-white shadow-sm hover:shadow-md transition-all flex flex-col h-full">
+            {/* Image Section at top */}
+            <div className="relative h-48 w-full bg-gradient-to-br from-emerald-50/60 to-teal-50/60 flex items-center justify-center overflow-hidden border-b border-slate-100 animate-fade-in">
+              {guide.image_url && guide.image_url.trim() !== '' ? (
+                <img src={guide.image_url.trim()} alt={guide.name} className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105" />
+              ) : (
+                <div className="flex flex-col items-center gap-2 text-emerald-600/40">
+                  <ImageIcon className="h-12 w-12 stroke-[1.5]" />
+                  <span className="text-[11px] font-medium tracking-wide">لا توجد صورة</span>
                 </div>
-
-                <div className="mt-4 grid grid-cols-2 gap-3 text-sm lg:grid-cols-3">
-                  <Info label="الفصيلة" value={guide.family || '-'} />
-                  <Info label="طبيعة النمو" value={guide.growth_habit || '-'} />
-                  <Info label="الارتفاع" value={formatNumber(guide.height, guide.height ? ' م' : '')} />
-                  <Info label="الاستخدام" value={guide.usage_type || '-'} />
-                  <Info label="التكاثر" value={guide.propagation || '-'} />
-                  <Info label="الملوحة" value={guide.salinity || '-'} />
-                </div>
-
+              )}
+              {/* Overlay Actions at top right */}
+              <div className="absolute top-3 right-3 flex gap-1.5 bg-white/90 backdrop-blur-sm p-1.5 rounded-lg shadow-sm">
                 <button
                   type="button"
-                  onClick={() => onToggle(guide.id)}
-                  className="mt-4 inline-flex items-center gap-2 text-sm font-semibold text-terracotta active:scale-[0.98] transition-all"
+                  onClick={() => onCopy(guide.id)}
+                  disabled={copyingId === guide.id}
+                  className="inline-flex h-8 w-8 items-center justify-center rounded-md border border-emerald-100 bg-white text-emerald-700 hover:bg-emerald-50 disabled:opacity-60 active:scale-[0.98] transition-all"
+                  title="إضافة للأصناف"
                 >
-                  <Eye className="h-4 w-4" />
-                  {expanded ? 'إخفاء التفاصيل' : 'عرض كل التفاصيل'}
-                  <ChevronDown className={`h-4 w-4 transition-transform ${expanded ? 'rotate-180' : ''}`} />
+                  {copyingId === guide.id ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <CopyPlus className="h-3.5 w-3.5" />}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => onEdit(guide)}
+                  className="inline-flex h-8 w-8 items-center justify-center rounded-md border border-slate-100 bg-white text-ink-soft hover:text-terracotta active:scale-[0.98] transition-all"
+                  title="تعديل"
+                >
+                  <Edit3 className="h-3.5 w-3.5" />
+                </button>
+                <button
+                  type="button"
+                  onClick={() => onDelete(guide.id)}
+                  disabled={deletingId === guide.id}
+                  className="inline-flex h-8 w-8 items-center justify-center rounded-md border border-red-100 bg-white text-red-600 hover:bg-red-50 disabled:opacity-60 active:scale-[0.98] transition-all"
+                  title="حذف"
+                >
+                  {deletingId === guide.id ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Trash2 className="h-3.5 w-3.5" />}
                 </button>
               </div>
             </div>
 
+            {/* Content section */}
+            <div className="p-5 flex-1 flex flex-col">
+              <h3 className="text-lg font-bold text-ink">{guide.name}</h3>
+              <p className="mt-1 text-left text-sm italic text-ink-soft" dir="ltr">
+                {guide.scientific_name || '-'}
+              </p>
+
+              {/* Six legacy details items */}
+              <div className="mt-4 grid grid-cols-2 gap-3 text-sm flex-grow">
+                <div className="flex items-center gap-2 rounded-lg border border-slate-50 bg-slate-50/50 px-3 py-2">
+                  <Dna className="h-4 w-4 text-purple-500 shrink-0" />
+                  <span className="text-xs text-ink-soft line-clamp-1">
+                    <strong className="text-ink font-bold">الفصيلة:</strong> {guide.family || '-'}
+                  </span>
+                </div>
+                <div className="flex items-center gap-2 rounded-lg border border-slate-50 bg-slate-50/50 px-3 py-2">
+                  <Sprout className="h-4 w-4 text-emerald-600 shrink-0" />
+                  <span className="text-xs text-ink-soft line-clamp-1">
+                    <strong className="text-ink font-bold">طبيعة النمو:</strong> {guide.growth_habit || '-'}
+                  </span>
+                </div>
+                <div className="flex items-center gap-2 rounded-lg border border-slate-50 bg-slate-50/50 px-3 py-2">
+                  <ArrowDownUp className="h-4 w-4 text-yellow-600 shrink-0" />
+                  <span className="text-xs text-ink-soft line-clamp-1">
+                    <strong className="text-ink font-bold">الارتفاع:</strong> {formatNumber(guide.height, guide.height ? ' م' : '')}
+                  </span>
+                </div>
+                <div className="flex items-center gap-2 rounded-lg border border-slate-50 bg-slate-50/50 px-3 py-2">
+                  <Shapes className="h-4 w-4 text-pink-500 shrink-0" />
+                  <span className="text-xs text-ink-soft line-clamp-1">
+                    <strong className="text-ink font-bold">الاستخدام:</strong> {guide.usage_type || '-'}
+                  </span>
+                </div>
+                <div className="flex items-center gap-2 rounded-lg border border-slate-50 bg-slate-50/50 px-3 py-2">
+                  <Shuffle className="h-4 w-4 text-blue-500 shrink-0" />
+                  <span className="text-xs text-ink-soft line-clamp-1">
+                    <strong className="text-ink font-bold">التكاثر:</strong> {guide.propagation || '-'}
+                  </span>
+                </div>
+                <div className="flex items-center gap-2 rounded-lg border border-slate-50 bg-slate-50/50 px-3 py-2">
+                  <FlaskConical className="h-4 w-4 text-indigo-500 shrink-0" />
+                  <span className="text-xs text-ink-soft line-clamp-1">
+                    <strong className="text-ink font-bold">الملوحة:</strong> {guide.salinity || '-'}
+                  </span>
+                </div>
+              </div>
+
+              {/* Toggle expanded details */}
+              <button
+                type="button"
+                onClick={() => onToggle(guide.id)}
+                className="mt-4 inline-flex items-center justify-between w-full rounded-lg border border-slate-100 bg-white py-2 px-3 text-sm font-semibold text-terracotta active:scale-[0.98] transition-all hover:bg-slate-50"
+              >
+                <span className="flex items-center gap-1.5">
+                  <Eye className="h-4 w-4" />
+                  {expanded ? 'إخفاء التفاصيل' : 'عرض كل التفاصيل'}
+                </span>
+                <ChevronDown className={`h-4 w-4 transition-transform ${expanded ? 'rotate-180' : ''}`} />
+              </button>
+            </div>
+
+            {/* Expanded section */}
             {expanded ? (
               <div className="border-t border-slate-100 bg-slate-50/60 p-4">
-                <div className="grid gap-3 text-sm sm:grid-cols-2 lg:grid-cols-4">
+                <div className="grid gap-3 text-sm sm:grid-cols-2">
                   <Info label="الاسم الشائع" value={guide.common_name || '-'} />
                   <Info label="الموطن الأصلي" value={guide.origin || '-'} />
                   <Info label="امتداد التاج" value={formatNumber(guide.spread, guide.spread ? ' م' : '')} />
@@ -1258,12 +1482,23 @@ function GuideLedger({
                   <Info label="الري" value={guide.irrigation || '-'} />
                   <Info label="تاريخ الإنشاء" value={formatDate(guide.created_at)} />
                 </div>
-                <div className="mt-4 grid gap-3 lg:grid-cols-2">
+                <div className="mt-4 space-y-3">
                   <TextBlock label="الرعاية العامة" value={guide.general_care} />
                   <TextBlock label="ملاحظات" value={guide.notes} />
                 </div>
               </div>
             ) : null}
+
+            {/* Open details page link */}
+            <div className="border-t border-slate-100 p-4">
+              <a
+                href={`/nursery/tree-guide/${guide.id}`}
+                className="inline-flex w-full items-center justify-center gap-2 rounded-lg border border-slate-100 bg-white py-2.5 text-sm font-semibold text-ink-soft hover:border-emerald-600 hover:text-emerald-600 transition-all"
+              >
+                <Eye className="h-4 w-4" />
+                فتح صفحة التفاصيل
+              </a>
+            </div>
           </article>
         )
       })}

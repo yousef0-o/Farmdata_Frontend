@@ -67,4 +67,12 @@ export const nurseryVarietiesApi = {
     apiRequest<{ data: TreeVariety }>(`/nursery/tree-guide/${id}/copy-to-varieties`, {
       method: 'POST',
     }),
+  autofillGuide: (payload: { name: string; current_data?: Record<string, unknown> }) =>
+    apiRequest<{ success: boolean; data: { filled: Record<string, string>; corrections: any[] } }>(
+      '/nursery/tree-guide/autofill',
+      {
+        method: 'POST',
+        body: JSON.stringify(payload),
+      }
+    ),
 }
