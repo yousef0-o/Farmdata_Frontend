@@ -143,6 +143,12 @@ export const nurseryNavItems = [
     permission: 'view-companies',
   },
   {
+    icon: Bot,
+    label: 'المستشار الذكي',
+    href: '/nursery/ai-chat',
+    permission: 'view-companies',
+  },
+  {
     icon: MapPin,
     label: 'المواقع',
     href: '/nursery/locations',
