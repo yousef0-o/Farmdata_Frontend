@@ -4,7 +4,6 @@ import React, { useState, useEffect, useRef } from 'react'
 import Image from 'next/image'
 import { usePathname, useSearchParams } from 'next/navigation'
 import { 
-  Bot, 
   User, 
   Plus, 
   Trash2, 
@@ -1662,7 +1661,7 @@ export default function NurseryAiChatPage() {
             {activeChat ? (
               <div className="flex items-center gap-3">
                 <div className="rounded-xl bg-orange-50 dark:bg-orange-950 p-2 text-terracotta">
-                  <Bot className="h-5 w-5" />
+                  <Sparkles className="h-5 w-5" />
                 </div>
                 <div>
                   <h1 className="text-sm font-extrabold text-slate-900 dark:text-white">{activeChat.title}</h1>
@@ -1681,7 +1680,7 @@ export default function NurseryAiChatPage() {
             ) : (
               <div className="flex items-center gap-2 text-slate-500">
                 <Sparkles className="h-5 w-5 text-terracotta" />
-                <span className="text-sm font-bold">المستشار الزراعي الذكي</span>
+                <span className="text-sm font-bold">خبير المشتل الرقمي</span>
               </div>
             )}
           </div>
@@ -1694,13 +1693,13 @@ export default function NurseryAiChatPage() {
               <div className="relative">
                 <div className="absolute inset-0 blur-2xl bg-orange-500/20 rounded-full" />
                 <div className="relative rounded-2xl bg-orange-50 dark:bg-orange-950 p-5 text-terracotta">
-                  <Bot className="h-12 w-12" />
+                  <Sparkles className="h-12 w-12" />
                 </div>
               </div>
               <div>
-                <h2 className="text-lg font-extrabold text-slate-800 dark:text-slate-100">مرحباً بك في المستشار الزراعي الذكي</h2>
+                <h2 className="text-lg font-extrabold text-slate-800 dark:text-slate-100">مرحباً بك في خبير المشتل الرقمي</h2>
                 <p className="text-xs text-slate-500 dark:text-slate-400 mt-2 leading-relaxed">
-                  يمكنك السؤال مباشرة عن أي حوض أو دورة أو مخزون. اختيارات التركيز السريع تساعد المستشار فقط ولا تقيد المحادثة.
+                  يمكنك السؤال مباشرة عن أي حوض أو دورة أو مخزون. اختيارات التركيز السريع تساعد الخبير الرقمي فقط ولا تقيد المحادثة.
                 </p>
               </div>
 
@@ -1751,7 +1750,7 @@ export default function NurseryAiChatPage() {
                         ? 'bg-orange-50 dark:bg-orange-950 text-terracotta' 
                         : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300'
                     }`}>
-                      {isModel ? <Bot className="h-4 w-4" /> : <User className="h-4 w-4" />}
+                      {isModel ? <Sparkles className="h-4 w-4" /> : <User className="h-4 w-4" />}
                     </div>
 
                     {/* Content */}
@@ -1843,11 +1842,11 @@ export default function NurseryAiChatPage() {
               {sendingMessage && (
                 <div className="flex items-start gap-3 max-w-[85%] mr-auto flex-row-reverse">
                   <div className="h-8 w-8 shrink-0 rounded-lg flex items-center justify-center bg-orange-50 dark:bg-orange-950 text-terracotta">
-                    <Bot className="h-4 w-4" />
+                    <Sparkles className="h-4 w-4" />
                   </div>
                   <div className="rounded-2xl p-4 bg-slate-50 dark:bg-slate-800/80 border border-slate-100 dark:border-slate-800 text-slate-400 flex items-center gap-2">
                     <Loader2 className="h-4 w-4 animate-spin text-terracotta" />
-                    <span className="text-xs font-bold text-slate-500">يقوم المستشار الذكي بتحليل مدخلاتك...</span>
+                    <span className="text-xs font-bold text-slate-500">يقوم خبير المشتل بتحليل مدخلاتك...</span>
                   </div>
                 </div>
               )}
@@ -2167,7 +2166,7 @@ export default function NurseryAiChatPage() {
                 }
               }}
               onKeyDown={e => e.key === 'Enter' && handleSendMessage()}
-              placeholder={isRecording ? 'جاري الاستماع لصوتك...' : 'اسأل المستشار الزراعي الذكي عن أي حوض أو إجراء (أو اكتب / للأوامر السريعة)...'}
+              placeholder={isRecording ? 'جاري الاستماع لصوتك...' : 'اسأل خبير المشتل الرقمي عن أي حوض أو إجراء (أو اكتب / للأوامر السريعة)...'}
               disabled={sendingMessage}
               className="flex-1 min-h-11 rounded-xl border border-slate-100 bg-white dark:bg-slate-900 dark:border-slate-800 px-4 py-2 text-sm font-semibold text-slate-800 dark:text-slate-200 outline-none transition-all focus:border-terracotta dark:focus:border-orange-400 focus:ring-2 focus:ring-orange-100"
             />
