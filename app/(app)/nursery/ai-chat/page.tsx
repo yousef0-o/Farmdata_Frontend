@@ -1,6 +1,7 @@
 'use client'
 
 import React, { useState, useEffect, useRef } from 'react'
+import { usePathname, useSearchParams } from 'next/navigation'
 import { 
   Bot, 
   User, 
@@ -28,10 +29,15 @@ import {
 import AppDialog from '@/components/ui/AppDialog'
 import { apiRequest } from '@/lib/api/client'
 import { nurseryManagementApi } from '@/lib/api/nurseryManagement'
+import { actionRegistry, actionTitles } from './_lib/actionRegistry'
+import { contextHintsFromPath } from './_lib/contextHints'
+import { sendNurseryMessageStream } from './_lib/streaming'
+import { supportsMediaRecorder, transcribeAudio } from './_lib/voice'
+import type { TelemetryEvent } from './_lib/types'
 
 type JsonPrimitive = string | number | boolean | null
 type JsonValue = JsonPrimitive | JsonValue[] | { [key: string]: JsonValue }
-type KnownActionType = 'log_irrigation' | 'log_fertilization' | 'log_mortality' | 'transfer_cycle'
+type KnownActionType = 'log_irrigation' | 'log_fertilization' | 'log_mortality' | 'transfer_cycle' | 'start_cycle' | 'create_basin' | 'log_procedure'
 type ActionEventType = 'action_confirmed' | 'action_failed' | 'action_result'
 type IrrigationPeriod = 'morning' | 'evening'
 type ActionPayload = Record<string, JsonValue>
@@ -129,6 +135,10 @@ interface FertilizerOption {
 
 interface NurseryManageResponse {
   data?: {
+    nurseries?: Array<{
+      id: number
+      name?: string
+    }>
     filter_options?: {
       basins?: BasinOption[]
     }
@@ -236,6 +246,9 @@ function errorMessage(err: unknown, fallback: string) {
 }
 
 export default function NurseryAiChatPage() {
+  const pathname = usePathname()
+  const searchParams = useSearchParams()
+
   // State Management
   const [chats, setChats] = useState<NurseryChat[]>([])
   const [activeChat, setActiveChat] = useState<NurseryChat | null>(null)
@@ -247,6 +260,7 @@ export default function NurseryAiChatPage() {
   const [loadingChats, setLoadingChats] = useState(true)
   const [loadingMessages, setLoadingMessages] = useState(false)
   const [sendingMessage, setSendingMessage] = useState(false)
+  const [telemetryEvents, setTelemetryEvents] = useState<TelemetryEvent[]>([])
   
   // Input fields
   const [inputMessage, setInputMessage] = useState('')
@@ -269,7 +283,10 @@ export default function NurseryAiChatPage() {
 
   // Speech-to-Text State
   const [isRecording, setIsRecording] = useState(false)
+  const [voiceMode, setVoiceMode] = useState<'backend' | 'browser' | 'unavailable'>('unavailable')
   const recognitionRef = useRef<SpeechRecognitionLike | null>(null)
+  const mediaRecorderRef = useRef<MediaRecorder | null>(null)
+  const audioChunksRef = useRef<BlobPart[]>([])
 
   // Action Dialog States
   const [activeAction, setActiveAction] = useState<ActiveAction | null>(null)
@@ -300,7 +317,7 @@ export default function NurseryAiChatPage() {
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   function buildClientContextHints(basinId = selectedBasinId, cycleId = selectedCycleId) {
-    const hints: Record<string, number> = {}
+    const hints = contextHintsFromPath(pathname, searchParams)
     if (basinId) hints.context_basin_id = basinId
     if (cycleId) hints.context_cycle_id = cycleId
     return hints
@@ -396,9 +413,12 @@ export default function NurseryAiChatPage() {
       }
 
       // Fetch fertilizers from general operations context
-      const operationOptions = await apiRequest<GeneralOperationOptionsResponse>('/nursery/manage/general-operations?type=nursery&id=1').catch(() => null)
-      if (operationOptions?.data?.fertilizers) {
-        setFertizers(operationOptions.data.fertilizers)
+      const nurseryId = dashboardData?.data?.nurseries?.[0]?.id
+      if (nurseryId) {
+        const operationOptions = await apiRequest<GeneralOperationOptionsResponse>(`/nursery/manage/general-operations?type=nursery&id=${nurseryId}`).catch(() => null)
+        if (operationOptions?.data?.fertilizers) {
+          setFertizers(operationOptions.data.fertilizers)
+        }
       }
     } catch (err) {
       console.error('Failed to load context options:', err)
@@ -423,6 +443,10 @@ export default function NurseryAiChatPage() {
   // Initialize Speech recognition
   function initSpeechRecognition() {
     if (typeof window !== 'undefined') {
+      if (supportsMediaRecorder()) {
+        setVoiceMode('backend')
+      }
+
       const speechWindow = window as SpeechRecognitionWindow
       const SpeechRecognition = speechWindow.SpeechRecognition || speechWindow.webkitSpeechRecognition
       if (SpeechRecognition) {
@@ -446,12 +470,20 @@ export default function NurseryAiChatPage() {
         }
 
         recognitionRef.current = recognition
+        if (!supportsMediaRecorder()) {
+          setVoiceMode('browser')
+        }
       }
     }
   }
 
   // Toggle Recording speech
-  function toggleRecording() {
+  async function toggleRecording() {
+    if (voiceMode === 'backend') {
+      await toggleBackendRecording()
+      return
+    }
+
     if (!recognitionRef.current) {
       alert('إدخال الصوت غير مدعوم في هذا المتصفح.')
       return
@@ -463,6 +495,57 @@ export default function NurseryAiChatPage() {
     } else {
       recognitionRef.current.start()
       setIsRecording(true)
+    }
+  }
+
+  async function toggleBackendRecording() {
+    if (isRecording) {
+      mediaRecorderRef.current?.stop()
+      setIsRecording(false)
+      return
+    }
+
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true })
+      const recorder = new MediaRecorder(stream)
+      audioChunksRef.current = []
+
+      recorder.ondataavailable = event => {
+        if (event.data.size > 0) audioChunksRef.current.push(event.data)
+      }
+
+      recorder.onstop = async () => {
+        stream.getTracks().forEach(track => track.stop())
+        const blob = new Blob(audioChunksRef.current, { type: recorder.mimeType || 'audio/webm' })
+        try {
+          const result = await transcribeAudio(blob)
+          if (result.text) {
+            setInputMessage(prev => prev + (prev ? ' ' : '') + result.text)
+          }
+        } catch (err) {
+          console.error('Backend transcription failed, falling back to browser speech:', err)
+          setVoiceMode(recognitionRef.current ? 'browser' : 'unavailable')
+          if (recognitionRef.current) {
+            recognitionRef.current.start()
+            setIsRecording(true)
+          } else {
+            alert('تعذر تفريغ التسجيل الصوتي حالياً.')
+          }
+        }
+      }
+
+      mediaRecorderRef.current = recorder
+      recorder.start()
+      setIsRecording(true)
+    } catch (err) {
+      console.error('MediaRecorder start failed:', err)
+      setVoiceMode(recognitionRef.current ? 'browser' : 'unavailable')
+      if (recognitionRef.current) {
+        recognitionRef.current.start()
+        setIsRecording(true)
+      } else {
+        alert('إدخال الصوت غير مدعوم في هذا المتصفح.')
+      }
     }
   }
 
@@ -604,6 +687,7 @@ export default function NurseryAiChatPage() {
     }
 
     setSendingMessage(true)
+    setTelemetryEvents([])
     if (textToSend === undefined) {
       setInputMessage('')
     }
@@ -624,32 +708,109 @@ export default function NurseryAiChatPage() {
       // Clear files list early for optimistic look
       setSelectedFiles([])
 
-      const response = await apiRequest<SendMessageResponse>(`/nursery/chats/${currentChat.id}/messages`, {
-        method: 'POST',
-        body: formData
-      })
+      let streamedModelId: number | null = null
+      let streamedContent = ''
+      let streamStarted = false
 
-      if (response.success) {
-        const modelMessage = {
-          ...response.model_response,
-          content: response.message || response.model_response.content
-        }
-        setMessages(prev => [...prev, response.user_message, modelMessage])
-        setInferredContext(response.inferred_context || null)
-        if (response.action_proposal) {
-          setMessageActionProposals(prev => ({
-            ...prev,
-            [modelMessage.id]: response.action_proposal as ActionProposal
-          }))
-        }
-        // Refresh chats list to update titles/timestamps
-        fetchChats()
+      try {
+        await sendNurseryMessageStream(currentChat.id, formData, {
+          onUserMessage: userMessage => {
+            streamStarted = true
+            setMessages(prev => [...prev, userMessage])
+          },
+          onTelemetry: event => {
+            setTelemetryEvents(prev => [event, ...prev].slice(0, 4))
+          },
+          onDelta: delta => {
+            streamStarted = true
+            streamedContent += delta
+            setMessages(prev => {
+              if (streamedModelId === null) {
+                streamedModelId = Date.now()
+                return [
+                  ...prev,
+                  {
+                    id: streamedModelId,
+                    role: 'model',
+                    content: streamedContent,
+                    attachments: null,
+                    created_at: new Date().toISOString(),
+                  },
+                ]
+              }
+
+              return prev.map(message => (
+                message.id === streamedModelId ? { ...message, content: streamedContent } : message
+              ))
+            })
+          },
+          onCompleted: response => {
+            const modelMessage = {
+              ...response.model_response,
+              content: response.message || response.model_response.content,
+            }
+            setMessages(prev => {
+              if (streamedModelId === null) return [...prev, modelMessage]
+              let replaced = false
+              const next = prev.map(message => {
+                if (message.id !== streamedModelId) return message
+                replaced = true
+                return modelMessage
+              })
+
+              return replaced ? next : [...next, modelMessage]
+            })
+            setInferredContext(response.inferred_context || null)
+            if (response.action_proposal) {
+              setMessageActionProposals(prev => ({
+                ...prev,
+                [modelMessage.id]: response.action_proposal as ActionProposal,
+              }))
+            }
+          },
+        })
+      } catch (streamErr) {
+        console.warn('Streaming message failed, falling back to blocking endpoint:', streamErr)
+        await sendMessageBlocking(currentChat.id, formData)
       }
+
+      fetchChats()
     } catch (err: unknown) {
       console.error('Failed to send message:', err)
       alert(errorMessage(err, 'فشل في إرسال الرسالة للمستشار الذكي.'))
     } finally {
       setSendingMessage(false)
+    }
+  }
+
+  async function sendMessageBlocking(chatId: number, formData: FormData) {
+    const response = await apiRequest<SendMessageResponse>(`/nursery/chats/${chatId}/messages`, {
+      method: 'POST',
+      body: formData
+    })
+
+    if (response.success) {
+      const modelMessage = {
+        ...response.model_response,
+        content: response.message || response.model_response.content
+      }
+      setMessages(prev => {
+        const hasUserMessage = prev.some(message => message.id === response.user_message.id)
+        const hasModelMessage = prev.some(message => message.id === modelMessage.id)
+
+        return [
+          ...prev,
+          ...(hasUserMessage ? [] : [response.user_message]),
+          ...(hasModelMessage ? [] : [modelMessage]),
+        ]
+      })
+      setInferredContext(response.inferred_context || null)
+      if (response.action_proposal) {
+        setMessageActionProposals(prev => ({
+          ...prev,
+          [modelMessage.id]: response.action_proposal as ActionProposal
+        }))
+      }
     }
   }
 
@@ -755,73 +916,54 @@ export default function NurseryAiChatPage() {
     const targetBasinId = activeAction.basin_id || selectedBasinId || activeChat?.context_basin_id
 
     try {
-      let endpoint = ''
-      let payload: ActionPayload = {}
+      const registryEntry = actionRegistry[activeAction.action as KnownActionType]
+      if (!registryEntry) {
+        throw new Error('نوع الإجراء المقترح غير مدعوم في الواجهة.')
+      }
+
+      const registryArgs = {
+        activeAction,
+        targetBasinId,
+        selectedCycleId,
+        activeChatCycleId: activeChat?.context_cycle_id,
+        irrigationDate,
+        irrigationPeriod,
+        irrigationStartTime,
+        irrigationEndTime,
+        mortalityLine,
+        mortalityQuantity,
+        mortalityDate,
+        fertilizationDate,
+        fertilizerId,
+        fertilizationQuantity,
+        transferSuccessCount,
+        transferMarkRemainingFailed,
+        transferDate,
+        transferBasinId,
+        transferLineNumber,
+      }
+
+      const endpoint = registryEntry.endpoint(registryArgs)
+      const payload = registryEntry.buildPayload(registryArgs)
       let logText = ''
 
       if (activeAction.action === 'log_irrigation') {
-        if (!targetBasinId) throw new Error('يرجى تحديد حوض لإتمام عملية الري.')
-        
-        endpoint = `/nursery/manage/basins/${targetBasinId}/operations/irrigation`
-        payload = {
-          irrigation_date: irrigationDate,
-          irrigation_date_to: irrigationDate,
-          period: irrigationPeriod,
-          start_time: irrigationStartTime,
-          end_time: irrigationEndTime
-        }
         const basinName = basins.find(b => b.id === Number(targetBasinId))?.name || `#${targetBasinId}`
         logText = `⚙️ تم تسجيل عملية ري بنجاح للحوض (${basinName}) للفترة ${irrigationPeriod === 'morning' ? 'الصباحية' : 'المسائية'} بتاريخ ${irrigationDate}.`
       } else if (activeAction.action === 'log_mortality') {
-        if (!targetBasinId) throw new Error('يرجى تحديد حوض لتسجيل النفوق.')
-
-        endpoint = `/nursery/manage/basins/${targetBasinId}/operations/mortality`
-        payload = {
-          line_number: mortalityLine,
-          mortality_date: mortalityDate,
-          quantity: mortalityQuantity
-        }
         const basinName = basins.find(b => b.id === Number(targetBasinId))?.name || `#${targetBasinId}`
         logText = `⚙️ تم تسجيل نفوق (${mortalityQuantity}) شتلة في الحوض (${basinName}) بالخط رقم (${mortalityLine}) بتاريخ ${mortalityDate}.`
       } else if (activeAction.action === 'log_fertilization') {
-        if (!targetBasinId) throw new Error('يرجى تحديد حوض لتسجيل التسميد.')
-        if (!fertilizerId) throw new Error('يرجى اختيار السماد المستخدم.')
-
-        endpoint = `/nursery/manage/basins/${targetBasinId}/operations/fertilization`
-        payload = {
-          fertilization_date: fertilizationDate,
-          fertilizer_id: fertilizerId,
-          quantity: fertilizationQuantity
-        }
         const fertName = fertilizers.find(f => f.id === fertilizerId)?.name || 'السماد المحدد'
         const basinName = basins.find(b => b.id === Number(targetBasinId))?.name || `#${targetBasinId}`
         logText = `⚙️ تم تسجيل عملية تسميد بمقدار (${fertilizationQuantity}) للحوض (${basinName}) باستخدام (${fertName}) بتاريخ ${fertilizationDate}.`
       } else if (activeAction.action === 'transfer_cycle') {
         const cycleId = activeAction.cycle_id || selectedCycleId || activeChat?.context_cycle_id
-        if (!cycleId) throw new Error('يرجى تحديد دورة إنتاج لإتمام النقل.')
-        if (!transferBasinId) throw new Error('يرجى تحديد حوض الهدف.')
-
-        endpoint = `/nursery/manage/cycle-transfers`
-        payload = {
-          cycle_id: cycleId,
-          successful_count: transferSuccessCount,
-          mark_remaining_failed: transferMarkRemainingFailed,
-          transfer_date: transferDate,
-          lines: [
-            {
-              basin_id: transferBasinId,
-              line_number: transferLineNumber,
-              quantity: transferSuccessCount,
-              pot_size: activeAction.pot_size || null,
-              tree_height: activeAction.tree_height || 0.1
-            }
-          ]
-        }
         const cycleName = cycles.find(c => c.id === Number(cycleId))?.name || `#${cycleId}`
         const targetBasinName = basins.find(b => b.id === transferBasinId)?.name || `#${transferBasinId}`
         logText = `⚙️ تم نقل وتفريد دورة الإنتاج (${cycleName}) بعدد (${transferSuccessCount}) شتلات ناجحة إلى الحوض (${targetBasinName}) الخط رقم (${transferLineNumber}).`
       } else {
-        throw new Error('نوع الإجراء المقترح غير مدعوم في الواجهة.')
+        logText = `⚙️ تم تنفيذ الإجراء (${registryEntry.title}) بنجاح.`
       }
 
       await recordActionEvent('action_confirmed', activeAction.action, payload, 'بدأ المستخدم تأكيد الإجراء من الواجهة.')
@@ -1284,6 +1426,20 @@ export default function NurseryAiChatPage() {
                     <Loader2 className="h-4 w-4 animate-spin text-terracotta" />
                     <span className="text-xs font-bold text-slate-500">يقوم المستشار الذكي بتحليل مدخلاتك...</span>
                   </div>
+                </div>
+              )}
+
+              {telemetryEvents.length > 0 && (
+                <div className="flex flex-wrap gap-2">
+                  {telemetryEvents.map(event => (
+                    <span
+                      key={event.id}
+                      className="inline-flex items-center gap-1.5 rounded-lg border border-line bg-surface-subtle px-2.5 py-1 text-xs font-bold text-ink-soft"
+                    >
+                      <Activity className="h-3.5 w-3.5 text-info" />
+                      {telemetryLabel(event)}
+                    </span>
+                  ))}
                 </div>
               )}
 
@@ -1750,22 +1906,19 @@ export default function NurseryAiChatPage() {
 
 // Inline AI Action Card Renderer
 function ActionCard({ action, onExecute }: { action: ActiveAction; onExecute: () => void }) {
-  const titles: Record<string, string> = {
-    log_irrigation: 'جدولة عملية ري مقترحة',
-    log_mortality: 'تسجيل حالة نفوق مقترحة',
-    log_fertilization: 'عملية تسميد مقترحة',
-    transfer_cycle: 'نقل وتفريد دورة الإنتاج'
-  }
-
   const icons: Record<string, React.ComponentType<{ className?: string }>> = {
     log_irrigation: Waves,
     log_mortality: AlertCircle,
     log_fertilization: Sprout,
-    transfer_cycle: Layers3
+    transfer_cycle: Layers3,
+    start_cycle: Sprout,
+    create_basin: Warehouse,
+    log_procedure: Activity
   }
 
   const ActionIcon = icons[action.action] || HelpCircle
-  const actionTitle = titles[action.action] || 'إجراء مقترح'
+  const actionTitle = actionTitles[action.action] || 'إجراء مقترح'
+  const canExecute = Boolean(actionRegistry[action.action as KnownActionType])
 
   return (
     <div className="rounded-2xl border border-orange-100 bg-orange-50/50 dark:border-orange-900/40 dark:bg-orange-950/20 p-4 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4">
@@ -1811,10 +1964,30 @@ function ActionCard({ action, onExecute }: { action: ActiveAction; onExecute: ()
 
       <button
         onClick={onExecute}
-        className="min-h-9 px-4 py-1.5 shrink-0 rounded-lg bg-terracotta hover:bg-terracotta-hover text-white font-bold text-xs transition-all active:scale-[0.98] flex items-center justify-center gap-1.5 shadow-sm"
+        disabled={!canExecute}
+        className="min-h-9 px-4 py-1.5 shrink-0 rounded-lg bg-terracotta hover:bg-terracotta-hover text-white font-bold text-xs transition-all active:scale-[0.98] flex items-center justify-center gap-1.5 shadow-sm disabled:cursor-not-allowed disabled:opacity-50"
       >
-        <span>تأكيد الإجراء</span>
+        <span>{canExecute ? 'تأكيد الإجراء' : 'يفتح من النموذج القياسي'}</span>
       </button>
     </div>
   )
+}
+
+function telemetryLabel(event: TelemetryEvent) {
+  const toolNames: Record<string, string> = {
+    search_basins: 'البحث في الأحواض',
+    search_cycles: 'البحث في الدورات',
+    get_inventory: 'فحص المخزون',
+    get_recent_operations: 'جلب العمليات الأخيرة',
+    search_seedling_basins: 'تحليل أحواض الشتلات',
+    search_varieties: 'البحث في الأصناف',
+    get_tree_guide: 'قراءة دليل الأشجار',
+    get_nursery_analytics: 'جلب تحليلات المشتل',
+  }
+
+  const toolLabel = event.tool ? (toolNames[event.tool] || event.tool) : 'أداة'
+  if (event.event === 'telemetry.tool_start') return `${toolLabel}...`
+  if (event.ok === false) return `${toolLabel}: تعذر التنفيذ`
+  if (typeof event.count === 'number') return `${toolLabel}: ${event.count} نتيجة`
+  return toolLabel
 }
