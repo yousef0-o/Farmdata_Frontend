@@ -18,7 +18,7 @@ import {
   Waves, 
   Sprout, 
   AlertCircle, 
-  Sparkles, 
+  Leaf, 
   Layers3, 
   FileText,
   HelpCircle,
@@ -1661,7 +1661,7 @@ export default function NurseryAiChatPage() {
             {activeChat ? (
               <div className="flex items-center gap-3">
                 <div className="rounded-xl bg-orange-50 dark:bg-orange-950 p-2 text-terracotta">
-                  <Sparkles className="h-5 w-5" />
+                  <Leaf className="h-5 w-5" />
                 </div>
                 <div>
                   <h1 className="text-sm font-extrabold text-slate-900 dark:text-white">{activeChat.title}</h1>
@@ -1679,7 +1679,7 @@ export default function NurseryAiChatPage() {
               </div>
             ) : (
               <div className="flex items-center gap-2 text-slate-500">
-                <Sparkles className="h-5 w-5 text-terracotta" />
+                <Leaf className="h-5 w-5 text-terracotta" />
                 <span className="text-sm font-bold">خبير المشتل الرقمي</span>
               </div>
             )}
@@ -1693,7 +1693,7 @@ export default function NurseryAiChatPage() {
               <div className="relative">
                 <div className="absolute inset-0 blur-2xl bg-orange-500/20 rounded-full" />
                 <div className="relative rounded-2xl bg-orange-50 dark:bg-orange-950 p-5 text-terracotta">
-                  <Sparkles className="h-12 w-12" />
+                  <Leaf className="h-12 w-12" />
                 </div>
               </div>
               <div>
@@ -1750,7 +1750,7 @@ export default function NurseryAiChatPage() {
                         ? 'bg-orange-50 dark:bg-orange-950 text-terracotta' 
                         : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300'
                     }`}>
-                      {isModel ? <Sparkles className="h-4 w-4" /> : <User className="h-4 w-4" />}
+                      {isModel ? <Leaf className="h-4 w-4" /> : <User className="h-4 w-4" />}
                     </div>
 
                     {/* Content */}
@@ -1842,7 +1842,7 @@ export default function NurseryAiChatPage() {
               {sendingMessage && (
                 <div className="flex items-start gap-3 max-w-[85%] mr-auto flex-row-reverse">
                   <div className="h-8 w-8 shrink-0 rounded-lg flex items-center justify-center bg-orange-50 dark:bg-orange-950 text-terracotta">
-                    <Sparkles className="h-4 w-4" />
+                    <Leaf className="h-4 w-4" />
                   </div>
                   <div className="rounded-2xl p-4 bg-slate-50 dark:bg-slate-800/80 border border-slate-100 dark:border-slate-800 text-slate-400 flex items-center gap-2">
                     <Loader2 className="h-4 w-4 animate-spin text-terracotta" />
@@ -2196,7 +2196,7 @@ export default function NurseryAiChatPage() {
       <AppDialog open={activeAction !== null} onClose={handleActionCancel} panelClassName="max-w-md bg-white dark:bg-slate-900 rounded-3xl overflow-hidden shadow-2xl">
         <div className="p-6">
           <div className="flex items-center gap-3 border-b border-slate-100 dark:border-slate-800 pb-4 mb-4">
-            <Sparkles className="h-6 w-6 text-terracotta" />
+            <Leaf className="h-6 w-6 text-terracotta" />
             <h2 className="text-base font-extrabold text-slate-900 dark:text-white">تأكيد عملية الذكاء الاصطناعي</h2>
           </div>
 

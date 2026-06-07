@@ -23,7 +23,7 @@ import {
   Scale,
   ReceiptText,
   Wallet,
-  Sparkles,
+  Leaf,
   ArrowRight,
   Package2,
   PackageCheck,
@@ -143,7 +143,7 @@ export const nurseryNavItems = [
     permission: 'view-companies',
   },
   {
-    icon: Sparkles,
+    icon: Leaf,
     label: 'خبير المشتل الرقمي',
     href: '/nursery/ai-chat',
     permission: 'view-companies',
