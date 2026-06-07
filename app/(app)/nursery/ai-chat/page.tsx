@@ -19,20 +19,22 @@ import {
   AlertCircle, 
   Sparkles, 
   Layers3, 
-  CalendarDays, 
   FileText,
-  MapPin,
   HelpCircle,
-  TrendingUp,
   Warehouse,
   ChevronLeft,
-  Activity,
-  Trees
+  Activity
 } from 'lucide-react'
 import AppDialog from '@/components/ui/AppDialog'
 import { apiRequest } from '@/lib/api/client'
-import { useMe } from '@/lib/hooks/useAuth'
 import { nurseryManagementApi } from '@/lib/api/nurseryManagement'
+
+type JsonPrimitive = string | number | boolean | null
+type JsonValue = JsonPrimitive | JsonValue[] | { [key: string]: JsonValue }
+type KnownActionType = 'log_irrigation' | 'log_fertilization' | 'log_mortality' | 'transfer_cycle'
+type ActionEventType = 'action_confirmed' | 'action_failed' | 'action_result'
+type IrrigationPeriod = 'morning' | 'evening'
+type ActionPayload = Record<string, JsonValue>
 
 // Types based on the backend resources
 interface NurseryChat {
@@ -60,6 +62,53 @@ interface NurseryChatMessage {
   created_at: string
 }
 
+interface InferredContext {
+  last_resolved_entities?: {
+    basin?: { id?: number | null; name?: string | null }
+    cycle?: { id?: number | null; name?: string | null; basin_id?: number | null; basin_name?: string | null }
+    inventory_item?: { id?: number | null; name?: string | null; category_name?: string | null }
+  }
+  pending_intent?: string | null
+  pending_slots?: string[]
+  last_response_type?: string | null
+  last_action_event?: ActionEvent
+  weak_context_hints?: Record<string, number>
+}
+
+interface ActionProposal {
+  status: string
+  action: KnownActionType | string
+  target?: {
+    basin_id?: number | null
+    basin_name?: string | null
+    cycle_id?: number | null
+    cycle_name?: string | null
+  }
+  params?: Record<string, JsonValue>
+  missing_fields?: string[]
+  validation_warnings?: string[]
+  human_summary?: string
+  proposal_id?: string
+}
+
+interface ActionEvent {
+  event_type?: ActionEventType
+  action?: string | null
+  proposal_id?: string | null
+  message?: string | null
+  payload?: ActionPayload
+  created_at?: string
+}
+
+interface SendMessageResponse {
+  success: boolean
+  message: string
+  inferred_context: InferredContext | null
+  action_proposal: ActionProposal | null
+  user_message: NurseryChatMessage
+  model_response: NurseryChatMessage
+}
+
 // Support options fetched from the database
 interface BasinOption {
   id: number
@@ -78,13 +127,121 @@ interface FertilizerOption {
   unit: string
 }
 
-export default function NurseryAiChatPage() {
-  const { data: user } = useMe()
+interface NurseryManageResponse {
+  data?: {
+    filter_options?: {
+      basins?: BasinOption[]
+    }
+    cycles?: CycleOption[]
+  }
+}
 
+interface GeneralOperationOptionsResponse {
+  data?: {
+    fertilizers?: FertilizerOption[]
+  }
+}
+
+interface BasinStats {
+  basin?: {
+    name?: string
+    capacity?: number
+    irrigation_method?: string | null
+  }
+  stats?: {
+    total_trees?: number
+  }
+  operations_stats?: {
+    last_irrigation?: string | null
+    last_fertilization?: string | null
+  }
+  recent_activities?: Array<{
+    description?: string
+    type?: string
+    date?: string
+    detail?: string
+  }>
+}
+
+interface ActiveAction {
+  [key: string]: JsonValue | undefined
+  action: KnownActionType | string
+  proposal_id?: string
+  basin_id?: number | null
+  basin_name?: string | null
+  cycle_id?: number | null
+  cycle_name?: string | null
+  date?: string
+  period?: IrrigationPeriod
+  start_time?: string
+  end_time?: string
+  mortality_date?: string
+  fertilization_date?: string
+  fertilizer_id?: number
+  quantity?: number
+  line_number?: number
+  successful_count?: number
+  mark_remaining_failed?: boolean
+  pot_size?: string | null
+  tree_height?: number
+  human_summary?: string
+  missing_fields?: string[]
+  validation_warnings?: string[]
+  notes?: string
+}
+
+type SpeechRecognitionConstructor = new () => SpeechRecognitionLike
+
+interface SpeechRecognitionLike {
+  continuous: boolean
+  interimResults: boolean
+  lang: string
+  onresult: ((event: SpeechRecognitionResultEventLike) => void) | null
+  onerror: ((event: { error: string }) => void) | null
+  onend: (() => void) | null
+  start(): void
+  stop(): void
+}
+
+interface SpeechRecognitionResultEventLike {
+  results: {
+    length: number
+    [index: number]: {
+      [index: number]: {
+        transcript: string
+      }
+    }
+  }
+}
+
+interface SpeechRecognitionWindow extends Window {
+  SpeechRecognition?: SpeechRecognitionConstructor
+  webkitSpeechRecognition?: SpeechRecognitionConstructor
+}
+
+function errorMessage(err: unknown, fallback: string) {
+  if (err instanceof Error && err.message) return err.message
+  if (err && typeof err === 'object') {
+    const data = err as { message?: unknown; error?: unknown; errors?: Record<string, unknown> }
+    if (typeof data.message === 'string' && data.message.trim()) return data.message
+    if (typeof data.error === 'string' && data.error.trim()) return data.error
+    if (data.errors && typeof data.errors === 'object') {
+      const first = Object.values(data.errors)[0]
+      if (Array.isArray(first) && typeof first[0] === 'string') return first[0]
+      if (typeof first === 'string') return first
+    }
+  }
+
+  return fallback
+}
+
+export default function NurseryAiChatPage() {
   // State Management
   const [chats, setChats] = useState<NurseryChat[]>([])
   const [activeChat, setActiveChat] = useState<NurseryChat | null>(null)
   const [messages, setMessages] = useState<NurseryChatMessage[]>([])
+  const [inferredContext, setInferredContext] = useState<InferredContext | null>(null)
+  const [messageActionProposals, setMessageActionProposals] = useState<Record<number, ActionProposal>>({})
   
   // Loading & Action states
   const [loadingChats, setLoadingChats] = useState(true)
@@ -103,7 +260,7 @@ export default function NurseryAiChatPage() {
   const [fertilizers, setFertizers] = useState<FertilizerOption[]>([])
 
   // Live Basin Dashboard Stats
-  const [basinStats, setBasinStats] = useState<any>(null)
+  const [basinStats, setBasinStats] = useState<BasinStats | null>(null)
   const [loadingBasinStats, setLoadingBasinStats] = useState(false)
 
   // Inline rename state
@@ -112,10 +269,10 @@ export default function NurseryAiChatPage() {
 
   // Speech-to-Text State
   const [isRecording, setIsRecording] = useState(false)
-  const recognitionRef = useRef<any>(null)
+  const recognitionRef = useRef<SpeechRecognitionLike | null>(null)
 
   // Action Dialog States
-  const [activeAction, setActiveAction] = useState<any>(null)
+  const [activeAction, setActiveAction] = useState<ActiveAction | null>(null)
   const [actionSubmitting, setActionSubmitting] = useState(false)
   const [actionError, setActionError] = useState<string | null>(null)
   
@@ -141,6 +298,43 @@ export default function NurseryAiChatPage() {
 
   const chatEndRef = useRef<HTMLDivElement>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
+
+  function buildClientContextHints(basinId = selectedBasinId, cycleId = selectedCycleId) {
+    const hints: Record<string, number> = {}
+    if (basinId) hints.context_basin_id = basinId
+    if (cycleId) hints.context_cycle_id = cycleId
+    return hints
+  }
+
+  function normalizeActionProposal(proposal: ActionProposal): ActiveAction {
+    return {
+      action: proposal.action,
+      proposal_id: proposal.proposal_id,
+      basin_id: proposal.target?.basin_id ?? undefined,
+      basin_name: proposal.target?.basin_name ?? undefined,
+      cycle_id: proposal.target?.cycle_id ?? undefined,
+      cycle_name: proposal.target?.cycle_name ?? undefined,
+      ...(proposal.params || {}),
+      human_summary: proposal.human_summary,
+      missing_fields: proposal.missing_fields || [],
+      validation_warnings: proposal.validation_warnings || []
+    }
+  }
+
+  function focusLabel() {
+    const entities = inferredContext?.last_resolved_entities
+    if (entities?.basin?.name) return `التركيز الحالي: ${entities.basin.name}`
+    if (entities?.cycle?.name) return `التركيز الحالي: ${entities.cycle.name}`
+    if (entities?.inventory_item?.name) return `عنصر مخزون: ${entities.inventory_item.name}`
+    if (inferredContext?.last_response_type === 'clarification') return 'بانتظار توضيح'
+
+    const quickBasin = selectedBasinId ? basins.find(b => b.id === selectedBasinId)?.name : null
+    const quickCycle = selectedCycleId ? cycles.find(c => c.id === selectedCycleId)?.name : null
+    if (quickBasin) return `تركيز سريع: ${quickBasin}`
+    if (quickCycle) return `تركيز سريع: ${quickCycle}`
+
+    return 'استفسار عام'
+  }
 
   // 1. Initial Load: chats list and contexts
   useEffect(() => {
@@ -195,14 +389,14 @@ export default function NurseryAiChatPage() {
   // Fetch contextual options (basins, active production cycles, fertilizers)
   async function fetchContextOptions() {
     try {
-      const dashboardData = await apiRequest<any>('/nursery/manage?status=active')
+      const dashboardData = await apiRequest<NurseryManageResponse>('/nursery/manage?status=active')
       if (dashboardData?.data) {
         setBasins(dashboardData.data.filter_options?.basins || [])
         setCycles(dashboardData.data.cycles || [])
       }
 
       // Fetch fertilizers from general operations context
-      const operationOptions = await apiRequest<any>('/nursery/manage/general-operations?type=nursery&id=1').catch(() => null)
+      const operationOptions = await apiRequest<GeneralOperationOptionsResponse>('/nursery/manage/general-operations?type=nursery&id=1').catch(() => null)
       if (operationOptions?.data?.fertilizers) {
         setFertizers(operationOptions.data.fertilizers)
       }
@@ -217,7 +411,7 @@ export default function NurseryAiChatPage() {
       setLoadingBasinStats(true)
       const response = await nurseryManagementApi.basinDashboard(basinId)
       if (response.data) {
-        setBasinStats(response.data)
+        setBasinStats(response.data as BasinStats)
       }
     } catch (err) {
       console.error('Failed to fetch basin stats:', err)
@@ -229,19 +423,20 @@ export default function NurseryAiChatPage() {
   // Initialize Speech recognition
   function initSpeechRecognition() {
     if (typeof window !== 'undefined') {
-      const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition
+      const speechWindow = window as SpeechRecognitionWindow
+      const SpeechRecognition = speechWindow.SpeechRecognition || speechWindow.webkitSpeechRecognition
       if (SpeechRecognition) {
         const recognition = new SpeechRecognition()
         recognition.continuous = true
         recognition.interimResults = false
         recognition.lang = 'ar-SA' // Target Arabic language dictation
 
-        recognition.onresult = (event: any) => {
+        recognition.onresult = (event) => {
           const transcript = event.results[event.results.length - 1][0].transcript
           setInputMessage(prev => prev + (prev ? ' ' : '') + transcript)
         }
 
-        recognition.onerror = (event: any) => {
+        recognition.onerror = (event) => {
           console.error('Speech recognition error:', event.error)
           setIsRecording(false)
         }
@@ -275,6 +470,8 @@ export default function NurseryAiChatPage() {
   async function selectChat(chat: NurseryChat) {
     setActiveChat(chat)
     setMessages([])
+    setInferredContext(null)
+    setMessageActionProposals({})
     setLoadingMessages(true)
     try {
       const data = await apiRequest<{ success: boolean; messages: NurseryChatMessage[] }>(`/nursery/chats/${chat.id}`)
@@ -291,10 +488,10 @@ export default function NurseryAiChatPage() {
   // Create new chat session
   async function handleCreateChat(title?: string, basinId?: number | null, cycleId?: number | null) {
     try {
+      const hints = buildClientContextHints(basinId || selectedBasinId, cycleId || selectedCycleId)
       const payload = {
         title: title || undefined,
-        context_basin_id: basinId || selectedBasinId || undefined,
-        context_cycle_id: cycleId || selectedCycleId || undefined,
+        client_context_hints: Object.keys(hints).length ? hints : undefined,
       }
       
       const response = await apiRequest<{ success: boolean; chat: NurseryChat }>('/nursery/chats', {
@@ -306,6 +503,8 @@ export default function NurseryAiChatPage() {
         setChats(prev => [response.chat, ...prev])
         setActiveChat(response.chat)
         setMessages([])
+        setInferredContext(null)
+        setMessageActionProposals({})
         
         // Reset selections if not pre-provided
         if (!basinId && !cycleId) {
@@ -380,10 +579,10 @@ export default function NurseryAiChatPage() {
     if (!currentChat) {
       // Auto-create chat if none active
       const titleText = text.length > 30 ? text.substring(0, 30) + '...' : text
+      const hints = buildClientContextHints()
       const payload = {
         title: titleText,
-        context_basin_id: selectedBasinId || undefined,
-        context_cycle_id: selectedCycleId || undefined,
+        client_context_hints: Object.keys(hints).length ? hints : undefined,
       }
       
       const createRes = await apiRequest<{ success: boolean; chat: NurseryChat }>('/nursery/chats', {
@@ -396,6 +595,8 @@ export default function NurseryAiChatPage() {
         currentChat = createRes.chat
         setActiveChat(createRes.chat)
         setMessages([])
+        setInferredContext(null)
+        setMessageActionProposals({})
       } else {
         alert('فشل في بدء جلسة محادثة جديدة.')
         return
@@ -415,27 +616,38 @@ export default function NurseryAiChatPage() {
       selectedFiles.forEach(file => {
         formData.append('attachments[]', file)
       })
+      const hints = buildClientContextHints()
+      if (Object.keys(hints).length) {
+        formData.append('client_context_hints', JSON.stringify(hints))
+      }
 
       // Clear files list early for optimistic look
       setSelectedFiles([])
 
-      const response = await apiRequest<{
-        success: boolean
-        user_message: NurseryChatMessage
-        model_response: NurseryChatMessage
-      }>(`/nursery/chats/${currentChat.id}/messages`, {
+      const response = await apiRequest<SendMessageResponse>(`/nursery/chats/${currentChat.id}/messages`, {
         method: 'POST',
         body: formData
       })
 
       if (response.success) {
-        setMessages(prev => [...prev, response.user_message, response.model_response])
+        const modelMessage = {
+          ...response.model_response,
+          content: response.message || response.model_response.content
+        }
+        setMessages(prev => [...prev, response.user_message, modelMessage])
+        setInferredContext(response.inferred_context || null)
+        if (response.action_proposal) {
+          setMessageActionProposals(prev => ({
+            ...prev,
+            [modelMessage.id]: response.action_proposal as ActionProposal
+          }))
+        }
         // Refresh chats list to update titles/timestamps
         fetchChats()
       }
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Failed to send message:', err)
-      alert(err.message || 'فشل في إرسال الرسالة للمستشار الذكي.')
+      alert(errorMessage(err, 'فشل في إرسال الرسالة للمستشار الذكي.'))
     } finally {
       setSendingMessage(false)
     }
@@ -448,7 +660,7 @@ export default function NurseryAiChatPage() {
   }
 
   // Quick Action execution: Pre-fill form state and open appropriate dialog modal
-  function handleActionExecute(actionObj: any) {
+  function handleActionExecute(actionObj: ActiveAction) {
     setActiveAction(actionObj)
     setActionError(null)
 
@@ -483,14 +695,10 @@ export default function NurseryAiChatPage() {
   }
 
   // Shortcut triggers to open standard action forms from the sidebar/dashboard
-  function handleDirectShortcut(actionType: 'log_irrigation' | 'log_mortality' | 'log_fertilization' | 'transfer_cycle') {
+  function handleDirectShortcut(actionType: KnownActionType) {
     const targetBasin = selectedBasinId || activeChat?.context_basin_id
-    if (!targetBasin && actionType !== 'transfer_cycle') {
-      alert('يرجى تحديد الحوض السياقي أولاً لإجراء العمليات المباشرة.')
-      return
-    }
 
-    const actionData: any = {
+    const actionData: ActiveAction = {
       action: actionType,
       basin_id: targetBasin,
       date: new Date().toISOString().split('T')[0]
@@ -503,6 +711,41 @@ export default function NurseryAiChatPage() {
     handleActionExecute(actionData)
   }
 
+  async function recordActionEvent(
+    eventType: ActionEventType,
+    action: string,
+    payload: ActionPayload = {},
+    message?: string
+  ) {
+    if (!activeChat) return
+
+    try {
+      const response = await apiRequest<{ success: boolean; inferred_context?: InferredContext }>(`/nursery/chats/${activeChat.id}/action-events`, {
+        method: 'POST',
+        body: JSON.stringify({
+          event_type: eventType,
+          action,
+          proposal_id: activeAction?.proposal_id,
+          message,
+          payload
+        })
+      })
+
+      if (response.success && response.inferred_context) {
+        setInferredContext(response.inferred_context)
+      }
+    } catch (err) {
+      console.error('Failed to record action event:', err)
+    }
+  }
+
+  function handleActionCancel() {
+    if (activeAction) {
+      recordActionEvent('action_failed', activeAction.action, { cancelled: true }, 'ألغى المستخدم تأكيد الإجراء.')
+    }
+    setActiveAction(null)
+  }
+
   // Commit dynamic database operations from AI Action Card or Dashboard Shortcut
   async function submitAction() {
     if (!activeAction) return
@@ -513,7 +756,7 @@ export default function NurseryAiChatPage() {
 
     try {
       let endpoint = ''
-      let payload: any = {}
+      let payload: ActionPayload = {}
       let logText = ''
 
       if (activeAction.action === 'log_irrigation') {
@@ -577,7 +820,11 @@ export default function NurseryAiChatPage() {
         const cycleName = cycles.find(c => c.id === Number(cycleId))?.name || `#${cycleId}`
         const targetBasinName = basins.find(b => b.id === transferBasinId)?.name || `#${transferBasinId}`
         logText = `⚙️ تم نقل وتفريد دورة الإنتاج (${cycleName}) بعدد (${transferSuccessCount}) شتلات ناجحة إلى الحوض (${targetBasinName}) الخط رقم (${transferLineNumber}).`
+      } else {
+        throw new Error('نوع الإجراء المقترح غير مدعوم في الواجهة.')
       }
+
+      await recordActionEvent('action_confirmed', activeAction.action, payload, 'بدأ المستخدم تأكيد الإجراء من الواجهة.')
 
       await apiRequest(endpoint, {
         method: 'POST',
@@ -594,14 +841,7 @@ export default function NurseryAiChatPage() {
       }
       setMessages(prev => [...prev, systemMessage])
 
-      // If active chat exists, sync it to database chat messages thread
-      if (activeChat) {
-        await apiRequest(`/nursery/chats/${activeChat.id}/messages`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ message: logText })
-        }).catch(err => console.error('Failed to sync system action text:', err))
-      }
+      await recordActionEvent('action_result', activeAction.action, { ...payload, log_text: logText }, logText)
 
       // Reload live stats
       if (targetBasinId) {
@@ -609,9 +849,13 @@ export default function NurseryAiChatPage() {
       }
 
       setActiveAction(null)
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Failed to commit action:', err)
-      setActionError(err.message || 'فشل تسجيل العملية. تأكد من صحة المدخلات وتوفر الكميات الكافية في المخزون.')
+      const message = errorMessage(err, 'فشل تسجيل العملية.')
+      if (activeAction) {
+        await recordActionEvent('action_failed', activeAction.action, { error: message }, message)
+      }
+      setActionError(message || 'فشل تسجيل العملية. تأكد من صحة المدخلات وتوفر الكميات الكافية في المخزون.')
     } finally {
       setActionSubmitting(false)
     }
@@ -644,44 +888,130 @@ export default function NurseryAiChatPage() {
     return <span key={Math.random()}>{parts}</span>
   }
 
-  // Formats text block rendering, detecting action-json blocks and mapping them to UI cards
+  function isMarkdownTable(lines: string[], startIndex: number) {
+    const header = lines[startIndex]?.trim()
+    const divider = lines[startIndex + 1]?.trim()
+
+    return Boolean(
+      header?.startsWith('|') &&
+      header.endsWith('|') &&
+      divider?.startsWith('|') &&
+      divider.endsWith('|') &&
+      /^\|[\s:|-]+\|$/.test(divider)
+    )
+  }
+
+  function splitTableRow(line: string) {
+    return line
+      .trim()
+      .replace(/^\|/, '')
+      .replace(/\|$/, '')
+      .split('|')
+      .map(cell => cell.trim())
+  }
+
+  function renderMarkdownTable(lines: string[], key: string) {
+    const headers = splitTableRow(lines[0])
+    const rows = lines.slice(2).map(splitTableRow)
+
+    return (
+      <div key={key} className="my-3 max-w-full overflow-x-auto rounded-xl border border-slate-200 bg-white dark:border-slate-700 dark:bg-slate-900">
+        <table className="min-w-full border-collapse text-right text-xs" dir="rtl">
+          <thead className="bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-200">
+            <tr>
+              {headers.map((header, index) => (
+                <th key={`${key}-h-${index}`} className="whitespace-nowrap border-b border-slate-200 px-3 py-2 font-extrabold dark:border-slate-700">
+                  {renderTextWithBold(header)}
+                </th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {rows.map((row, rowIndex) => (
+              <tr key={`${key}-r-${rowIndex}`} className="odd:bg-white even:bg-slate-50 dark:odd:bg-slate-900 dark:even:bg-slate-900/60">
+                {headers.map((_, cellIndex) => (
+                  <td key={`${key}-r-${rowIndex}-c-${cellIndex}`} className="align-top border-b border-slate-100 px-3 py-2 text-slate-700 dark:border-slate-800 dark:text-slate-200">
+                    {renderTextWithBold(row[cellIndex] ?? '')}
+                  </td>
+                ))}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    )
+  }
+
+  function renderMarkdownText(text: string) {
+    const lines = text.split('\n')
+    const nodes: React.ReactNode[] = []
+    let buffer: string[] = []
+    let index = 0
+    let key = 0
+
+    const flushBuffer = () => {
+      if (buffer.join('').trim()) {
+        nodes.push(
+          <div key={`text-${key++}`} className="whitespace-pre-wrap">
+            {renderTextWithBold(buffer.join('\n'))}
+          </div>
+        )
+      }
+      buffer = []
+    }
+
+    while (index < lines.length) {
+      if (isMarkdownTable(lines, index)) {
+        flushBuffer()
+        const tableLines = [lines[index], lines[index + 1]]
+        index += 2
+
+        while (index < lines.length && lines[index].trim().startsWith('|') && lines[index].trim().endsWith('|')) {
+          tableLines.push(lines[index])
+          index += 1
+        }
+
+        nodes.push(renderMarkdownTable(tableLines, `table-${key++}`))
+        continue
+      }
+
+      buffer.push(lines[index])
+      index += 1
+    }
+
+    flushBuffer()
+
+    return nodes
+  }
+
+  // Formats text block rendering without executable action scraping.
   function formatMessageContent(content: string) {
-    const actionJsonRegex = /```(?:action-json)?\s*([\s\S]*?)\s*```/g
+    const codeBlockRegex = /```(?:[A-Za-z0-9_-]+)?\s*([\s\S]*?)\s*```/g
     const parts: React.ReactNode[] = []
     let lastIndex = 0
     let match
     let cardKey = 0
 
-    while ((match = actionJsonRegex.exec(content)) !== null) {
+    while ((match = codeBlockRegex.exec(content)) !== null) {
       if (match.index > lastIndex) {
-        parts.push(renderTextWithBold(content.substring(lastIndex, match.index)))
+        parts.push(...renderMarkdownText(content.substring(lastIndex, match.index)))
       }
       
       const jsonText = match[1].trim()
-      try {
-        const actionObj = JSON.parse(jsonText)
-        parts.push(
-          <div key={`card-${cardKey++}`} className="my-3">
-            <ActionCard action={actionObj} onExecute={() => handleActionExecute(actionObj)} />
-          </div>
-        )
-      } catch (e) {
-        // Monospace code view block fallback
-        parts.push(
-          <pre key={`code-${cardKey++}`} className="my-2 overflow-x-auto rounded-xl bg-slate-900 p-4 text-xs font-mono text-white/95 leading-normal" dir="ltr">
-            <code>{jsonText}</code>
-          </pre>
-        )
-      }
+      parts.push(
+        <pre key={`code-${cardKey++}`} className="my-2 overflow-x-auto rounded-xl bg-slate-900 p-4 text-xs font-mono text-white/95 leading-normal" dir="ltr">
+          <code>{jsonText}</code>
+        </pre>
+      )
       
-      lastIndex = actionJsonRegex.lastIndex
+      lastIndex = codeBlockRegex.lastIndex
     }
 
     if (lastIndex < content.length) {
-      parts.push(renderTextWithBold(content.substring(lastIndex)))
+      parts.push(...renderMarkdownText(content.substring(lastIndex)))
     }
 
-    return <div className="space-y-2 leading-relaxed text-slate-700 dark:text-slate-200 text-sm whitespace-pre-wrap">{parts}</div>
+    return <div className="space-y-2 leading-relaxed text-slate-700 dark:text-slate-200 text-sm">{parts}</div>
   }
 
   // Suggestion chips definitions
@@ -816,16 +1146,13 @@ export default function NurseryAiChatPage() {
                 <h1 className="text-sm font-extrabold text-slate-900 dark:text-white">{activeChat.title}</h1>
                 <div className="flex items-center gap-2 mt-0.5 text-[11px] text-slate-400">
                   <span>البدء: {new Date(activeChat.created_at).toLocaleDateString('ar-SA')}</span>
-                  {activeChat.context_basin_id && (
-                    <span className="bg-orange-50 dark:bg-orange-950/40 text-terracotta px-2 py-0.5 rounded-full text-[10px] font-bold">
-                      حوض: {activeChat.context_basin_name}
-                    </span>
-                  )}
-                  {activeChat.context_cycle_id && (
-                    <span className="bg-blue-50 dark:bg-blue-950/40 text-blue-700 dark:text-blue-300 px-2 py-0.5 rounded-full text-[10px] font-bold">
-                      دورة: {activeChat.context_cycle_name}
-                    </span>
-                  )}
+                  <span className={`px-2 py-0.5 rounded-full text-xs font-bold ${
+                    inferredContext?.last_response_type === 'clarification'
+                      ? 'bg-blue-50 dark:bg-blue-950/40 text-blue-700 dark:text-blue-300'
+                      : 'bg-orange-50 dark:bg-orange-950/40 text-terracotta'
+                  }`}>
+                    {focusLabel()}
+                  </span>
                 </div>
               </div>
             </div>
@@ -850,7 +1177,7 @@ export default function NurseryAiChatPage() {
               <div>
                 <h2 className="text-lg font-extrabold text-slate-800 dark:text-slate-100">مرحباً بك في المستشار الزراعي الذكي</h2>
                 <p className="text-xs text-slate-500 dark:text-slate-400 mt-2 leading-relaxed">
-                  هذا النظام متصل بقاعدة بيانات المشتل الحية. اختر حوضاً أو دورة إنتاج من القائمة الجانبية لعرض حالتها، ثم اطرح أسئلتك أو استخدم أزرار التسجيل السريع لتسجيل الأنشطة مباشرة.
+                  يمكنك السؤال مباشرة عن أي حوض أو دورة أو مخزون. اختيارات التركيز السريع تساعد المستشار فقط ولا تقيد المحادثة.
                 </p>
               </div>
 
@@ -913,6 +1240,13 @@ export default function NurseryAiChatPage() {
                       }`}>
                         {isModel ? formatMessageContent(message.content) : <p className="text-sm leading-relaxed whitespace-pre-wrap">{message.content}</p>}
                       </div>
+
+                      {isModel && messageActionProposals[message.id] && (
+                        <ActionCard
+                          action={normalizeActionProposal(messageActionProposals[message.id])}
+                          onExecute={() => handleActionExecute(normalizeActionProposal(messageActionProposals[message.id]))}
+                        />
+                      )}
 
                       {/* File attachments */}
                       {message.attachments && message.attachments.length > 0 && (
@@ -1043,21 +1377,21 @@ export default function NurseryAiChatPage() {
         </div>
       </div>
 
-      {/* Pane 3. Right Pane: Basin Context Stats Dashboard & Direct Operations Shortcuts */}
+      {/* Pane 3. Right Pane: Quick Focus Stats Dashboard & Direct Operations Shortcuts */}
       <div className="flex w-72 shrink-0 flex-col bg-white border-r border-slate-100 dark:border-slate-800 dark:bg-slate-900/40 p-4 space-y-4 overflow-y-auto">
         
         <div className="border-b border-slate-100 dark:border-slate-800 pb-3">
-          <h3 className="text-xs font-extrabold text-slate-500">سياق الحوض والدورة النشطة</h3>
+          <h3 className="text-xs font-extrabold text-slate-500">تركيز سريع اختياري</h3>
           
           <div className="mt-2 space-y-2">
             <div>
-              <label className="text-[10px] font-bold text-slate-400 block mb-1">الحوض المستهدف</label>
+              <label className="text-xs font-bold text-slate-400 block mb-1">الحوض</label>
               <select
                 value={selectedBasinId || ''}
                 onChange={e => setSelectedBasinId(e.target.value ? Number(e.target.value) : null)}
                 className="w-full text-xs font-semibold rounded-lg border border-slate-100 bg-slate-50 dark:border-slate-800 dark:bg-slate-900 p-2 outline-none text-slate-700 dark:text-slate-300 focus:border-terracotta focus:ring-1 focus:ring-orange-100"
               >
-                <option value="">اختر حوض لتصفح بياناته...</option>
+                <option value="">بدون تركيز سريع...</option>
                 {basins.map(b => (
                   <option key={b.id} value={b.id}>{b.name}</option>
                 ))}
@@ -1065,13 +1399,13 @@ export default function NurseryAiChatPage() {
             </div>
 
             <div>
-              <label className="text-[10px] font-bold text-slate-400 block mb-1">دورة الإنتاج السياقية</label>
+              <label className="text-xs font-bold text-slate-400 block mb-1">دورة الإنتاج</label>
               <select
                 value={selectedCycleId || ''}
                 onChange={e => setSelectedCycleId(e.target.value ? Number(e.target.value) : null)}
                 className="w-full text-xs font-semibold rounded-lg border border-slate-100 bg-slate-50 dark:border-slate-800 dark:bg-slate-900 p-2 outline-none text-slate-700 dark:text-slate-300 focus:border-terracotta focus:ring-1 focus:ring-orange-100"
               >
-                <option value="">اختر دورة إنتاج...</option>
+                <option value="">بدون تركيز سريع...</option>
                 {cycles.map(c => (
                   <option key={c.id} value={c.id}>{c.name}</option>
                 ))}
@@ -1110,8 +1444,8 @@ export default function NurseryAiChatPage() {
                   <div className="flex justify-between">
                     <span className="text-slate-400">نسبة التشغيل:</span>
                     <span className="font-mono font-bold text-terracotta">
-                      {basinStats.basin?.capacity > 0 
-                        ? `${Math.round(((basinStats.stats?.total_trees || 0) / basinStats.basin.capacity) * 100)}%`
+                      {(basinStats.basin?.capacity || 0) > 0 
+                        ? `${Math.round(((basinStats.stats?.total_trees || 0) / (basinStats.basin?.capacity || 1)) * 100)}%`
                         : '0%'
                       }
                     </span>
@@ -1180,11 +1514,11 @@ export default function NurseryAiChatPage() {
             </div>
 
             {/* Basin recent activity logs list */}
-            {basinStats?.recent_activities?.length > 0 && (
+            {(basinStats?.recent_activities?.length ?? 0) > 0 && (
               <div className="space-y-2 pt-2 border-t border-slate-100 dark:border-slate-800">
                 <span className="text-[11px] font-bold text-slate-400 block mb-1">الأنشطة الأخيرة بالحوض</span>
                 <div className="space-y-2 max-h-48 overflow-y-auto pr-0.5">
-                  {basinStats.recent_activities.slice(0, 4).map((activity: any, index: number) => (
+                  {(basinStats?.recent_activities ?? []).slice(0, 4).map((activity, index) => (
                     <div key={index} className="p-2 rounded-lg bg-slate-50 dark:bg-slate-900/60 border border-slate-100 dark:border-slate-800 text-[10px] font-semibold text-slate-600 dark:text-slate-300 space-y-1">
                       <div className="flex justify-between">
                         <span className="font-extrabold text-slate-800 dark:text-slate-200">{activity.description || activity.type}</span>
@@ -1200,13 +1534,13 @@ export default function NurseryAiChatPage() {
         ) : (
           <div className="flex flex-col items-center justify-center py-12 text-slate-400 text-center space-y-3">
             <Warehouse className="h-10 w-10 text-slate-200 dark:text-slate-800" />
-            <span className="text-xs">اختر حوضاً لعرض تفاصيل طاقة التشغيل، السعة، والعمليات الأخيرة، وتسجيل المهام مباشرة.</span>
+            <span className="text-xs">يمكنك المحادثة بدون اختيار. اختر حوضاً فقط إذا أردت عرض بياناته السريعة هنا.</span>
           </div>
         )}
       </div>
 
       {/* Action execution confirmation popup dialog modals */}
-      <AppDialog open={activeAction !== null} onClose={() => setActiveAction(null)} panelClassName="max-w-md bg-white dark:bg-slate-900 rounded-3xl overflow-hidden shadow-2xl">
+      <AppDialog open={activeAction !== null} onClose={handleActionCancel} panelClassName="max-w-md bg-white dark:bg-slate-900 rounded-3xl overflow-hidden shadow-2xl">
         <div className="p-6">
           <div className="flex items-center gap-3 border-b border-slate-100 dark:border-slate-800 pb-4 mb-4">
             <Sparkles className="h-6 w-6 text-terracotta" />
@@ -1237,7 +1571,10 @@ export default function NurseryAiChatPage() {
                   <label className="block text-xs font-bold text-slate-500 mb-1">فترة الري</label>
                   <select
                     value={irrigationPeriod}
-                    onChange={e => setIrrigationPeriod(e.target.value as any)}
+                    onChange={e => {
+                      const value = e.target.value
+                      setIrrigationPeriod(value === 'evening' ? 'evening' : 'morning')
+                    }}
                     className="min-h-11 w-full rounded-xl border border-slate-100 bg-slate-50 px-3 py-2 text-sm font-semibold text-slate-900 outline-none transition-all focus:border-terracotta focus:bg-white focus:ring-2 focus:ring-orange-100 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-100"
                   >
                     <option value="morning">صباحية</option>
@@ -1391,7 +1728,7 @@ export default function NurseryAiChatPage() {
 
           <div className="flex items-center justify-end gap-3 mt-6 border-t border-slate-100 dark:border-slate-800 pt-4">
             <button
-              onClick={() => setActiveAction(null)}
+              onClick={handleActionCancel}
               className="min-h-11 px-4 py-2 rounded-xl text-sm font-bold text-slate-600 hover:bg-slate-50 dark:text-slate-300 dark:hover:bg-slate-800 transition-colors"
             >
               إلغاء
@@ -1412,7 +1749,7 @@ export default function NurseryAiChatPage() {
 }
 
 // Inline AI Action Card Renderer
-function ActionCard({ action, onExecute }: { action: any; onExecute: () => void }) {
+function ActionCard({ action, onExecute }: { action: ActiveAction; onExecute: () => void }) {
   const titles: Record<string, string> = {
     log_irrigation: 'جدولة عملية ري مقترحة',
     log_mortality: 'تسجيل حالة نفوق مقترحة',
@@ -1420,7 +1757,7 @@ function ActionCard({ action, onExecute }: { action: any; onExecute: () => void 
     transfer_cycle: 'نقل وتفريد دورة الإنتاج'
   }
 
-  const icons: Record<string, any> = {
+  const icons: Record<string, React.ComponentType<{ className?: string }>> = {
     log_irrigation: Waves,
     log_mortality: AlertCircle,
     log_fertilization: Sprout,
@@ -1438,8 +1775,17 @@ function ActionCard({ action, onExecute }: { action: any; onExecute: () => void 
         </div>
         <div>
           <h4 className="text-sm font-extrabold text-slate-900 dark:text-white">{actionTitle}</h4>
+          {action.human_summary && (
+            <p className="mt-1 text-xs font-semibold leading-relaxed text-slate-600 dark:text-slate-300">{action.human_summary}</p>
+          )}
           
           <div className="mt-1.5 flex flex-wrap gap-x-4 gap-y-1 text-xs text-slate-600 dark:text-slate-400 font-semibold">
+            {action.basin_name && (
+              <span>الحوض: {action.basin_name}</span>
+            )}
+            {action.cycle_name && (
+              <span>الدورة: {action.cycle_name}</span>
+            )}
             {action.date && (
               <span>التاريخ: {action.date}</span>
             )}

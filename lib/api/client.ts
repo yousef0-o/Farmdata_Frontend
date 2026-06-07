@@ -47,7 +47,10 @@ export async function apiRequest<T>(
   const res = await apiRequestRaw(path, options)
 
   if (!res.ok) {
-    const error = await res.json().catch(() => ({ message: 'Request failed' }))
+    const payload = await res.json().catch(() => null)
+    const error = new Error(apiErrorMessage(payload, res.status))
+    ;(error as Error & { status?: number; payload?: unknown }).status = res.status
+    ;(error as Error & { status?: number; payload?: unknown }).payload = payload
     throw error
   }
 
@@ -56,11 +59,41 @@ export async function apiRequest<T>(
   return res.json()
 }
 
-export function wrapResponse<T>(promise: Promise<any>): Promise<{ data: T }> {
+function apiErrorMessage(payload: unknown, status: number): string {
+  if (payload && typeof payload === 'object') {
+    const data = payload as {
+      message?: unknown
+      error?: unknown
+      errors?: Record<string, unknown>
+    }
+
+    if (typeof data.message === 'string' && data.message.trim()) {
+      return data.message
+    }
+
+    if (typeof data.error === 'string' && data.error.trim()) {
+      return data.error
+    }
+
+    if (data.errors && typeof data.errors === 'object') {
+      const first = Object.values(data.errors)[0]
+      if (Array.isArray(first) && typeof first[0] === 'string') {
+        return first[0]
+      }
+      if (typeof first === 'string') {
+        return first
+      }
+    }
+  }
+
+  return `Request failed (${status})`
+}
+
+export function wrapResponse<T>(promise: Promise<unknown>): Promise<{ data: T }> {
   return promise.then(res => {
     if (res && typeof res === 'object' && 'data' in res) {
-      return res
+      return res as { data: T }
     }
-    return { data: res }
+    return { data: res as T }
   })
 }
