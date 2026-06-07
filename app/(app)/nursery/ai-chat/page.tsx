@@ -24,7 +24,10 @@ import {
   HelpCircle,
   Warehouse,
   ChevronLeft,
-  Activity
+  Activity,
+  Volume2,
+  VolumeX,
+  Copy
 } from 'lucide-react'
 import AppDialog from '@/components/ui/AppDialog'
 import { apiRequest } from '@/lib/api/client'
@@ -126,6 +129,11 @@ interface CycleOption {
   name: string
 }
 
+interface IdNameOption {
+  id: number
+  name: string
+}
+
 interface FertilizerOption {
   id: number
   name: string
@@ -141,6 +149,9 @@ interface NurseryManageResponse {
     }>
     filter_options?: {
       basins?: BasinOption[]
+      sections?: IdNameOption[]
+      varieties?: IdNameOption[]
+      pot_sizes?: string[]
     }
     cycles?: CycleOption[]
   }
@@ -251,6 +262,8 @@ export default function NurseryAiChatPage() {
 
   // State Management
   const [chats, setChats] = useState<NurseryChat[]>([])
+  const [searchQuery, setSearchQuery] = useState('')
+  const filteredChats = chats.filter(c => c.title?.toLowerCase().includes(searchQuery.toLowerCase()) ?? false)
   const [activeChat, setActiveChat] = useState<NurseryChat | null>(null)
   const [messages, setMessages] = useState<NurseryChatMessage[]>([])
   const [inferredContext, setInferredContext] = useState<InferredContext | null>(null)
@@ -273,6 +286,7 @@ export default function NurseryAiChatPage() {
   const [cycles, setCycles] = useState<CycleOption[]>([])
   const [fertilizers, setFertizers] = useState<FertilizerOption[]>([])
 
+
   // Live Basin Dashboard Stats
   const [basinStats, setBasinStats] = useState<BasinStats | null>(null)
   const [loadingBasinStats, setLoadingBasinStats] = useState(false)
@@ -283,6 +297,8 @@ export default function NurseryAiChatPage() {
 
   // Speech-to-Text State
   const [isRecording, setIsRecording] = useState(false)
+  const [playingMessageId, setPlayingMessageId] = useState<number | null>(null)
+  const [copiedMessageId, setCopiedMessageId] = useState<number | null>(null)
   const [voiceMode, setVoiceMode] = useState<'backend' | 'browser' | 'unavailable'>('unavailable')
   const recognitionRef = useRef<SpeechRecognitionLike | null>(null)
   const mediaRecorderRef = useRef<MediaRecorder | null>(null)
@@ -312,6 +328,41 @@ export default function NurseryAiChatPage() {
   const [transferDate, setTransferDate] = useState('')
   const [transferBasinId, setTransferBasinId] = useState<number>(0)
   const [transferLineNumber, setTransferLineNumber] = useState(1)
+
+  // Note: start_cycle, create_basin, and log_procedure states are defined below
+
+  const [sections, setSections] = useState<IdNameOption[]>([])
+  const [varieties, setVarieties] = useState<IdNameOption[]>([])
+  const [potSizes, setPotSizes] = useState<string[]>([])
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string[]>>({})
+  const [dialogBasinId, setDialogBasinId] = useState<number>(0)
+
+  // start_cycle fields
+  const [cycleName, setCycleName] = useState('')
+  const [cycleTreeTypeId, setCycleTreeTypeId] = useState<number>(0)
+  const [cyclePropagationType, setCyclePropagationType] = useState<string>('seeds')
+  const [cycleSource, setCycleSource] = useState('')
+  const [cycleCount, setCycleCount] = useState(100)
+  const [cyclePotSize, setCyclePotSize] = useState('')
+  const [cycleStartDate, setCycleStartDate] = useState('')
+
+  // create_basin fields
+  const [basinSectionId, setBasinSectionId] = useState<number>(0)
+  const [basinBaseName, setBasinBaseName] = useState('')
+  const [basinCount, setBasinCount] = useState(1)
+  const [basinLength, setBasinLength] = useState(0)
+  const [basinWidth, setBasinWidth] = useState(0)
+  const [basinIrrigationMethod, setBasinIrrigationMethod] = useState('')
+
+  // log_procedure fields
+  const [procedureCycleId, setProcedureCycleId] = useState<number>(0)
+  const [procedureType, setProcedureType] = useState<'irrigation' | 'inspection' | 'humidity'>('irrigation')
+  const [procedureDate, setProcedureDate] = useState('')
+  const [procedurePeriod, setProcedurePeriod] = useState<string>('morning')
+  const [procedureStartTime, setProcedureStartTime] = useState('')
+  const [procedureEndTime, setProcedureEndTime] = useState('')
+  const [procedureHumidity, setProcedureHumidity] = useState<number | ''>(50)
+  const [procedureNotes, setProcedureNotes] = useState('')
 
   const chatEndRef = useRef<HTMLDivElement>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
@@ -410,6 +461,9 @@ export default function NurseryAiChatPage() {
       if (dashboardData?.data) {
         setBasins(dashboardData.data.filter_options?.basins || [])
         setCycles(dashboardData.data.cycles || [])
+        setSections(dashboardData.data.filter_options?.sections || [])
+        setVarieties(dashboardData.data.filter_options?.varieties || [])
+        setPotSizes(dashboardData.data.filter_options?.pot_sizes || [])
       }
 
       // Fetch fertilizers from general operations context
@@ -438,6 +492,66 @@ export default function NurseryAiChatPage() {
     } finally {
       setLoadingBasinStats(false)
     }
+  }
+
+  // Cleanup speech synthesis on unmount
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      window.speechSynthesis.getVoices()
+    }
+    return () => {
+      if (typeof window !== 'undefined') {
+        window.speechSynthesis.cancel()
+      }
+    }
+  }, [])
+
+  // Text-To-Speech (TTS) Toggle
+  function handleToggleSpeech(messageId: number, text: string) {
+    if (typeof window === 'undefined') return
+
+    if (playingMessageId === messageId) {
+      window.speechSynthesis.cancel()
+      setPlayingMessageId(null)
+      return
+    }
+
+    window.speechSynthesis.cancel()
+    
+    // Remove markdown formatting before reading
+    const cleanText = text
+      .replace(/\*\*(.*?)\*\*/g, '$1')
+      .replace(/`{3}[\s\S]*?`{3}/g, '')
+      .replace(/`(.+?)`/g, '$1')
+      .replace(/\|/g, ' ')
+
+    const utterance = new SpeechSynthesisUtterance(cleanText)
+    const voices = window.speechSynthesis.getVoices()
+    const arabicVoice = voices.find(voice => voice.lang.startsWith('ar'))
+    if (arabicVoice) {
+      utterance.voice = arabicVoice
+    }
+    utterance.lang = 'ar-SA'
+
+    utterance.onend = () => {
+      setPlayingMessageId(null)
+    }
+    utterance.onerror = () => {
+      setPlayingMessageId(null)
+    }
+
+    setPlayingMessageId(messageId)
+    window.speechSynthesis.speak(utterance)
+  }
+
+  // Copy message text to clipboard
+  function handleCopyMessage(messageId: number, text: string) {
+    if (typeof navigator === 'undefined') return
+    navigator.clipboard.writeText(text)
+    setCopiedMessageId(messageId)
+    setTimeout(() => {
+      setCopiedMessageId(null)
+    }, 2000)
   }
 
   // Initialize Speech recognition
@@ -710,19 +824,16 @@ export default function NurseryAiChatPage() {
 
       let streamedModelId: number | null = null
       let streamedContent = ''
-      let streamStarted = false
 
       try {
         await sendNurseryMessageStream(currentChat.id, formData, {
           onUserMessage: userMessage => {
-            streamStarted = true
             setMessages(prev => [...prev, userMessage])
           },
           onTelemetry: event => {
             setTelemetryEvents(prev => [event, ...prev].slice(0, 4))
           },
           onDelta: delta => {
-            streamStarted = true
             streamedContent += delta
             setMessages(prev => {
               if (streamedModelId === null) {
@@ -824,21 +935,27 @@ export default function NurseryAiChatPage() {
   function handleActionExecute(actionObj: ActiveAction) {
     setActiveAction(actionObj)
     setActionError(null)
+    setFieldErrors({})
 
     const todayString = new Date().toISOString().split('T')[0]
+    const currentBasinId = Number(actionObj.basin_id || selectedBasinId || activeChat?.context_basin_id || 0)
+    setDialogBasinId(currentBasinId)
 
     if (actionObj.action === 'log_irrigation') {
-      setIrrigationDate(actionObj.date || todayString)
-      setIrrigationPeriod(actionObj.period || 'morning')
-      setIrrigationStartTime(actionObj.start_time || '07:00')
-      setIrrigationEndTime(actionObj.end_time || '08:00')
+      const irrDate = actionObj.date || actionObj.irrigation_date
+      setIrrigationDate(typeof irrDate === 'string' ? irrDate : todayString)
+      setIrrigationPeriod(actionObj.period === 'evening' ? 'evening' : 'morning')
+      setIrrigationStartTime(typeof actionObj.start_time === 'string' ? actionObj.start_time : '07:00')
+      setIrrigationEndTime(typeof actionObj.end_time === 'string' ? actionObj.end_time : '08:00')
     } else if (actionObj.action === 'log_mortality') {
-      setMortalityLine(actionObj.line_number || 1)
-      setMortalityQuantity(actionObj.quantity || 1)
-      setMortalityDate(actionObj.date || actionObj.mortality_date || todayString)
+      setMortalityLine(Number(actionObj.line_number || 1))
+      setMortalityQuantity(Number(actionObj.quantity || 1))
+      const mortDate = actionObj.date || actionObj.mortality_date
+      setMortalityDate(typeof mortDate === 'string' ? mortDate : todayString)
     } else if (actionObj.action === 'log_fertilization') {
-      setFertilizationDate(actionObj.date || actionObj.fertilization_date || todayString)
-      setFertilizationQuantity(actionObj.quantity || 1)
+      const fertDate = actionObj.date || actionObj.fertilization_date
+      setFertilizationDate(typeof fertDate === 'string' ? fertDate : todayString)
+      setFertilizationQuantity(Number(actionObj.quantity || 1))
       
       // Try resolving fertilizer id from suggestions
       if (actionObj.fertilizer_id) {
@@ -847,11 +964,43 @@ export default function NurseryAiChatPage() {
         setFertilizerId(fertilizers[0]?.id || 0)
       }
     } else if (actionObj.action === 'transfer_cycle') {
-      setTransferSuccessCount(actionObj.successful_count || 1)
+      setTransferSuccessCount(Number(actionObj.successful_count || 1))
       setTransferMarkRemainingFailed(actionObj.mark_remaining_failed !== false)
-      setTransferDate(actionObj.date || todayString)
-      setTransferBasinId(actionObj.basin_id || basins[0]?.id || 0)
-      setTransferLineNumber(actionObj.line_number || 1)
+      const transDate = actionObj.date || actionObj.transfer_date
+      setTransferDate(typeof transDate === 'string' ? transDate : todayString)
+      setTransferBasinId(Number(actionObj.basin_id || basins[0]?.id || 0))
+      setTransferLineNumber(Number(actionObj.line_number || 1))
+    } else if (actionObj.action === 'start_cycle') {
+      setCycleName(typeof actionObj.name === 'string' ? actionObj.name : '')
+      setCycleTreeTypeId(Number(actionObj.tree_type_id || actionObj.variety_id || 0))
+      setCyclePropagationType(typeof actionObj.propagation_type === 'string' ? actionObj.propagation_type : '')
+      setCycleSource(typeof actionObj.source === 'string' ? actionObj.source : '')
+      setCycleCount(Number(actionObj.count || 1))
+      setCyclePotSize(typeof actionObj.pot_size === 'string' ? actionObj.pot_size : '')
+      const startDate = actionObj.start_date || actionObj.date
+      setCycleStartDate(typeof startDate === 'string' ? startDate : todayString)
+    } else if (actionObj.action === 'create_basin') {
+      setBasinSectionId(Number(actionObj.section_id || 0))
+      setBasinBaseName(typeof actionObj.base_name === 'string' ? actionObj.base_name : '')
+      setBasinCount(Number(actionObj.count || 1))
+      setBasinLength(Number(actionObj.length || 0))
+      setBasinWidth(Number(actionObj.width || 0))
+      setBasinIrrigationMethod(typeof actionObj.irrigation_method === 'string' ? actionObj.irrigation_method : '')
+    } else if (actionObj.action === 'log_procedure') {
+      setProcedureCycleId(Number(actionObj.cycle_id || selectedCycleId || activeChat?.context_cycle_id || 0))
+      const procType = actionObj.procedure_type
+      if (procType === 'irrigation' || procType === 'inspection' || procType === 'humidity') {
+        setProcedureType(procType)
+      } else {
+        setProcedureType('irrigation')
+      }
+      const procDate = actionObj.procedure_date || actionObj.date
+      setProcedureDate(typeof procDate === 'string' ? procDate : todayString)
+      setProcedurePeriod(typeof actionObj.period === 'string' ? actionObj.period : '')
+      setProcedureStartTime(typeof actionObj.start_time === 'string' ? actionObj.start_time : '')
+      setProcedureEndTime(typeof actionObj.end_time === 'string' ? actionObj.end_time : '')
+      setProcedureHumidity(actionObj.humidity_percentage !== undefined ? Number(actionObj.humidity_percentage) : '')
+      setProcedureNotes(typeof actionObj.notes === 'string' ? actionObj.notes : '')
     }
   }
 
@@ -912,8 +1061,9 @@ export default function NurseryAiChatPage() {
     if (!activeAction) return
     setActionSubmitting(true)
     setActionError(null)
+    setFieldErrors({})
 
-    const targetBasinId = activeAction.basin_id || selectedBasinId || activeChat?.context_basin_id
+    const targetBasinId = dialogBasinId || activeAction.basin_id || selectedBasinId || activeChat?.context_basin_id
 
     try {
       const registryEntry = actionRegistry[activeAction.action as KnownActionType]
@@ -941,6 +1091,28 @@ export default function NurseryAiChatPage() {
         transferDate,
         transferBasinId,
         transferLineNumber,
+        // New action fields
+        cycleName,
+        cycleTreeTypeId,
+        cyclePropagationType,
+        cycleSource,
+        cycleCount,
+        cyclePotSize,
+        cycleStartDate,
+        basinSectionId,
+        basinBaseName,
+        basinCount,
+        basinLength,
+        basinWidth,
+        basinIrrigationMethod,
+        procedureCycleId,
+        procedureType,
+        procedureDate,
+        procedurePeriod,
+        procedureStartTime,
+        procedureEndTime,
+        procedureHumidity: procedureHumidity === '' ? null : procedureHumidity,
+        procedureNotes,
       }
 
       const endpoint = registryEntry.endpoint(registryArgs)
@@ -962,6 +1134,16 @@ export default function NurseryAiChatPage() {
         const cycleName = cycles.find(c => c.id === Number(cycleId))?.name || `#${cycleId}`
         const targetBasinName = basins.find(b => b.id === transferBasinId)?.name || `#${transferBasinId}`
         logText = `⚙️ تم نقل وتفريد دورة الإنتاج (${cycleName}) بعدد (${transferSuccessCount}) شتلات ناجحة إلى الحوض (${targetBasinName}) الخط رقم (${transferLineNumber}).`
+      } else if (activeAction.action === 'start_cycle') {
+        const basinName = basins.find(b => b.id === Number(targetBasinId))?.name || `#${targetBasinId}`
+        logText = `⚙️ تم بدء دورة الإنتاج (${cycleName}) بعدد (${cycleCount}) في الحوض (${basinName}) بتاريخ ${cycleStartDate}.`
+      } else if (activeAction.action === 'create_basin') {
+        logText = `⚙️ تم إنشاء حوض/أحواض جديدة بالاسم الأساسي (${basinBaseName}) بعدد (${basinCount}) بنجاح.`
+      } else if (activeAction.action === 'log_procedure') {
+        const cycleId = procedureCycleId || activeAction.cycle_id || selectedCycleId || activeChat?.context_cycle_id
+        const cycleName = cycles.find(c => c.id === Number(cycleId))?.name || `#${cycleId}`
+        const label = procedureType === 'irrigation' ? 'ري' : procedureType === 'inspection' ? 'فحص ومراقبة' : 'قياس رطوبة'
+        logText = `⚙️ تم تسجيل إجراء (${label}) لدورة الإنتاج (${cycleName}) بتاريخ ${procedureDate}.`
       } else {
         logText = `⚙️ تم تنفيذ الإجراء (${registryEntry.title}) بنجاح.`
       }
@@ -985,14 +1167,30 @@ export default function NurseryAiChatPage() {
 
       await recordActionEvent('action_result', activeAction.action, { ...payload, log_text: logText }, logText)
 
-      // Reload live stats
+      // Reload live stats and context options
       if (targetBasinId) {
         loadBasinStats(Number(targetBasinId))
       }
+      fetchContextOptions()
 
       setActiveAction(null)
+      setFieldErrors({})
     } catch (err: unknown) {
       console.error('Failed to commit action:', err)
+      const apiErr = err as { status?: number; payload?: { errors?: Record<string, string[]>; message?: string } }
+      if (apiErr && typeof apiErr === 'object' && apiErr.status === 422) {
+        const payload = apiErr.payload
+        if (payload?.errors && typeof payload.errors === 'object') {
+          setFieldErrors(payload.errors)
+          const msg = payload.message || 'يرجى تصحيح الأخطاء المحددة أدناه.'
+          setActionError(msg)
+          if (activeAction) {
+            await recordActionEvent('action_failed', activeAction.action, { errors: payload.errors }, msg)
+          }
+          return
+        }
+      }
+
       const message = errorMessage(err, 'فشل تسجيل العملية.')
       if (activeAction) {
         await recordActionEvent('action_failed', activeAction.action, { error: message }, message)
@@ -1057,22 +1255,22 @@ export default function NurseryAiChatPage() {
     const rows = lines.slice(2).map(splitTableRow)
 
     return (
-      <div key={key} className="my-3 max-w-full overflow-x-auto rounded-xl border border-slate-200 bg-white dark:border-slate-700 dark:bg-slate-900">
+      <div key={key} className="my-4 max-w-full overflow-x-auto rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-950 shadow-sm transition-all hover:shadow-md">
         <table className="min-w-full border-collapse text-right text-xs" dir="rtl">
-          <thead className="bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-200">
+          <thead className="bg-slate-50 dark:bg-slate-900/60 text-slate-700 dark:text-slate-200 border-b border-slate-200/80 dark:border-slate-800">
             <tr>
               {headers.map((header, index) => (
-                <th key={`${key}-h-${index}`} className="whitespace-nowrap border-b border-slate-200 px-3 py-2 font-extrabold dark:border-slate-700">
+                <th key={`${key}-h-${index}`} className="whitespace-nowrap px-4 py-3 font-extrabold dark:text-slate-100">
                   {renderTextWithBold(header)}
                 </th>
               ))}
             </tr>
           </thead>
-          <tbody>
+          <tbody className="divide-y divide-slate-100 dark:divide-slate-900/65">
             {rows.map((row, rowIndex) => (
-              <tr key={`${key}-r-${rowIndex}`} className="odd:bg-white even:bg-slate-50 dark:odd:bg-slate-900 dark:even:bg-slate-900/60">
+              <tr key={`${key}-r-${rowIndex}`} className="hover:bg-slate-50/50 dark:hover:bg-slate-900/30 transition-colors odd:bg-white even:bg-slate-50/30 dark:odd:bg-slate-950 dark:even:bg-slate-900/10">
                 {headers.map((_, cellIndex) => (
-                  <td key={`${key}-r-${rowIndex}-c-${cellIndex}`} className="align-top border-b border-slate-100 px-3 py-2 text-slate-700 dark:border-slate-800 dark:text-slate-200">
+                  <td key={`${key}-r-${rowIndex}-c-${cellIndex}`} className="align-top px-4 py-2.5 text-slate-700 dark:text-slate-350 leading-relaxed">
                     {renderTextWithBold(row[cellIndex] ?? '')}
                   </td>
                 ))}
@@ -1141,9 +1339,7 @@ export default function NurseryAiChatPage() {
       
       const jsonText = match[1].trim()
       parts.push(
-        <pre key={`code-${cardKey++}`} className="my-2 overflow-x-auto rounded-xl bg-slate-900 p-4 text-xs font-mono text-white/95 leading-normal" dir="ltr">
-          <code>{jsonText}</code>
-        </pre>
+        <CodeBlock key={`code-${cardKey++}`} code={jsonText} />
       )
       
       lastIndex = codeBlockRegex.lastIndex
@@ -1156,6 +1352,19 @@ export default function NurseryAiChatPage() {
     return <div className="space-y-2 leading-relaxed text-slate-700 dark:text-slate-200 text-sm">{parts}</div>
   }
 
+  // Helper to render field-level validation errors
+  function renderFieldErrors(fieldName: string) {
+    const errors = fieldErrors[fieldName]
+    if (!errors || errors.length === 0) return null
+    return (
+      <div className="mt-1 space-y-0.5 animate-fade-in-up">
+        {errors.map((error, idx) => (
+          <p key={idx} className="text-[11px] font-bold text-red-500">{error}</p>
+        ))}
+      </div>
+    )
+  }
+
   // Suggestion chips definitions
   const suggestionChips = [
     { text: 'ما هي حالة الحوض الحالي وجدول ريّه؟', icon: Waves },
@@ -1165,10 +1374,10 @@ export default function NurseryAiChatPage() {
   ]
 
   return (
-    <div className="flex h-[calc(100vh-100px)] min-h-0 w-full overflow-hidden rounded-2xl border border-slate-100 bg-[#f8fafc] dark:border-slate-800 dark:bg-slate-950 font-sans" dir="rtl">
+    <div className="flex h-[calc(100vh-100px)] min-h-0 w-full overflow-hidden rounded-2xl border border-slate-200/80 bg-gradient-to-br from-slate-50 via-slate-100/90 to-orange-50/20 dark:border-slate-800/80 dark:from-slate-950 dark:via-slate-900/90 dark:to-orange-950/10 font-sans" dir="rtl">
       
       {/* Pane 1. Previous consultations history sidebar */}
-      <div className="flex w-64 shrink-0 flex-col border-l border-slate-100 bg-white dark:border-slate-800 dark:bg-slate-900/40">
+      <div className="flex w-64 shrink-0 flex-col border-e border-slate-200/60 dark:border-slate-800 bg-white/60 dark:bg-slate-950/45 backdrop-blur-md">
         
         {/* Sidebar Header */}
         <div className="p-4 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between">
@@ -1182,100 +1391,151 @@ export default function NurseryAiChatPage() {
           </button>
         </div>
 
+        {/* Search Bar */}
+        <div className="px-3 pb-3 pt-2 border-b border-slate-100/60 dark:border-slate-850">
+          <input
+            type="text"
+            placeholder="بحث في الاستشارات..."
+            value={searchQuery}
+            onChange={e => setSearchQuery(e.target.value)}
+            className="w-full text-xs font-semibold rounded-xl border border-slate-200/80 bg-slate-50/50 dark:border-slate-800/80 dark:bg-slate-950/40 p-2 outline-none text-slate-700 dark:text-slate-300 focus:border-terracotta focus:ring-2 focus:ring-orange-100/50 transition-all"
+          />
+        </div>
+
         {/* Chats List */}
-        <div className="flex-1 overflow-y-auto p-2 space-y-1">
+        <div className="flex-1 overflow-y-auto p-2 space-y-3">
           {loadingChats ? (
             <div className="flex flex-col items-center justify-center py-12 text-slate-400">
               <Loader2 className="h-5 w-5 animate-spin text-terracotta mb-2" />
               <span className="text-[11px] font-bold">جاري تحميل الاستشارات...</span>
             </div>
-          ) : chats.length === 0 ? (
-            <div className="text-center py-12 text-xs text-slate-400">لا توجد استشارات سابقة.</div>
+          ) : filteredChats.length === 0 ? (
+            <div className="text-center py-12 text-xs text-slate-400">
+              {searchQuery ? 'لا توجد نتائج بحث مطابقة.' : 'لا توجد استشارات سابقة.'}
+            </div>
           ) : (
-            chats.map(chat => {
-              const isActive = activeChat?.id === chat.id
-              const isRenaming = renamingChatId === chat.id
+            (() => {
+              const groups: { label: string; items: NurseryChat[] }[] = [
+                { label: 'اليوم', items: [] },
+                { label: 'الأمس', items: [] },
+                { label: 'الأسبوع الماضي', items: [] },
+                { label: 'أقدم', items: [] },
+              ]
 
-              return (
-                <div
-                  key={chat.id}
-                  className={`group relative flex items-center justify-between p-2.5 rounded-xl cursor-pointer transition-all ${
-                    isActive 
-                      ? 'bg-orange-50/70 border-r-4 border-terracotta dark:bg-orange-950/20' 
-                      : 'hover:bg-slate-50 dark:hover:bg-slate-900/60'
-                  }`}
-                  onClick={() => !isRenaming && selectChat(chat)}
-                >
-                  <div className="flex-1 min-w-0 pr-1">
-                    {isRenaming ? (
-                      <input
-                        value={renameTitle}
-                        onChange={e => setRenameTitle(e.target.value)}
-                        onKeyDown={e => e.key === 'Enter' && handleRenameChat(chat.id)}
-                        className="w-full text-xs font-bold border border-terracotta rounded px-1.5 py-0.5 bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-200 outline-none"
-                        autoFocus
-                      />
-                    ) : (
-                      <>
-                        <div className="text-xs font-bold truncate text-slate-800 dark:text-slate-200">{chat.title}</div>
-                        {(chat.context_basin_name || chat.context_cycle_name) && (
-                          <div className="text-[10px] text-terracotta mt-0.5 truncate flex items-center gap-1 font-semibold">
-                            <span>{chat.context_basin_name || chat.context_cycle_name}</span>
+              const now = new Date()
+              const today = new Date(now.getFullYear(), now.getMonth(), now.getDate())
+              const yesterday = new Date(today)
+              yesterday.setDate(yesterday.getDate() - 1)
+              const lastWeek = new Date(today)
+              lastWeek.setDate(lastWeek.getDate() - 7)
+
+              filteredChats.forEach(chat => {
+                const chatDate = new Date(chat.created_at)
+                if (chatDate >= today) {
+                  groups[0].items.push(chat)
+                } else if (chatDate >= yesterday) {
+                  groups[1].items.push(chat)
+                } else if (chatDate >= lastWeek) {
+                  groups[2].items.push(chat)
+                } else {
+                  groups[3].items.push(chat)
+                }
+              })
+
+              return groups
+                .filter(g => g.items.length > 0)
+                .map(group => (
+                  <div key={group.label} className="space-y-1">
+                    <div className="text-[10px] font-extrabold text-slate-400 dark:text-slate-500 px-2 py-1 select-none">
+                      {group.label}
+                    </div>
+                    {group.items.map(chat => {
+                      const isActive = activeChat?.id === chat.id
+                      const isRenaming = renamingChatId === chat.id
+
+                      return (
+                        <div
+                          key={chat.id}
+                          className={`group relative flex items-center justify-between p-2.5 rounded-xl cursor-pointer transition-all ${
+                            isActive 
+                              ? 'bg-orange-50/70 border-r-4 border-terracotta dark:bg-orange-950/20' 
+                              : 'hover:bg-slate-50 dark:hover:bg-slate-900/60'
+                          }`}
+                          onClick={() => !isRenaming && selectChat(chat)}
+                        >
+                          <div className="flex-1 min-w-0 pr-1">
+                            {isRenaming ? (
+                              <input
+                                value={renameTitle}
+                                onChange={e => setRenameTitle(e.target.value)}
+                                onKeyDown={e => e.key === 'Enter' && handleRenameChat(chat.id)}
+                                className="w-full text-xs font-bold border border-terracotta rounded-lg px-2 py-1 bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-200 outline-none focus:ring-2 focus:ring-orange-100 transition-all"
+                                autoFocus
+                                onClick={e => e.stopPropagation()}
+                              />
+                            ) : (
+                              <>
+                                <div className="text-xs font-bold truncate text-slate-800 dark:text-slate-200">{chat.title}</div>
+                                {(chat.context_basin_name || chat.context_cycle_name) && (
+                                  <div className="text-[10px] text-terracotta mt-0.5 truncate flex items-center gap-1 font-semibold">
+                                    <span>{chat.context_basin_name || chat.context_cycle_name}</span>
+                                  </div>
+                                )}
+                              </>
+                            )}
                           </div>
-                        )}
-                      </>
-                    )}
+                          
+                          {/* Actions buttons */}
+                          <div className="opacity-0 group-hover:opacity-100 flex items-center gap-0.5 transition-opacity mr-2 shrink-0">
+                            {isRenaming ? (
+                              <>
+                                <button 
+                                  onClick={(e) => { e.stopPropagation(); handleRenameChat(chat.id) }}
+                                  className="p-1 text-emerald-600 hover:text-emerald-700"
+                                >
+                                  <Check className="h-3 w-3" />
+                                </button>
+                                <button 
+                                  onClick={(e) => { e.stopPropagation(); setRenamingChatId(null) }}
+                                  className="p-1 text-red-600 hover:text-red-700"
+                                >
+                                  <X className="h-3 w-3" />
+                                </button>
+                              </>
+                            ) : (
+                              <>
+                                <button 
+                                  onClick={(e) => { 
+                                    e.stopPropagation()
+                                    setRenamingChatId(chat.id)
+                                    setRenameTitle(chat.title)
+                                  }}
+                                  className="p-0.5 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
+                                  title="تعديل العنوان"
+                                >
+                                  <Edit3 className="h-3 w-3" />
+                                </button>
+                                <button 
+                                  onClick={(e) => { e.stopPropagation(); handleDeleteChat(chat.id) }}
+                                  className="p-0.5 text-slate-400 hover:text-red-600"
+                                  title="حذف"
+                                >
+                                  <Trash2 className="h-3 w-3" />
+                                </button>
+                              </>
+                            )}
+                          </div>
+                        </div>
+                      )
+                    })}
                   </div>
-                  
-                  {/* Actions buttons */}
-                  <div className="opacity-0 group-hover:opacity-100 flex items-center gap-0.5 transition-opacity">
-                    {isRenaming ? (
-                      <>
-                        <button 
-                          onClick={(e) => { e.stopPropagation(); handleRenameChat(chat.id) }}
-                          className="p-1 text-emerald-600 hover:text-emerald-700"
-                        >
-                          <Check className="h-3 w-3" />
-                        </button>
-                        <button 
-                          onClick={(e) => { e.stopPropagation(); setRenamingChatId(null) }}
-                          className="p-1 text-red-600 hover:text-red-700"
-                        >
-                          <X className="h-3 w-3" />
-                        </button>
-                      </>
-                    ) : (
-                      <>
-                        <button 
-                          onClick={(e) => { 
-                            e.stopPropagation()
-                            setRenamingChatId(chat.id)
-                            setRenameTitle(chat.title)
-                          }}
-                          className="p-0.5 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
-                          title="تعديل العنوان"
-                        >
-                          <Edit3 className="h-3 w-3" />
-                        </button>
-                        <button 
-                          onClick={(e) => { e.stopPropagation(); handleDeleteChat(chat.id) }}
-                          className="p-0.5 text-slate-400 hover:text-red-600"
-                          title="حذف"
-                        >
-                          <Trash2 className="h-3 w-3" />
-                        </button>
-                      </>
-                    )}
-                  </div>
-                </div>
-              )
-            })
+                ))
+            })()
           )}
         </div>
       </div>
 
-      {/* Pane 2. Central Active Chat thread workspace */}
-      <div className="flex flex-1 flex-col overflow-hidden bg-white dark:bg-slate-900/20 border-l border-slate-100 dark:border-slate-800">
+      <div className="flex flex-1 flex-col overflow-hidden bg-white/40 dark:bg-slate-900/10 backdrop-blur-md border-e border-slate-200/60 dark:border-slate-800">
         
         {/* Chat Header */}
         <div className="flex min-h-14 items-center justify-between border-b border-slate-100 dark:border-slate-800 px-6 py-3">
@@ -1381,6 +1641,47 @@ export default function NurseryAiChatPage() {
                           : 'bg-terracotta text-white'
                       }`}>
                         {isModel ? formatMessageContent(message.content) : <p className="text-sm leading-relaxed whitespace-pre-wrap">{message.content}</p>}
+                      </div>
+
+                      {/* Message Actions Toolbar */}
+                      <div className={`flex items-center gap-3 text-[10px] ${isModel ? 'justify-start' : 'justify-end'} text-slate-400 dark:text-slate-500 px-1`}>
+                        <button
+                          onClick={() => handleCopyMessage(message.id, message.content)}
+                          className="hover:text-slate-600 dark:hover:text-slate-350 transition-colors flex items-center gap-1 font-semibold select-none"
+                          title="نسخ نص الرسالة"
+                        >
+                          {copiedMessageId === message.id ? (
+                            <>
+                              <Check className="h-3 w-3 text-emerald-500" />
+                              <span className="text-emerald-500 font-bold">تم النسخ</span>
+                            </>
+                          ) : (
+                            <>
+                              <Copy className="h-3 w-3" />
+                              <span>نسخ</span>
+                            </>
+                          )}
+                        </button>
+                        
+                        {isModel && (
+                          <button
+                            onClick={() => handleToggleSpeech(message.id, message.content)}
+                            className="hover:text-slate-655 dark:hover:text-slate-300 transition-colors flex items-center gap-1 font-semibold select-none"
+                            title={playingMessageId === message.id ? "إيقاف القراءة" : "قراءة الرسالة بصوت عربي"}
+                          >
+                            {playingMessageId === message.id ? (
+                              <>
+                                <VolumeX className="h-3 w-3 text-terracotta animate-pulse" />
+                                <span className="text-terracotta font-bold">إيقاف</span>
+                              </>
+                            ) : (
+                              <>
+                                <Volume2 className="h-3 w-3" />
+                                <span>قراءة صوتية</span>
+                              </>
+                            )}
+                          </button>
+                        )}
                       </div>
 
                       {isModel && messageActionProposals[message.id] && (
@@ -1504,6 +1805,20 @@ export default function NurseryAiChatPage() {
               {isRecording ? <MicOff className="h-5 w-5" /> : <Mic className="h-5 w-5" />}
             </button>
 
+            {isRecording && (
+              <div className="flex items-center gap-1 px-3 py-1 bg-red-50/80 dark:bg-red-950/30 border border-red-100 dark:border-red-900/40 rounded-xl h-11 shrink-0">
+                <span className="text-[10px] font-bold text-red-500 animate-pulse ml-1 select-none">جاري التسجيل...</span>
+                <div className="flex items-center gap-0.5 h-5">
+                  <div className="w-[2.5px] bg-red-500 dark:bg-red-400 rounded-full animate-bounce h-2" style={{ animationDelay: '0.1s' }} />
+                  <div className="w-[2.5px] bg-red-500 dark:bg-red-400 rounded-full animate-bounce h-4" style={{ animationDelay: '0.2s' }} />
+                  <div className="w-[2.5px] bg-red-500 dark:bg-red-400 rounded-full animate-bounce h-3" style={{ animationDelay: '0.3s' }} />
+                  <div className="w-[2.5px] bg-red-500 dark:bg-red-400 rounded-full animate-bounce h-5" style={{ animationDelay: '0.4s' }} />
+                  <div className="w-[2.5px] bg-red-500 dark:bg-red-400 rounded-full animate-bounce h-2" style={{ animationDelay: '0.5s' }} />
+                  <div className="w-[2.5px] bg-red-500 dark:bg-red-400 rounded-full animate-bounce h-4" style={{ animationDelay: '0.6s' }} />
+                </div>
+              </div>
+            )}
+
             <input
               type="text"
               value={inputMessage}
@@ -1533,8 +1848,7 @@ export default function NurseryAiChatPage() {
         </div>
       </div>
 
-      {/* Pane 3. Right Pane: Quick Focus Stats Dashboard & Direct Operations Shortcuts */}
-      <div className="flex w-72 shrink-0 flex-col bg-white border-r border-slate-100 dark:border-slate-800 dark:bg-slate-900/40 p-4 space-y-4 overflow-y-auto">
+      <div className="flex w-72 shrink-0 flex-col bg-white/60 dark:bg-slate-950/45 backdrop-blur-md p-4 space-y-4 overflow-y-auto">
         
         <div className="border-b border-slate-100 dark:border-slate-800 pb-3">
           <h3 className="text-xs font-extrabold text-slate-500">تركيز سريع اختياري</h3>
@@ -1667,6 +1981,39 @@ export default function NurseryAiChatPage() {
                 </div>
                 <ChevronLeft className="h-3.5 w-3.5 text-slate-300 group-hover:text-terracotta transition-colors" />
               </button>
+
+              <button
+                onClick={() => handleDirectShortcut('start_cycle')}
+                className="w-full text-right p-2.5 rounded-xl border border-slate-100 bg-white hover:border-terracotta dark:border-slate-800 dark:bg-slate-900/40 text-xs font-bold text-slate-700 dark:text-slate-300 flex items-center justify-between group transition-all"
+              >
+                <div className="flex items-center gap-2">
+                  <span className="h-6 w-6 rounded-lg bg-orange-50 text-terracotta flex items-center justify-center">🌱</span>
+                  <span>بدء دورة إنتاج جديدة</span>
+                </div>
+                <ChevronLeft className="h-3.5 w-3.5 text-slate-300 group-hover:text-terracotta transition-colors" />
+              </button>
+
+              <button
+                onClick={() => handleDirectShortcut('create_basin')}
+                className="w-full text-right p-2.5 rounded-xl border border-slate-100 bg-white hover:border-terracotta dark:border-slate-800 dark:bg-slate-900/40 text-xs font-bold text-slate-700 dark:text-slate-300 flex items-center justify-between group transition-all"
+              >
+                <div className="flex items-center gap-2">
+                  <span className="h-6 w-6 rounded-lg bg-slate-50 text-slate-600 flex items-center justify-center">🏫</span>
+                  <span>إنشاء حوض جديد</span>
+                </div>
+                <ChevronLeft className="h-3.5 w-3.5 text-slate-300 group-hover:text-terracotta transition-colors" />
+              </button>
+
+              <button
+                onClick={() => handleDirectShortcut('log_procedure')}
+                className="w-full text-right p-2.5 rounded-xl border border-slate-100 bg-white hover:border-terracotta dark:border-slate-800 dark:bg-slate-900/40 text-xs font-bold text-slate-700 dark:text-slate-300 flex items-center justify-between group transition-all"
+              >
+                <div className="flex items-center gap-2">
+                  <span className="h-6 w-6 rounded-lg bg-violet-50 text-violet-600 flex items-center justify-center">⚙️</span>
+                  <span>تسجيل إجراء عام</span>
+                </div>
+                <ChevronLeft className="h-3.5 w-3.5 text-slate-300 group-hover:text-terracotta transition-colors" />
+              </button>
             </div>
 
             {/* Basin recent activity logs list */}
@@ -1711,6 +2058,26 @@ export default function NurseryAiChatPage() {
           )}
 
           {/* Form inputs depending on the action type */}
+          {(activeAction?.action === 'log_irrigation' ||
+            activeAction?.action === 'log_mortality' ||
+            activeAction?.action === 'log_fertilization' ||
+            activeAction?.action === 'start_cycle') && (
+            <div className="mb-4">
+              <label className="block text-xs font-bold text-slate-500 mb-1">الحوض المستهدف</label>
+              <select
+                value={dialogBasinId}
+                onChange={e => setDialogBasinId(Number(e.target.value))}
+                className="min-h-11 w-full rounded-xl border border-slate-100 bg-slate-50 px-3 py-2 text-sm font-semibold text-slate-900 outline-none transition-all focus:border-terracotta focus:bg-white focus:ring-2 focus:ring-orange-100 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-100"
+              >
+                <option value={0}>اختر حوض...</option>
+                {basins.map(b => (
+                  <option key={b.id} value={b.id}>{b.name}</option>
+                ))}
+              </select>
+              {renderFieldErrors('basin_id')}
+            </div>
+          )}
+
           {activeAction?.action === 'log_irrigation' && (
             <div className="space-y-4">
               <div>
@@ -1721,6 +2088,7 @@ export default function NurseryAiChatPage() {
                   onChange={e => setIrrigationDate(e.target.value)}
                   className="min-h-11 w-full rounded-xl border border-slate-100 bg-slate-50 px-3 py-2 text-sm font-semibold text-slate-900 outline-none transition-all focus:border-terracotta focus:bg-white focus:ring-2 focus:ring-orange-100 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-100"
                 />
+                {renderFieldErrors('irrigation_date')}
               </div>
               <div className="grid grid-cols-2 gap-3">
                 <div>
@@ -1736,6 +2104,7 @@ export default function NurseryAiChatPage() {
                     <option value="morning">صباحية</option>
                     <option value="evening">مسائية</option>
                   </select>
+                  {renderFieldErrors('period')}
                 </div>
                 <div>
                   <label className="block text-xs font-bold text-slate-500 mb-1">وقت البدء</label>
@@ -1745,6 +2114,7 @@ export default function NurseryAiChatPage() {
                     onChange={e => setIrrigationStartTime(e.target.value)}
                     className="min-h-11 w-full rounded-xl border border-slate-100 bg-slate-50 px-3 py-2 text-sm font-semibold text-slate-900 outline-none transition-all focus:border-terracotta focus:bg-white focus:ring-2 focus:ring-orange-100 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-100"
                   />
+                  {renderFieldErrors('start_time')}
                 </div>
               </div>
             </div>
@@ -1761,6 +2131,7 @@ export default function NurseryAiChatPage() {
                     onChange={e => setMortalityLine(Number(e.target.value))}
                     className="min-h-11 w-full rounded-xl border border-slate-100 bg-slate-50 px-3 py-2 text-sm font-semibold text-slate-900 outline-none transition-all focus:border-terracotta focus:bg-white focus:ring-2 focus:ring-orange-100 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-100"
                   />
+                  {renderFieldErrors('line_number')}
                 </div>
                 <div>
                   <label className="block text-xs font-bold text-slate-500 mb-1">الكمية النافقة</label>
@@ -1770,6 +2141,7 @@ export default function NurseryAiChatPage() {
                     onChange={e => setMortalityQuantity(Number(e.target.value))}
                     className="min-h-11 w-full rounded-xl border border-slate-100 bg-slate-50 px-3 py-2 text-sm font-semibold text-slate-900 outline-none transition-all focus:border-terracotta focus:bg-white focus:ring-2 focus:ring-orange-100 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-100"
                   />
+                  {renderFieldErrors('quantity')}
                 </div>
               </div>
               <div>
@@ -1780,6 +2152,7 @@ export default function NurseryAiChatPage() {
                   onChange={e => setMortalityDate(e.target.value)}
                   className="min-h-11 w-full rounded-xl border border-slate-100 bg-slate-50 px-3 py-2 text-sm font-semibold text-slate-900 outline-none transition-all focus:border-terracotta focus:bg-white focus:ring-2 focus:ring-orange-100 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-100"
                 />
+                {renderFieldErrors('mortality_date')}
               </div>
             </div>
           )}
@@ -1798,6 +2171,7 @@ export default function NurseryAiChatPage() {
                     <option key={f.id} value={f.id}>{f.name} (المتوفر: {f.quantity} {f.unit})</option>
                   ))}
                 </select>
+                {renderFieldErrors('fertilizer_id')}
               </div>
               <div className="grid grid-cols-2 gap-3">
                 <div>
@@ -1809,6 +2183,7 @@ export default function NurseryAiChatPage() {
                     onChange={e => setFertilizationQuantity(Number(e.target.value))}
                     className="min-h-11 w-full rounded-xl border border-slate-100 bg-slate-50 px-3 py-2 text-sm font-semibold text-slate-900 outline-none transition-all focus:border-terracotta focus:bg-white focus:ring-2 focus:ring-orange-100 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-100"
                   />
+                  {renderFieldErrors('quantity')}
                 </div>
                 <div>
                   <label className="block text-xs font-bold text-slate-500 mb-1">تاريخ التسميد</label>
@@ -1818,6 +2193,7 @@ export default function NurseryAiChatPage() {
                     onChange={e => setFertilizationDate(e.target.value)}
                     className="min-h-11 w-full rounded-xl border border-slate-100 bg-slate-50 px-3 py-2 text-sm font-semibold text-slate-900 outline-none transition-all focus:border-terracotta focus:bg-white focus:ring-2 focus:ring-orange-100 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-100"
                   />
+                  {renderFieldErrors('fertilization_date')}
                 </div>
               </div>
             </div>
@@ -1834,6 +2210,7 @@ export default function NurseryAiChatPage() {
                     onChange={e => setTransferSuccessCount(Number(e.target.value))}
                     className="min-h-11 w-full rounded-xl border border-slate-100 bg-slate-50 px-3 py-2 text-sm font-semibold text-slate-900 outline-none transition-all focus:border-terracotta focus:bg-white focus:ring-2 focus:ring-orange-100 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-100"
                   />
+                  {renderFieldErrors('successful_count')}
                 </div>
                 <div>
                   <label className="block text-xs font-bold text-slate-500 mb-1">تاريخ النقل</label>
@@ -1843,6 +2220,7 @@ export default function NurseryAiChatPage() {
                     onChange={e => setTransferDate(e.target.value)}
                     className="min-h-11 w-full rounded-xl border border-slate-100 bg-slate-50 px-3 py-2 text-sm font-semibold text-slate-900 outline-none transition-all focus:border-terracotta focus:bg-white focus:ring-2 focus:ring-orange-100 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-100"
                   />
+                  {renderFieldErrors('transfer_date')}
                 </div>
               </div>
               <div className="grid grid-cols-2 gap-3">
@@ -1858,6 +2236,7 @@ export default function NurseryAiChatPage() {
                       <option key={b.id} value={b.id}>{b.name}</option>
                     ))}
                   </select>
+                  {renderFieldErrors('basin_id')}
                 </div>
                 <div>
                   <label className="block text-xs font-bold text-slate-500 mb-1">رقم خط النقل</label>
@@ -1867,6 +2246,7 @@ export default function NurseryAiChatPage() {
                     onChange={e => setTransferLineNumber(Number(e.target.value))}
                     className="min-h-11 w-full rounded-xl border border-slate-100 bg-slate-50 px-3 py-2 text-sm font-semibold text-slate-900 outline-none transition-all focus:border-terracotta focus:bg-white focus:ring-2 focus:ring-orange-100 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-100"
                   />
+                  {renderFieldErrors('line_number')}
                 </div>
               </div>
               <div className="flex items-center gap-2">
@@ -1878,6 +2258,296 @@ export default function NurseryAiChatPage() {
                   className="rounded text-terracotta focus:ring-orange-500"
                 />
                 <label htmlFor="markRemainingFailed" className="text-xs font-bold text-slate-600 dark:text-slate-300">اعتبار باقي البذور غير ناجحة وإنهاء الدورة</label>
+              </div>
+            </div>
+          )}
+
+          {activeAction?.action === 'start_cycle' && (
+            <div className="space-y-4">
+              <div>
+                <label className="block text-xs font-bold text-slate-500 mb-1">اسم دورة الإنتاج</label>
+                <input
+                  type="text"
+                  value={cycleName}
+                  onChange={e => setCycleName(e.target.value)}
+                  placeholder="مثال: دورة إنتاج الصبار الربع الثاني"
+                  className="min-h-11 w-full rounded-xl border border-slate-100 bg-slate-50 px-3 py-2 text-sm font-semibold text-slate-900 outline-none transition-all focus:border-terracotta focus:bg-white focus:ring-2 focus:ring-orange-100 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-100"
+                />
+                {renderFieldErrors('name')}
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-bold text-slate-500 mb-1">نوع الشجرة (الصنف)</label>
+                  <select
+                    value={cycleTreeTypeId || ''}
+                    onChange={e => setCycleTreeTypeId(Number(e.target.value))}
+                    className="min-h-11 w-full rounded-xl border border-slate-100 bg-slate-50 px-3 py-2 text-sm font-semibold text-slate-900 outline-none transition-all focus:border-terracotta focus:bg-white focus:ring-2 focus:ring-orange-100 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-100"
+                  >
+                    <option value={0}>اختر صنف...</option>
+                    {varieties.map(v => (
+                      <option key={v.id} value={v.id}>{v.name}</option>
+                    ))}
+                  </select>
+                  {renderFieldErrors('tree_type_id')}
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-slate-500 mb-1">الكمية/العدد</label>
+                  <input
+                    type="number"
+                    value={cycleCount}
+                    onChange={e => setCycleCount(Number(e.target.value))}
+                    className="min-h-11 w-full rounded-xl border border-slate-100 bg-slate-50 px-3 py-2 text-sm font-semibold text-slate-900 outline-none transition-all focus:border-terracotta focus:bg-white focus:ring-2 focus:ring-orange-100 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-100"
+                  />
+                  {renderFieldErrors('count')}
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-bold text-slate-500 mb-1">طريقة الإكثار</label>
+                  <select
+                    value={cyclePropagationType || ''}
+                    onChange={e => setCyclePropagationType(e.target.value)}
+                    className="min-h-11 w-full rounded-xl border border-slate-100 bg-slate-50 px-3 py-2 text-sm font-semibold text-slate-900 outline-none transition-all focus:border-terracotta focus:bg-white focus:ring-2 focus:ring-orange-100 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-100"
+                  >
+                    <option value="">غير محدد</option>
+                    <option value="seeds">بذور</option>
+                    <option value="cuttings">عقل</option>
+                    <option value="grafting">تطعيم</option>
+                    <option value="layering">ترقيد</option>
+                  </select>
+                  {renderFieldErrors('propagation_type')}
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-slate-500 mb-1">حجم الأصيص</label>
+                  <select
+                    value={cyclePotSize || ''}
+                    onChange={e => setCyclePotSize(e.target.value)}
+                    className="min-h-11 w-full rounded-xl border border-slate-100 bg-slate-50 px-3 py-2 text-sm font-semibold text-slate-900 outline-none transition-all focus:border-terracotta focus:bg-white focus:ring-2 focus:ring-orange-100 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-100"
+                  >
+                    <option value="">غير محدد</option>
+                    {potSizes.map((size, idx) => (
+                      <option key={idx} value={size}>{size}</option>
+                    ))}
+                  </select>
+                  {renderFieldErrors('pot_size')}
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-bold text-slate-500 mb-1">تاريخ البدء</label>
+                  <input
+                    type="date"
+                    value={cycleStartDate}
+                    onChange={e => setCycleStartDate(e.target.value)}
+                    className="min-h-11 w-full rounded-xl border border-slate-100 bg-slate-50 px-3 py-2 text-sm font-semibold text-slate-900 outline-none transition-all focus:border-terracotta focus:bg-white focus:ring-2 focus:ring-orange-100 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-100"
+                  />
+                  {renderFieldErrors('start_date')}
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-slate-500 mb-1">مصدر البذور/الشتلات</label>
+                  <input
+                    type="text"
+                    value={cycleSource}
+                    onChange={e => setCycleSource(e.target.value)}
+                    placeholder="مثال: مورد خارجي"
+                    className="min-h-11 w-full rounded-xl border border-slate-100 bg-slate-50 px-3 py-2 text-sm font-semibold text-slate-900 outline-none transition-all focus:border-terracotta focus:bg-white focus:ring-2 focus:ring-orange-100 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-100"
+                  />
+                  {renderFieldErrors('source')}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {activeAction?.action === 'create_basin' && (
+            <div className="space-y-4">
+              <div>
+                <label className="block text-xs font-bold text-slate-500 mb-1">القسم المستهدف</label>
+                <select
+                  value={basinSectionId || ''}
+                  onChange={e => setBasinSectionId(Number(e.target.value))} // Bind to basinSectionId correctly!
+                  className="min-h-11 w-full rounded-xl border border-slate-100 bg-slate-50 px-3 py-2 text-sm font-semibold text-slate-900 outline-none transition-all focus:border-terracotta focus:bg-white focus:ring-2 focus:ring-orange-100 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-100"
+                >
+                  <option value={0}>اختر قسم...</option>
+                  {sections.map(s => (
+                    <option key={s.id} value={s.id}>{s.name}</option>
+                  ))}
+                </select>
+                {renderFieldErrors('section_id')}
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-bold text-slate-500 mb-1">الاسم الأساسي</label>
+                  <input
+                    type="text"
+                    value={basinBaseName}
+                    onChange={e => setBasinBaseName(e.target.value)}
+                    placeholder="مثال: حوض A"
+                    className="min-h-11 w-full rounded-xl border border-slate-100 bg-slate-50 px-3 py-2 text-sm font-semibold text-slate-900 outline-none transition-all focus:border-terracotta focus:bg-white focus:ring-2 focus:ring-orange-100 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-100"
+                  />
+                  {renderFieldErrors('base_name')}
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-slate-500 mb-1">عدد الأحواض</label>
+                  <input
+                    type="number"
+                    value={basinCount}
+                    onChange={e => setBasinCount(Number(e.target.value))}
+                    className="min-h-11 w-full rounded-xl border border-slate-100 bg-slate-50 px-3 py-2 text-sm font-semibold text-slate-900 outline-none transition-all focus:border-terracotta focus:bg-white focus:ring-2 focus:ring-orange-100 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-100"
+                  />
+                  {renderFieldErrors('count')}
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-bold text-slate-500 mb-1">الطول بالمتر</label>
+                  <input
+                    type="number"
+                    step="0.1"
+                    value={basinLength}
+                    onChange={e => setBasinLength(Number(e.target.value))}
+                    className="min-h-11 w-full rounded-xl border border-slate-100 bg-slate-50 px-3 py-2 text-sm font-semibold text-slate-900 outline-none transition-all focus:border-terracotta focus:bg-white focus:ring-2 focus:ring-orange-100 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-100"
+                  />
+                  {renderFieldErrors('length')}
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-slate-500 mb-1">العرض بالمتر</label>
+                  <input
+                    type="number"
+                    step="0.1"
+                    value={basinWidth}
+                    onChange={e => setBasinWidth(Number(e.target.value))}
+                    className="min-h-11 w-full rounded-xl border border-slate-100 bg-slate-50 px-3 py-2 text-sm font-semibold text-slate-900 outline-none transition-all focus:border-terracotta focus:bg-white focus:ring-2 focus:ring-orange-100 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-100"
+                  />
+                  {renderFieldErrors('width')}
+                </div>
+              </div>
+              <div>
+                <label className="block text-xs font-bold text-slate-500 mb-1">طريقة الري</label>
+                <select
+                  value={basinIrrigationMethod}
+                  onChange={e => setBasinIrrigationMethod(e.target.value)}
+                  className="min-h-11 w-full rounded-xl border border-slate-100 bg-slate-50 px-3 py-2 text-sm font-semibold text-slate-900 outline-none transition-all focus:border-terracotta focus:bg-white focus:ring-2 focus:ring-orange-100 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-100"
+                >
+                  <option value="">غير محدد</option>
+                  <option value="sprinkler">مرشات (Sprinkler)</option>
+                  <option value="drip">تنقيط (Drip)</option>
+                  <option value="flooding">غمر (Flooding)</option>
+                  <option value="manual">يدوي (Manual)</option>
+                </select>
+                {renderFieldErrors('irrigation_method')}
+              </div>
+            </div>
+          )}
+
+          {activeAction?.action === 'log_procedure' && (
+            <div className="space-y-4">
+              <div>
+                <label className="block text-xs font-bold text-slate-500 mb-1">دورة الإنتاج</label>
+                <select
+                  value={procedureCycleId || ''}
+                  onChange={e => setProcedureCycleId(Number(e.target.value))}
+                  className="min-h-11 w-full rounded-xl border border-slate-100 bg-slate-50 px-3 py-2 text-sm font-semibold text-slate-900 outline-none transition-all focus:border-terracotta focus:bg-white focus:ring-2 focus:ring-orange-100 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-100"
+                >
+                  <option value={0}>اختر دورة إنتاج...</option>
+                  {cycles.map(c => (
+                    <option key={c.id} value={c.id}>{c.name}</option>
+                  ))}
+                </select>
+                {renderFieldErrors('cycle_id')}
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-bold text-slate-500 mb-1">نوع الإجراء</label>
+                  <select
+                    value={procedureType}
+                    onChange={e => {
+                      const val = e.target.value
+                      if (val === 'irrigation' || val === 'inspection' || val === 'humidity') {
+                        setProcedureType(val)
+                      }
+                    }}
+                    className="min-h-11 w-full rounded-xl border border-slate-100 bg-slate-50 px-3 py-2 text-sm font-semibold text-slate-900 outline-none transition-all focus:border-terracotta focus:bg-white focus:ring-2 focus:ring-orange-100 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-100"
+                  >
+                    <option value="irrigation">ري (Irrigation)</option>
+                    <option value="inspection">فحص ومراقبة (Inspection)</option>
+                    <option value="humidity">قياس رطوبة (Humidity)</option>
+                  </select>
+                  {renderFieldErrors('procedure_type')}
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-slate-500 mb-1">تاريخ الإجراء</label>
+                  <input
+                    type="date"
+                    value={procedureDate}
+                    onChange={e => setProcedureDate(e.target.value)}
+                    className="min-h-11 w-full rounded-xl border border-slate-100 bg-slate-50 px-3 py-2 text-sm font-semibold text-slate-900 outline-none transition-all focus:border-terracotta focus:bg-white focus:ring-2 focus:ring-orange-100 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-100"
+                  />
+                  {renderFieldErrors('procedure_date')}
+                </div>
+              </div>
+
+              {procedureType !== 'humidity' ? (
+                <div className="grid grid-cols-3 gap-2 animate-fade-in-up">
+                  <div>
+                    <label className="block text-xs font-bold text-slate-500 mb-1">الفترة</label>
+                    <select
+                      value={procedurePeriod}
+                      onChange={e => setProcedurePeriod(e.target.value)}
+                      className="min-h-11 w-full rounded-xl border border-slate-100 bg-slate-50 px-2 py-2 text-xs font-semibold text-slate-900 outline-none transition-all focus:border-terracotta focus:bg-white focus:ring-2 focus:ring-orange-100 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-100"
+                    >
+                      <option value="">غير محدد</option>
+                      <option value="morning">صباحية</option>
+                      <option value="evening">مسائية</option>
+                    </select>
+                    {renderFieldErrors('period')}
+                  </div>
+                  <div>
+                    <label className="block text-xs font-bold text-slate-500 mb-1">وقت البدء</label>
+                    <input
+                      type="time"
+                      value={procedureStartTime}
+                      onChange={e => setProcedureStartTime(e.target.value)}
+                      className="min-h-11 w-full rounded-xl border border-slate-100 bg-slate-50 px-2 py-2 text-xs font-semibold text-slate-900 outline-none transition-all focus:border-terracotta focus:bg-white focus:ring-2 focus:ring-orange-100 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-100"
+                    />
+                    {renderFieldErrors('start_time')}
+                  </div>
+                  <div>
+                    <label className="block text-xs font-bold text-slate-500 mb-1">وقت الانتهاء</label>
+                    <input
+                      type="time"
+                      value={procedureEndTime}
+                      onChange={e => setProcedureEndTime(e.target.value)}
+                      className="min-h-11 w-full rounded-xl border border-slate-100 bg-slate-50 px-2 py-2 text-xs font-semibold text-slate-900 outline-none transition-all focus:border-terracotta focus:bg-white focus:ring-2 focus:ring-orange-100 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-100"
+                    />
+                    {renderFieldErrors('end_time')}
+                  </div>
+                </div>
+              ) : (
+                <div className="animate-fade-in-up">
+                  <label className="block text-xs font-bold text-slate-500 mb-1">نسبة الرطوبة (%)</label>
+                  <input
+                    type="number"
+                    min="0"
+                    max="100"
+                    value={procedureHumidity}
+                    onChange={e => setProcedureHumidity(e.target.value ? Number(e.target.value) : '')}
+                    placeholder="نسبة مئوية"
+                    className="min-h-11 w-full rounded-xl border border-slate-100 bg-slate-50 px-3 py-2 text-sm font-semibold text-slate-900 outline-none transition-all focus:border-terracotta focus:bg-white focus:ring-2 focus:ring-orange-100 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-100"
+                  />
+                  {renderFieldErrors('humidity_percentage')}
+                </div>
+              )}
+
+              <div>
+                <label className="block text-xs font-bold text-slate-500 mb-1">ملاحظات إضافية</label>
+                <textarea
+                  value={procedureNotes}
+                  onChange={e => setProcedureNotes(e.target.value)}
+                  placeholder="أدخل أي ملاحظات حول الإجراء..."
+                  rows={2}
+                  className="w-full rounded-xl border border-slate-100 bg-slate-50 px-3 py-2 text-sm font-semibold text-slate-900 outline-none transition-all focus:border-terracotta focus:bg-white focus:ring-2 focus:ring-orange-100 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-100"
+                />
+                {renderFieldErrors('notes')}
               </div>
             </div>
           )}
@@ -1990,4 +2660,43 @@ function telemetryLabel(event: TelemetryEvent) {
   if (event.ok === false) return `${toolLabel}: تعذر التنفيذ`
   if (typeof event.count === 'number') return `${toolLabel}: ${event.count} نتيجة`
   return toolLabel
+}
+
+// Premium code block renderer with copy function
+function CodeBlock({ code }: { code: string }) {
+  const [copied, setCopied] = useState(false)
+
+  function handleCopy() {
+    if (typeof navigator === 'undefined') return
+    navigator.clipboard.writeText(code)
+    setCopied(true)
+    setTimeout(() => setCopied(false), 2000)
+  }
+
+  return (
+    <div className="relative my-3.5 rounded-2xl overflow-hidden border border-slate-200/80 bg-slate-50 dark:border-slate-800 dark:bg-slate-950/60 shadow-sm" dir="ltr">
+      <div className="flex items-center justify-between px-4 py-2 bg-slate-100/70 border-b border-slate-200/80 text-[10px] text-slate-500 font-mono select-none dark:bg-slate-900/40 dark:border-slate-800">
+        <span>CODE BLOCK</span>
+        <button
+          onClick={handleCopy}
+          className="flex items-center gap-1 hover:text-slate-850 dark:hover:text-white transition-colors"
+        >
+          {copied ? (
+            <>
+              <Check className="h-3.5 w-3.5 text-emerald-500" />
+              <span className="text-emerald-500 font-bold">Copied!</span>
+            </>
+          ) : (
+            <>
+              <Copy className="h-3.5 w-3.5" />
+              <span>Copy</span>
+            </>
+          )}
+        </button>
+      </div>
+      <pre className="overflow-x-auto p-4 text-xs font-mono text-slate-800 dark:text-slate-200 leading-relaxed">
+        <code>{code}</code>
+      </pre>
+    </div>
+  )
 }

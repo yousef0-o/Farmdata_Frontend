@@ -20,6 +20,27 @@ type BuildPayloadArgs = {
   transferDate: string
   transferBasinId: number
   transferLineNumber: number
+  cycleName: string
+  cycleTreeTypeId: number
+  cyclePropagationType?: string | null
+  cycleSource?: string | null
+  cycleCount: number
+  cyclePotSize?: string | null
+  cycleStartDate: string
+  basinSectionId: number
+  basinBaseName: string
+  basinCount: number
+  basinLength: number
+  basinWidth: number
+  basinIrrigationMethod: string
+  procedureCycleId?: number | null
+  procedureType: 'irrigation' | 'inspection' | 'humidity'
+  procedureDate: string
+  procedurePeriod?: string | null
+  procedureStartTime?: string | null
+  procedureEndTime?: string | null
+  procedureHumidity?: number | null
+  procedureNotes?: string | null
 }
 
 type ActionRegistryEntry = {
@@ -104,6 +125,81 @@ export const actionRegistry: Partial<Record<KnownActionType, ActionRegistryEntry
             tree_height: activeAction.tree_height || 0.1,
           },
         ],
+      }
+    },
+  },
+  start_cycle: {
+    title: actionTitles.start_cycle,
+    endpoint: () => '/nursery/manage/cycles',
+    buildPayload: ({
+      targetBasinId,
+      cycleName,
+      cycleTreeTypeId,
+      cyclePropagationType,
+      cycleSource,
+      cycleCount,
+      cyclePotSize,
+      cycleStartDate,
+    }) => ({
+      basin_id: requireNumber(targetBasinId, 'يرجى تحديد حوض لبدء دورة الإنتاج.'),
+      name: cycleName,
+      tree_type_id: requireNumber(cycleTreeTypeId, 'يرجى اختيار نوع الشجرة.'),
+      propagation_type: cyclePropagationType || null,
+      source: cycleSource || null,
+      count: requireNumber(cycleCount, 'يرجى إدخال العدد.'),
+      pot_size: cyclePotSize || null,
+      start_date: cycleStartDate,
+      status: 'active',
+    }),
+  },
+  create_basin: {
+    title: actionTitles.create_basin,
+    endpoint: () => '/nursery/locations/basins',
+    buildPayload: ({
+      basinSectionId,
+      basinBaseName,
+      basinCount,
+      basinLength,
+      basinWidth,
+      basinIrrigationMethod,
+    }) => ({
+      section_id: requireNumber(basinSectionId, 'يرجى تحديد القسم.'),
+      base_name: basinBaseName,
+      count: basinCount || 1,
+      length: basinLength || 0,
+      width: basinWidth || 0,
+      irrigation_method: basinIrrigationMethod || null,
+    }),
+  },
+  log_procedure: {
+    title: actionTitles.log_procedure,
+    endpoint: () => '/nursery/manage/cycle-procedures',
+    buildPayload: ({
+      activeAction,
+      selectedCycleId,
+      activeChatCycleId,
+      procedureCycleId,
+      procedureType,
+      procedureDate,
+      procedurePeriod,
+      procedureStartTime,
+      procedureEndTime,
+      procedureHumidity,
+      procedureNotes,
+    }) => {
+      const cycleId = requireNumber(
+        procedureCycleId || activeAction.cycle_id || selectedCycleId || activeChatCycleId,
+        'يرجى تحديد دورة إنتاج لتسجيل الإجراء.'
+      )
+      return {
+        cycle_id: cycleId,
+        procedure_type: procedureType,
+        procedure_date: procedureDate,
+        period: procedurePeriod || null,
+        start_time: procedureStartTime || null,
+        end_time: procedureEndTime || null,
+        humidity_percentage: procedureHumidity !== null && procedureHumidity !== undefined ? Number(procedureHumidity) : null,
+        notes: procedureNotes || null,
       }
     },
   },
