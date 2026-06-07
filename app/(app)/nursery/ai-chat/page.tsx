@@ -26,8 +26,6 @@ import {
   ChevronLeft,
   ChevronRight,
   Activity,
-  Volume2,
-  VolumeX,
   Copy,
   ChevronDown,
   MapPin,
@@ -318,7 +316,6 @@ export default function NurseryAiChatPage() {
 
   // Speech-to-Text State
   const [isRecording, setIsRecording] = useState(false)
-  const [playingMessageId, setPlayingMessageId] = useState<number | null>(null)
   const [copiedMessageId, setCopiedMessageId] = useState<number | null>(null)
   const [voiceMode, setVoiceMode] = useState<'backend' | 'browser' | 'unavailable'>('unavailable')
   const recognitionRef = useRef<SpeechRecognitionLike | null>(null)
@@ -550,56 +547,6 @@ export default function NurseryAiChatPage() {
         setLoadingBasinStats(false)
       }
     }
-  }
-
-  // Cleanup speech synthesis on unmount
-  useEffect(() => {
-    if (typeof window !== 'undefined') {
-      window.speechSynthesis.getVoices()
-    }
-    return () => {
-      if (typeof window !== 'undefined') {
-        window.speechSynthesis.cancel()
-      }
-    }
-  }, [])
-
-  // Text-To-Speech (TTS) Toggle
-  function handleToggleSpeech(messageId: number, text: string) {
-    if (typeof window === 'undefined') return
-
-    if (playingMessageId === messageId) {
-      window.speechSynthesis.cancel()
-      setPlayingMessageId(null)
-      return
-    }
-
-    window.speechSynthesis.cancel()
-    
-    // Remove markdown formatting before reading
-    const cleanText = text
-      .replace(/\*\*(.*?)\*\*/g, '$1')
-      .replace(/`{3}[\s\S]*?`{3}/g, '')
-      .replace(/`(.+?)`/g, '$1')
-      .replace(/\|/g, ' ')
-
-    const utterance = new SpeechSynthesisUtterance(cleanText)
-    const voices = window.speechSynthesis.getVoices()
-    const arabicVoice = voices.find(voice => voice.lang.startsWith('ar'))
-    if (arabicVoice) {
-      utterance.voice = arabicVoice
-    }
-    utterance.lang = 'ar-SA'
-
-    utterance.onend = () => {
-      setPlayingMessageId(null)
-    }
-    utterance.onerror = () => {
-      setPlayingMessageId(null)
-    }
-
-    setPlayingMessageId(messageId)
-    window.speechSynthesis.speak(utterance)
   }
 
   // Copy message text to clipboard
@@ -1782,26 +1729,6 @@ export default function NurseryAiChatPage() {
                             </>
                           )}
                         </button>
-                        
-                        {isModel && (
-                          <button
-                            onClick={() => handleToggleSpeech(message.id, message.content)}
-                            className="hover:text-slate-600 dark:hover:text-slate-300 transition-colors flex items-center gap-1 font-semibold select-none"
-                            title={playingMessageId === message.id ? "إيقاف القراءة" : "قراءة الرسالة بصوت عربي"}
-                          >
-                            {playingMessageId === message.id ? (
-                              <>
-                                <VolumeX className="h-3 w-3 text-terracotta animate-pulse" />
-                                <span className="text-terracotta font-bold">إيقاف</span>
-                              </>
-                            ) : (
-                              <>
-                                <Volume2 className="h-3 w-3" />
-                                <span>قراءة صوتية</span>
-                              </>
-                            )}
-                          </button>
-                        )}
                       </div>
 
                       {isModel && messageActionProposals[message.id] && (
