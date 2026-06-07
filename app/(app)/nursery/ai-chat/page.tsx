@@ -1,6 +1,7 @@
 'use client'
 
 import React, { useState, useEffect, useRef } from 'react'
+import Image from 'next/image'
 import { usePathname, useSearchParams } from 'next/navigation'
 import { 
   Bot, 
@@ -297,7 +298,7 @@ export default function NurseryAiChatPage() {
   // DB options for contextualization
   const [basins, setBasins] = useState<BasinOption[]>([])
   const [cycles, setCycles] = useState<CycleOption[]>([])
-  const [fertilizers, setFertizers] = useState<FertilizerOption[]>([])
+  const [fertilizers, setFertilizers] = useState<FertilizerOption[]>([])
 
 
   // Live Basin Dashboard Stats
@@ -508,7 +509,7 @@ export default function NurseryAiChatPage() {
       if (nurseryId) {
         const operationOptions = await apiRequest<GeneralOperationOptionsResponse>(`/nursery/manage/general-operations?type=nursery&id=${nurseryId}`).catch(() => null)
         if (operationOptions?.data?.fertilizers) {
-          setFertizers(operationOptions.data.fertilizers)
+          setFertilizers(operationOptions.data.fertilizers)
         }
       }
     } catch (err) {
@@ -1111,6 +1112,8 @@ export default function NurseryAiChatPage() {
       recordActionEvent('action_failed', activeAction.action, { cancelled: true }, 'ألغى المستخدم تأكيد الإجراء.')
     }
     setActiveAction(null)
+    setActionError(null)
+    setFieldErrors({})
   }
 
   // Commit dynamic database operations from AI Action Card or Dashboard Shortcut
@@ -1462,7 +1465,7 @@ export default function NurseryAiChatPage() {
         </div>
 
         {/* Search Bar */}
-        <div className="px-3 pb-3 pt-2 border-b border-slate-100/60 dark:border-slate-850">
+        <div className="px-3 pb-3 pt-2 border-b border-slate-100/60 dark:border-slate-800">
           <input
             type="text"
             placeholder="بحث في الاستشارات..."
@@ -1538,7 +1541,11 @@ export default function NurseryAiChatPage() {
                               <input
                                 value={renameTitle}
                                 onChange={e => setRenameTitle(e.target.value)}
-                                onKeyDown={e => e.key === 'Enter' && handleRenameChat(chat.id)}
+                                onBlur={() => setTimeout(() => setRenamingChatId(null), 150)}
+                                onKeyDown={e => {
+                                  if (e.key === 'Enter') handleRenameChat(chat.id)
+                                  if (e.key === 'Escape') setRenamingChatId(null)
+                                }}
                                 className="w-full text-xs font-bold border border-terracotta rounded-lg px-2 py-1 bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-200 outline-none focus:ring-2 focus:ring-orange-100 transition-all"
                                 autoFocus
                                 onClick={e => e.stopPropagation()}
@@ -1692,7 +1699,7 @@ export default function NurseryAiChatPage() {
                 return (
                   <div
                     key={message.id}
-                    className={`flex items-start gap-3 max-w-[85%] ${isModel ? '' : 'mr-auto flex-row-reverse'}`}
+                    className={`flex items-start gap-3 max-w-[85%] ${isModel ? 'mr-auto flex-row-reverse' : ''}`}
                   >
                     {/* Avatar */}
                     <div className={`h-8 w-8 shrink-0 rounded-lg flex items-center justify-center text-xs ${
@@ -1714,7 +1721,7 @@ export default function NurseryAiChatPage() {
                       </div>
 
                       {/* Message Actions Toolbar */}
-                      <div className={`flex items-center gap-3 text-[10px] ${isModel ? 'justify-start' : 'justify-end'} text-slate-400 dark:text-slate-500 px-1`}>
+                      <div className={`flex items-center gap-3 text-[10px] ${isModel ? 'justify-end' : 'justify-start'} text-slate-400 dark:text-slate-500 px-1`}>
                         <button
                           onClick={() => handleCopyMessage(message.id, message.content)}
                           className="hover:text-slate-600 dark:hover:text-slate-350 transition-colors flex items-center gap-1 font-semibold select-none"
@@ -1736,7 +1743,7 @@ export default function NurseryAiChatPage() {
                         {isModel && (
                           <button
                             onClick={() => handleToggleSpeech(message.id, message.content)}
-                            className="hover:text-slate-655 dark:hover:text-slate-300 transition-colors flex items-center gap-1 font-semibold select-none"
+                            className="hover:text-slate-600 dark:hover:text-slate-300 transition-colors flex items-center gap-1 font-semibold select-none"
                             title={playingMessageId === message.id ? "إيقاف القراءة" : "قراءة الرسالة بصوت عربي"}
                           >
                             {playingMessageId === message.id ? (
@@ -1774,7 +1781,7 @@ export default function NurseryAiChatPage() {
                               className="flex items-center gap-2 p-2 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 max-w-xs transition-colors"
                             >
                               {attach.mime_type.startsWith('image/') ? (
-                                <img src={attach.url} alt={attach.name} className="h-8 w-8 rounded-lg object-cover" />
+                                <Image src={attach.url} alt={attach.name} className="h-8 w-8 rounded-lg object-cover" width={32} height={32} unoptimized />
                               ) : (
                                 <FileText className="h-4 w-4 text-terracotta" />
                               )}
@@ -1790,7 +1797,7 @@ export default function NurseryAiChatPage() {
 
               {/* Bot thinking placeholder */}
               {sendingMessage && (
-                <div className="flex items-start gap-3 max-w-[85%]">
+                <div className="flex items-start gap-3 max-w-[85%] mr-auto flex-row-reverse">
                   <div className="h-8 w-8 shrink-0 rounded-lg flex items-center justify-center bg-orange-50 dark:bg-orange-950 text-terracotta">
                     <Bot className="h-4 w-4" />
                   </div>
@@ -1819,11 +1826,11 @@ export default function NurseryAiChatPage() {
             </div>
           )}
           {showScrollBottom && (
-            <div className="sticky bottom-4 right-1/2 translate-x-1/2 flex justify-center z-20">
+            <div className="sticky bottom-4 left-0 right-0 mx-auto w-fit z-20">
               <button
                 type="button"
                 onClick={scrollToBottom}
-                className="bg-white/95 border border-slate-200/80 hover:bg-slate-50 text-slate-700 dark:bg-slate-900/90 dark:border-slate-800 dark:hover:bg-slate-800 dark:text-slate-250 shadow-md backdrop-blur-sm px-4 py-2 rounded-full text-xs font-extrabold flex items-center gap-1.5 transition-all hover:scale-105 active:scale-95 animate-bounce text-terracotta dark:text-orange-400"
+                className="bg-white/95 border border-slate-200/80 hover:bg-slate-50 text-slate-700 dark:bg-slate-900/90 dark:border-slate-800 dark:hover:bg-slate-800 dark:text-slate-200 shadow-md backdrop-blur-sm px-4 py-2 rounded-full text-xs font-extrabold flex items-center gap-1.5 transition-all hover:scale-105 active:scale-95 animate-bounce text-terracotta dark:text-orange-400"
               >
                 <ChevronDown className="h-4 w-4" />
                 <span>النزول للأسفل</span>
@@ -1884,7 +1891,7 @@ export default function NurseryAiChatPage() {
                     setShowCommandMenu(false)
                     handleDirectShortcut(cmd.action as KnownActionType)
                   }}
-                  className="flex items-center justify-between px-3 py-2 text-right rounded-lg hover:bg-slate-50 dark:hover:bg-slate-850/80 text-xs text-slate-700 dark:text-slate-200 transition-colors"
+                  className="flex items-center justify-between px-3 py-2 text-right rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800/80 text-xs text-slate-700 dark:text-slate-200 transition-colors"
                 >
                   <div className="flex items-center gap-2">
                     <span className="text-sm">{cmd.icon}</span>
@@ -1903,7 +1910,7 @@ export default function NurseryAiChatPage() {
               {selectedFiles.map((file, idx) => (
                 <div key={idx} className="relative flex items-center gap-2 p-2 rounded-xl bg-white border border-slate-100 dark:bg-slate-900 dark:border-slate-800 text-xs text-slate-600 dark:text-slate-300 font-bold shadow-sm">
                   {file.type.startsWith('image/') && (
-                    <img src={URL.createObjectURL(file)} alt="preview" className="h-6 w-6 rounded-md object-cover" />
+                    <Image src={URL.createObjectURL(file)} alt="preview" className="h-6 w-6 rounded-md object-cover" width={24} height={24} unoptimized />
                   )}
                   <span className="max-w-[120px] truncate">{file.name}</span>
                   <button 
@@ -2520,7 +2527,7 @@ export default function NurseryAiChatPage() {
                 <label className="block text-xs font-bold text-slate-500 mb-1">القسم المستهدف</label>
                 <select
                   value={basinSectionId || ''}
-                  onChange={e => setBasinSectionId(Number(e.target.value))} // Bind to basinSectionId correctly!
+                  onChange={e => setBasinSectionId(Number(e.target.value))}
                   className="min-h-11 w-full rounded-xl border border-slate-100 bg-slate-50 px-3 py-2 text-sm font-semibold text-slate-900 outline-none transition-all focus:border-terracotta focus:bg-white focus:ring-2 focus:ring-orange-100 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-100"
                 >
                   <option value={0}>اختر قسم...</option>
@@ -2860,21 +2867,21 @@ function CodeBlock({ code }: { code: string }) {
 
   return (
     <div className="relative my-3.5 rounded-2xl overflow-hidden border border-slate-200/80 bg-slate-50 dark:border-slate-800 dark:bg-slate-950/60 shadow-sm" dir="ltr">
-      <div className="flex items-center justify-between px-4 py-2 bg-slate-100/70 border-b border-slate-200/80 text-[10px] text-slate-500 font-mono select-none dark:bg-slate-900/40 dark:border-slate-800">
-        <span>CODE BLOCK</span>
+      <div className="flex items-center justify-between px-4 py-2 bg-slate-100/70 border-b border-slate-200/80 text-[10px] text-slate-500 font-mono select-none dark:bg-slate-900/40 dark:border-slate-800" dir="rtl">
+        <span className="font-sans font-bold">كتلة كود</span>
         <button
           onClick={handleCopy}
-          className="flex items-center gap-1 hover:text-slate-850 dark:hover:text-white transition-colors"
+          className="flex items-center gap-1 hover:text-slate-800 dark:hover:text-white transition-colors font-sans font-bold"
         >
           {copied ? (
             <>
               <Check className="h-3.5 w-3.5 text-emerald-500" />
-              <span className="text-emerald-500 font-bold">Copied!</span>
+              <span className="text-emerald-500">تم النسخ!</span>
             </>
           ) : (
             <>
               <Copy className="h-3.5 w-3.5" />
-              <span>Copy</span>
+              <span>نسخ</span>
             </>
           )}
         </button>
