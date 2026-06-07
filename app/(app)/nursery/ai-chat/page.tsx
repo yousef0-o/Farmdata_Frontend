@@ -25,11 +25,15 @@ import {
   HelpCircle,
   Warehouse,
   ChevronLeft,
+  ChevronRight,
   Activity,
   Volume2,
   VolumeX,
   Copy,
-  ChevronDown
+  ChevronDown,
+  MapPin,
+  BarChart2,
+  Menu
 } from 'lucide-react'
 import AppDialog from '@/components/ui/AppDialog'
 import { apiRequest } from '@/lib/api/client'
@@ -293,6 +297,10 @@ export default function NurseryAiChatPage() {
   const [inputMessage, setInputMessage] = useState('')
   const [selectedFiles, setSelectedFiles] = useState<File[]>([])
   const [selectedBasinId, setSelectedBasinId] = useState<number | null>(null)
+  const selectedBasinIdRef = useRef(selectedBasinId)
+  useEffect(() => {
+    selectedBasinIdRef.current = selectedBasinId
+  }, [selectedBasinId])
   const [selectedCycleId, setSelectedCycleId] = useState<number | null>(null)
 
   // DB options for contextualization
@@ -325,6 +333,8 @@ export default function NurseryAiChatPage() {
   const [executedMessageIds, setExecutedMessageIds] = useState<Record<number, boolean>>({})
   const [showScrollBottom, setShowScrollBottom] = useState(false)
   const chatScrollContainerRef = useRef<HTMLDivElement>(null)
+  const [isHistoryOpen, setIsHistoryOpen] = useState(true)
+  const [showStatsPanel, setShowStatsPanel] = useState(false)
 
   const filteredCommands = commands.filter(cmd => 
     cmd.key.toLowerCase().startsWith(inputMessage.toLowerCase()) || 
@@ -444,6 +454,7 @@ export default function NurseryAiChatPage() {
       loadBasinStats(selectedBasinId)
     } else {
       setBasinStats(null)
+      setShowStatsPanel(false)
     }
   }, [selectedBasinId])
 
@@ -460,7 +471,15 @@ export default function NurseryAiChatPage() {
       } else {
         setSelectedCycleId(null)
       }
+    } else {
+      setSelectedBasinId(null)
+      setSelectedCycleId(null)
     }
+
+    // Clear any active action confirmation popup or errors
+    setActiveAction(null)
+    setActionError(null)
+    setFieldErrors({})
   }, [activeChat])
 
   // Auto-scroll on new messages
@@ -522,13 +541,15 @@ export default function NurseryAiChatPage() {
     try {
       setLoadingBasinStats(true)
       const response = await nurseryManagementApi.basinDashboard(basinId)
-      if (response.data) {
+      if (response.data && basinId === selectedBasinIdRef.current) {
         setBasinStats(response.data as BasinStats)
       }
     } catch (err) {
       console.error('Failed to fetch basin stats:', err)
     } finally {
-      setLoadingBasinStats(false)
+      if (basinId === selectedBasinIdRef.current) {
+        setLoadingBasinStats(false)
+      }
     }
   }
 
@@ -810,6 +831,7 @@ export default function NurseryAiChatPage() {
 
   // Send message
   async function handleSendMessage(textToSend?: string) {
+    if (sendingMessage) return
     const text = textToSend !== undefined ? textToSend : inputMessage
     if (!text.trim() && selectedFiles.length === 0) return
     
@@ -1118,7 +1140,7 @@ export default function NurseryAiChatPage() {
 
   // Commit dynamic database operations from AI Action Card or Dashboard Shortcut
   async function submitAction() {
-    if (!activeAction) return
+    if (!activeAction || actionSubmitting) return
     setActionSubmitting(true)
     setActionError(null)
     setFieldErrors({})
@@ -1450,11 +1472,22 @@ export default function NurseryAiChatPage() {
     <div className="flex h-[calc(100vh-100px)] min-h-0 w-full overflow-hidden rounded-2xl border border-slate-200/80 bg-gradient-to-br from-slate-50 via-slate-100/90 to-orange-50/20 dark:border-slate-800/80 dark:from-slate-950 dark:via-slate-900/90 dark:to-orange-950/10 font-sans" dir="rtl">
       
       {/* Pane 1. Previous consultations history sidebar */}
-      <div className="flex w-64 shrink-0 flex-col border-e border-slate-200/60 dark:border-slate-800 bg-white/60 dark:bg-slate-950/45 backdrop-blur-md">
+      <div className={`flex flex-col bg-white/60 dark:bg-slate-950/45 backdrop-blur-md transition-all duration-300 ease-in-out ${
+        isHistoryOpen ? 'w-64 border-e border-slate-200/60 dark:border-slate-800 opacity-100' : 'w-0 opacity-0 overflow-hidden border-none'
+      }`}>
         
         {/* Sidebar Header */}
         <div className="p-4 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between">
-          <h2 className="text-sm font-extrabold text-slate-800 dark:text-slate-200">الاستشارات السابقة</h2>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => setIsHistoryOpen(false)}
+              className="p-1 rounded hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors"
+              title="إخفاء السجل الجانبي"
+            >
+              <ChevronRight className="h-4 w-4" />
+            </button>
+            <h2 className="text-sm font-extrabold text-slate-800 dark:text-slate-200">الاستشارات السابقة</h2>
+          </div>
           <button 
             onClick={() => handleCreateChat()}
             className="flex h-8 w-8 items-center justify-center rounded-lg bg-orange-50 text-terracotta hover:bg-orange-100 dark:bg-orange-950/20 dark:text-orange-400 transition-colors"
@@ -1612,35 +1645,46 @@ export default function NurseryAiChatPage() {
         </div>
       </div>
 
-      <div className="flex flex-1 flex-col overflow-hidden bg-white/40 dark:bg-slate-900/10 backdrop-blur-md border-e border-slate-200/60 dark:border-slate-800">
+      <div className="flex flex-1 flex-col overflow-hidden bg-white/40 dark:bg-slate-900/10 backdrop-blur-md">
         
         {/* Chat Header */}
         <div className="flex min-h-14 items-center justify-between border-b border-slate-100 dark:border-slate-800 px-6 py-3">
-          {activeChat ? (
-            <div className="flex items-center gap-3">
-              <div className="rounded-xl bg-orange-50 dark:bg-orange-950 p-2 text-terracotta">
-                <Bot className="h-5 w-5" />
-              </div>
-              <div>
-                <h1 className="text-sm font-extrabold text-slate-900 dark:text-white">{activeChat.title}</h1>
-                <div className="flex items-center gap-2 mt-0.5 text-[11px] text-slate-400">
-                  <span>البدء: {new Date(activeChat.created_at).toLocaleDateString('ar-SA')}</span>
-                  <span className={`px-2 py-0.5 rounded-full text-xs font-bold ${
-                    inferredContext?.last_response_type === 'clarification'
-                      ? 'bg-blue-50 dark:bg-blue-950/40 text-blue-700 dark:text-blue-300'
-                      : 'bg-orange-50 dark:bg-orange-950/40 text-terracotta'
-                  }`}>
-                    {focusLabel()}
-                  </span>
+          <div className="flex items-center gap-3">
+            {!isHistoryOpen && (
+              <button
+                onClick={() => setIsHistoryOpen(true)}
+                className="p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-850 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors"
+                title="عرض السجل الجانبي"
+              >
+                <Menu className="h-4.5 w-4.5" />
+              </button>
+            )}
+            {activeChat ? (
+              <div className="flex items-center gap-3">
+                <div className="rounded-xl bg-orange-50 dark:bg-orange-950 p-2 text-terracotta">
+                  <Bot className="h-5 w-5" />
+                </div>
+                <div>
+                  <h1 className="text-sm font-extrabold text-slate-900 dark:text-white">{activeChat.title}</h1>
+                  <div className="flex items-center gap-2 mt-0.5 text-[11px] text-slate-400">
+                    <span>البدء: {new Date(activeChat.created_at).toLocaleDateString('ar-SA')}</span>
+                    <span className={`px-2 py-0.5 rounded-full text-xs font-bold ${
+                      inferredContext?.last_response_type === 'clarification'
+                        ? 'bg-blue-50 dark:bg-blue-950/40 text-blue-700 dark:text-blue-300'
+                        : 'bg-orange-50 dark:bg-orange-950/40 text-terracotta'
+                    }`}>
+                      {focusLabel()}
+                    </span>
+                  </div>
                 </div>
               </div>
-            </div>
-          ) : (
-            <div className="flex items-center gap-2 text-slate-500">
-              <Sparkles className="h-5 w-5 text-terracotta" />
-              <span className="text-sm font-bold">المستشار الزراعي الذكي</span>
-            </div>
-          )}
+            ) : (
+              <div className="flex items-center gap-2 text-slate-500">
+                <Sparkles className="h-5 w-5 text-terracotta" />
+                <span className="text-sm font-bold">المستشار الزراعي الذكي</span>
+              </div>
+            )}
+          </div>
         </div>
 
         {/* Conversation bubbles area */}
@@ -1813,9 +1857,9 @@ export default function NurseryAiChatPage() {
                   {telemetryEvents.map(event => (
                     <span
                       key={event.id}
-                      className="inline-flex items-center gap-1.5 rounded-lg border border-line bg-surface-subtle px-2.5 py-1 text-xs font-bold text-ink-soft"
+                      className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 dark:border-slate-800 bg-slate-100 dark:bg-slate-850 px-2.5 py-1 text-xs font-bold text-slate-600 dark:text-slate-300"
                     >
-                      <Activity className="h-3.5 w-3.5 text-info" />
+                      <Activity className="h-3.5 w-3.5 text-blue-500" />
                       {telemetryLabel(event)}
                     </span>
                   ))}
@@ -1844,19 +1888,35 @@ export default function NurseryAiChatPage() {
           
           {/* Active Context Indicators */}
           {(selectedBasinId || selectedCycleId) && (
-            <div className="flex flex-wrap items-center gap-2 mb-3 p-2 rounded-xl bg-white/60 border border-slate-200/50 dark:bg-slate-900/60 dark:border-slate-800 text-[11px] font-bold text-slate-500 shadow-sm animate-fade-in">
+            <div className="flex flex-wrap items-center gap-2 mb-3 p-2 rounded-xl bg-white/60 border border-slate-200/50 dark:bg-slate-900/60 dark:border-slate-800 text-[11px] font-bold text-slate-505 shadow-sm animate-fade-in">
               <span className="text-slate-400 select-none">التركيز الحالي:</span>
               {selectedBasinId && (
-                <div className="flex items-center gap-1.5 bg-orange-50 border border-orange-100/50 px-2.5 py-1 rounded-lg text-terracotta dark:bg-orange-950/30 dark:border-orange-900/30 shadow-sm">
-                  <span>📍 حوض: {basins.find(b => b.id === selectedBasinId)?.name || `ID ${selectedBasinId}`}</span>
-                  <button 
-                    onClick={() => setSelectedBasinId(null)}
-                    className="hover:text-red-500 font-bold p-0.5"
-                    title="إزالة تركيز الحوض"
+                <>
+                  <div className="flex items-center gap-1.5 bg-orange-50 border border-orange-100/50 px-2.5 py-1 rounded-lg text-terracotta dark:bg-orange-950/30 dark:border-orange-900/30 shadow-sm">
+                    <span>📍 حوض: {basins.find(b => b.id === selectedBasinId)?.name || `ID ${selectedBasinId}`}</span>
+                    <button 
+                      onClick={() => setSelectedBasinId(null)}
+                      className="hover:text-red-500 font-bold p-0.5"
+                      title="إزالة تركيز الحوض"
+                    >
+                      <X className="h-3 w-3" />
+                    </button>
+                  </div>
+                  
+                  <button
+                    type="button"
+                    onClick={() => setShowStatsPanel(!showStatsPanel)}
+                    className={`flex items-center gap-1 px-2.5 py-1 rounded-lg border transition-all ${
+                      showStatsPanel 
+                        ? 'bg-orange-600 text-white border-orange-600' 
+                        : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50 dark:bg-slate-900 dark:border-slate-800 dark:text-slate-300 dark:hover:bg-slate-800'
+                    }`}
                   >
-                    <X className="h-3 w-3" />
+                    <BarChart2 className="h-3.5 w-3.5" />
+                    <span>البيانات الحية</span>
+                    <ChevronDown className={`h-3 w-3 transition-transform duration-250 ${showStatsPanel ? 'rotate-180' : ''}`} />
                   </button>
-                </div>
+                </>
               )}
               {selectedCycleId && (
                 <div className="flex items-center gap-1.5 bg-orange-50 border border-orange-100/50 px-2.5 py-1 rounded-lg text-terracotta dark:bg-orange-950/30 dark:border-orange-900/30 shadow-sm">
@@ -1872,6 +1932,93 @@ export default function NurseryAiChatPage() {
               )}
             </div>
           )}
+
+          {/* Collapsible Basin Stats & Quick Actions Panel */}
+          {selectedBasinId && showStatsPanel && (
+            <div className="mb-3 p-3.5 rounded-xl bg-white border border-slate-100 dark:bg-slate-900 dark:border-slate-800 shadow-md animate-fade-in-up space-y-3">
+              <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-2">
+                <span className="text-xs font-extrabold text-slate-800 dark:text-slate-200">البيانات الحية للحوض</span>
+                <span className="inline-flex items-center gap-1 rounded bg-orange-50 px-1.5 py-0.5 text-[9px] font-bold text-terracotta dark:bg-orange-950/40">متصل</span>
+              </div>
+              
+              {loadingBasinStats ? (
+                <div className="py-4 flex justify-center">
+                  <Loader2 className="h-5 w-5 animate-spin text-terracotta" />
+                </div>
+              ) : basinStats ? (
+                <div className="grid grid-cols-2 md:grid-cols-5 gap-3.5 text-[11px] font-bold text-slate-600 dark:text-slate-300">
+                  <div className="flex flex-col bg-slate-50/50 dark:bg-slate-950/20 p-2 rounded-lg border border-slate-100 dark:border-slate-800">
+                    <span className="text-[10px] text-slate-400 font-semibold mb-0.5">طريقة الري</span>
+                    <span className="text-slate-800 dark:text-slate-200">{basinStats.basin?.irrigation_method || 'غير محدد'}</span>
+                  </div>
+                  <div className="flex flex-col bg-slate-50/50 dark:bg-slate-950/20 p-2 rounded-lg border border-slate-100 dark:border-slate-800">
+                    <span className="text-[10px] text-slate-400 font-semibold mb-0.5">الأشجار القائمة</span>
+                    <span className="text-slate-800 dark:text-slate-200">{(basinStats.stats?.total_trees || 0).toLocaleString('ar-SA')} شجرة</span>
+                  </div>
+                  <div className="flex flex-col bg-slate-50/50 dark:bg-slate-950/20 p-2 rounded-lg border border-slate-100 dark:border-slate-800">
+                    <span className="text-[10px] text-slate-400 font-semibold mb-0.5">نسبة التشغيل</span>
+                    <span className="text-terracotta dark:text-orange-400 font-mono">
+                      {(basinStats.basin?.capacity || 0) > 0 
+                        ? `${Math.round(((basinStats.stats?.total_trees || 0) / (basinStats.basin?.capacity || 1)) * 100)}%`
+                        : '0%'
+                      }
+                    </span>
+                  </div>
+                  <div className="flex flex-col bg-slate-50/50 dark:bg-slate-950/20 p-2 rounded-lg border border-slate-100 dark:border-slate-800">
+                    <span className="text-[10px] text-slate-400 font-semibold mb-0.5">آخر ري</span>
+                    <span className="text-slate-800 dark:text-slate-200 truncate">{basinStats.operations_stats?.last_irrigation || 'لا يوجد'}</span>
+                  </div>
+                  <div className="flex flex-col bg-slate-50/50 dark:bg-slate-950/20 p-2 rounded-lg border border-slate-100 dark:border-slate-800">
+                    <span className="text-[10px] text-slate-400 font-semibold mb-0.5">آخر تسميد</span>
+                    <span className="text-slate-800 dark:text-slate-200 truncate">{basinStats.operations_stats?.last_fertilization || 'لا يوجد'}</span>
+                  </div>
+                </div>
+              ) : (
+                <div className="text-center py-2 text-xs text-slate-400">فشل تحميل تفاصيل الحوض.</div>
+              )}
+
+              {/* Inline Quick Action Shortcuts */}
+              <div className="pt-2 border-t border-slate-100 dark:border-slate-800 flex flex-wrap gap-2">
+                <span className="text-[10px] font-bold text-slate-400 flex items-center ml-2">تسجيل سريع:</span>
+                <button
+                  type="button"
+                  onClick={() => handleDirectShortcut('log_irrigation')}
+                  className="px-3 py-1.5 bg-blue-50 hover:bg-blue-100 text-blue-800 dark:bg-blue-950/40 dark:text-blue-300 dark:hover:bg-blue-900/40 rounded-lg text-[10px] font-extrabold transition-all"
+                >
+                  💧 ري
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleDirectShortcut('log_fertilization')}
+                  className="px-3 py-1.5 bg-orange-50 hover:bg-orange-100 text-terracotta dark:bg-orange-950/40 dark:text-orange-300 dark:hover:bg-orange-900/40 rounded-lg text-[10px] font-extrabold transition-all"
+                >
+                  🌿 تسميد
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleDirectShortcut('log_mortality')}
+                  className="px-3 py-1.5 bg-red-50 hover:bg-red-100 text-red-800 dark:bg-red-950/40 dark:text-red-300 dark:hover:bg-red-900/40 rounded-lg text-[10px] font-extrabold transition-all"
+                >
+                  ❌ نفوق
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleDirectShortcut('transfer_cycle')}
+                  className="px-3 py-1.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-300 dark:hover:bg-emerald-900/40 rounded-lg text-[10px] font-extrabold transition-all"
+                >
+                  🔄 نقل دورة
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleDirectShortcut('start_cycle')}
+                  className="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-750 rounded-lg text-[10px] font-extrabold transition-all"
+                >
+                  🌱 بدء دورة
+                </button>
+              </div>
+            </div>
+          )}
+
 
           {/* Autocomplete Quick Command Menu */}
           {showCommandMenu && filteredCommands.length > 0 && (
@@ -1957,6 +2104,39 @@ export default function NurseryAiChatPage() {
               {isRecording ? <MicOff className="h-5 w-5" /> : <Mic className="h-5 w-5" />}
             </button>
 
+            {/* Quick Context Focus Dropdowns */}
+            <div className="relative shrink-0 select-none hidden md:block">
+              <MapPin className="absolute right-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 pointer-events-none" />
+              <select
+                value={selectedBasinId || ''}
+                onChange={e => setSelectedBasinId(e.target.value ? Number(e.target.value) : null)}
+                className="h-11 pr-8 pl-6 text-xs font-bold rounded-xl border border-slate-100 bg-white hover:bg-slate-50 dark:bg-slate-900 dark:border-slate-800 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 outline-none transition-all cursor-pointer appearance-none min-w-[110px] max-w-[140px] shadow-sm focus:border-terracotta"
+                title="تركيز الحوض"
+              >
+                <option value="">بدون حوض</option>
+                {basins.map(b => (
+                  <option key={b.id} value={b.id}>{b.name}</option>
+                ))}
+              </select>
+              <ChevronDown className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-400 pointer-events-none" />
+            </div>
+
+            <div className="relative shrink-0 select-none hidden md:block">
+              <Sprout className="absolute right-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 pointer-events-none" />
+              <select
+                value={selectedCycleId || ''}
+                onChange={e => setSelectedCycleId(e.target.value ? Number(e.target.value) : null)}
+                className="h-11 pr-8 pl-6 text-xs font-bold rounded-xl border border-slate-100 bg-white hover:bg-slate-50 dark:bg-slate-900 dark:border-slate-800 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 outline-none transition-all cursor-pointer appearance-none min-w-[110px] max-w-[140px] shadow-sm focus:border-terracotta"
+                title="تركيز دورة الإنتاج"
+              >
+                <option value="">بدون دورة</option>
+                {cycles.map(c => (
+                  <option key={c.id} value={c.id}>{c.name}</option>
+                ))}
+              </select>
+              <ChevronDown className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-400 pointer-events-none" />
+            </div>
+
             {isRecording && (
               <div className="flex items-center gap-1 px-3 py-1 bg-red-50/80 dark:bg-red-950/30 border border-red-100 dark:border-red-900/40 rounded-xl h-11 shrink-0">
                 <span className="text-[10px] font-bold text-red-500 animate-pulse ml-1 select-none">جاري التسجيل...</span>
@@ -2011,199 +2191,7 @@ export default function NurseryAiChatPage() {
         </div>
       </div>
 
-      <div className="flex w-72 shrink-0 flex-col bg-white/60 dark:bg-slate-950/45 backdrop-blur-md p-4 space-y-4 overflow-y-auto">
-        
-        <div className="border-b border-slate-100 dark:border-slate-800 pb-3">
-          <h3 className="text-xs font-extrabold text-slate-500">تركيز سريع اختياري</h3>
-          
-          <div className="mt-2 space-y-2">
-            <div>
-              <label className="text-xs font-bold text-slate-400 block mb-1">الحوض</label>
-              <select
-                value={selectedBasinId || ''}
-                onChange={e => setSelectedBasinId(e.target.value ? Number(e.target.value) : null)}
-                className="w-full text-xs font-semibold rounded-lg border border-slate-100 bg-slate-50 dark:border-slate-800 dark:bg-slate-900 p-2 outline-none text-slate-700 dark:text-slate-300 focus:border-terracotta focus:ring-1 focus:ring-orange-100"
-              >
-                <option value="">بدون تركيز سريع...</option>
-                {basins.map(b => (
-                  <option key={b.id} value={b.id}>{b.name}</option>
-                ))}
-              </select>
-            </div>
 
-            <div>
-              <label className="text-xs font-bold text-slate-400 block mb-1">دورة الإنتاج</label>
-              <select
-                value={selectedCycleId || ''}
-                onChange={e => setSelectedCycleId(e.target.value ? Number(e.target.value) : null)}
-                className="w-full text-xs font-semibold rounded-lg border border-slate-100 bg-slate-50 dark:border-slate-800 dark:bg-slate-900 p-2 outline-none text-slate-700 dark:text-slate-300 focus:border-terracotta focus:ring-1 focus:ring-orange-100"
-              >
-                <option value="">بدون تركيز سريع...</option>
-                {cycles.map(c => (
-                  <option key={c.id} value={c.id}>{c.name}</option>
-                ))}
-              </select>
-            </div>
-          </div>
-        </div>
-
-        {/* Live Basin Stats Summary panel */}
-        {selectedBasinId ? (
-          <div className="space-y-4">
-            <div className="rounded-xl border border-slate-100 bg-slate-50/50 p-3 dark:border-slate-800 dark:bg-slate-900/60">
-              <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-2 mb-2">
-                <span className="text-xs font-extrabold text-slate-800 dark:text-slate-200">البيانات الحية للحوض</span>
-                <span className="inline-flex items-center gap-1 rounded bg-orange-50 px-1.5 py-0.5 text-[9px] font-bold text-terracotta">متصل</span>
-              </div>
-
-              {loadingBasinStats ? (
-                <div className="py-8 flex justify-center">
-                  <Loader2 className="h-5 w-5 animate-spin text-terracotta" />
-                </div>
-              ) : basinStats ? (
-                <div className="space-y-2.5 text-xs">
-                  <div className="flex justify-between">
-                    <span className="text-slate-400">اسم الحوض:</span>
-                    <span className="font-bold text-slate-800 dark:text-slate-200">{basinStats.basin?.name}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-slate-400">طريقة الري:</span>
-                    <span className="font-bold text-slate-800 dark:text-slate-200">{basinStats.basin?.irrigation_method || 'غير محدد'}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-slate-400">الأشجار القائمة:</span>
-                    <span className="font-bold text-slate-800 dark:text-slate-200">{(basinStats.stats?.total_trees || 0).toLocaleString('ar-SA')} شجرة</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-slate-400">نسبة التشغيل:</span>
-                    <span className="font-mono font-bold text-terracotta">
-                      {(basinStats.basin?.capacity || 0) > 0 
-                        ? `${Math.round(((basinStats.stats?.total_trees || 0) / (basinStats.basin?.capacity || 1)) * 100)}%`
-                        : '0%'
-                      }
-                    </span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-slate-400">آخر ري:</span>
-                    <span className="font-bold text-slate-600 dark:text-slate-300">{basinStats.operations_stats?.last_irrigation || 'لا يوجد سجل'}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-slate-400">آخر تسميد:</span>
-                    <span className="font-bold text-slate-600 dark:text-slate-300">{basinStats.operations_stats?.last_fertilization || 'لا يوجد سجل'}</span>
-                  </div>
-                </div>
-              ) : (
-                <div className="text-center py-6 text-xs text-slate-400">فشل تحميل تفاصيل الحوض.</div>
-              )}
-            </div>
-
-            {/* Direct quick operations shortcuts */}
-            <div className="space-y-2">
-              <span className="text-[11px] font-bold text-slate-400 block mb-1">تسجيل عمليات مباشرة</span>
-              
-              <button
-                onClick={() => handleDirectShortcut('log_irrigation')}
-                className="w-full text-right p-2.5 rounded-xl border border-slate-100 bg-white hover:border-terracotta dark:border-slate-800 dark:bg-slate-900/40 text-xs font-bold text-slate-700 dark:text-slate-300 flex items-center justify-between group transition-all"
-              >
-                <div className="flex items-center gap-2">
-                  <span className="h-6 w-6 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center">💧</span>
-                  <span>تسجيل عملية ري سريعة</span>
-                </div>
-                <ChevronLeft className="h-3.5 w-3.5 text-slate-300 group-hover:text-terracotta transition-colors" />
-              </button>
-
-              <button
-                onClick={() => handleDirectShortcut('log_fertilization')}
-                className="w-full text-right p-2.5 rounded-xl border border-slate-100 bg-white hover:border-terracotta dark:border-slate-800 dark:bg-slate-900/40 text-xs font-bold text-slate-700 dark:text-slate-300 flex items-center justify-between group transition-all"
-              >
-                <div className="flex items-center gap-2">
-                  <span className="h-6 w-6 rounded-lg bg-orange-50 text-terracotta flex items-center justify-center">🌿</span>
-                  <span>تسجيل عملية تسميد سريعة</span>
-                </div>
-                <ChevronLeft className="h-3.5 w-3.5 text-slate-300 group-hover:text-terracotta transition-colors" />
-              </button>
-
-              <button
-                onClick={() => handleDirectShortcut('log_mortality')}
-                className="w-full text-right p-2.5 rounded-xl border border-slate-100 bg-white hover:border-terracotta dark:border-slate-800 dark:bg-slate-900/40 text-xs font-bold text-slate-700 dark:text-slate-300 flex items-center justify-between group transition-all"
-              >
-                <div className="flex items-center gap-2">
-                  <span className="h-6 w-6 rounded-lg bg-red-50 text-red-600 flex items-center justify-center">❌</span>
-                  <span>تسجيل حالة نفوق</span>
-                </div>
-                <ChevronLeft className="h-3.5 w-3.5 text-slate-300 group-hover:text-terracotta transition-colors" />
-              </button>
-
-              <button
-                onClick={() => handleDirectShortcut('transfer_cycle')}
-                className="w-full text-right p-2.5 rounded-xl border border-slate-100 bg-white hover:border-terracotta dark:border-slate-800 dark:bg-slate-900/40 text-xs font-bold text-slate-700 dark:text-slate-300 flex items-center justify-between group transition-all"
-              >
-                <div className="flex items-center gap-2">
-                  <span className="h-6 w-6 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center">🔄</span>
-                  <span>نقل وتفريد الدورة</span>
-                </div>
-                <ChevronLeft className="h-3.5 w-3.5 text-slate-300 group-hover:text-terracotta transition-colors" />
-              </button>
-
-              <button
-                onClick={() => handleDirectShortcut('start_cycle')}
-                className="w-full text-right p-2.5 rounded-xl border border-slate-100 bg-white hover:border-terracotta dark:border-slate-800 dark:bg-slate-900/40 text-xs font-bold text-slate-700 dark:text-slate-300 flex items-center justify-between group transition-all"
-              >
-                <div className="flex items-center gap-2">
-                  <span className="h-6 w-6 rounded-lg bg-orange-50 text-terracotta flex items-center justify-center">🌱</span>
-                  <span>بدء دورة إنتاج جديدة</span>
-                </div>
-                <ChevronLeft className="h-3.5 w-3.5 text-slate-300 group-hover:text-terracotta transition-colors" />
-              </button>
-
-              <button
-                onClick={() => handleDirectShortcut('create_basin')}
-                className="w-full text-right p-2.5 rounded-xl border border-slate-100 bg-white hover:border-terracotta dark:border-slate-800 dark:bg-slate-900/40 text-xs font-bold text-slate-700 dark:text-slate-300 flex items-center justify-between group transition-all"
-              >
-                <div className="flex items-center gap-2">
-                  <span className="h-6 w-6 rounded-lg bg-slate-50 text-slate-600 flex items-center justify-center">🏫</span>
-                  <span>إنشاء حوض جديد</span>
-                </div>
-                <ChevronLeft className="h-3.5 w-3.5 text-slate-300 group-hover:text-terracotta transition-colors" />
-              </button>
-
-              <button
-                onClick={() => handleDirectShortcut('log_procedure')}
-                className="w-full text-right p-2.5 rounded-xl border border-slate-100 bg-white hover:border-terracotta dark:border-slate-800 dark:bg-slate-900/40 text-xs font-bold text-slate-700 dark:text-slate-300 flex items-center justify-between group transition-all"
-              >
-                <div className="flex items-center gap-2">
-                  <span className="h-6 w-6 rounded-lg bg-violet-50 text-violet-600 flex items-center justify-center">⚙️</span>
-                  <span>تسجيل إجراء عام</span>
-                </div>
-                <ChevronLeft className="h-3.5 w-3.5 text-slate-300 group-hover:text-terracotta transition-colors" />
-              </button>
-            </div>
-
-            {/* Basin recent activity logs list */}
-            {(basinStats?.recent_activities?.length ?? 0) > 0 && (
-              <div className="space-y-2 pt-2 border-t border-slate-100 dark:border-slate-800">
-                <span className="text-[11px] font-bold text-slate-400 block mb-1">الأنشطة الأخيرة بالحوض</span>
-                <div className="space-y-2 max-h-48 overflow-y-auto pr-0.5">
-                  {(basinStats?.recent_activities ?? []).slice(0, 4).map((activity, index) => (
-                    <div key={index} className="p-2 rounded-lg bg-slate-50 dark:bg-slate-900/60 border border-slate-100 dark:border-slate-800 text-[10px] font-semibold text-slate-600 dark:text-slate-300 space-y-1">
-                      <div className="flex justify-between">
-                        <span className="font-extrabold text-slate-800 dark:text-slate-200">{activity.description || activity.type}</span>
-                        <span className="text-[9px] text-slate-400">{activity.date}</span>
-                      </div>
-                      {activity.detail && <div className="text-[9px] text-slate-400">{activity.detail}</div>}
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-          </div>
-        ) : (
-          <div className="flex flex-col items-center justify-center py-12 text-slate-400 text-center space-y-3">
-            <Warehouse className="h-10 w-10 text-slate-200 dark:text-slate-800" />
-            <span className="text-xs">يمكنك المحادثة بدون اختيار. اختر حوضاً فقط إذا أردت عرض بياناته السريعة هنا.</span>
-          </div>
-        )}
-      </div>
 
       {/* Action execution confirmation popup dialog modals */}
       <AppDialog open={activeAction !== null} onClose={handleActionCancel} panelClassName="max-w-md bg-white dark:bg-slate-900 rounded-3xl overflow-hidden shadow-2xl">
