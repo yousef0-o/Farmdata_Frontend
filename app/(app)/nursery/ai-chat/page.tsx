@@ -27,7 +27,8 @@ import {
   Activity,
   Volume2,
   VolumeX,
-  Copy
+  Copy,
+  ChevronDown
 } from 'lucide-react'
 import AppDialog from '@/components/ui/AppDialog'
 import { apiRequest } from '@/lib/api/client'
@@ -37,6 +38,8 @@ import { contextHintsFromPath } from './_lib/contextHints'
 import { sendNurseryMessageStream } from './_lib/streaming'
 import { supportsMediaRecorder, transcribeAudio } from './_lib/voice'
 import type { TelemetryEvent } from './_lib/types'
+import { useToast } from './_lib/useToast'
+import ToastContainer from './_components/Toast'
 
 type JsonPrimitive = string | number | boolean | null
 type JsonValue = JsonPrimitive | JsonValue[] | { [key: string]: JsonValue }
@@ -260,6 +263,16 @@ export default function NurseryAiChatPage() {
   const pathname = usePathname()
   const searchParams = useSearchParams()
 
+  const commands = [
+    { key: '/irrigate', label: 'تسجيل عملية ري سريعة', action: 'log_irrigation', icon: '💧' },
+    { key: '/fertilize', label: 'تسجيل عملية تسميد سريعة', action: 'log_fertilization', icon: '🌿' },
+    { key: '/mortality', label: 'تسجيل حالة نفوق', action: 'log_mortality', icon: '❌' },
+    { key: '/transfer', label: 'نقل وتفريد دورة', action: 'transfer_cycle', icon: '🔄' },
+    { key: '/cycle', label: 'بدء دورة إنتاج جديدة', action: 'start_cycle', icon: '🌱' },
+    { key: '/basin', label: 'إنشاء حوض جديد', action: 'create_basin', icon: '🏫' },
+    { key: '/procedure', label: 'تسجيل إجراء عام', action: 'log_procedure', icon: '⚙️' },
+  ]
+
   // State Management
   const [chats, setChats] = useState<NurseryChat[]>([])
   const [searchQuery, setSearchQuery] = useState('')
@@ -303,6 +316,19 @@ export default function NurseryAiChatPage() {
   const recognitionRef = useRef<SpeechRecognitionLike | null>(null)
   const mediaRecorderRef = useRef<MediaRecorder | null>(null)
   const audioChunksRef = useRef<BlobPart[]>([])
+
+  // Premium UX States & Hooks
+  const { toasts, addToast, removeToast } = useToast()
+  const [chatDrafts, setChatDrafts] = useState<Record<number, string>>({})
+  const [showCommandMenu, setShowCommandMenu] = useState(false)
+  const [executedMessageIds, setExecutedMessageIds] = useState<Record<number, boolean>>({})
+  const [showScrollBottom, setShowScrollBottom] = useState(false)
+  const chatScrollContainerRef = useRef<HTMLDivElement>(null)
+
+  const filteredCommands = commands.filter(cmd => 
+    cmd.key.toLowerCase().startsWith(inputMessage.toLowerCase()) || 
+    cmd.label.includes(inputMessage)
+  )
 
   // Action Dialog States
   const [activeAction, setActiveAction] = useState<ActiveAction | null>(null)
@@ -437,9 +463,20 @@ export default function NurseryAiChatPage() {
   }, [activeChat])
 
   // Auto-scroll on new messages
-  useEffect(() => {
+  const scrollToBottom = () => {
     chatEndRef.current?.scrollIntoView({ behavior: 'smooth' })
+  }
+
+  useEffect(() => {
+    scrollToBottom()
   }, [messages, sendingMessage])
+
+  function handleChatScroll() {
+    const container = chatScrollContainerRef.current
+    if (!container) return
+    const isScrolledUp = container.scrollHeight - container.scrollTop - container.clientHeight > 200
+    setShowScrollBottom(isScrolledUp)
+  }
 
   // Fetch chats list
   async function fetchChats() {
@@ -549,6 +586,7 @@ export default function NurseryAiChatPage() {
     if (typeof navigator === 'undefined') return
     navigator.clipboard.writeText(text)
     setCopiedMessageId(messageId)
+    addToast('تم نسخ محتوى الرسالة بنجاح!', 'success')
     setTimeout(() => {
       setCopiedMessageId(null)
     }, 2000)
@@ -599,7 +637,7 @@ export default function NurseryAiChatPage() {
     }
 
     if (!recognitionRef.current) {
-      alert('إدخال الصوت غير مدعوم في هذا المتصفح.')
+      addToast('إدخال الصوت غير مدعوم في هذا المتصفح.', 'error')
       return
     }
 
@@ -643,7 +681,7 @@ export default function NurseryAiChatPage() {
             recognitionRef.current.start()
             setIsRecording(true)
           } else {
-            alert('تعذر تفريغ التسجيل الصوتي حالياً.')
+            addToast('تعذر تفريغ التسجيل الصوتي حالياً.', 'error')
           }
         }
       }
@@ -658,7 +696,7 @@ export default function NurseryAiChatPage() {
         recognitionRef.current.start()
         setIsRecording(true)
       } else {
-        alert('إدخال الصوت غير مدعوم في هذا المتصفح.')
+        addToast('إدخال الصوت غير مدعوم في هذا المتصفح.', 'error')
       }
     }
   }
@@ -670,6 +708,7 @@ export default function NurseryAiChatPage() {
     setInferredContext(null)
     setMessageActionProposals({})
     setLoadingMessages(true)
+    setInputMessage(chatDrafts[chat.id] || '')
     try {
       const data = await apiRequest<{ success: boolean; messages: NurseryChatMessage[] }>(`/nursery/chats/${chat.id}`)
       if (data.success) {
@@ -702,6 +741,7 @@ export default function NurseryAiChatPage() {
         setMessages([])
         setInferredContext(null)
         setMessageActionProposals({})
+        setInputMessage('')
         
         // Reset selections if not pre-provided
         if (!basinId && !cycleId) {
@@ -795,7 +835,7 @@ export default function NurseryAiChatPage() {
         setInferredContext(null)
         setMessageActionProposals({})
       } else {
-        alert('فشل في بدء جلسة محادثة جديدة.')
+        addToast('فشل في بدء جلسة محادثة جديدة.', 'error')
         return
       }
     }
@@ -804,6 +844,9 @@ export default function NurseryAiChatPage() {
     setTelemetryEvents([])
     if (textToSend === undefined) {
       setInputMessage('')
+      if (activeChat?.id) {
+        setChatDrafts(prev => ({ ...prev, [activeChat.id]: '' }))
+      }
     }
     
     try {
@@ -819,7 +862,21 @@ export default function NurseryAiChatPage() {
         formData.append('client_context_hints', JSON.stringify(hints))
       }
 
-      // Clear files list early for optimistic look
+      // Optimistically add the user message
+      const userMsg: NurseryChatMessage = {
+        id: Date.now(),
+        role: 'user',
+        content: text,
+        attachments: selectedFiles.map(f => ({
+          id: Date.now() + Math.random(),
+          name: f.name,
+          url: URL.createObjectURL(f),
+          mime_type: f.type,
+          file_size: f.size
+        })),
+        created_at: new Date().toISOString()
+      }
+      setMessages(prev => [...prev, userMsg])
       setSelectedFiles([])
 
       let streamedModelId: number | null = null
@@ -888,7 +945,7 @@ export default function NurseryAiChatPage() {
       fetchChats()
     } catch (err: unknown) {
       console.error('Failed to send message:', err)
-      alert(errorMessage(err, 'فشل في إرسال الرسالة للمستشار الذكي.'))
+      addToast(errorMessage(err, 'فشل في إرسال الرسالة للمستشار الذكي.'), 'error')
     } finally {
       setSendingMessage(false)
     }
@@ -1166,6 +1223,19 @@ export default function NurseryAiChatPage() {
       setMessages(prev => [...prev, systemMessage])
 
       await recordActionEvent('action_result', activeAction.action, { ...payload, log_text: logText }, logText)
+
+      // Mark action proposal as executed if it is associated with a message
+      if (activeAction.proposal_id) {
+        const matchingMsgEntry = Object.entries(messageActionProposals).find(
+          ([, prop]) => prop.proposal_id === activeAction.proposal_id
+        )
+        if (matchingMsgEntry) {
+          const msgId = Number(matchingMsgEntry[0])
+          setExecutedMessageIds(prev => ({ ...prev, [msgId]: true }))
+        }
+      }
+
+      addToast(logText || 'تم تنفيذ العملية بنجاح!', 'success')
 
       // Reload live stats and context options
       if (targetBasinId) {
@@ -1567,7 +1637,7 @@ export default function NurseryAiChatPage() {
         </div>
 
         {/* Conversation bubbles area */}
-        <div className="flex-1 overflow-y-auto p-6 space-y-6">
+        <div ref={chatScrollContainerRef} onScroll={handleChatScroll} className="flex-1 overflow-y-auto p-6 space-y-6 relative">
           {!activeChat ? (
             <div className="flex flex-col items-center justify-center h-full max-w-xl mx-auto text-center space-y-6">
               <div className="relative">
@@ -1688,6 +1758,7 @@ export default function NurseryAiChatPage() {
                         <ActionCard
                           action={normalizeActionProposal(messageActionProposals[message.id])}
                           onExecute={() => handleActionExecute(normalizeActionProposal(messageActionProposals[message.id]))}
+                          isExecuted={executedMessageIds[message.id]}
                         />
                       )}
 
@@ -1747,11 +1818,85 @@ export default function NurseryAiChatPage() {
               <div ref={chatEndRef} />
             </div>
           )}
+          {showScrollBottom && (
+            <div className="sticky bottom-4 right-1/2 translate-x-1/2 flex justify-center z-20">
+              <button
+                type="button"
+                onClick={scrollToBottom}
+                className="bg-white/95 border border-slate-200/80 hover:bg-slate-50 text-slate-700 dark:bg-slate-900/90 dark:border-slate-800 dark:hover:bg-slate-800 dark:text-slate-250 shadow-md backdrop-blur-sm px-4 py-2 rounded-full text-xs font-extrabold flex items-center gap-1.5 transition-all hover:scale-105 active:scale-95 animate-bounce text-terracotta dark:text-orange-400"
+              >
+                <ChevronDown className="h-4 w-4" />
+                <span>النزول للأسفل</span>
+              </button>
+            </div>
+          )}
         </div>
 
         {/* Input box section */}
-        <div className="p-4 border-t border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/30">
+        <div className="p-4 border-t border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/30 relative">
           
+          {/* Active Context Indicators */}
+          {(selectedBasinId || selectedCycleId) && (
+            <div className="flex flex-wrap items-center gap-2 mb-3 p-2 rounded-xl bg-white/60 border border-slate-200/50 dark:bg-slate-900/60 dark:border-slate-800 text-[11px] font-bold text-slate-500 shadow-sm animate-fade-in">
+              <span className="text-slate-400 select-none">التركيز الحالي:</span>
+              {selectedBasinId && (
+                <div className="flex items-center gap-1.5 bg-orange-50 border border-orange-100/50 px-2.5 py-1 rounded-lg text-terracotta dark:bg-orange-950/30 dark:border-orange-900/30 shadow-sm">
+                  <span>📍 حوض: {basins.find(b => b.id === selectedBasinId)?.name || `ID ${selectedBasinId}`}</span>
+                  <button 
+                    onClick={() => setSelectedBasinId(null)}
+                    className="hover:text-red-500 font-bold p-0.5"
+                    title="إزالة تركيز الحوض"
+                  >
+                    <X className="h-3 w-3" />
+                  </button>
+                </div>
+              )}
+              {selectedCycleId && (
+                <div className="flex items-center gap-1.5 bg-orange-50 border border-orange-100/50 px-2.5 py-1 rounded-lg text-terracotta dark:bg-orange-950/30 dark:border-orange-900/30 shadow-sm">
+                  <span>🌱 دورة: {cycles.find(c => c.id === selectedCycleId)?.name || `ID ${selectedCycleId}`}</span>
+                  <button 
+                    onClick={() => setSelectedCycleId(null)}
+                    className="hover:text-red-500 font-bold p-0.5"
+                    title="إزالة تركيز دورة الإنتاج"
+                  >
+                    <X className="h-3 w-3" />
+                  </button>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Autocomplete Quick Command Menu */}
+          {showCommandMenu && filteredCommands.length > 0 && (
+            <div className="absolute bottom-full mb-2 right-4 left-4 max-h-52 overflow-y-auto bg-white/95 dark:bg-slate-900/95 border border-slate-200/60 dark:border-slate-800 rounded-xl shadow-lg backdrop-blur-md p-1.5 z-20 animate-fade-in flex flex-col gap-0.5">
+              <div className="px-2.5 py-1 text-[10px] font-bold text-slate-400 border-b border-slate-100 dark:border-slate-800/60 mb-1">
+                الأوامر المقترحة (اضغط لتسجيل الإجراء مباشرة)
+              </div>
+              {filteredCommands.map(cmd => (
+                <button
+                  key={cmd.key}
+                  type="button"
+                  onClick={() => {
+                    setInputMessage('')
+                    if (activeChat?.id) {
+                      setChatDrafts(prev => ({ ...prev, [activeChat.id]: '' }))
+                    }
+                    setShowCommandMenu(false)
+                    handleDirectShortcut(cmd.action as KnownActionType)
+                  }}
+                  className="flex items-center justify-between px-3 py-2 text-right rounded-lg hover:bg-slate-50 dark:hover:bg-slate-850/80 text-xs text-slate-700 dark:text-slate-200 transition-colors"
+                >
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm">{cmd.icon}</span>
+                    <span className="font-extrabold text-terracotta dark:text-orange-400">{cmd.key}</span>
+                    <span className="text-slate-400 font-semibold">- {cmd.label}</span>
+                  </div>
+                  <ChevronLeft className="h-3.5 w-3.5 text-slate-400" />
+                </button>
+              ))}
+            </div>
+          )}
+
           {/* Selected attachment previews */}
           {selectedFiles.length > 0 && (
             <div className="flex flex-wrap gap-2 mb-3">
@@ -1822,9 +1967,20 @@ export default function NurseryAiChatPage() {
             <input
               type="text"
               value={inputMessage}
-              onChange={e => setInputMessage(e.target.value)}
+              onChange={e => {
+                const val = e.target.value
+                setInputMessage(val)
+                if (activeChat?.id) {
+                  setChatDrafts(prev => ({ ...prev, [activeChat.id]: val }))
+                }
+                if (val.startsWith('/')) {
+                  setShowCommandMenu(true)
+                } else {
+                  setShowCommandMenu(false)
+                }
+              }}
               onKeyDown={e => e.key === 'Enter' && handleSendMessage()}
-              placeholder={isRecording ? 'جاري الاستماع لصوتك...' : 'اسأل المستشار الزراعي الذكي عن أي حوض أو إجراء...'}
+              placeholder={isRecording ? 'جاري الاستماع لصوتك...' : 'اسأل المستشار الزراعي الذكي عن أي حوض أو إجراء (أو اكتب / للأوامر السريعة)...'}
               disabled={sendingMessage}
               className="flex-1 min-h-11 rounded-xl border border-slate-100 bg-white dark:bg-slate-900 dark:border-slate-800 px-4 py-2 text-sm font-semibold text-slate-800 dark:text-slate-200 outline-none transition-all focus:border-terracotta dark:focus:border-orange-400 focus:ring-2 focus:ring-orange-100"
             />
@@ -2570,12 +2726,21 @@ export default function NurseryAiChatPage() {
           </div>
         </div>
       </AppDialog>
+      <ToastContainer toasts={toasts} onRemove={removeToast} />
     </div>
   )
 }
 
 // Inline AI Action Card Renderer
-function ActionCard({ action, onExecute }: { action: ActiveAction; onExecute: () => void }) {
+function ActionCard({ 
+  action, 
+  onExecute, 
+  isExecuted = false 
+}: { 
+  action: ActiveAction; 
+  onExecute: () => void; 
+  isExecuted?: boolean; 
+}) {
   const icons: Record<string, React.ComponentType<{ className?: string }>> = {
     log_irrigation: Waves,
     log_mortality: AlertCircle,
@@ -2586,18 +2751,31 @@ function ActionCard({ action, onExecute }: { action: ActiveAction; onExecute: ()
     log_procedure: Activity
   }
 
-  const ActionIcon = icons[action.action] || HelpCircle
+  const ActionIcon = isExecuted ? Check : (icons[action.action] || HelpCircle)
   const actionTitle = actionTitles[action.action] || 'إجراء مقترح'
-  const canExecute = Boolean(actionRegistry[action.action as KnownActionType])
+  const canExecute = Boolean(actionRegistry[action.action as KnownActionType]) && !isExecuted
 
   return (
-    <div className="rounded-2xl border border-orange-100 bg-orange-50/50 dark:border-orange-900/40 dark:bg-orange-950/20 p-4 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4">
+    <div className={`rounded-2xl border transition-all duration-300 p-4 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4 ${
+      isExecuted 
+        ? 'border-emerald-100 bg-emerald-50/50 dark:border-emerald-900/40 dark:bg-emerald-950/20' 
+        : 'border-orange-100 bg-orange-50/50 dark:border-orange-900/40 dark:bg-orange-950/20'
+    }`}>
       <div className="flex items-start gap-3">
-        <div className="rounded-xl bg-orange-100 dark:bg-orange-900/60 p-2.5 text-terracotta shrink-0">
+        <div className={`rounded-xl p-2.5 shrink-0 ${
+          isExecuted 
+            ? 'bg-emerald-100 dark:bg-emerald-900/60 text-emerald-600 dark:text-emerald-400' 
+            : 'bg-orange-100 dark:bg-orange-900/60 text-terracotta'
+        }`}>
           <ActionIcon className="h-5 w-5" />
         </div>
         <div>
-          <h4 className="text-sm font-extrabold text-slate-900 dark:text-white">{actionTitle}</h4>
+          <h4 className="text-sm font-extrabold text-slate-900 dark:text-white flex items-center gap-1.5">
+            <span>{actionTitle}</span>
+            {isExecuted && (
+              <span className="bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300 text-[10px] font-extrabold px-2 py-0.5 rounded-full select-none">تم التنفيذ</span>
+            )}
+          </h4>
           {action.human_summary && (
             <p className="mt-1 text-xs font-semibold leading-relaxed text-slate-600 dark:text-slate-300">{action.human_summary}</p>
           )}
@@ -2632,13 +2810,20 @@ function ActionCard({ action, onExecute }: { action: ActiveAction; onExecute: ()
         </div>
       </div>
 
-      <button
-        onClick={onExecute}
-        disabled={!canExecute}
-        className="min-h-9 px-4 py-1.5 shrink-0 rounded-lg bg-terracotta hover:bg-terracotta-hover text-white font-bold text-xs transition-all active:scale-[0.98] flex items-center justify-center gap-1.5 shadow-sm disabled:cursor-not-allowed disabled:opacity-50"
-      >
-        <span>{canExecute ? 'تأكيد الإجراء' : 'يفتح من النموذج القياسي'}</span>
-      </button>
+      {isExecuted ? (
+        <div className="flex items-center gap-1.5 text-emerald-650 dark:text-emerald-400 font-extrabold text-xs px-3 py-1.5 rounded-lg bg-emerald-100/30 dark:bg-emerald-950/40 select-none">
+          <Check className="h-4 w-4" />
+          <span>تم التسجيل والعمل بنجاح</span>
+        </div>
+      ) : (
+        <button
+          onClick={onExecute}
+          disabled={!canExecute}
+          className="min-h-9 px-4 py-1.5 shrink-0 rounded-lg bg-terracotta hover:bg-terracotta-hover text-white font-bold text-xs transition-all active:scale-[0.98] flex items-center justify-center gap-1.5 shadow-sm disabled:cursor-not-allowed disabled:opacity-50"
+        >
+          <span>{canExecute ? 'تأكيد الإجراء' : 'يفتح من النموذج القياسي'}</span>
+        </button>
+      )}
     </div>
   )
 }
