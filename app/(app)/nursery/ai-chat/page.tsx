@@ -72,6 +72,7 @@ interface NurseryChatMessage {
   id: number
   role: 'user' | 'model' | 'system'
   content: string
+  action_proposal?: ActionProposal | null
   attachments: ChatAttachment[] | null
   created_at: string
 }
@@ -690,7 +691,17 @@ export default function NurseryAiChatPage() {
     try {
       const data = await apiRequest<{ success: boolean; messages: NurseryChatMessage[] }>(`/nursery/chats/${chat.id}`)
       if (data.success) {
-        setMessages(data.messages || [])
+        const msgs = data.messages || []
+        setMessages(msgs)
+        
+        // Extract proposals from loaded messages and populate state
+        const proposals: Record<number, ActionProposal> = {}
+        msgs.forEach(msg => {
+          if (msg.role === 'model' && msg.action_proposal) {
+            proposals[msg.id] = msg.action_proposal
+          }
+        })
+        setMessageActionProposals(proposals)
       }
     } catch (err) {
       console.error('Failed to load messages:', err)

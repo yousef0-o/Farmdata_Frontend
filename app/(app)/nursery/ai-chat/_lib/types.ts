@@ -61,6 +61,7 @@ export interface NurseryChatMessage {
   id: number
   role: 'user' | 'model' | 'system'
   content: string
+  action_proposal?: ActionProposal | null
   attachments: Array<{
     name: string
     url: string

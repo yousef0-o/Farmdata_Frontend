@@ -86,6 +86,13 @@ describe('nursery AI chat helpers', () => {
       procedureEndTime: '07:00',
       procedureHumidity: 65,
       procedureNotes: 'ملاحظة الفحص',
+      treeLineNumber: 1,
+      treeTypeId: 3,
+      treeQuantity: 3000,
+      treePotSize: '30cm',
+      treeHeight: 1,
+      treeThickness: 0.5,
+      treeBirthDate: '2026-06-08',
     }
 
     it('builds start_cycle payload correctly', () => {
