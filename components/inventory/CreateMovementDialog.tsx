@@ -10,7 +10,7 @@ import AppDialog from '@/components/ui/AppDialog'
 interface CreateMovementDialogProps {
   open: boolean
   onOpenChange: (open: boolean) => void
-  defaultType?: 'in' | 'out'
+  defaultType?: MovementType
   defaultWarehouseId?: number
 }
 
@@ -20,13 +20,28 @@ interface ComboboxOption {
   description?: string
 }
 
+type MovementType = 'in' | 'out' | 'adjustment' | 'transfer'
+
 const createMovementSchema = z.object({
-  type: z.enum(['in', 'out']),
+  type: z.enum(['in', 'out', 'adjustment', 'transfer']),
   warehouse_id: z.coerce.number().min(1, 'المستودع مطلوب'),
+  to_warehouse_id: z.coerce.number().min(1, 'مستودع التحويل إليه مطلوب').optional(),
   item_id: z.coerce.number().min(1, 'الصنف مطلوب'),
   quantity: z.coerce.number().min(0.001, 'الكمية يجب أن تكون أكبر من صفر'),
+  adjustment_direction: z.enum(['increase', 'decrease']).optional(),
   unit_cost: z.coerce.number().min(0).optional(),
   notes: z.string().max(500).optional(),
+}).superRefine((value, context) => {
+  if (value.type === 'transfer') {
+    if (!value.to_warehouse_id) {
+      context.addIssue({ code: z.ZodIssueCode.custom, path: ['to_warehouse_id'], message: 'مستودع التحويل إليه مطلوب' })
+    } else if (value.to_warehouse_id === value.warehouse_id) {
+      context.addIssue({ code: z.ZodIssueCode.custom, path: ['to_warehouse_id'], message: 'لا يمكن التحويل إلى نفس المستودع' })
+    }
+  }
+  if (value.type === 'adjustment' && !value.adjustment_direction) {
+    context.addIssue({ code: z.ZodIssueCode.custom, path: ['adjustment_direction'], message: 'اتجاه التسوية مطلوب' })
+  }
 })
 
 function getErrorMessage(error: unknown): string {
@@ -134,8 +149,10 @@ function SearchableCombobox({
 }
 
 export function CreateMovementDialog({ open, onOpenChange, defaultType = 'in', defaultWarehouseId }: CreateMovementDialogProps) {
-  const [type, setType] = useState<'in' | 'out'>(defaultType)
+  const [type, setType] = useState<MovementType>(defaultType)
   const [warehouseId, setWarehouseId] = useState(defaultWarehouseId ?? 0)
+  const [toWarehouseId, setToWarehouseId] = useState(0)
+  const [adjustmentDirection, setAdjustmentDirection] = useState<'increase' | 'decrease'>('increase')
   const [itemId, setItemId] = useState(0)
   const [quantity, setQuantity] = useState('')
   const [unitCost, setUnitCost] = useState('')
@@ -161,7 +178,8 @@ export function CreateMovementDialog({ open, onOpenChange, defaultType = 'in', d
   const unitLabel = selectedItem?.unit || 'كجم'
   const availableBalance = Number(balanceData?.data.quantity_on_hand ?? 0)
   const quantityValue = Number(quantity || 0)
-  const exceedsBalance = type === 'out' && itemId > 0 && warehouseId > 0 && quantityValue > availableBalance
+  const consumesStock = type === 'out' || type === 'transfer' || (type === 'adjustment' && adjustmentDirection === 'decrease')
+  const exceedsBalance = consumesStock && itemId > 0 && warehouseId > 0 && quantityValue > availableBalance
 
   const warehouseOptions = warehouses.map((warehouse) => ({
     value: warehouse.id,
@@ -176,6 +194,8 @@ export function CreateMovementDialog({ open, onOpenChange, defaultType = 'in', d
   const resetForm = () => {
     setType(defaultType)
     setWarehouseId(defaultWarehouseId ?? 0)
+    setToWarehouseId(0)
+    setAdjustmentDirection('increase')
     setItemId(0)
     setQuantity('')
     setUnitCost('')
@@ -192,7 +212,7 @@ export function CreateMovementDialog({ open, onOpenChange, defaultType = 'in', d
 
   if (!open) return null
 
-  const handleTypeChange = (nextType: 'in' | 'out') => {
+  const handleTypeChange = (nextType: MovementType) => {
     if (nextType === type) return
     setType(nextType)
     setQuantity('')
@@ -215,8 +235,10 @@ export function CreateMovementDialog({ open, onOpenChange, defaultType = 'in', d
     const payload = {
       type,
       warehouse_id: warehouseId,
+      to_warehouse_id: type === 'transfer' ? toWarehouseId : undefined,
       item_id: itemId,
       quantity: Number(quantity),
+      adjustment_direction: type === 'adjustment' ? adjustmentDirection : undefined,
       unit_cost: unitCost === '' ? undefined : Number(unitCost),
       notes: notes.trim() || undefined,
     }
@@ -258,7 +280,7 @@ export function CreateMovementDialog({ open, onOpenChange, defaultType = 'in', d
         <div className="sticky top-0 bg-white border-b border-gray-100 p-5 rounded-t-2xl flex items-center justify-between z-10">
           <div>
             <h2 className="text-xl font-bold text-gray-900">إضافة حركة مخزون</h2>
-            <p className="text-sm text-gray-500 mt-1">تسجيل وارد أو صادر يدوي مع تحديث الرصيد مباشرة</p>
+            <p className="text-sm text-gray-500 mt-1">تسجيل وارد، صادر، تحويل، أو تسوية مع تحديث الرصيد مباشرة</p>
           </div>
           <button type="button" onClick={handleClose} className="p-2 rounded-xl hover:bg-gray-100 text-gray-500">
             <X className="w-5 h-5" />
@@ -268,7 +290,7 @@ export function CreateMovementDialog({ open, onOpenChange, defaultType = 'in', d
         <form onSubmit={handleSubmit} className="p-5 space-y-6">
           <section>
             <label className="text-sm font-semibold text-gray-700 block mb-2">نوع الحركة</label>
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
               <button
                 type="button"
                 onClick={() => handleTypeChange('in')}
@@ -287,6 +309,24 @@ export function CreateMovementDialog({ open, onOpenChange, defaultType = 'in', d
               >
                 → صادر
               </button>
+              <button
+                type="button"
+                onClick={() => handleTypeChange('transfer')}
+                className={`py-4 rounded-2xl border-2 font-bold text-lg transition-colors ${
+                  type === 'transfer' ? 'bg-blue-100 border-blue-500 text-blue-700 dark:bg-blue-950/40 dark:border-blue-900/50 dark:text-blue-400 shadow-sm' : 'border-gray-200 text-gray-500 hover:bg-gray-50 dark:hover:bg-gray-800'
+                }`}
+              >
+                تحويل
+              </button>
+              <button
+                type="button"
+                onClick={() => handleTypeChange('adjustment')}
+                className={`py-4 rounded-2xl border-2 font-bold text-lg transition-colors ${
+                  type === 'adjustment' ? 'bg-amber-100 border-amber-500 text-amber-700 dark:bg-amber-950/40 dark:border-amber-900/50 dark:text-amber-400 shadow-sm' : 'border-gray-200 text-gray-500 hover:bg-gray-50 dark:hover:bg-gray-800'
+                }`}
+              >
+                تسوية
+              </button>
             </div>
           </section>
 
@@ -300,6 +340,18 @@ export function CreateMovementDialog({ open, onOpenChange, defaultType = 'in', d
               error={errors.warehouse_id}
               onChange={setWarehouseId}
             />
+            {type === 'transfer' ? (
+              <SearchableCombobox
+                label="إلى مستودع"
+                value={toWarehouseId}
+                options={warehouseOptions.filter((option) => option.value !== warehouseId)}
+                placeholder={isWarehousesLoading ? 'جاري التحميل...' : 'اختر مستودع التحويل إليه'}
+                disabled={isWarehousesLoading || createMutation.isPending}
+                error={errors.to_warehouse_id}
+                onChange={setToWarehouseId}
+                onClear={() => setToWarehouseId(0)}
+              />
+            ) : null}
             <SearchableCombobox
               label="الصنف"
               value={itemId}
@@ -310,6 +362,33 @@ export function CreateMovementDialog({ open, onOpenChange, defaultType = 'in', d
               onChange={setItemId}
             />
           </section>
+
+          {type === 'adjustment' ? (
+            <section>
+              <label className="text-sm font-semibold text-gray-700 block mb-2">اتجاه التسوية</label>
+              <div className="grid grid-cols-2 gap-3">
+                <button
+                  type="button"
+                  onClick={() => setAdjustmentDirection('increase')}
+                  className={`rounded-xl border px-4 py-3 text-sm font-bold ${
+                    adjustmentDirection === 'increase' ? 'border-emerald-500 bg-emerald-50 text-emerald-700' : 'border-gray-200 text-gray-500'
+                  }`}
+                >
+                  زيادة الرصيد
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setAdjustmentDirection('decrease')}
+                  className={`rounded-xl border px-4 py-3 text-sm font-bold ${
+                    adjustmentDirection === 'decrease' ? 'border-red-500 bg-red-50 text-red-700' : 'border-gray-200 text-gray-500'
+                  }`}
+                >
+                  تخفيض الرصيد
+                </button>
+              </div>
+              {errors.adjustment_direction && <p className="text-xs text-red-600 mt-1 mr-1">{errors.adjustment_direction}</p>}
+            </section>
+          ) : null}
 
           {warehouseId > 0 && itemId > 0 && (
             <section className="rounded-2xl bg-blue-50 border border-blue-100 p-4 text-blue-900 dark:bg-blue-950/30 dark:border-blue-900/40 dark:text-blue-200">
@@ -388,11 +467,11 @@ export function CreateMovementDialog({ open, onOpenChange, defaultType = 'in', d
               type="submit"
               disabled={createMutation.isPending || exceedsBalance || isBalanceLoading}
               className={`px-6 py-2.5 rounded-xl text-white font-bold flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed ${
-                type === 'in' ? 'bg-farm-green hover:bg-farm-green/90' : 'bg-red-600 hover:bg-red-600/90'
+                type === 'in' || (type === 'adjustment' && adjustmentDirection === 'increase') ? 'bg-farm-green hover:bg-farm-green/90' : type === 'transfer' ? 'bg-blue-600 hover:bg-blue-700' : 'bg-red-600 hover:bg-red-600/90'
               }`}
             >
               {createMutation.isPending && <Loader2 className="w-4 h-4 animate-spin" />}
-              {type === 'in' ? 'تسجيل وارد' : 'تسجيل صادر'}
+              {type === 'in' ? 'تسجيل وارد' : type === 'out' ? 'تسجيل صادر' : type === 'transfer' ? 'تسجيل تحويل' : 'تسجيل تسوية'}
             </button>
           </div>
         </form>

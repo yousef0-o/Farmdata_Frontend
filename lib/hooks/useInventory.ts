@@ -79,7 +79,7 @@ export function useCreateItem() {
 export function useUpdateItem() {
   const qc = useQueryClient()
   return useMutation({
-    mutationFn: ({ id, data }: { id: number; data: Partial<any> }) => inventoryApi.updateItem(id, data),
+    mutationFn: ({ id, data }: { id: number; data: Record<string, unknown> }) => inventoryApi.updateItem(id, data),
     onSuccess: () => qc.invalidateQueries({ queryKey: ['items'] }),
   })
 }
@@ -91,4 +91,3 @@ export function useDeleteItem() {
     onSuccess: () => qc.invalidateQueries({ queryKey: ['items'] }),
   })
 }
-

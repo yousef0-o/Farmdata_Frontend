@@ -448,7 +448,14 @@ export interface FlockMedication {
   quantity?: number
   medicine_name: string
   dosage?: string
+  water_concentration?: string
   method_of_administration?: string
+  attachment_path?: string[]
+  attachments?: Array<{
+    path: string
+    url: string
+    name: string
+  }>
 }
 
 export interface FlockMedicalRecord {
@@ -460,6 +467,13 @@ export interface FlockMedicalRecord {
   severity: 'low' | 'medium' | 'high'
   veterinarian?: string
   notes?: string
+  attachment_path?: string[]
+  attachments?: Array<{
+    path: string
+    url: string
+    name: string
+  }>
+  ai_extracted_text?: Array<Record<string, unknown>>
   created_by?: {
     id: number
     name: string

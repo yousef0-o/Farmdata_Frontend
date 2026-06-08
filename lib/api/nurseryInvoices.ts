@@ -26,6 +26,19 @@ export const nurseryInvoicesApi = {
       })
     ),
 
+  update: (id: number, payload: NurseryInvoicePayload) =>
+    wrapResponse<NurseryInvoiceDetails>(
+      apiRequest(`/nursery/invoices/${id}`, {
+        method: 'PUT',
+        body: JSON.stringify(payload),
+      })
+    ),
+
+  delete: (id: number) =>
+    apiRequest<{ message: string }>(`/nursery/invoices/${id}`, {
+      method: 'DELETE',
+    }),
+
   updateSettings: (payload: Partial<NurseryInvoiceSettings> | FormData) =>
     wrapResponse<NurseryInvoiceSettings>(
       apiRequest('/nursery/invoices/settings', {

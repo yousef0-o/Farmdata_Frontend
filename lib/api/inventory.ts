@@ -55,7 +55,7 @@ export const inventoryApi = {
   listMovements: (filters: {
     warehouse_id?: number
     item_id?: number
-    type?: 'in' | 'out'
+    type?: 'in' | 'out' | 'transfer_in' | 'transfer_out' | 'adjustment'
     page?: number
   } = {}) => {
     const params = new URLSearchParams()
@@ -71,10 +71,12 @@ export const inventoryApi = {
     )
   },
   createMovement: (data: {
-    type: 'in' | 'out'
+    type: 'in' | 'out' | 'adjustment' | 'transfer'
     warehouse_id: number
+    to_warehouse_id?: number
     item_id: number
     quantity: number
+    adjustment_direction?: 'increase' | 'decrease'
     unit_cost?: number
     notes?: string
   }) => apiRequest<{ data: InventoryMovement }>('/inventory/movements', {

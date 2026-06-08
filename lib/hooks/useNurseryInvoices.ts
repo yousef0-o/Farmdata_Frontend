@@ -41,6 +41,34 @@ export function useCreateNurseryInvoice() {
   })
 }
 
+export function useUpdateNurseryInvoice() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: ({ id, payload }: { id: number; payload: NurseryInvoicePayload }) =>
+      nurseryInvoicesApi.update(id, payload),
+    onSuccess: (_data, variables) => {
+      queryClient.invalidateQueries({ queryKey: ['nursery-invoices'] })
+      queryClient.invalidateQueries({ queryKey: ['nursery-invoices', 'details', variables.id] })
+      queryClient.invalidateQueries({ queryKey: ['nursery-management'] })
+      queryClient.invalidateQueries({ queryKey: ['nursery-inventory'] })
+    },
+  })
+}
+
+export function useDeleteNurseryInvoice() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: (id: number) => nurseryInvoicesApi.delete(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['nursery-invoices'] })
+      queryClient.invalidateQueries({ queryKey: ['nursery-management'] })
+      queryClient.invalidateQueries({ queryKey: ['nursery-inventory'] })
+    },
+  })
+}
+
 export function useUpdateNurseryInvoiceSettings() {
   const queryClient = useQueryClient()
 

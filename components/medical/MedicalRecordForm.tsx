@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { Plus, Trash2, Calendar, Stethoscope, ArrowRight, Save, Loader2 } from 'lucide-react'
+import { Plus, Trash2, Stethoscope, ArrowRight, Save, Loader2, Paperclip, X } from 'lucide-react'
 import { useWarehouses } from '@/lib/hooks/useInventory'
 import { apiRequest } from '@/lib/api/client'
 import type { FlockMedicalRecord } from '@/lib/types'
@@ -29,6 +29,8 @@ export default function MedicalRecordForm({ flockId, initialData, onSubmit, isPe
   const [severity, setSeverity] = useState<'low' | 'medium' | 'high'>('low')
   const [veterinarian, setVeterinarian] = useState('')
   const [notes, setNotes] = useState('')
+  const [attachments, setAttachments] = useState<File[]>([])
+  const [removedAttachments, setRemovedAttachments] = useState<string[]>([])
 
   // State for pre-fetched and filtered warehouses & balances containing medicines ('أدوية')
   const [validWarehouses, setValidWarehouses] = useState<any[]>([])
@@ -44,7 +46,9 @@ export default function MedicalRecordForm({ flockId, initialData, onSubmit, isPe
     medicineName: string
     quantity: string
     dosage: string
+    waterConcentration: string
     method: string
+    attachments: File[]
   }[]>([])
 
   // Pre-fetch warehouse balances and filter only warehouses & items containing 'أدوية'
@@ -102,7 +106,9 @@ export default function MedicalRecordForm({ flockId, initialData, onSubmit, isPe
             medicineName: med.medicine_name || '',
             quantity: String(med.quantity || ''),
             dosage: med.dosage || '',
+            waterConcentration: med.water_concentration || '',
             method: med.method_of_administration || '',
+            attachments: [],
           }))
         )
       }
@@ -122,7 +128,9 @@ export default function MedicalRecordForm({ flockId, initialData, onSubmit, isPe
         medicineName: '',
         quantity: '',
         dosage: '',
+        waterConcentration: '',
         method: '',
+        attachments: [],
       },
     ])
   }
@@ -146,7 +154,6 @@ export default function MedicalRecordForm({ flockId, initialData, onSubmit, isPe
       return
     }
 
-    // Format medications for API
     const formattedMedications = medications.map((med) => {
       const isWarehouse = med.sourceType === 'warehouse'
       return {
@@ -155,6 +162,7 @@ export default function MedicalRecordForm({ flockId, initialData, onSubmit, isPe
         inventory_item_id: isWarehouse && med.itemId ? Number(med.itemId) : undefined,
         quantity: isWarehouse && med.quantity ? Number(med.quantity) : undefined,
         dosage: med.dosage || undefined,
+        water_concentration: med.waterConcentration || undefined,
         method_of_administration: med.method || undefined,
       }
     })
@@ -169,8 +177,11 @@ export default function MedicalRecordForm({ flockId, initialData, onSubmit, isPe
       medications: formattedMedications,
     }
 
+    const hasFiles = attachments.length > 0 || removedAttachments.length > 0 || medications.some((med) => med.attachments.length > 0)
+    const body = hasFiles ? toFormData(payload, attachments, removedAttachments, medications) : payload
+
     try {
-      await onSubmit(payload)
+      await onSubmit(body)
       router.push(`/flocks/${flockId}`)
     } catch (err: any) {
       alert(err?.message || 'حدث خطأ أثناء حفظ السجل الطبي')
@@ -275,6 +286,56 @@ export default function MedicalRecordForm({ flockId, initialData, onSubmit, isPe
             className="w-full px-4 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-red-500 focus:border-red-500 text-gray-900"
           />
         </div>
+
+        <div className="rounded-xl border border-gray-100 bg-gray-50/60 p-4">
+          <label className="mb-2 flex items-center gap-2 text-sm font-semibold text-gray-700">
+            <Paperclip className="h-4 w-4 text-red-600" />
+            مرفقات الفحص ونتائج المعمل
+          </label>
+          {initialData?.attachments && initialData.attachments.length > 0 ? (
+            <div className="mb-3 flex flex-wrap gap-2">
+              {initialData.attachments.map((attachment) => {
+                const removed = removedAttachments.includes(attachment.path)
+                return (
+                  <span
+                    key={attachment.path}
+                    className={`inline-flex items-center gap-2 rounded-lg border px-3 py-1.5 text-xs ${
+                      removed ? 'border-red-200 bg-red-50 text-red-700 line-through' : 'border-gray-200 bg-white text-gray-700'
+                    }`}
+                  >
+                    <a href={attachment.url} target="_blank" rel="noreferrer" className="font-semibold hover:text-red-700">
+                      {attachment.name}
+                    </a>
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setRemovedAttachments((current) =>
+                          current.includes(attachment.path)
+                            ? current.filter((path) => path !== attachment.path)
+                            : [...current, attachment.path]
+                        )
+                      }
+                      className="rounded p-0.5 text-gray-400 hover:bg-red-100 hover:text-red-700"
+                      title={removed ? 'إلغاء الحذف' : 'حذف المرفق عند الحفظ'}
+                    >
+                      <X className="h-3.5 w-3.5" />
+                    </button>
+                  </span>
+                )
+              })}
+            </div>
+          ) : null}
+          <input
+            type="file"
+            multiple
+            accept=".pdf,.jpg,.jpeg,.png,.webp"
+            onChange={(event) => setAttachments(Array.from(event.target.files ?? []))}
+            className="block w-full rounded-xl border border-gray-300 bg-white px-4 py-2 text-sm text-gray-700 file:ml-3 file:rounded-lg file:border-0 file:bg-red-50 file:px-3 file:py-1.5 file:font-semibold file:text-red-700"
+          />
+          {attachments.length > 0 ? (
+            <p className="mt-2 text-xs text-gray-500">تم اختيار {attachments.length} مرفق جديد.</p>
+          ) : null}
+        </div>
       </div>
 
       {/* Medications Card */}
@@ -346,6 +407,42 @@ export default function MedicalRecordForm({ flockId, initialData, onSubmit, isPe
       </div>
     </form>
   )
+}
+
+function toFormData(
+  payload: Record<string, any>,
+  attachments: File[],
+  removedAttachments: string[],
+  medicationRows: Array<{ attachments: File[] }>
+): FormData {
+  const formData = new FormData()
+
+  appendFormValue(formData, '', payload)
+  attachments.forEach((file) => formData.append('attachments[]', file))
+  removedAttachments.forEach((path) => formData.append('removed_attachments[]', path))
+  medicationRows.forEach((row, index) => {
+    row.attachments.forEach((file) => formData.append(`medications[${index}][attachments][]`, file))
+  })
+
+  return formData
+}
+
+function appendFormValue(formData: FormData, key: string, value: unknown): void {
+  if (value === undefined || value === null) return
+
+  if (Array.isArray(value)) {
+    value.forEach((item, index) => appendFormValue(formData, `${key}[${index}]`, item))
+    return
+  }
+
+  if (typeof value === 'object' && !(value instanceof File)) {
+    Object.entries(value as Record<string, unknown>).forEach(([childKey, childValue]) => {
+      appendFormValue(formData, key ? `${key}[${childKey}]` : childKey, childValue)
+    })
+    return
+  }
+
+  if (key) formData.append(key, value instanceof File ? value : String(value))
 }
 
 interface MedicationRowProps {
@@ -511,6 +608,35 @@ function MedicationRow({ index, med, warehouses, balances, onUpdate, onRemove }:
             className="w-full text-xs px-3 py-1.5 border border-gray-300 rounded-lg focus:ring-1 focus:ring-red-500 text-gray-900"
           />
         </div>
+      </div>
+
+      <div className="pr-2">
+        <label className="block text-xs font-semibold text-gray-500 mb-1">
+          تركيز الدواء في المياه
+        </label>
+        <input
+          type="text"
+          placeholder="مثال: 1 لتر / 1000 لتر ماء"
+          value={med.waterConcentration}
+          onChange={(e) => onUpdate(index, 'waterConcentration', e.target.value)}
+          className="w-full text-xs px-3 py-1.5 border border-gray-300 rounded-lg focus:ring-1 focus:ring-red-500 text-gray-900"
+        />
+      </div>
+
+      <div className="pr-2">
+        <label className="block text-xs font-semibold text-gray-500 mb-1">
+          مرفقات الدواء أو التحصين
+        </label>
+        <input
+          type="file"
+          multiple
+          accept=".pdf,.jpg,.jpeg,.png,.webp"
+          onChange={(event) => onUpdate(index, 'attachments', Array.from(event.target.files ?? []))}
+          className="block w-full rounded-lg border border-gray-300 bg-white px-3 py-1.5 text-xs text-gray-700 file:ml-3 file:rounded file:border-0 file:bg-red-50 file:px-2 file:py-1 file:font-semibold file:text-red-700"
+        />
+        {med.attachments?.length > 0 ? (
+          <p className="mt-1 text-xs text-gray-400">{med.attachments.length} مرفق جديد</p>
+        ) : null}
       </div>
     </div>
   )

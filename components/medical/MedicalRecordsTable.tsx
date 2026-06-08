@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react'
 import Link from 'next/link'
-import { Calendar, Trash2, Edit, Loader2, Stethoscope, AlertTriangle } from 'lucide-react'
+import { Calendar, Trash2, Edit, Loader2, Stethoscope, AlertTriangle, Paperclip } from 'lucide-react'
 import { useFlockMedicalRecords, useDeleteFlockMedicalRecord } from '@/lib/hooks/useFlockMedical'
 
 interface MedicalRecordsTableProps {
@@ -25,8 +25,8 @@ export default function MedicalRecordsTable({ flockId, isActive }: MedicalRecord
     try {
       await deleteMutation.mutateAsync(id)
       refetch()
-    } catch (err: any) {
-      alert(err?.message || 'فشل حذف السجل الطبي')
+    } catch (err: unknown) {
+      alert(err instanceof Error ? err.message : 'فشل حذف السجل الطبي')
     }
   }
 
@@ -90,6 +90,7 @@ export default function MedicalRecordsTable({ flockId, isActive }: MedicalRecord
               <th className="py-3.5 px-4 font-semibold">الأعراض الإكلينيكية</th>
               <th className="py-3.5 px-4 font-semibold">التشخيص</th>
               <th className="py-3.5 px-4 font-semibold">درجة الخطورة</th>
+              <th className="py-3.5 px-4 font-semibold">المرفقات</th>
               <th className="py-3.5 px-4 font-semibold">الأدوية المصروفة والجرعة</th>
               {isActive && <th className="py-3.5 px-4 font-semibold text-left">الإجراءات</th>}
             </tr>
@@ -114,6 +115,26 @@ export default function MedicalRecordsTable({ flockId, isActive }: MedicalRecord
                 </td>
                 <td className="py-4 px-4 whitespace-nowrap">
                   {getSeverityBadge(record.severity)}
+                </td>
+                <td className="py-4 px-4 text-gray-600">
+                  {record.attachments && record.attachments.length > 0 ? (
+                    <div className="flex flex-wrap gap-1">
+                      {record.attachments.map((attachment) => (
+                        <a
+                          key={attachment.path}
+                          href={attachment.url}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="inline-flex items-center gap-1 rounded-lg bg-gray-100 px-2 py-1 text-xs font-semibold text-gray-700 hover:text-red-700"
+                        >
+                          <Paperclip className="h-3 w-3" />
+                          {attachment.name}
+                        </a>
+                      ))}
+                    </div>
+                  ) : (
+                    <span className="text-gray-400">—</span>
+                  )}
                 </td>
                 <td className="py-4 px-4 text-gray-600 max-w-[250px]">
                   {record.medications && record.medications.length > 0 ? (
@@ -206,6 +227,25 @@ export default function MedicalRecordsTable({ flockId, isActive }: MedicalRecord
                   <span className="text-xs text-ink-muted">لا يوجد أدوية مصروفة</span>
                 )}
               </div>
+              {record.attachments && record.attachments.length > 0 ? (
+                <div className="rounded-xl bg-surface-subtle px-3 py-2">
+                  <span className="block text-xs text-ink-muted">المرفقات</span>
+                  <div className="mt-1 flex flex-wrap gap-1">
+                    {record.attachments.map((attachment) => (
+                      <a
+                        key={attachment.path}
+                        href={attachment.url}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="inline-flex items-center gap-1 rounded-lg bg-white px-2 py-1 text-xs font-semibold text-ink hover:text-red-700"
+                      >
+                        <Paperclip className="h-3 w-3" />
+                        {attachment.name}
+                      </a>
+                    ))}
+                  </div>
+                </div>
+              ) : null}
             </div>
 
             {isActive ? (

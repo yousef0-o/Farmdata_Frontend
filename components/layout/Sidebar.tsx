@@ -52,7 +52,7 @@ export const navItems = [
     icon: Sprout, // إضافة زر المشتل في النظام العام
     label: 'المشتل',
     href: '/nursery',
-    permission: 'view-companies', // يمكنك تعديل الصلاحية حسب النظام عندك
+    permission: 'view-nursery-dashboard',
   },
   {
     icon: Bird,
@@ -140,49 +140,49 @@ export const nurseryNavItems = [
     icon: ChartLine,
     label: 'إحصائيات الموقع',
     href: '/nursery',
-    permission: 'view-companies',
+    permission: 'view-nursery-dashboard',
   },
   {
     icon: Leaf,
     label: 'خبير المشتل الرقمي',
     href: '/nursery/ai-chat',
-    permission: 'view-companies',
+    permission: 'view-nursery-ai',
   },
   {
     icon: MapPin,
     label: 'المواقع',
     href: '/nursery/locations',
-    permission: 'view-companies',
+    permission: 'view-nursery-locations',
   },
   {
     icon: TreePine,
     label: 'أصناف الأشجار',
     href: '/nursery/varieties',
-    permission: 'view-companies',
+    permission: 'view-nursery-varieties',
   },
   {
     icon: SlidersHorizontal,
     label: 'إدارة الحقول العامة',
     href: '/nursery/fields',
-    permission: 'view-companies',
+    permission: 'view-nursery-fields',
   },
   {
     icon: Sprout,
     label: 'إدارة المشتل',
     href: '/nursery/manage',
-    permission: 'view-companies',
+    permission: 'view-nursery-management',
   },
   {
     icon: ListOrdered,
     label: 'عرض الخطوط',
     href: '/nursery/lines',
-    permission: 'view-companies',
+    permission: 'view-nursery-trees',
   },
   {
     icon: Boxes,
     label: 'المخزون',
     href: '/nursery/inventory',
-    permission: 'view-companies',
+    permission: 'view-nursery-inventory',
   },
   {
     icon: Scale,
@@ -194,19 +194,19 @@ export const nurseryNavItems = [
     icon: Users,
     label: 'العملاء والموردين',
     href: '/nursery/contacts',
-    permission: 'view-companies',
+    permission: 'view-nursery-contacts',
   },
   {
     icon: ReceiptText,
     label: 'الفواتير',
     href: '/nursery/invoices',
-    permission: 'view-companies',
+    permission: 'view-nursery-invoices',
   },
   {
     icon: Wallet,
     label: 'مصروفات المشتل',
     href: '/nursery/expenses',
-    permission: 'view-companies',
+    permission: 'view-nursery-expenses',
   },
 
 ]
