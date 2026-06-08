@@ -318,6 +318,7 @@ export default function NurseryAiChatPage() {
   const [isRecording, setIsRecording] = useState(false)
   const [copiedMessageId, setCopiedMessageId] = useState<number | null>(null)
   const [voiceMode, setVoiceMode] = useState<'backend' | 'browser' | 'unavailable'>('unavailable')
+  const sendingRef = useRef(false)
   const recognitionRef = useRef<SpeechRecognitionLike | null>(null)
   const mediaRecorderRef = useRef<MediaRecorder | null>(null)
   const audioChunksRef = useRef<BlobPart[]>([])
@@ -777,10 +778,11 @@ export default function NurseryAiChatPage() {
 
   // Send message
   async function handleSendMessage(textToSend?: string) {
-    if (sendingMessage) return
+    if (sendingMessage || sendingRef.current) return
     const text = textToSend !== undefined ? textToSend : inputMessage
     if (!text.trim() && selectedFiles.length === 0) return
     
+    sendingRef.current = true
     let currentChat = activeChat
     if (!currentChat) {
       // Auto-create chat if none active
@@ -791,20 +793,28 @@ export default function NurseryAiChatPage() {
         client_context_hints: Object.keys(hints).length ? hints : undefined,
       }
       
-      const createRes = await apiRequest<{ success: boolean; chat: NurseryChat }>('/nursery/chats', {
-        method: 'POST',
-        body: JSON.stringify(payload)
-      })
+      try {
+        const createRes = await apiRequest<{ success: boolean; chat: NurseryChat }>('/nursery/chats', {
+          method: 'POST',
+          body: JSON.stringify(payload)
+        })
 
-      if (createRes.success) {
-        setChats(prev => [createRes.chat, ...prev])
-        currentChat = createRes.chat
-        setActiveChat(createRes.chat)
-        setMessages([])
-        setInferredContext(null)
-        setMessageActionProposals({})
-      } else {
+        if (createRes.success) {
+          setChats(prev => [createRes.chat, ...prev])
+          currentChat = createRes.chat
+          setActiveChat(createRes.chat)
+          setMessages([])
+          setInferredContext(null)
+          setMessageActionProposals({})
+        } else {
+          addToast('فشل في بدء جلسة محادثة جديدة.', 'error')
+          sendingRef.current = false
+          return
+        }
+      } catch (err) {
+        console.error('Failed to auto-create chat:', err)
         addToast('فشل في بدء جلسة محادثة جديدة.', 'error')
+        sendingRef.current = false
         return
       }
     }
@@ -854,7 +864,13 @@ export default function NurseryAiChatPage() {
       try {
         await sendNurseryMessageStream(currentChat.id, formData, {
           onUserMessage: userMessage => {
-            setMessages(prev => [...prev, userMessage])
+            setMessages(prev => {
+              const next = prev.map(m => m.id === userMsg.id ? userMessage : m)
+              if (!next.some(m => m.id === userMessage.id)) {
+                next.push(userMessage)
+              }
+              return next
+            })
           },
           onTelemetry: event => {
             setTelemetryEvents(prev => [event, ...prev].slice(0, 4))
@@ -908,7 +924,7 @@ export default function NurseryAiChatPage() {
         })
       } catch (streamErr) {
         console.warn('Streaming message failed, falling back to blocking endpoint:', streamErr)
-        await sendMessageBlocking(currentChat.id, formData)
+        await sendMessageBlocking(currentChat.id, formData, userMsg.id)
       }
 
       fetchChats()
@@ -916,11 +932,12 @@ export default function NurseryAiChatPage() {
       console.error('Failed to send message:', err)
       addToast(errorMessage(err, 'فشل في إرسال الرسالة للمستشار الذكي.'), 'error')
     } finally {
+      sendingRef.current = false
       setSendingMessage(false)
     }
   }
 
-  async function sendMessageBlocking(chatId: number, formData: FormData) {
+  async function sendMessageBlocking(chatId: number, formData: FormData, optimisticId: number) {
     const response = await apiRequest<SendMessageResponse>(`/nursery/chats/${chatId}/messages`, {
       method: 'POST',
       body: formData
@@ -932,14 +949,14 @@ export default function NurseryAiChatPage() {
         content: response.message || response.model_response.content
       }
       setMessages(prev => {
-        const hasUserMessage = prev.some(message => message.id === response.user_message.id)
-        const hasModelMessage = prev.some(message => message.id === modelMessage.id)
-
-        return [
-          ...prev,
-          ...(hasUserMessage ? [] : [response.user_message]),
-          ...(hasModelMessage ? [] : [modelMessage]),
-        ]
+        const next = prev.map(m => m.id === optimisticId ? response.user_message : m)
+        if (!next.some(message => message.id === response.user_message.id)) {
+          next.push(response.user_message)
+        }
+        if (!next.some(message => message.id === modelMessage.id)) {
+          next.push(modelMessage)
+        }
+        return next
       })
       setInferredContext(response.inferred_context || null)
       if (response.action_proposal) {
@@ -953,7 +970,7 @@ export default function NurseryAiChatPage() {
 
   // Suggestion chips handler
   function handleSuggestionClick(suggestion: string) {
-    if (sendingMessage) return
+    if (sendingMessage || sendingRef.current) return
     handleSendMessage(suggestion)
   }
 
