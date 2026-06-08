@@ -19,7 +19,7 @@ export async function apiRequestRaw(
 
   if (requestedMethod === 'DELETE') {
     requestOptions.method = 'POST'
-    requestOptions.body = new URLSearchParams({ _method: 'DELETE' }).toString()
+    requestOptions.body = deleteMethodOverrideBody(options.body).toString()
     headers['Content-Type'] = 'application/x-www-form-urlencoded'
   } else if (!(options.body instanceof FormData)) {
     headers['Content-Type'] = 'application/json'
@@ -38,6 +38,46 @@ export async function apiRequestRaw(
   }
 
   return res
+}
+
+function deleteMethodOverrideBody(body: BodyInit | null | undefined): URLSearchParams {
+  const params = new URLSearchParams({ _method: 'DELETE' })
+
+  if (!body) return params
+
+  if (body instanceof URLSearchParams) {
+    body.forEach((value, key) => params.append(key, value))
+    return params
+  }
+
+  if (typeof body === 'string') {
+    try {
+      const parsed = JSON.parse(body) as unknown
+      appendFormValue(params, '', parsed)
+    } catch {
+      new URLSearchParams(body).forEach((value, key) => params.append(key, value))
+    }
+  }
+
+  return params
+}
+
+function appendFormValue(params: URLSearchParams, key: string, value: unknown): void {
+  if (value === undefined || value === null) return
+
+  if (Array.isArray(value)) {
+    value.forEach((item, index) => appendFormValue(params, `${key}[${index}]`, item))
+    return
+  }
+
+  if (typeof value === 'object') {
+    Object.entries(value as Record<string, unknown>).forEach(([childKey, childValue]) => {
+      appendFormValue(params, key ? `${key}[${childKey}]` : childKey, childValue)
+    })
+    return
+  }
+
+  if (key) params.append(key, String(value))
 }
 
 export async function apiRequest<T>(
