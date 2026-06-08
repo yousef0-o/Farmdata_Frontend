@@ -143,6 +143,7 @@ import {
   Layers3,
   Warehouse,
   HelpCircle,
+  PlusCircle,
 } from 'lucide-react'
 import { actionTitles, actionRegistry } from '../_lib/actionRegistry'
 import type { KnownActionType } from '../_lib/types'
@@ -155,6 +156,7 @@ const actionIcons: Record<string, React.ComponentType<{ className?: string }>> =
   start_cycle: Sprout,
   create_basin: Warehouse,
   log_procedure: Activity,
+  add_trees: PlusCircle,
 }
 
 function ActionCardInline({ proposal, onExecute }: { proposal: ActionProposal; onExecute: () => void }) {

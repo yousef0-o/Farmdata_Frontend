@@ -8,6 +8,7 @@ export type KnownActionType =
   | 'start_cycle'
   | 'create_basin'
   | 'log_procedure'
+  | 'add_trees'
 
 export type ActionEventType = 'action_confirmed' | 'action_failed' | 'action_result'
 export type IrrigationPeriod = 'morning' | 'evening'

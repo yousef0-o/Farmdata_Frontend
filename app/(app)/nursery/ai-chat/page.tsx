@@ -380,6 +380,15 @@ export default function NurseryAiChatPage() {
   const [cyclePotSize, setCyclePotSize] = useState('')
   const [cycleStartDate, setCycleStartDate] = useState('')
 
+  // add_trees fields
+  const [treeLineNumber, setTreeLineNumber] = useState(1)
+  const [treeTypeId, setTreeTypeId] = useState<number>(0)
+  const [treeQuantity, setTreeQuantity] = useState(100)
+  const [treePotSize, setTreePotSize] = useState('')
+  const [treeHeight, setTreeHeight] = useState(0)
+  const [treeThickness, setTreeThickness] = useState(0)
+  const [treeBirthDate, setTreeBirthDate] = useState('')
+
   // create_basin fields
   const [basinSectionId, setBasinSectionId] = useState<number>(0)
   const [basinBaseName, setBasinBaseName] = useState('')
@@ -1044,6 +1053,15 @@ export default function NurseryAiChatPage() {
       setProcedureEndTime(typeof actionObj.end_time === 'string' ? actionObj.end_time : '')
       setProcedureHumidity(actionObj.humidity_percentage !== undefined ? Number(actionObj.humidity_percentage) : '')
       setProcedureNotes(typeof actionObj.notes === 'string' ? actionObj.notes : '')
+    } else if (actionObj.action === 'add_trees') {
+      setTreeLineNumber(Number(actionObj.line_number || 1))
+      setTreeTypeId(Number(actionObj.tree_type_id || actionObj.variety_id || 0))
+      setTreeQuantity(Number(actionObj.quantity || 100))
+      setTreePotSize(typeof actionObj.pot_size === 'string' ? actionObj.pot_size : '')
+      setTreeHeight(Number(actionObj.height || 0))
+      setTreeThickness(Number(actionObj.thickness || 0))
+      const bDate = actionObj.birth_date || actionObj.date
+      setTreeBirthDate(typeof bDate === 'string' ? bDate : todayString)
     }
   }
 
@@ -1158,6 +1176,14 @@ export default function NurseryAiChatPage() {
         procedureEndTime,
         procedureHumidity: procedureHumidity === '' ? null : procedureHumidity,
         procedureNotes,
+        // add_trees fields
+        treeLineNumber,
+        treeTypeId,
+        treeQuantity,
+        treePotSize,
+        treeHeight,
+        treeThickness,
+        treeBirthDate,
       }
 
       const endpoint = registryEntry.endpoint(registryArgs)
@@ -1182,6 +1208,10 @@ export default function NurseryAiChatPage() {
       } else if (activeAction.action === 'start_cycle') {
         const basinName = basins.find(b => b.id === Number(targetBasinId))?.name || `#${targetBasinId}`
         logText = `⚙️ تم بدء دورة الإنتاج (${cycleName}) بعدد (${cycleCount}) في الحوض (${basinName}) بتاريخ ${cycleStartDate}.`
+      } else if (activeAction.action === 'add_trees') {
+        const basinName = basins.find(b => b.id === Number(targetBasinId))?.name || `#${targetBasinId}`
+        const treeName = varieties.find(v => v.id === treeTypeId)?.name || 'شجر'
+        logText = `⚙️ تم إضافة شجر من نوع (${treeName}) بعدد (${treeQuantity}) في الحوض (${basinName}) بالخط رقم (${treeLineNumber}) بنجاح.`
       } else if (activeAction.action === 'create_basin') {
         logText = `⚙️ تم إنشاء حوض/أحواض جديدة بالاسم الأساسي (${basinBaseName}) بعدد (${basinCount}) بنجاح.`
       } else if (activeAction.action === 'log_procedure') {
@@ -2155,7 +2185,8 @@ export default function NurseryAiChatPage() {
           {(activeAction?.action === 'log_irrigation' ||
             activeAction?.action === 'log_mortality' ||
             activeAction?.action === 'log_fertilization' ||
-            activeAction?.action === 'start_cycle') && (
+            activeAction?.action === 'start_cycle' ||
+            activeAction?.action === 'add_trees') && (
             <div className="mb-4">
               <label className="block text-xs font-bold text-slate-500 mb-1">الحوض المستهدف</label>
               <select
@@ -2448,6 +2479,97 @@ export default function NurseryAiChatPage() {
                   />
                   {renderFieldErrors('source')}
                 </div>
+              </div>
+            </div>
+          )}
+
+          {activeAction?.action === 'add_trees' && (
+            <div className="space-y-4">
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-bold text-slate-500 mb-1">نوع الشجرة (الصنف)</label>
+                  <select
+                    value={treeTypeId || ''}
+                    onChange={e => setTreeTypeId(Number(e.target.value))}
+                    className="min-h-11 w-full rounded-xl border border-slate-100 bg-slate-50 px-3 py-2 text-sm font-semibold text-slate-900 outline-none transition-all focus:border-terracotta focus:bg-white focus:ring-2 focus:ring-orange-100 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-100"
+                  >
+                    <option value={0}>اختر صنف...</option>
+                    {varieties.map(v => (
+                      <option key={v.id} value={v.id}>{v.name}</option>
+                    ))}
+                  </select>
+                  {renderFieldErrors('lines.0.tree_type_id') || renderFieldErrors('tree_type_id')}
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-slate-500 mb-1">الكمية/العدد</label>
+                  <input
+                    type="number"
+                    value={treeQuantity}
+                    onChange={e => setTreeQuantity(Number(e.target.value))}
+                    className="min-h-11 w-full rounded-xl border border-slate-100 bg-slate-50 px-3 py-2 text-sm font-semibold text-slate-900 outline-none transition-all focus:border-terracotta focus:bg-white focus:ring-2 focus:ring-orange-100 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-100"
+                  />
+                  {renderFieldErrors('lines.0.quantity') || renderFieldErrors('quantity')}
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-bold text-slate-500 mb-1">رقم الخط</label>
+                  <input
+                    type="number"
+                    value={treeLineNumber}
+                    onChange={e => setTreeLineNumber(Number(e.target.value))}
+                    className="min-h-11 w-full rounded-xl border border-slate-100 bg-slate-50 px-3 py-2 text-sm font-semibold text-slate-900 outline-none transition-all focus:border-terracotta focus:bg-white focus:ring-2 focus:ring-orange-100 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-100"
+                  />
+                  {renderFieldErrors('lines.0.line_number') || renderFieldErrors('line_number')}
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-slate-500 mb-1">حجم الأصيص</label>
+                  <select
+                    value={treePotSize || ''}
+                    onChange={e => setTreePotSize(e.target.value)}
+                    className="min-h-11 w-full rounded-xl border border-slate-100 bg-slate-50 px-3 py-2 text-sm font-semibold text-slate-900 outline-none transition-all focus:border-terracotta focus:bg-white focus:ring-2 focus:ring-orange-100 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-100"
+                  >
+                    <option value="">غير محدد</option>
+                    {potSizes.map((size, idx) => (
+                      <option key={idx} value={size}>{size}</option>
+                    ))}
+                  </select>
+                  {renderFieldErrors('lines.0.pot_size') || renderFieldErrors('pot_size')}
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-bold text-slate-500 mb-1">الارتفاع (متر)</label>
+                  <input
+                    type="number"
+                    step="0.1"
+                    value={treeHeight}
+                    onChange={e => setTreeHeight(Number(e.target.value))}
+                    className="min-h-11 w-full rounded-xl border border-slate-100 bg-slate-50 px-3 py-2 text-sm font-semibold text-slate-900 outline-none transition-all focus:border-terracotta focus:bg-white focus:ring-2 focus:ring-orange-100 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-100"
+                  />
+                  {renderFieldErrors('lines.0.height') || renderFieldErrors('height')}
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-slate-500 mb-1">السماكة (سم)</label>
+                  <input
+                    type="number"
+                    step="0.1"
+                    value={treeThickness}
+                    onChange={e => setTreeThickness(Number(e.target.value))}
+                    className="min-h-11 w-full rounded-xl border border-slate-100 bg-slate-50 px-3 py-2 text-sm font-semibold text-slate-900 outline-none transition-all focus:border-terracotta focus:bg-white focus:ring-2 focus:ring-orange-100 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-100"
+                  />
+                  {renderFieldErrors('lines.0.thickness') || renderFieldErrors('thickness')}
+                </div>
+              </div>
+              <div>
+                <label className="block text-xs font-bold text-slate-500 mb-1">تاريخ إضافة الشجر</label>
+                <input
+                  type="date"
+                  value={treeBirthDate}
+                  onChange={e => setTreeBirthDate(e.target.value)}
+                  className="min-h-11 w-full rounded-xl border border-slate-100 bg-slate-50 px-3 py-2 text-sm font-semibold text-slate-900 outline-none transition-all focus:border-terracotta focus:bg-white focus:ring-2 focus:ring-orange-100 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-100"
+                />
+                {renderFieldErrors('lines.0.birth_date') || renderFieldErrors('birth_date')}
               </div>
             </div>
           )}

@@ -41,6 +41,14 @@ type BuildPayloadArgs = {
   procedureEndTime?: string | null
   procedureHumidity?: number | null
   procedureNotes?: string | null
+  // add_trees fields
+  treeLineNumber: number
+  treeTypeId: number
+  treeQuantity: number
+  treePotSize?: string | null
+  treeHeight: number
+  treeThickness: number
+  treeBirthDate: string
 }
 
 type ActionRegistryEntry = {
@@ -57,6 +65,7 @@ export const actionTitles: Record<string, string> = {
   start_cycle: 'بدء دورة إنتاج مقترحة',
   create_basin: 'إنشاء حوض مقترح',
   log_procedure: 'تسجيل إجراء دورة مقترح',
+  add_trees: 'إضافة شجر مقترحة',
 }
 
 function requireNumber(value: unknown, message: string): number {
@@ -202,6 +211,31 @@ export const actionRegistry: Partial<Record<KnownActionType, ActionRegistryEntry
         notes: procedureNotes || null,
       }
     },
+  },
+  add_trees: {
+    title: actionTitles.add_trees,
+    endpoint: ({ targetBasinId }) => `/nursery/manage/basins/${requireNumber(targetBasinId, 'يرجى تحديد حوض لإضافة الشجر.')}/operations/trees`,
+    buildPayload: ({
+      treeLineNumber,
+      treeTypeId,
+      treeQuantity,
+      treePotSize,
+      treeHeight,
+      treeThickness,
+      treeBirthDate,
+    }) => ({
+      lines: [
+        {
+          line_number: requireNumber(treeLineNumber, 'يرجى إدخال رقم الخط.'),
+          tree_type_id: requireNumber(treeTypeId, 'يرجى اختيار نوع الشجرة.'),
+          quantity: requireNumber(treeQuantity, 'يرجى إدخال الكمية.'),
+          pot_size: treePotSize || null,
+          height: treeHeight || 0,
+          thickness: treeThickness || 0,
+          birth_date: treeBirthDate || null,
+        },
+      ],
+    }),
   },
 }
 
