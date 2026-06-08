@@ -1,10 +1,11 @@
 'use client'
 
 import React, { useState, useRef, useCallback } from 'react'
-import { X, Loader2, AlertCircle, ChevronLeft, ChevronRight, Check } from 'lucide-react'
+import { X, AlertCircle, ChevronLeft, ChevronRight, Check } from 'lucide-react'
 import type { Customer } from '@/lib/types'
 import SaudiRiyalIcon from '@/components/icons/SaudiRiyalIcon'
 import AppDialog from '@/components/ui/AppDialog'
+import { Button } from '@/components/ui/Button'
 
 interface CustomerFormProps {
   editingCustomer: Customer | null
@@ -242,29 +243,25 @@ export default function CustomerForm({ editingCustomer, onSubmit, onClose, isPen
             </h2>
             <p className="mt-0.5 text-xs text-ink-muted">الخطوة {step + 1} من {STEPS.length} — {STEPS[step].label}</p>
           </div>
-          <button onClick={onClose} className="rounded-full p-2 text-ink-muted transition-colors hover:bg-surface-muted">
+          <Button variant="ghost" size="icon" aria-label="إغلاق النموذج" onClick={onClose}>
             <X className="w-5 h-5" />
-          </button>
+          </Button>
         </div>
 
         {/* Step indicators */}
         <div className="flex items-center justify-center gap-2 border-b border-line bg-surface py-3">
           {STEPS.map((s, i) => (
             <React.Fragment key={s.key}>
-              <button
+              <Button
                 type="button"
                 onClick={() => { if (i < step) setStep(i) }}
-                className={`flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-semibold transition-colors ${
-                  i === step
-                    ? 'bg-action-primary text-white'
-                    : i < step
-                    ? 'cursor-pointer bg-success-soft text-success-strong'
-                    : 'bg-surface-muted text-ink-soft'
-                }`}
+                variant={i === step ? 'primary' : i < step ? 'secondary' : 'ghost'}
+                size="sm"
+                disabled={i > step}
               >
                 {i < step ? <Check className="w-3.5 h-3.5" /> : <span>{i + 1}</span>}
                 {s.label}
-              </button>
+              </Button>
               {i < STEPS.length - 1 && <div className="h-px w-6 bg-line" />}
             </React.Fragment>
           ))}
@@ -378,28 +375,39 @@ export default function CustomerForm({ editingCustomer, onSubmit, onClose, isPen
           <div className="flex items-center justify-between border-t border-line pt-6">
             <div>
               {step > 0 && (
-                <button type="button" onClick={handlePrev}
-                  className="flex items-center gap-1 text-sm font-medium text-ink-soft hover:text-ink">
-                  السابق <ChevronRight className="w-4 h-4" />
-                </button>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  onClick={handlePrev}
+                  rightIcon={<ChevronRight className="w-4 h-4" />}
+                >
+                  السابق
+                </Button>
               )}
             </div>
             <div className="flex gap-3">
-              <button type="button" onClick={onClose}
-                className="rounded-xl bg-surface-muted px-5 py-2.5 text-sm font-semibold text-ink-soft transition-colors hover:bg-surface-subtle">
+              <Button type="button" variant="outline" onClick={onClose}>
                 إلغاء
-              </button>
+              </Button>
               {step < STEPS.length - 1 ? (
-                <button type="button" onClick={handleNext}
-                  className="flex items-center gap-2 rounded-xl bg-action-primary px-6 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-action-primary-hover">
-                  <ChevronLeft className="w-4 h-4" /> التالي
-                </button>
+                <Button
+                  type="button"
+                  onClick={handleNext}
+                  leftIcon={<ChevronLeft className="w-4 h-4" />}
+                >
+                  التالي
+                </Button>
               ) : (
-                <button type="button" onClick={handleSubmit} disabled={isPending}
-                  className="flex items-center gap-2 rounded-xl bg-action-primary px-6 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-action-primary-hover disabled:opacity-50">
-                  {isPending && <Loader2 className="w-4 h-4 animate-spin" />}
+                <Button
+                  type="button"
+                  onClick={handleSubmit}
+                  disabled={isPending}
+                  isLoading={isPending}
+                  loadingText={editingCustomer ? 'حفظ التعديلات' : 'إضافة العميل'}
+                >
                   {editingCustomer ? 'حفظ التعديلات' : 'إضافة العميل'}
-                </button>
+                </Button>
               )}
             </div>
           </div>

@@ -2,6 +2,7 @@
 
 import React, { useMemo, useState } from 'react'
 import { Activity, BarChart3, LineChart } from 'lucide-react'
+import { Button } from '@/components/ui/Button'
 import type { FlockAnalyticsResponse } from '@/lib/types'
 import type { MorningSummaryWatchlistItem } from '../../types/morningSummary'
 
@@ -117,18 +118,15 @@ export function DashboardTrendsSection({
           </div>
           <div className="inline-flex self-start rounded-xl border border-line bg-surface-muted p-1 lg:self-auto">
             {[7, 30].map((value) => (
-              <button
+              <Button
                 key={value}
                 type="button"
                 onClick={() => setRange(value as 7 | 30)}
-                className={`rounded-lg px-3 py-1.5 text-xs font-bold transition-colors ${
-                  range === value
-                    ? 'bg-surface text-action-primary shadow-sm'
-                    : 'text-ink-muted hover:text-ink'
-                }`}
+                variant={range === value ? 'outline' : 'ghost'}
+                size="sm"
               >
                 {value} أيام
-              </button>
+              </Button>
             ))}
           </div>
         </div>

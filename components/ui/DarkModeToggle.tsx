@@ -4,6 +4,8 @@ import React, { useSyncExternalStore } from 'react'
 import { useTheme } from 'next-themes'
 import { Sun, Moon } from 'lucide-react'
 
+import { Button } from '@/components/ui/Button'
+
 function subscribeToClientMount() {
   return () => undefined
 }
@@ -25,9 +27,10 @@ export default function DarkModeToggle() {
   const isDark = resolvedTheme === 'dark'
 
   return (
-    <button
+    <Button
+      variant="ghost"
       onClick={() => setTheme(isDark ? 'light' : 'dark')}
-      className="flex min-h-11 w-full items-center justify-between gap-3 rounded-xl px-4 py-2.5 text-ink-soft outline-none transition-colors duration-200 hover:bg-surface-muted hover:text-ink focus-visible:ring-2 focus-visible:ring-action-primary/30"
+      className="w-full justify-between px-4 py-2.5"
       aria-label={isDark ? 'تفعيل الوضع المضيء' : 'تفعيل الوضع المظلم'}
       type="button"
     >
@@ -44,6 +47,6 @@ export default function DarkModeToggle() {
       <span className="shrink-0 rounded bg-surface-subtle px-2 py-0.5 text-xs font-bold uppercase tracking-wider text-ink-muted">
         {isDark ? 'داكن' : 'فاتح'}
       </span>
-    </button>
+    </Button>
   )
 }

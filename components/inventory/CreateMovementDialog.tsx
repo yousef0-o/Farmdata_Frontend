@@ -6,6 +6,7 @@ import { z } from 'zod'
 import { useCreateMovement, useItemBalance, useItems, useWarehouses } from '@/lib/hooks/useInventory'
 import type { Item, Warehouse } from '@/lib/types'
 import AppDialog from '@/components/ui/AppDialog'
+import { Button } from '@/components/ui/Button'
 
 interface CreateMovementDialogProps {
   open: boolean
@@ -84,44 +85,44 @@ function SearchableCombobox({
 
   return (
     <div className="relative">
-      <label className="text-sm font-semibold text-gray-700 block mb-1">{label}</label>
+      <label className="mb-1 block text-sm font-semibold text-ink-soft">{label}</label>
       <button
         type="button"
         disabled={disabled}
         onClick={() => setIsOpen((current) => !current)}
-        className={`w-full border rounded-xl px-4 py-2.5 bg-gray-50 text-right flex items-center justify-between gap-3 focus:outline-none focus:ring-2 focus:ring-farm-blue ${
-          error ? 'border-red-500' : 'border-gray-200'
-        } ${disabled ? 'opacity-60 cursor-not-allowed' : ''}`}
+        className={`flex w-full items-center justify-between gap-3 rounded-xl border bg-surface-muted px-4 py-2.5 text-right outline-none transition-colors focus-visible:ring-2 focus-visible:ring-action-primary/30 ${
+          error ? 'border-danger' : 'border-line'
+        } ${disabled ? 'cursor-not-allowed opacity-60' : 'hover:bg-surface-subtle'}`}
       >
-        <ChevronDown className="w-4 h-4 text-gray-400" />
-        <span className={selected ? 'text-gray-900' : 'text-gray-400'}>{selected?.label ?? placeholder}</span>
+        <ChevronDown className="w-4 h-4 text-ink-muted" />
+        <span className={selected ? 'text-ink' : 'text-ink-muted'}>{selected?.label ?? placeholder}</span>
       </button>
       {onClear && value > 0 && !disabled && (
         <button
           type="button"
           onClick={onClear}
-          className="absolute left-9 top-8 text-gray-400 hover:text-gray-700"
+          className="absolute left-9 top-8 rounded-md text-ink-muted outline-none transition-colors hover:text-ink focus-visible:ring-2 focus-visible:ring-action-primary/30"
           aria-label="مسح الاختيار"
         >
           <X className="w-4 h-4" />
         </button>
       )}
-      {error && <p className="text-xs text-red-600 mt-1 mr-1">{error}</p>}
+      {error && <p className="mr-1 mt-1 text-xs text-danger">{error}</p>}
       {isOpen && !disabled && (
-        <div className="absolute z-[70] mt-2 w-full bg-white border border-gray-200 rounded-xl shadow-xl overflow-hidden">
-          <div className="p-2 border-b border-gray-100 flex items-center gap-2">
-            <Search className="w-4 h-4 text-gray-400" />
+        <div className="absolute z-[70] mt-2 w-full overflow-hidden rounded-xl border border-line bg-surface shadow-xl">
+          <div className="flex items-center gap-2 border-b border-line p-2">
+            <Search className="w-4 h-4 text-ink-muted" />
             <input
               value={search}
               onChange={(event) => setSearch(event.target.value)}
               placeholder="بحث..."
-              className="w-full text-sm outline-none text-right"
+              className="w-full bg-transparent text-right text-sm text-ink outline-none"
               autoFocus
             />
           </div>
           <div className="max-h-52 overflow-y-auto">
             {filteredOptions.length === 0 ? (
-              <div className="p-3 text-sm text-gray-500 text-center">لا توجد نتائج</div>
+              <div className="p-3 text-center text-sm text-ink-muted">لا توجد نتائج</div>
             ) : (
               filteredOptions.map((option) => (
                 <button
@@ -131,12 +132,12 @@ function SearchableCombobox({
                     onChange(option.value)
                     setIsOpen(false)
                   }}
-                  className="w-full px-3 py-2 text-right hover:bg-gray-50 flex items-center justify-between gap-3"
+                  className="flex w-full items-center justify-between gap-3 px-3 py-2 text-right outline-none transition-colors hover:bg-surface-muted focus-visible:bg-surface-muted focus-visible:ring-2 focus-visible:ring-action-primary/30"
                 >
-                  <Check className={`w-4 h-4 ${value === option.value ? 'text-farm-blue' : 'text-transparent'}`} />
+                  <Check className={`w-4 h-4 ${value === option.value ? 'text-action-primary' : 'text-transparent'}`} />
                   <span className="flex-1">
-                    <span className="block text-sm font-medium text-gray-900">{option.label}</span>
-                    {option.description && <span className="block text-xs text-gray-500">{option.description}</span>}
+                    <span className="block text-sm font-medium text-ink">{option.label}</span>
+                    {option.description && <span className="block text-xs text-ink-muted">{option.description}</span>}
                   </span>
                 </button>
               ))
@@ -282,51 +283,51 @@ export function CreateMovementDialog({ open, onOpenChange, defaultType = 'in', d
             <h2 className="text-xl font-bold text-gray-900">إضافة حركة مخزون</h2>
             <p className="text-sm text-gray-500 mt-1">تسجيل وارد، صادر، تحويل، أو تسوية مع تحديث الرصيد مباشرة</p>
           </div>
-          <button type="button" onClick={handleClose} className="p-2 rounded-xl hover:bg-gray-100 text-gray-500">
+          <Button type="button" variant="ghost" size="icon" onClick={handleClose} aria-label="إغلاق النافذة">
             <X className="w-5 h-5" />
-          </button>
+          </Button>
         </div>
 
         <form onSubmit={handleSubmit} className="p-5 space-y-6">
           <section>
             <label className="text-sm font-semibold text-gray-700 block mb-2">نوع الحركة</label>
             <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
-              <button
+              <Button
                 type="button"
                 onClick={() => handleTypeChange('in')}
-                className={`py-4 rounded-2xl border-2 font-bold text-lg transition-colors ${
-                  type === 'in' ? 'bg-emerald-100 border-emerald-500 text-emerald-700 dark:bg-emerald-950/40 dark:border-emerald-900/50 dark:text-emerald-400 shadow-sm' : 'border-gray-200 text-gray-500 hover:bg-gray-50 dark:hover:bg-gray-800'
-                }`}
+                variant={type === 'in' ? 'secondary' : 'outline'}
+                size="lg"
+                className="rounded-2xl border-2 text-lg font-bold"
               >
                 وارد ←
-              </button>
-              <button
+              </Button>
+              <Button
                 type="button"
                 onClick={() => handleTypeChange('out')}
-                className={`py-4 rounded-2xl border-2 font-bold text-lg transition-colors ${
-                  type === 'out' ? 'bg-red-100 border-red-500 text-red-700 dark:bg-red-950/40 dark:border-red-900/50 dark:text-red-400 shadow-sm' : 'border-gray-200 text-gray-500 hover:bg-gray-50 dark:hover:bg-gray-800'
-                }`}
+                variant={type === 'out' ? 'danger' : 'outline'}
+                size="lg"
+                className="rounded-2xl border-2 text-lg font-bold"
               >
                 → صادر
-              </button>
-              <button
+              </Button>
+              <Button
                 type="button"
                 onClick={() => handleTypeChange('transfer')}
-                className={`py-4 rounded-2xl border-2 font-bold text-lg transition-colors ${
-                  type === 'transfer' ? 'bg-blue-100 border-blue-500 text-blue-700 dark:bg-blue-950/40 dark:border-blue-900/50 dark:text-blue-400 shadow-sm' : 'border-gray-200 text-gray-500 hover:bg-gray-50 dark:hover:bg-gray-800'
-                }`}
+                variant={type === 'transfer' ? 'primary' : 'outline'}
+                size="lg"
+                className="rounded-2xl border-2 text-lg font-bold"
               >
                 تحويل
-              </button>
-              <button
+              </Button>
+              <Button
                 type="button"
                 onClick={() => handleTypeChange('adjustment')}
-                className={`py-4 rounded-2xl border-2 font-bold text-lg transition-colors ${
-                  type === 'adjustment' ? 'bg-amber-100 border-amber-500 text-amber-700 dark:bg-amber-950/40 dark:border-amber-900/50 dark:text-amber-400 shadow-sm' : 'border-gray-200 text-gray-500 hover:bg-gray-50 dark:hover:bg-gray-800'
-                }`}
+                variant={type === 'adjustment' ? 'secondary' : 'outline'}
+                size="lg"
+                className="rounded-2xl border-2 text-lg font-bold"
               >
                 تسوية
-              </button>
+              </Button>
             </div>
           </section>
 
@@ -367,24 +368,22 @@ export function CreateMovementDialog({ open, onOpenChange, defaultType = 'in', d
             <section>
               <label className="text-sm font-semibold text-gray-700 block mb-2">اتجاه التسوية</label>
               <div className="grid grid-cols-2 gap-3">
-                <button
+                <Button
                   type="button"
                   onClick={() => setAdjustmentDirection('increase')}
-                  className={`rounded-xl border px-4 py-3 text-sm font-bold ${
-                    adjustmentDirection === 'increase' ? 'border-emerald-500 bg-emerald-50 text-emerald-700' : 'border-gray-200 text-gray-500'
-                  }`}
+                  variant={adjustmentDirection === 'increase' ? 'secondary' : 'outline'}
+                  className="font-bold"
                 >
                   زيادة الرصيد
-                </button>
-                <button
+                </Button>
+                <Button
                   type="button"
                   onClick={() => setAdjustmentDirection('decrease')}
-                  className={`rounded-xl border px-4 py-3 text-sm font-bold ${
-                    adjustmentDirection === 'decrease' ? 'border-red-500 bg-red-50 text-red-700' : 'border-gray-200 text-gray-500'
-                  }`}
+                  variant={adjustmentDirection === 'decrease' ? 'danger' : 'outline'}
+                  className="font-bold"
                 >
                   تخفيض الرصيد
-                </button>
+                </Button>
               </div>
               {errors.adjustment_direction && <p className="text-xs text-red-600 mt-1 mr-1">{errors.adjustment_direction}</p>}
             </section>
@@ -455,24 +454,23 @@ export function CreateMovementDialog({ open, onOpenChange, defaultType = 'in', d
           )}
 
           <div className="flex items-center justify-end gap-3 pt-2 border-t border-gray-100">
-            <button
+            <Button
               type="button"
               onClick={handleClose}
               disabled={createMutation.isPending}
-              className="px-5 py-2.5 rounded-xl bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium"
+              variant="outline"
             >
               إلغاء
-            </button>
-            <button
+            </Button>
+            <Button
               type="submit"
               disabled={createMutation.isPending || exceedsBalance || isBalanceLoading}
-              className={`px-6 py-2.5 rounded-xl text-white font-bold flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed ${
-                type === 'in' || (type === 'adjustment' && adjustmentDirection === 'increase') ? 'bg-farm-green hover:bg-farm-green/90' : type === 'transfer' ? 'bg-blue-600 hover:bg-blue-700' : 'bg-red-600 hover:bg-red-600/90'
-              }`}
+              variant={type === 'out' || (type === 'adjustment' && adjustmentDirection === 'decrease') ? 'danger' : type === 'transfer' ? 'primary' : 'secondary'}
+              isLoading={createMutation.isPending}
+              className="font-bold"
             >
-              {createMutation.isPending && <Loader2 className="w-4 h-4 animate-spin" />}
               {type === 'in' ? 'تسجيل وارد' : type === 'out' ? 'تسجيل صادر' : type === 'transfer' ? 'تسجيل تحويل' : 'تسجيل تسوية'}
-            </button>
+            </Button>
           </div>
         </form>
       </div>

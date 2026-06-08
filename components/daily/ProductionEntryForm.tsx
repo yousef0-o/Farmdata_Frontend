@@ -2,13 +2,14 @@
 
 import { useMemo } from 'react'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { AlertCircle, CirclePlus, Egg, Loader2, Trash2, Warehouse } from 'lucide-react'
+import { AlertCircle, CirclePlus, Egg, Trash2, Warehouse } from 'lucide-react'
 import type { ReactNode } from 'react'
 import { useFieldArray, useForm, type Resolver } from 'react-hook-form'
 import { z } from 'zod'
 import { useCreateProductionEntry } from '@/lib/hooks/useDailyOps'
 import { useFlock } from '@/lib/hooks/useFlock'
 import { useItems, useWarehouses } from '@/lib/hooks/useInventory'
+import { Button } from '@/components/ui/Button'
 import type { EggItemPayload, FlockDetail, Item, PoultryFeedBatch, Warehouse as WarehouseType } from '@/lib/types'
 
 interface ProductionEntryFormProps {
@@ -76,9 +77,6 @@ type ProductionEntryValues = z.infer<typeof productionEntrySchema>
 
 const fieldBase =
   'h-11 w-full rounded-xl border border-slate-100 bg-slate-50 px-3 text-sm font-semibold text-slate-900 outline-none transition-colors focus:border-terracotta focus:ring-2 focus:ring-orange-100 disabled:opacity-60'
-
-const buttonPress =
-  'transition-transform duration-150 active:scale-[0.98] disabled:pointer-events-none disabled:opacity-60'
 
 function today() {
   return new Date().toISOString().split('T')[0]
@@ -373,14 +371,14 @@ export default function ProductionEntryForm({ flockId, onSuccess, onCancel }: Pr
                 </h3>
                 <p className="text-xs font-semibold text-slate-400 mt-1">سجل أوقات تقديم العلف والكميات بالطن بدقة متناهية.</p>
               </div>
-              <button
+              <Button
                 type="button"
                 onClick={() => feedArray.append({ log_time: '', quantity_ton: 0, price_per_ton: 0, warehouse_id: undefined, item_id: 0 })}
-                className="inline-flex h-9 items-center justify-center gap-2 rounded-xl bg-slate-900 px-4 text-xs font-bold text-white hover:bg-slate-800 active:scale-[0.98] transition-transform duration-150"
+                size="sm"
+                leftIcon={<CirclePlus className="h-4 w-4" />}
               >
-                <CirclePlus className="h-4 w-4" />
                 إضافة دفعة علف
-              </button>
+              </Button>
             </div>
 
             <div className="space-y-4">
@@ -417,15 +415,16 @@ export default function ProductionEntryForm({ flockId, onSuccess, onCancel }: Pr
                   </FormField>
 
                   <div className="absolute top-2 left-2 lg:relative lg:top-0 lg:left-0 lg:mt-5 flex justify-end">
-                    <button
+                    <Button
                       type="button"
                       onClick={() => feedArray.fields.length > 1 && feedArray.remove(index)}
                       disabled={isBusy || feedArray.fields.length === 1}
-                      className="flex h-9 w-9 items-center justify-center rounded-xl bg-red-50 text-red-600 hover:bg-red-100 disabled:opacity-30 active:scale-95 transition-transform"
+                      variant="danger"
+                      size="icon"
                       aria-label="حذف دفعة العلف"
                     >
                       <Trash2 className="h-4 w-4" />
-                    </button>
+                    </Button>
                   </div>
                 </div>
               ))}
@@ -450,22 +449,22 @@ export default function ProductionEntryForm({ flockId, onSuccess, onCancel }: Pr
       </div>
 
       <div className="flex flex-col-reverse gap-3 border-t border-slate-100 pt-5 sm:flex-row sm:justify-end">
-        <button
+        <Button
           type="button"
           onClick={onCancel}
           disabled={isBusy}
-          className="min-h-11 rounded-xl border border-slate-200/60 bg-white px-6 py-2 text-sm font-bold text-slate-700 hover:bg-slate-50 active:scale-[0.98] transition-transform duration-150"
+          variant="outline"
         >
           إلغاء
-        </button>
-        <button
+        </Button>
+        <Button
           type="submit"
           disabled={isBusy}
-          className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-slate-900 px-8 py-2 text-sm font-bold text-white hover:bg-slate-800 active:scale-[0.98] transition-all shadow-sm"
+          isLoading={createEntry.isPending}
+          loadingText="حفظ تسجيل الإنتاج"
         >
-          {createEntry.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
           حفظ تسجيل الإنتاج
-        </button>
+        </Button>
       </div>
     </form>
   )

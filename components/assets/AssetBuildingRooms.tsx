@@ -2,6 +2,7 @@
 
 import React from 'react'
 import { Plus, Trash2 } from 'lucide-react'
+import { Button } from '@/components/ui/Button'
 
 interface Room {
   room_name: string
@@ -24,14 +25,15 @@ export default function AssetBuildingRooms({ rooms, onAddRoom, onRemoveRoom, onR
     <div className="border-t border-gray-200 pt-4">
       <div className="flex justify-between items-center mb-3">
         <span className="text-xs font-bold text-gray-700">سجل الغرف والتقسيمات الفرعية</span>
-        <button
+        <Button
           type="button"
           onClick={onAddRoom}
-          className="text-xs text-quick-blue-text flex items-center gap-1 font-medium bg-quick-blue-bg px-3 py-1.5 rounded-lg hover:opacity-90"
+          variant="outline"
+          size="sm"
+          leftIcon={<Plus className="w-3.5 h-3.5" />}
         >
-          <Plus className="w-3.5 h-3.5" />
           <span>إضافة غرفة</span>
-        </button>
+        </Button>
       </div>
 
       {rooms.length > 0 ? (
@@ -82,13 +84,16 @@ export default function AssetBuildingRooms({ rooms, onAddRoom, onRemoveRoom, onR
                 value={room.doors_count || ''}
                 onChange={(e) => onRoomChange(idx, 'doors_count', e.target.value)}
               />
-              <button
+              <Button
                 type="button"
                 onClick={() => onRemoveRoom(idx)}
-                className="p-1.5 bg-red-100 text-red-600 rounded-lg hover:bg-red-200 dark:bg-red-950/30 dark:text-red-400 dark:hover:bg-red-900/50"
+                variant="danger"
+                size="icon"
+                className="h-8 min-h-8 w-8 rounded-lg"
+                aria-label="حذف الغرفة"
               >
                 <Trash2 className="w-3.5 h-3.5" />
-              </button>
+              </Button>
             </div>
           ))}
         </div>

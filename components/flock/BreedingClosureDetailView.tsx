@@ -16,6 +16,7 @@ import {
 import SaudiRiyalIcon from '@/components/icons/SaudiRiyalIcon'
 import { useFlock, useFlockSummary } from '@/lib/hooks/useFlock'
 import { useFlockExpenses } from '@/lib/hooks/useExpenses'
+import { Button } from '@/components/ui/Button'
 
 type TableColumn = {
   key: string
@@ -566,21 +567,19 @@ export default function BreedingClosureDetailView({
         </div>
 
         <div className="flex flex-col gap-3 sm:flex-row">
-          <Link
-            href={backHref}
-            className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl border border-line bg-surface-muted px-4 py-2 text-sm font-semibold text-ink-soft"
-          >
-            <ArrowRight className="h-4 w-4" />
-            عودة للفوج
-          </Link>
-          <button
+          <Button asChild variant="outline" leftIcon={<ArrowRight className="h-4 w-4" />}>
+            <Link href={backHref}>
+              عودة للفوج
+            </Link>
+          </Button>
+          <Button
             type="button"
             onClick={() => window.print()}
-            className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl border border-info-soft bg-info-soft px-4 py-2 text-sm font-semibold text-action-primary"
+            variant="outline"
+            leftIcon={<Printer className="h-4 w-4" />}
           >
-            <Printer className="h-4 w-4" />
             طباعة التفاصيل
-          </button>
+          </Button>
         </div>
       </header>
 

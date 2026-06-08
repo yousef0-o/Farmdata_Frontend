@@ -4,7 +4,8 @@ import React from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
-import { X, Loader2 } from 'lucide-react'
+import { X } from 'lucide-react'
+import { Button } from '@/components/ui/Button'
 import type { NurseryContact, NurseryContactType } from '@/lib/api/nurseryContacts'
 
 const contactSchema = z.object({
@@ -60,14 +61,16 @@ export default function ContactForm({ contact, onSubmit, onCancel, isSubmitting 
         <h2 id="contact-modal-title" className="text-lg font-semibold text-gray-900">
           {contact ? 'تعديل جهة الاتصال' : 'إضافة جهة اتصال جديدة'}
         </h2>
-        <button
+        <Button
           type="button"
           onClick={onCancel}
-          className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-full transition-colors"
+          variant="ghost"
+          size="icon"
+          aria-label="إغلاق النموذج"
           disabled={isSubmitting}
         >
           <X className="w-5 h-5" />
-        </button>
+        </Button>
       </div>
 
       {/* Form */}
@@ -175,28 +178,22 @@ export default function ContactForm({ contact, onSubmit, onCancel, isSubmitting 
 
         {/* Actions */}
         <div className="flex items-center justify-end gap-3 pt-4 border-t border-gray-200">
-          <button
+          <Button
             type="button"
             onClick={onCancel}
-            className="px-4 py-2.5 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 active:scale-[0.98] transition-all"
+            variant="outline"
             disabled={isSubmitting}
           >
             إلغاء
-          </button>
-          <button
+          </Button>
+          <Button
             type="submit"
             disabled={isSubmitting}
-            className="inline-flex items-center gap-2 px-4 py-2.5 text-sm font-medium text-white bg-[#c2410c] rounded-lg hover:bg-[#a33508] active:scale-[0.98] transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+            isLoading={isSubmitting}
+            loadingText="جاري الحفظ..."
           >
-            {isSubmitting ? (
-              <>
-                <Loader2 className="w-4 h-4 animate-spin" />
-                <span>جاري الحفظ...</span>
-              </>
-            ) : (
-              <span>{contact ? 'حفظ التغييرات' : 'إضافة جهة الاتصال'}</span>
-            )}
-          </button>
+            {contact ? 'حفظ التغييرات' : 'إضافة جهة الاتصال'}
+          </Button>
         </div>
       </form>
     </div>

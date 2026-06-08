@@ -1,5 +1,6 @@
 'use client'
 
+import { Button } from '@/components/ui/Button'
 import type { FlockAnalyticsResponse } from '@/lib/types'
 
 type ScopeLevel = FlockAnalyticsResponse['meta']['level']
@@ -70,18 +71,14 @@ export function FlockAnalyticsFilters({
 
           <div className="inline-flex w-full flex-wrap gap-2 rounded-2xl bg-surface-muted p-1 lg:w-auto">
             {scopeOrder.map((scope) => (
-              <button
+              <Button
                 key={scope.value}
                 type="button"
                 onClick={() => setLevel(scope.value)}
-                className={`rounded-xl px-4 py-2 text-sm font-semibold transition-colors ${
-                  value.level === scope.value
-                    ? 'bg-surface text-action-primary shadow-sm'
-                    : 'text-ink-soft hover:text-ink'
-                }`}
+                variant={value.level === scope.value ? 'outline' : 'ghost'}
               >
                 {scope.label}
-              </button>
+              </Button>
             ))}
           </div>
         </div>
@@ -205,7 +202,7 @@ export function FlockAnalyticsFilters({
               type="button"
               aria-pressed={value.active_flocks_only}
               onClick={() => update({ active_flocks_only: !value.active_flocks_only })}
-              className={`relative h-7 w-12 rounded-full transition-colors ${
+              className={`relative h-7 w-12 rounded-full outline-none transition-colors focus-visible:ring-2 focus-visible:ring-action-primary/30 ${
                 value.active_flocks_only ? 'bg-action-primary' : 'bg-line'
               }`}
             >

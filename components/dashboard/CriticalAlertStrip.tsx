@@ -11,6 +11,7 @@ import {
   type LucideIcon,
 } from 'lucide-react'
 import { useMorningSummary } from '@/lib/hooks/useMorningSummary'
+import { Button } from '@/components/ui/Button'
 import type {
   MorningSummaryFilters,
   MorningSummaryHealthAlert,
@@ -142,14 +143,15 @@ export function CriticalAlertStrip({
             <p className="text-xs">راجع الاتصال بالخادم ثم أعد المحاولة.</p>
           </div>
         </div>
-        <button
+        <Button
           type="button"
           onClick={() => refetch()}
-          className="inline-flex items-center justify-center gap-2 rounded-xl border border-warning/30 bg-surface px-3 py-2 text-xs font-bold text-warning-strong transition-colors duration-150 hover:bg-warning-soft"
+          variant="outline"
+          size="sm"
+          leftIcon={<RefreshCw className={`h-3.5 w-3.5 ${isFetching ? 'animate-spin' : ''}`} />}
         >
-          <RefreshCw className={`h-3.5 w-3.5 ${isFetching ? 'animate-spin' : ''}`} />
           إعادة المحاولة
-        </button>
+        </Button>
       </div>
     )
   }

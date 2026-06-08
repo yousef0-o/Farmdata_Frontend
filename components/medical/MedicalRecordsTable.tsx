@@ -4,6 +4,7 @@ import React, { useState } from 'react'
 import Link from 'next/link'
 import { Calendar, Trash2, Edit, Loader2, Stethoscope, AlertTriangle, Paperclip } from 'lucide-react'
 import { useFlockMedicalRecords, useDeleteFlockMedicalRecord } from '@/lib/hooks/useFlockMedical'
+import { Button } from '@/components/ui/Button'
 
 interface MedicalRecordsTableProps {
   flockId: number
@@ -44,12 +45,9 @@ export default function MedicalRecordsTable({ flockId, isActive }: MedicalRecord
         <Stethoscope className="w-12 h-12 text-gray-300" />
         <p className="text-base font-medium">لا توجد سجلات طبية مسجلة لهذا الفوج بعد.</p>
         {isActive && (
-          <Link
-            href={`/flocks/${flockId}/medical/new`}
-            className="mt-2 text-sm bg-red-50 text-red-700 hover:bg-red-100 px-4 py-2 rounded-xl transition-colors font-semibold border border-red-200"
-          >
-            تسجيل أول فحص طبي الآن
-          </Link>
+          <Button asChild variant="danger" className="mt-2">
+            <Link href={`/flocks/${flockId}/medical/new`}>تسجيل أول فحص طبي الآن</Link>
+          </Button>
         )}
       </div>
     )
@@ -160,21 +158,24 @@ export default function MedicalRecordsTable({ flockId, isActive }: MedicalRecord
                 {isActive && (
                   <td className="py-4 px-4 whitespace-nowrap text-left">
                     <div className="inline-flex items-center gap-2">
-                      <Link
-                        href={`/flocks/${flockId}/medical/${record.id}/edit`}
-                        className="p-1.5 hover:bg-gray-100 rounded-lg text-gray-500 hover:text-gray-900 transition-colors"
-                        title="تعديل السجل"
-                      >
-                        <Edit className="w-4 h-4" />
-                      </Link>
-                      <button
+                      <Button asChild variant="ghost" size="icon" title="تعديل السجل">
+                        <Link
+                          href={`/flocks/${flockId}/medical/${record.id}/edit`}
+                          aria-label="تعديل السجل"
+                        >
+                          <Edit className="w-4 h-4" />
+                        </Link>
+                      </Button>
+                      <Button
                         onClick={() => handleDelete(record.id)}
                         disabled={deleteMutation.isPending}
-                        className="p-1.5 hover:bg-red-50 rounded-lg text-gray-400 hover:text-red-600 transition-colors"
+                        variant="ghost"
+                        size="icon"
+                        aria-label="حذف السجل"
                         title="حذف السجل"
                       >
                         <Trash2 className="w-4 h-4" />
-                      </button>
+                      </Button>
                     </div>
                   </td>
                 )}
@@ -250,19 +251,20 @@ export default function MedicalRecordsTable({ flockId, isActive }: MedicalRecord
 
             {isActive ? (
               <div className="mt-4 flex items-center gap-3">
-                <Link
-                  href={`/flocks/${flockId}/medical/${record.id}/edit`}
-                  className="flex min-h-11 flex-1 items-center justify-center rounded-xl border border-info-soft bg-info-soft px-4 py-2 text-sm font-semibold text-action-primary"
-                >
-                  تعديل
-                </Link>
-                <button
+                <Button asChild variant="outline" className="flex-1">
+                  <Link href={`/flocks/${flockId}/medical/${record.id}/edit`}>
+                    تعديل
+                  </Link>
+                </Button>
+                <Button
                   onClick={() => handleDelete(record.id)}
                   disabled={deleteMutation.isPending}
-                  className="flex min-h-11 min-w-11 items-center justify-center rounded-xl border border-danger-soft bg-danger-soft px-4 py-2 text-danger"
+                  variant="danger"
+                  size="icon"
+                  aria-label="حذف السجل"
                 >
                   <Trash2 className="h-4 w-4" />
-                </button>
+                </Button>
               </div>
             ) : null}
           </article>
@@ -276,23 +278,25 @@ export default function MedicalRecordsTable({ flockId, isActive }: MedicalRecord
             عرض {records.length} من أصل {meta.total} سجل
           </div>
           <div className="flex gap-2">
-            <button
+            <Button
               onClick={() => setPage((p) => Math.max(1, p - 1))}
               disabled={page === 1}
-              className="px-3 py-1.5 border border-gray-300 rounded-lg disabled:opacity-50 hover:bg-gray-50"
+              variant="outline"
+              size="sm"
             >
               السابق
-            </button>
+            </Button>
             <span className="px-3 py-1.5 bg-gray-50 rounded-lg border border-gray-200">
               صفحة {page} من {meta.last_page}
             </span>
-            <button
+            <Button
               onClick={() => setPage((p) => Math.min(meta.last_page, p + 1))}
               disabled={page === meta.last_page}
-              className="px-3 py-1.5 border border-gray-300 rounded-lg disabled:opacity-50 hover:bg-gray-50"
+              variant="outline"
+              size="sm"
             >
               التالي
-            </button>
+            </Button>
           </div>
         </div>
       )}

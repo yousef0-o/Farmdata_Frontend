@@ -6,6 +6,7 @@ import { Package, Edit3, Trash2 } from 'lucide-react'
 import AssetTypeBadge from './AssetTypeBadge'
 import AssetStatusBadge from './AssetStatusBadge'
 import SaudiRiyalIcon from '@/components/icons/SaudiRiyalIcon'
+import { Button } from '@/components/ui/Button'
 import Pagination from '@/components/ui/Pagination'
 import type { Asset } from '@/lib/types'
 
@@ -139,24 +140,26 @@ export default function AssetTable({
                 <td className="py-4 px-4"><AssetStatusBadge status={asset.status} /></td>
                 <td className="py-4 px-6 text-left">
                   <div className="flex items-center justify-end gap-2.5">
-                    <button
+                    <Button
                       type="button"
                       onClick={() => onEdit(asset)}
-                      className="inline-flex min-h-10 min-w-10 items-center justify-center rounded-lg bg-surface-muted text-ink-soft outline-none transition-colors hover:bg-surface-subtle focus-visible:ring-2 focus-visible:ring-action-primary/30"
+                      variant="ghost"
+                      size="icon"
                       aria-label="تعديل الأصل"
                       title="تعديل"
                     >
                       <Edit3 className="h-4 w-4" aria-hidden="true" />
-                    </button>
-                    <button
+                    </Button>
+                    <Button
                       type="button"
                       onClick={() => onDelete(asset.id)}
-                      className="inline-flex min-h-10 min-w-10 items-center justify-center rounded-lg bg-danger-soft text-danger outline-none transition-colors hover:bg-danger-soft focus-visible:ring-2 focus-visible:ring-danger/30"
+                      variant="danger"
+                      size="icon"
                       aria-label="حذف الأصل"
                       title="حذف"
                     >
                       <Trash2 className="h-4 w-4" aria-hidden="true" />
-                    </button>
+                    </Button>
                   </div>
                 </td>
               </tr>
@@ -215,23 +218,25 @@ export default function AssetTable({
             </div>
 
             <div className="mt-4 flex items-center gap-3">
-              <button
+              <Button
                 type="button"
                 onClick={() => onEdit(asset)}
-                className="flex min-h-11 flex-1 items-center justify-center rounded-xl border border-info-soft bg-info-soft px-4 py-2 text-sm font-semibold text-action-primary"
+                variant="outline"
+                className="flex-1"
                 title="تعديل"
               >
                 تعديل
-              </button>
-              <button
+              </Button>
+              <Button
                 type="button"
                 onClick={() => onDelete(asset.id)}
-                className="flex min-h-11 min-w-11 items-center justify-center rounded-xl border border-danger-soft bg-danger-soft px-4 py-2 text-danger"
+                variant="danger"
+                size="icon"
                 aria-label="حذف الأصل"
                 title="حذف"
               >
                 <Trash2 className="h-4 w-4" aria-hidden="true" />
-              </button>
+              </Button>
             </div>
           </article>
         ))}

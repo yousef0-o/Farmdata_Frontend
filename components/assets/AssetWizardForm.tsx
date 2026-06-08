@@ -1,13 +1,14 @@
 'use client'
 
 import React, { useState } from 'react'
-import { X, Loader2, AlertCircle, ChevronLeft, ChevronRight, Check } from 'lucide-react'
+import { X, AlertCircle, ChevronLeft, ChevronRight, Check } from 'lucide-react'
 import AssetPolymorphicFields from './AssetPolymorphicFields'
 import SaudiRiyalIcon from '@/components/icons/SaudiRiyalIcon'
 import { CATEGORY_CONFIG } from './AssetTypeBadge'
 import { STATUS_CONFIG } from './AssetStatusBadge'
 import type { Asset } from '@/lib/types'
 import AppDialog from '@/components/ui/AppDialog'
+import { Button } from '@/components/ui/Button'
 
 interface AssetWizardFormProps {
   editingAsset: Asset | null
@@ -117,29 +118,25 @@ export default function AssetWizardForm({ editingAsset, onSubmit, onClose, isPen
             </h2>
             <p className="text-xs text-gray-400 mt-0.5">الخطوة {step + 1} من 3 — {STEPS[step].label}</p>
           </div>
-          <button onClick={onClose} className="p-2 hover:bg-gray-200 rounded-full transition-colors text-gray-400">
+          <Button variant="ghost" size="icon" aria-label="إغلاق النموذج" onClick={onClose}>
             <X className="w-5 h-5" />
-          </button>
+          </Button>
         </div>
 
         {/* Step indicators */}
         <div className="flex items-center justify-center gap-2 py-3 border-b border-gray-100 bg-white">
           {STEPS.map((s, i) => (
             <React.Fragment key={s.key}>
-              <button
+              <Button
                 type="button"
                 onClick={() => { if (i < step) setStep(i) }}
-                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors ${
-                  i === step
-                    ? 'bg-farm-blue text-white'
-                    : i < step
-                    ? 'bg-emerald-100 text-emerald-700 cursor-pointer dark:bg-emerald-950/40 dark:text-emerald-400'
-                    : 'bg-gray-100 text-gray-500 dark:text-gray-400'
-                }`}
+                variant={i === step ? 'primary' : i < step ? 'secondary' : 'ghost'}
+                size="sm"
+                disabled={i > step}
               >
                 {i < step ? <Check className="w-3.5 h-3.5" /> : <span>{i + 1}</span>}
                 {s.label}
-              </button>
+              </Button>
               {i < STEPS.length - 1 && <div className="w-6 h-px bg-gray-200" />}
             </React.Fragment>
           ))}
@@ -241,28 +238,40 @@ export default function AssetWizardForm({ editingAsset, onSubmit, onClose, isPen
           <div className="flex justify-between items-center pt-6 border-t border-gray-200">
             <div>
               {step > 0 && (
-                <button type="button" onClick={handlePrev}
-                  className="flex items-center gap-1 text-sm text-gray-600 hover:text-gray-900 font-medium">
-                  <ChevronRight className="w-4 h-4" /> السابق
-                </button>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  onClick={handlePrev}
+                  rightIcon={<ChevronRight className="w-4 h-4" />}
+                >
+                  السابق
+                </Button>
               )}
             </div>
             <div className="flex gap-3">
-              <button type="button" onClick={onClose}
-                className="bg-gray-100 hover:bg-gray-200 text-gray-600 px-5 py-2.5 rounded-xl font-semibold text-sm transition-colors">
+              <Button type="button" variant="outline" onClick={onClose}>
                 إلغاء
-              </button>
+              </Button>
               {step < 2 ? (
-                <button key="next-step-btn" type="button" onClick={handleNext}
-                  className="bg-farm-blue hover:bg-farm-blue/90 text-white px-6 py-2.5 rounded-xl font-semibold text-sm transition-colors flex items-center gap-2">
-                  التالي <ChevronLeft className="w-4 h-4" />
-                </button>
+                <Button
+                  key="next-step-btn"
+                  type="button"
+                  onClick={handleNext}
+                  rightIcon={<ChevronLeft className="w-4 h-4" />}
+                >
+                  التالي
+                </Button>
               ) : (
-                <button key="submit-form-btn" type="submit" disabled={isPending}
-                  className="bg-farm-blue hover:bg-farm-blue/90 disabled:opacity-50 text-white px-6 py-2.5 rounded-xl font-semibold text-sm transition-colors flex items-center gap-2">
-                  {isPending && <Loader2 className="w-4 h-4 animate-spin" />}
+                <Button
+                  key="submit-form-btn"
+                  type="submit"
+                  disabled={isPending}
+                  isLoading={isPending}
+                  loadingText={editingAsset ? 'حفظ التعديلات' : 'إضافة الأصل للموازنة'}
+                >
                   {editingAsset ? 'حفظ التعديلات' : 'إضافة الأصل للموازنة'}
-                </button>
+                </Button>
               )}
             </div>
           </div>

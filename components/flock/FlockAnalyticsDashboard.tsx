@@ -21,6 +21,7 @@ import { AnalyticsAxis, AnalyticsAggregation, FlockDetail } from '@/lib/types'
 import { Activity, AlertTriangle, Calendar, Layers, PieChart as PieChartIcon } from 'lucide-react'
 import { FlockAnalyticsCards } from './FlockAnalyticsCards'
 import SaudiRiyalIcon from '@/components/icons/SaudiRiyalIcon'
+import { Button } from '@/components/ui/Button'
 
 interface FlockAnalyticsDashboardProps {
   flock: FlockDetail
@@ -127,39 +128,49 @@ export function FlockAnalyticsDashboard({ flock }: FlockAnalyticsDashboardProps)
         
         <div className="flex flex-wrap gap-4">
           <div className="flex rounded-xl border border-slate-100 bg-slate-50 p-1">
-            <button
+            <Button
+              type="button"
               onClick={() => setAxis('age')}
-              className={`rounded-lg px-4 py-1.5 text-sm font-semibold transition-colors ${axis === 'age' ? 'bg-white text-[#c2410c] shadow-sm' : 'text-slate-600 hover:text-slate-950'}`}
+              variant={axis === 'age' ? 'outline' : 'ghost'}
+              size="sm"
             >
               العمر
-            </button>
-            <button
+            </Button>
+            <Button
+              type="button"
               onClick={() => setAxis('date')}
-              className={`rounded-lg px-4 py-1.5 text-sm font-semibold transition-colors ${axis === 'date' ? 'bg-white text-[#c2410c] shadow-sm' : 'text-slate-600 hover:text-slate-950'}`}
+              variant={axis === 'date' ? 'outline' : 'ghost'}
+              size="sm"
             >
               التاريخ
-            </button>
+            </Button>
           </div>
 
           <div className="flex rounded-xl border border-slate-100 bg-slate-50 p-1">
-            <button
+            <Button
+              type="button"
               onClick={() => setAggregation('daily')}
-              className={`rounded-lg px-4 py-1.5 text-sm font-semibold transition-colors ${aggregation === 'daily' ? 'bg-white text-[#c2410c] shadow-sm' : 'text-slate-600 hover:text-slate-950'}`}
+              variant={aggregation === 'daily' ? 'outline' : 'ghost'}
+              size="sm"
             >
               يومي
-            </button>
-            <button
+            </Button>
+            <Button
+              type="button"
               onClick={() => setAggregation('weekly')}
-              className={`rounded-lg px-4 py-1.5 text-sm font-semibold transition-colors ${aggregation === 'weekly' ? 'bg-white text-[#c2410c] shadow-sm' : 'text-slate-600 hover:text-slate-950'}`}
+              variant={aggregation === 'weekly' ? 'outline' : 'ghost'}
+              size="sm"
             >
               أسبوعي
-            </button>
-            <button
+            </Button>
+            <Button
+              type="button"
               onClick={() => setAggregation('monthly')}
-              className={`rounded-lg px-4 py-1.5 text-sm font-semibold transition-colors ${aggregation === 'monthly' ? 'bg-white text-[#c2410c] shadow-sm' : 'text-slate-600 hover:text-slate-950'}`}
+              variant={aggregation === 'monthly' ? 'outline' : 'ghost'}
+              size="sm"
             >
               شهري
-            </button>
+            </Button>
           </div>
         </div>
       </div>

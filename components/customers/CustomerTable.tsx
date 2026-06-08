@@ -6,6 +6,7 @@ import { Users, Edit3, Trash2, ShieldAlert } from 'lucide-react'
 import CustomerTypeBadge from './CustomerTypeBadge'
 import CustomerStatusBadge from './CustomerStatusBadge'
 import SaudiRiyalIcon from '@/components/icons/SaudiRiyalIcon'
+import { Button } from '@/components/ui/Button'
 import Pagination from '@/components/ui/Pagination'
 import type { Customer } from '@/lib/types'
 
@@ -140,37 +141,36 @@ export default function CustomerTable({
                 <td className="py-4 px-4"><CustomerStatusBadge isSuspended={customer.is_suspended} /></td>
                 <td className="py-4 px-6 text-left">
                   <div className="flex items-center justify-end gap-2.5">
-                    <button
+                    <Button
                       onClick={() => onToggleSuspend(customer.id)}
                       type="button"
-                      className={`inline-flex min-h-10 min-w-10 items-center justify-center rounded-lg outline-none transition-colors focus-visible:ring-2 focus-visible:ring-action-primary/30 ${
-                        customer.is_suspended
-                          ? 'bg-success-soft hover:bg-success-soft text-success'
-                          : 'bg-warning-soft hover:bg-warning-soft text-warning'
-                      }`}
+                      variant={customer.is_suspended ? 'secondary' : 'outline'}
+                      size="icon"
                       aria-label={customer.is_suspended ? 'تنشيط العميل' : 'إيقاف العميل مؤقتا'}
                       title={customer.is_suspended ? 'تنشيط' : 'إيقاف مؤقت'}
                     >
                       <ShieldAlert className="h-4 w-4" aria-hidden="true" />
-                    </button>
-                    <button
+                    </Button>
+                    <Button
                       type="button"
                       onClick={() => onEdit(customer)}
-                      className="inline-flex min-h-10 min-w-10 items-center justify-center rounded-lg bg-surface-muted text-ink-soft outline-none transition-colors hover:bg-surface-subtle focus-visible:ring-2 focus-visible:ring-action-primary/30"
+                      variant="ghost"
+                      size="icon"
                       aria-label="تعديل العميل"
                       title="تعديل"
                     >
                       <Edit3 className="h-4 w-4" aria-hidden="true" />
-                    </button>
-                    <button
+                    </Button>
+                    <Button
                       type="button"
                       onClick={() => onDelete(customer.id)}
-                      className="inline-flex min-h-10 min-w-10 items-center justify-center rounded-lg bg-danger-soft text-danger outline-none transition-colors hover:bg-danger-soft focus-visible:ring-2 focus-visible:ring-danger/30"
+                      variant="danger"
+                      size="icon"
                       aria-label="حذف العميل"
                       title="حذف"
                     >
                       <Trash2 className="h-4 w-4" aria-hidden="true" />
-                    </button>
+                    </Button>
                   </div>
                 </td>
               </tr>
@@ -231,35 +231,34 @@ export default function CustomerTable({
             </div>
 
             <div className="mt-4 flex items-center gap-3">
-              <button
+              <Button
                 type="button"
                 onClick={() => onToggleSuspend(customer.id)}
-                className={`flex min-h-11 flex-1 items-center justify-center rounded-xl px-4 py-2 text-sm font-semibold ${
-                  customer.is_suspended
-                    ? 'bg-success-soft text-success'
-                    : 'bg-warning-soft text-warning'
-                }`}
+                variant={customer.is_suspended ? 'secondary' : 'outline'}
+                className="flex-1"
                 title={customer.is_suspended ? 'تنشيط' : 'إيقاف مؤقت'}
               >
                 {customer.is_suspended ? 'تنشيط' : 'إيقاف'}
-              </button>
-              <button
+              </Button>
+              <Button
                 type="button"
                 onClick={() => onEdit(customer)}
-                className="flex min-h-11 flex-1 items-center justify-center rounded-xl border border-info-soft bg-info-soft px-4 py-2 text-sm font-semibold text-action-primary"
+                variant="outline"
+                className="flex-1"
                 title="تعديل"
               >
                 تعديل
-              </button>
-              <button
+              </Button>
+              <Button
                 type="button"
                 onClick={() => onDelete(customer.id)}
-                className="flex min-h-11 min-w-11 items-center justify-center rounded-xl border border-danger-soft bg-danger-soft px-4 py-2 text-danger"
+                variant="danger"
+                size="icon"
                 aria-label="حذف العميل"
                 title="حذف"
               >
                 <Trash2 className="h-4 w-4" aria-hidden="true" />
-              </button>
+              </Button>
             </div>
           </article>
         ))}

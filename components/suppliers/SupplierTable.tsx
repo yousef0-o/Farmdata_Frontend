@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { Truck, Edit3, Trash2, ShieldAlert } from 'lucide-react'
 import SupplierStatusBadge from './SupplierStatusBadge'
 import SaudiRiyalIcon from '@/components/icons/SaudiRiyalIcon'
+import { Button } from '@/components/ui/Button'
 import Pagination from '@/components/ui/Pagination'
 import type { Supplier } from '@/lib/types'
 
@@ -134,37 +135,36 @@ export default function SupplierTable({
                 <td className="py-4 px-4"><SupplierStatusBadge isSuspended={supplier.is_suspended} /></td>
                 <td className="py-4 px-6 text-left">
                   <div className="flex items-center justify-end gap-2.5">
-                    <button
+                    <Button
                       onClick={() => onToggleSuspend(supplier.id)}
                       type="button"
-                      className={`inline-flex min-h-10 min-w-10 items-center justify-center rounded-lg outline-none transition-colors focus-visible:ring-2 focus-visible:ring-action-primary/30 ${
-                        supplier.is_suspended
-                          ? 'bg-success-soft hover:bg-success-soft text-success'
-                          : 'bg-warning-soft hover:bg-warning-soft text-warning'
-                      }`}
+                      variant={supplier.is_suspended ? 'secondary' : 'outline'}
+                      size="icon"
                       aria-label={supplier.is_suspended ? 'تنشيط المورد' : 'إيقاف المورد مؤقتا'}
                       title={supplier.is_suspended ? 'تنشيط' : 'إيقاف مؤقت'}
                     >
                       <ShieldAlert className="h-4 w-4" aria-hidden="true" />
-                    </button>
-                    <button
+                    </Button>
+                    <Button
                       type="button"
                       onClick={() => onEdit(supplier)}
-                      className="inline-flex min-h-10 min-w-10 items-center justify-center rounded-lg bg-surface-muted text-ink-soft outline-none transition-colors hover:bg-surface-subtle focus-visible:ring-2 focus-visible:ring-action-primary/30"
+                      variant="ghost"
+                      size="icon"
                       aria-label="تعديل المورد"
                       title="تعديل"
                     >
                       <Edit3 className="h-4 w-4" aria-hidden="true" />
-                    </button>
-                    <button
+                    </Button>
+                    <Button
                       type="button"
                       onClick={() => onDelete(supplier.id)}
-                      className="inline-flex min-h-10 min-w-10 items-center justify-center rounded-lg bg-danger-soft text-danger outline-none transition-colors hover:bg-danger-soft focus-visible:ring-2 focus-visible:ring-danger/30"
+                      variant="danger"
+                      size="icon"
                       aria-label="حذف المورد"
                       title="حذف"
                     >
                       <Trash2 className="h-4 w-4" aria-hidden="true" />
-                    </button>
+                    </Button>
                   </div>
                 </td>
               </tr>
@@ -216,35 +216,34 @@ export default function SupplierTable({
             </div>
 
             <div className="mt-4 flex items-center gap-3">
-              <button
+              <Button
                 type="button"
                 onClick={() => onToggleSuspend(supplier.id)}
-                className={`flex min-h-11 flex-1 items-center justify-center rounded-xl px-4 py-2 text-sm font-semibold ${
-                  supplier.is_suspended
-                    ? 'bg-success-soft text-success'
-                    : 'bg-warning-soft text-warning'
-                }`}
+                variant={supplier.is_suspended ? 'secondary' : 'outline'}
+                className="flex-1"
                 title={supplier.is_suspended ? 'تنشيط' : 'إيقاف مؤقت'}
               >
                 {supplier.is_suspended ? 'تنشيط' : 'إيقاف'}
-              </button>
-              <button
+              </Button>
+              <Button
                 type="button"
                 onClick={() => onEdit(supplier)}
-                className="flex min-h-11 flex-1 items-center justify-center rounded-xl border border-info-soft bg-info-soft px-4 py-2 text-sm font-semibold text-action-primary"
+                variant="outline"
+                className="flex-1"
                 title="تعديل"
               >
                 تعديل
-              </button>
-              <button
+              </Button>
+              <Button
                 type="button"
                 onClick={() => onDelete(supplier.id)}
-                className="flex min-h-11 min-w-11 items-center justify-center rounded-xl border border-danger-soft bg-danger-soft px-4 py-2 text-danger"
+                variant="danger"
+                size="icon"
                 aria-label="حذف المورد"
                 title="حذف"
               >
                 <Trash2 className="h-4 w-4" aria-hidden="true" />
-              </button>
+              </Button>
             </div>
           </article>
         ))}

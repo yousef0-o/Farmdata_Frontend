@@ -17,6 +17,7 @@ import {
 import { useAccountingAccounts, useRecordSheets } from '@/lib/hooks/useArchive'
 import { organizationApi } from '@/lib/api/organization'
 import AppDialog from '@/components/ui/AppDialog'
+import { Button } from '@/components/ui/Button'
 import type { AccountingAccount, RecordSheet } from '@/lib/types'
 
 interface EntityLedgerTreeProps {
@@ -361,17 +362,20 @@ export default function EntityLedgerTree({
               style={{ paddingRight: `${level * 24}px` }}
             >
               {hasChildren ? (
-                <button
+                <Button
                   type="button"
                   onClick={() => toggleCollapse(account.id)}
-                  className="p-1 rounded hover:bg-slate-100 text-slate-500 transition-colors"
+                  variant="ghost"
+                  size="icon"
+                  className="h-7 min-h-7 w-7 rounded-md"
+                  aria-label={isCollapsed ? 'توسيع الحساب' : 'طي الحساب'}
                 >
                   {isCollapsed ? (
                     <ChevronRight className="w-3.5 h-3.5" />
                   ) : (
                     <ChevronDown className="w-3.5 h-3.5" />
                   )}
-                </button>
+                </Button>
               ) : (
                 <span className="w-5.5" />
               )}
@@ -382,14 +386,16 @@ export default function EntityLedgerTree({
               {account.is_linked && (
                 <span className="w-1.5 h-1.5 bg-emerald-500 rounded-full" title="حساب مباشر" />
               )}
-              <button
+              <Button
                 type="button"
                 onClick={() => setDetailsAccount(account)}
-                className="mr-auto flex items-center gap-1 text-[10px] bg-sky-50 text-sky-700 hover:bg-sky-100 hover:text-sky-800 px-2 py-1 rounded-md transition-colors"
+                variant="outline"
+                size="sm"
+                className="mr-auto h-7 min-h-7 rounded-md px-2 py-1 text-[10px]"
+                leftIcon={<Eye className="w-3 h-3" />}
               >
-                <Eye className="w-3 h-3" />
                 <span>تفاصيل</span>
-              </button>
+              </Button>
             </div>
           </td>
           <td className="p-3 text-left font-mono text-xs text-slate-700">
@@ -644,13 +650,13 @@ export default function EntityLedgerTree({
             )}
 
             <div className="flex justify-end pt-2">
-              <button
+              <Button
                 type="button"
                 onClick={() => setDetailsAccount(null)}
-                className="px-6 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-xl text-xs transition-colors"
+                variant="outline"
               >
                 إغلاق
-              </button>
+              </Button>
             </div>
           </div>
         </div>

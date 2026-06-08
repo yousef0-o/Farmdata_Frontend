@@ -2,13 +2,14 @@
 
 import { useMemo } from 'react'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { AlertCircle, CirclePlus, Loader2, Trash2, Warehouse } from 'lucide-react'
+import { AlertCircle, CirclePlus, Trash2, Warehouse } from 'lucide-react'
 import type { ReactNode } from 'react'
 import { useFieldArray, useForm, type Resolver } from 'react-hook-form'
 import { z } from 'zod'
 import { useCreateBreedingEntry } from '@/lib/hooks/useDailyOps'
 import { useFlock } from '@/lib/hooks/useFlock'
 import { useItems, useWarehouses } from '@/lib/hooks/useInventory'
+import { Button } from '@/components/ui/Button'
 import type { FlockDetail, Item, PoultryFeedBatch, Warehouse as WarehouseType } from '@/lib/types'
 
 interface BreedingEntryFormProps {
@@ -43,9 +44,6 @@ type BreedingEntryValues = z.infer<typeof breedingEntrySchema>
 
 const fieldBase =
   'h-11 w-full rounded-xl border border-slate-100 bg-slate-50 px-3 text-sm font-semibold text-slate-900 outline-none transition-colors focus:border-[#c2410c] focus:ring-2 focus:ring-[#c2410c]/20 disabled:opacity-60'
-
-const buttonPress =
-  'transition-transform duration-150 active:scale-[0.98] disabled:pointer-events-none disabled:opacity-60'
 
 function unwrapData<T>(value: unknown): T[] {
   if (Array.isArray(value)) return value as T[]
@@ -195,14 +193,13 @@ export default function BreedingEntryForm({ flockId, onSuccess, onCancel }: Bree
             <h3 className="text-base font-bold text-slate-950">دفعات العلف اليومية</h3>
             <p className="text-xs font-semibold text-slate-500">سجل أكثر من دفعة علف بنفس اليوم مع الوقت والكمية والتكلفة.</p>
           </div>
-          <button
+          <Button
             type="button"
             onClick={() => feedArray.append({ log_time: '', quantity_ton: 0, price_per_ton: 0, warehouse_id: undefined, item_id: 0 })}
-            className={`inline-flex min-h-10 items-center justify-center gap-2 rounded-xl bg-[#1c3b2b] px-4 py-2 text-sm font-bold text-white hover:bg-[#244936] ${buttonPress}`}
+            leftIcon={<CirclePlus className="h-4 w-4" />}
           >
-            <CirclePlus className="h-4 w-4" />
             إضافة دفعة
-          </button>
+          </Button>
         </div>
 
         <div className="rounded-xl border border-emerald-100 bg-emerald-50 px-4 py-3">
@@ -240,15 +237,17 @@ export default function BreedingEntryForm({ flockId, onSuccess, onCancel }: Bree
                   ))}
                 </select>
               </FormField>
-              <button
+              <Button
                 type="button"
                 onClick={() => feedArray.fields.length > 1 && feedArray.remove(index)}
                 disabled={isBusy || feedArray.fields.length === 1}
-                className={`mt-6 flex h-11 w-11 items-center justify-center rounded-xl border border-red-100 bg-red-50 text-red-700 hover:bg-red-100 ${buttonPress}`}
+                variant="danger"
+                size="icon"
+                className="mt-6"
                 aria-label="حذف دفعة العلف"
               >
                 <Trash2 className="h-4 w-4" />
-              </button>
+              </Button>
             </div>
           ))}
         </div>
@@ -271,22 +270,22 @@ export default function BreedingEntryForm({ flockId, onSuccess, onCancel }: Bree
       </FormField>
 
       <div className="flex flex-col-reverse gap-3 border-t border-slate-100 pt-4 sm:flex-row sm:justify-end">
-        <button
+        <Button
           type="button"
           onClick={onCancel}
           disabled={isBusy}
-          className={`min-h-11 rounded-xl border border-slate-100 bg-slate-50 px-5 py-2 text-sm font-bold text-slate-700 hover:bg-slate-100 ${buttonPress}`}
+          variant="outline"
         >
           إلغاء
-        </button>
-        <button
+        </Button>
+        <Button
           type="submit"
           disabled={isBusy}
-          className={`inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-[#c2410c] px-6 py-2 text-sm font-bold text-white hover:bg-[#9a3412] ${buttonPress}`}
+          isLoading={createEntry.isPending}
+          loadingText="حفظ تسجيل التربية"
         >
-          {createEntry.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
           حفظ تسجيل التربية
-        </button>
+        </Button>
       </div>
     </form>
   )

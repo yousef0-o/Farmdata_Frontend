@@ -7,6 +7,7 @@ import { useCloseFlock } from '@/lib/hooks/useFlock'
 import { useAccountingAccounts } from '@/lib/hooks/useArchive'
 import type { AccountingAccount } from '@/lib/types'
 import AppDialog from '@/components/ui/AppDialog'
+import { Button } from '@/components/ui/Button'
 
 interface CloseFlockDialogProps {
   flockId: number
@@ -214,12 +215,14 @@ export default function CloseFlockDialog({
         {/* Header */}
         <div className="flex items-center justify-between mb-6">
           <h2 className="text-xl font-bold text-gray-900">إغلاق الفوج</h2>
-          <button
+          <Button
             onClick={() => onOpenChange(false)}
-            className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+            variant="ghost"
+            size="icon"
+            aria-label="إغلاق النافذة"
           >
             <X className="w-5 h-5 text-gray-500" />
-          </button>
+          </Button>
         </div>
 
         {closeFlock.error && (
@@ -272,14 +275,16 @@ export default function CloseFlockDialog({
           <div>
             <div className="flex items-center justify-between mb-2">
               <label className="text-sm font-semibold text-gray-700">وجهات التوزيع</label>
-              <button
+              <Button
                 type="button"
                 onClick={addAllocation}
-                className="flex items-center gap-1 text-sm text-farm-blue hover:text-farm-blue/80 font-medium"
+                variant="ghost"
+                size="sm"
+                className="text-action-primary"
               >
                 <Plus className="w-4 h-4" />
                 إضافة وجهة
-              </button>
+              </Button>
             </div>
 
             {errors['allocations'] && (
@@ -319,13 +324,15 @@ export default function CloseFlockDialog({
                       updateAllocation(idx, 'value', e.target.value)
                     }
                   />
-                  <button
+                  <Button
                     type="button"
                     onClick={() => removeAllocation(idx)}
-                    className="p-2 text-gray-400 hover:text-red-500 transition-colors"
+                    variant="ghost"
+                    size="icon"
+                    aria-label="حذف وجهة التوزيع"
                   >
                     <Trash2 className="w-4 h-4" />
-                  </button>
+                  </Button>
                 </div>
               ))}
             </div>
@@ -357,14 +364,16 @@ export default function CloseFlockDialog({
           <div className="space-y-4">
             <div className="flex items-center justify-between gap-3">
               <label className="text-sm font-semibold text-gray-700">قيود مالية يدوية</label>
-              <button
+              <Button
                 type="button"
                 onClick={addFinancialRow}
-                className="flex items-center gap-1 text-sm font-medium text-farm-blue hover:text-farm-blue/80"
+                variant="ghost"
+                size="sm"
+                className="text-action-primary"
               >
                 <Plus className="h-4 w-4" />
                 إضافة قيد
-              </button>
+              </Button>
             </div>
             {financialRows.length > 0 ? (
               <div className="space-y-3">
@@ -418,13 +427,15 @@ export default function CloseFlockDialog({
                       value={row.description}
                       onChange={(e) => updateFinancialRow(idx, 'description', e.target.value)}
                     />
-                    <button
+                    <Button
                       type="button"
                       onClick={() => removeFinancialRow(idx)}
-                      className="flex min-h-10 items-center justify-center rounded-lg text-gray-400 hover:bg-red-50 hover:text-red-500"
+                      variant="ghost"
+                      size="icon"
+                      aria-label="حذف القيد المالي"
                     >
                       <Trash2 className="h-4 w-4" />
-                    </button>
+                    </Button>
                     {(errors[`financial_rows.${idx}.account_id`] || errors[`financial_rows.${idx}.amount`]) && (
                       <p className="md:col-span-6 text-xs text-red-600">
                         {errors[`financial_rows.${idx}.account_id`] || errors[`financial_rows.${idx}.amount`]}
@@ -441,14 +452,16 @@ export default function CloseFlockDialog({
           <div className="space-y-4">
             <div className="flex items-center justify-between gap-3">
               <label className="text-sm font-semibold text-gray-700">قيود أصول القطيع</label>
-              <button
+              <Button
                 type="button"
                 onClick={addAssetRow}
-                className="flex items-center gap-1 text-sm font-medium text-farm-blue hover:text-farm-blue/80"
+                variant="ghost"
+                size="sm"
+                className="text-action-primary"
               >
                 <Plus className="h-4 w-4" />
                 إضافة أصل
-              </button>
+              </Button>
             </div>
             {assetRows.length > 0 ? (
               <div className="space-y-3">
@@ -482,13 +495,15 @@ export default function CloseFlockDialog({
                       value={row.credit_amount}
                       onChange={(e) => updateAssetRow(idx, 'credit_amount', e.target.value)}
                     />
-                    <button
+                    <Button
                       type="button"
                       onClick={() => removeAssetRow(idx)}
-                      className="flex min-h-10 items-center justify-center rounded-lg text-gray-400 hover:bg-red-50 hover:text-red-500"
+                      variant="ghost"
+                      size="icon"
+                      aria-label="حذف قيد أصل القطيع"
                     >
                       <Trash2 className="h-4 w-4" />
-                    </button>
+                    </Button>
                     <input
                       type="text"
                       placeholder="وصف أصل القطيع"
@@ -511,23 +526,20 @@ export default function CloseFlockDialog({
 
           {/* Submit */}
           <div className="flex gap-3 justify-end pt-4 border-t border-gray-100">
-            <button
+            <Button
               type="button"
               onClick={() => onOpenChange(false)}
-              className="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-600 rounded-xl font-medium transition-colors"
+              variant="outline"
             >
               إلغاء
-            </button>
-            <button
+            </Button>
+            <Button
               type="submit"
               disabled={closeFlock.isPending || exceedsCount}
-              className="px-6 py-2 bg-farm-blue hover:bg-farm-blue/90 text-white rounded-xl font-medium transition-colors disabled:opacity-50 flex items-center gap-2"
+              isLoading={closeFlock.isPending}
             >
-              {closeFlock.isPending && (
-                <Loader2 className="w-4 h-4 animate-spin" />
-              )}
               تأكيد الإغلاق
-            </button>
+            </Button>
           </div>
         </form>
       </div>

@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { Plus, Trash2, Stethoscope, ArrowRight, Save, Loader2, Paperclip, X } from 'lucide-react'
 import { useWarehouses } from '@/lib/hooks/useInventory'
 import { apiRequest } from '@/lib/api/client'
+import { Button } from '@/components/ui/Button'
 import type { FlockMedicalRecord } from '@/lib/types'
 
 interface MedicalRecordFormProps {
@@ -306,7 +307,7 @@ export default function MedicalRecordForm({ flockId, initialData, onSubmit, isPe
                     <a href={attachment.url} target="_blank" rel="noreferrer" className="font-semibold hover:text-red-700">
                       {attachment.name}
                     </a>
-                    <button
+                    <Button
                       type="button"
                       onClick={() =>
                         setRemovedAttachments((current) =>
@@ -315,11 +316,14 @@ export default function MedicalRecordForm({ flockId, initialData, onSubmit, isPe
                             : [...current, attachment.path]
                         )
                       }
-                      className="rounded p-0.5 text-gray-400 hover:bg-red-100 hover:text-red-700"
+                      variant={removed ? 'danger' : 'ghost'}
+                      size="icon"
+                      className="h-7 min-h-7 w-7 rounded-md"
+                      aria-label={removed ? 'إلغاء حذف المرفق' : 'حذف المرفق عند الحفظ'}
                       title={removed ? 'إلغاء الحذف' : 'حذف المرفق عند الحفظ'}
                     >
                       <X className="h-3.5 w-3.5" />
-                    </button>
+                    </Button>
                   </span>
                 )
               })}
@@ -344,15 +348,15 @@ export default function MedicalRecordForm({ flockId, initialData, onSubmit, isPe
           <h3 className="text-lg font-bold text-gray-900 flex items-center gap-2">
             صرف الأدوية واللقاحات
           </h3>
-          <button
+          <Button
             type="button"
             onClick={addMedicationRow}
             disabled={isLoading}
-            className="flex items-center gap-1.5 bg-red-50 text-red-700 hover:bg-red-100 px-4 py-2 rounded-xl transition-colors font-semibold border border-red-100 text-sm disabled:opacity-50"
+            variant="outline"
+            leftIcon={<Plus className="w-4 h-4" />}
           >
-            <Plus className="w-4 h-4" />
             إضافة دواء / لقاح
-          </button>
+          </Button>
         </div>
 
         {isLoading ? (
@@ -383,27 +387,27 @@ export default function MedicalRecordForm({ flockId, initialData, onSubmit, isPe
 
       {/* Submit / Cancel Buttons */}
       <div className="flex items-center gap-3">
-        <button
+        <Button
           type="submit"
           disabled={isPending || isLoading}
-          className="flex items-center gap-2 bg-red-600 hover:bg-red-700 text-white px-6 py-3 rounded-xl transition-colors font-semibold shadow-md disabled:opacity-50"
+          variant="danger"
+          size="lg"
+          isLoading={isPending}
+          loadingText="حفظ السجل وصرف العلاج"
+          leftIcon={<Save className="w-5 h-5" />}
         >
-          {isPending ? (
-            <Loader2 className="w-5 h-5 animate-spin" />
-          ) : (
-            <Save className="w-5 h-5" />
-          )}
           حفظ السجل وصرف العلاج
-        </button>
+        </Button>
 
-        <button
+        <Button
           type="button"
           onClick={() => router.push(`/flocks/${flockId}`)}
-          className="flex items-center gap-2 border border-gray-300 hover:bg-gray-50 text-gray-700 px-6 py-3 rounded-xl transition-colors font-semibold"
+          variant="outline"
+          size="lg"
+          leftIcon={<ArrowRight className="w-5 h-5" />}
         >
-          <ArrowRight className="w-5 h-5" />
           إلغاء
-        </button>
+        </Button>
       </div>
     </form>
   )
@@ -460,14 +464,17 @@ function MedicationRow({ index, med, warehouses, balances, onUpdate, onRemove }:
 
   return (
     <div className="p-4 rounded-xl border border-gray-100 bg-gray-50/50 space-y-3 relative">
-      <button
+      <Button
         type="button"
         onClick={() => onRemove(index)}
-        className="absolute top-4 left-4 p-1.5 text-gray-400 hover:text-red-600 rounded-lg hover:bg-red-50 transition-colors"
+        variant="danger"
+        size="icon"
+        className="absolute left-4 top-4 h-8 min-h-8 w-8 rounded-lg"
+        aria-label="حذف هذا الدواء"
         title="حذف هذا الدواء"
       >
         <Trash2 className="w-4 h-4" />
-      </button>
+      </Button>
 
       <div className="grid grid-cols-1 md:grid-cols-4 gap-3 pr-2">
         {/* Source type selector */}

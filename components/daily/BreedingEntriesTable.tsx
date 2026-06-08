@@ -4,6 +4,7 @@ import React, { useState } from 'react'
 import Link from 'next/link'
 import { Loader2, Trash2, Edit3 } from 'lucide-react'
 import { useBreedingEntries, useDeleteBreedingEntry } from '@/lib/hooks/useDailyOps'
+import { Button } from '@/components/ui/Button'
 import Pagination from '@/components/ui/Pagination'
 
 interface BreedingEntriesTableProps {
@@ -77,37 +78,44 @@ export default function BreedingEntriesTable({ flockId, isActive }: BreedingEntr
                 {isActive && (
                   <td className="py-2 px-3">
                     <div className="flex items-center justify-end gap-2">
-                      <Link
-                        href={`/flocks/${flockId}/daily/${entry.id}/breeding-edit`}
-                        className="p-1 text-gray-400 hover:text-farm-blue transition-colors"
-                        title="تعديل"
-                      >
-                        <Edit3 className="w-4 h-4" />
-                      </Link>
+                      <Button asChild variant="ghost" size="icon" title="تعديل">
+                        <Link href={`/flocks/${flockId}/daily/${entry.id}/breeding-edit`}>
+                          <Edit3 className="w-4 h-4" />
+                        </Link>
+                      </Button>
                       {deleteConfirm === entry.id ? (
                         <div className="flex items-center gap-1">
-                          <button
+                          <Button
+                            type="button"
+                            variant="danger"
+                            size="sm"
                             onClick={() => handleDelete(entry.id)}
                             disabled={deleteEntry.isPending}
-                            className="text-xs text-red-600 hover:text-red-800 font-bold"
+                            isLoading={deleteEntry.isPending}
+                            loadingText="تأكيد"
                           >
-                            {deleteEntry.isPending ? <Loader2 className="w-3 h-3 animate-spin" /> : 'تأكيد'}
-                          </button>
-                          <button
+                            تأكيد
+                          </Button>
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="sm"
                             onClick={() => setDeleteConfirm(null)}
-                            className="text-xs text-gray-500 hover:text-gray-700"
                           >
                             إلغاء
-                          </button>
+                          </Button>
                         </div>
                       ) : (
-                        <button
+                        <Button
+                          type="button"
+                          variant="danger"
+                          size="icon"
+                          aria-label="حذف السجل"
                           onClick={() => setDeleteConfirm(entry.id)}
-                          className="p-1 text-gray-400 hover:text-red-500 transition-colors"
                           title="حذف"
                         >
                           <Trash2 className="w-4 h-4" />
-                        </button>
+                        </Button>
                       )}
                     </div>
                   </td>
@@ -157,26 +165,45 @@ export default function BreedingEntriesTable({ flockId, isActive }: BreedingEntr
 
             {isActive ? (
               <div className="mt-4 flex items-center gap-3">
-                <Link
-                  href={`/flocks/${flockId}/daily/${entry.id}/breeding-edit`}
-                  className="flex min-h-11 flex-1 items-center justify-center rounded-xl border border-info-soft bg-info-soft px-4 py-2 text-sm font-semibold text-action-primary"
-                >
-                  تعديل
-                </Link>
+                <Button asChild variant="outline" className="flex-1">
+                  <Link href={`/flocks/${flockId}/daily/${entry.id}/breeding-edit`}>
+                    تعديل
+                  </Link>
+                </Button>
                 {deleteConfirm === entry.id ? (
-                  <div className="flex flex-1 items-center justify-between rounded-xl border border-danger-soft bg-danger-soft px-4 py-2 text-xs font-bold text-danger">
-                    <button onClick={() => handleDelete(entry.id)} disabled={deleteEntry.isPending}>
-                      {deleteEntry.isPending ? <Loader2 className="h-3 w-3 animate-spin" /> : 'تأكيد'}
-                    </button>
-                    <button onClick={() => setDeleteConfirm(null)}>إلغاء</button>
+                  <div className="flex flex-1 items-center gap-2">
+                    <Button
+                      type="button"
+                      variant="danger"
+                      size="sm"
+                      className="flex-1"
+                      onClick={() => handleDelete(entry.id)}
+                      disabled={deleteEntry.isPending}
+                      isLoading={deleteEntry.isPending}
+                      loadingText="تأكيد"
+                    >
+                      تأكيد
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      className="flex-1"
+                      onClick={() => setDeleteConfirm(null)}
+                    >
+                      إلغاء
+                    </Button>
                   </div>
                 ) : (
-                  <button
+                  <Button
+                    type="button"
+                    variant="danger"
+                    size="icon"
+                    aria-label="حذف السجل"
                     onClick={() => setDeleteConfirm(entry.id)}
-                    className="flex min-h-11 min-w-11 items-center justify-center rounded-xl border border-danger-soft bg-danger-soft px-4 py-2 text-danger"
                   >
                     <Trash2 className="h-4 w-4" />
-                  </button>
+                  </Button>
                 )}
               </div>
             ) : null}

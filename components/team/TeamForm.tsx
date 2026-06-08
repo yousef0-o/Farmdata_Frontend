@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react'
 import type { User } from '@/lib/types'
 import { useRolesAndPermissions } from '@/lib/hooks/useTeam'
 import { ShieldCheck, CheckSquare, Square, X, Loader2 } from 'lucide-react'
+import { Button } from '@/components/ui/Button'
 
 interface TeamFormProps {
   initialData?: User | null
@@ -335,20 +336,22 @@ export default function TeamForm({
                 </span>
 
                 <div className="flex items-center gap-2">
-                  <button
+                  <Button
                     type="button"
                     onClick={() => handleSectionToggle(group, true)}
-                    className="px-3 py-1 bg-farm-blue/5 text-farm-blue text-xs rounded-lg hover:bg-farm-blue/10 transition-colors font-semibold"
+                    variant="ghost"
+                    size="sm"
                   >
                     تحديد الكل
-                  </button>
-                  <button
+                  </Button>
+                  <Button
                     type="button"
                     onClick={() => handleSectionToggle(group, false)}
-                    className="px-3 py-1 bg-red-500/5 text-red-500 text-xs rounded-lg hover:bg-red-500/10 transition-colors font-semibold"
+                    variant="danger"
+                    size="sm"
                   >
                     إلغاء التحديد
-                  </button>
+                  </Button>
                 </div>
               </div>
 
@@ -418,29 +421,23 @@ export default function TeamForm({
 
       {/* Action Buttons */}
       <div className="flex justify-end gap-3 pt-4 border-t border-gray-100 dark:border-gray-800">
-        <button
+        <Button
           type="button"
           onClick={onCancel}
           disabled={isSubmitting}
-          className="px-5 py-3 rounded-xl border border-gray-200 dark:border-gray-800 text-sm font-semibold text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-900 transition-colors"
+          variant="outline"
         >
           إلغاء
-        </button>
+        </Button>
 
-        <button
+        <Button
           type="submit"
           disabled={isSubmitting}
-          className="px-6 py-3 rounded-xl bg-farm-blue hover:bg-farm-blue-dark text-white text-sm font-semibold shadow-sm transition-colors flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+          isLoading={isSubmitting}
+          loadingText="جاري الحفظ..."
         >
-          {isSubmitting ? (
-            <>
-              <Loader2 className="w-4 h-4 animate-spin" />
-              جاري الحفظ...
-            </>
-          ) : (
-            'حفظ عضو فريق العمل'
-          )}
-        </button>
+          حفظ عضو فريق العمل
+        </Button>
       </div>
     </form>
   )

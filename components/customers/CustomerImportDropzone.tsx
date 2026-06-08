@@ -1,8 +1,9 @@
 'use client'
 
 import React, { useState } from 'react'
-import { Upload, FileText, Loader2, X } from 'lucide-react'
+import { Upload, FileText, X } from 'lucide-react'
 import AppDialog from '@/components/ui/AppDialog'
+import { Button } from '@/components/ui/Button'
 
 interface CustomerImportDropzoneProps {
   onImport: (file: File) => void
@@ -22,12 +23,15 @@ export default function CustomerImportDropzone({ onImport, isPending, onClose }:
   return (
     <AppDialog open onClose={onClose} panelClassName="max-w-md animate-in fade-in duration-200">
       <div className="relative w-full rounded-2xl bg-surface p-6 shadow-xl">
-        <button
+        <Button
           onClick={onClose}
-          className="absolute top-4 left-4 p-1.5 hover:bg-gray-100 rounded-full transition-colors text-gray-400"
+          variant="ghost"
+          size="icon"
+          className="absolute left-4 top-4"
+          aria-label="إغلاق نافذة الاستيراد"
         >
           <X className="w-5 h-5" />
-        </button>
+        </Button>
 
         <div className="flex flex-col items-center text-center mt-2 mb-6">
           <div className="p-3.5 bg-quick-blue-bg text-quick-blue-text rounded-2xl mb-3">
@@ -64,21 +68,23 @@ export default function CustomerImportDropzone({ onImport, isPending, onClose }:
           </div>
 
           <div className="flex gap-2.5 pt-2">
-            <button
+            <Button
               type="submit"
               disabled={!file || isPending}
-              className="flex-1 bg-farm-blue hover:bg-farm-blue/90 disabled:opacity-50 text-white py-2.5 rounded-xl font-semibold text-sm transition-colors flex items-center justify-center gap-2"
+              isLoading={isPending}
+              className="flex-1 font-semibold"
             >
-              {isPending && <Loader2 className="w-4 h-4 animate-spin" />}
               <span>بدء الاستيراد</span>
-            </button>
-            <button
+            </Button>
+            <Button
               type="button"
               onClick={() => { onClose(); setFile(null) }}
-              className="bg-gray-100 hover:bg-gray-200 text-gray-600 px-4 py-2.5 rounded-xl font-semibold text-xs transition-colors"
+              variant="outline"
+              size="sm"
+              className="font-semibold"
             >
               إلغاء
-            </button>
+            </Button>
           </div>
         </form>
       </div>
