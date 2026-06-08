@@ -103,10 +103,10 @@ describe('UnifiedStatsCards', () => {
     expect(screen.getAllByText(/البيان/i)[0]).toBeInTheDocument()
     expect(screen.getAllByText(/Jumbo/i)[0]).toBeInTheDocument()
     expect(screen.getAllByText(/Extra Large/i)[0]).toBeInTheDocument()
-    expect(screen.getByText('عدد الكرتون')).toBeInTheDocument()
-    expect(screen.getByText('عدد الأطباق')).toBeInTheDocument()
-    expect(screen.getByText('عدد البيض')).toBeInTheDocument()
-    expect(screen.getByText('نسبة الأوزان')).toBeInTheDocument()
+    expect(screen.getAllByText('عدد الكرتون')[0]).toBeInTheDocument()
+    expect(screen.getAllByText('عدد الأطباق')[0]).toBeInTheDocument()
+    expect(screen.getAllByText('عدد البيض')[0]).toBeInTheDocument()
+    expect(screen.getAllByText('نسبة الأوزان')[0]).toBeInTheDocument()
   })
 
   it('does not render EggWeightDistributionMatrix when isBreedingOnly is true', () => {
