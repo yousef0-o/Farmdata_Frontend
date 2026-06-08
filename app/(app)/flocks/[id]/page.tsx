@@ -4,8 +4,8 @@ import React, { useState } from 'react'
 import Link from 'next/link'
 import { useParams } from 'next/navigation'
 import { useQuery } from '@tanstack/react-query'
-import { Loader2, BarChart3, TrendingUp, TrendingDown, Stethoscope, DollarSign, Plus, Trash2, Calendar, FileText, X, Wheat } from 'lucide-react'
-import { useFlock, useFlockSummary } from '@/lib/hooks/useFlock'
+import { Loader2, BarChart3, TrendingUp, TrendingDown, Stethoscope, Plus, Trash2, Calendar, FileText, X, Wheat, Paperclip, Upload } from 'lucide-react'
+import { useDeleteFlockAttachment, useFlock, useFlockAttachments, useFlockSummary, useUploadFlockAttachments } from '@/lib/hooks/useFlock'
 import { useFlockExpenses, useCreateFlockExpense, useDeleteFlockExpense } from '@/lib/hooks/useExpenses'
 import { dailyOpsApi } from '@/lib/api/organization'
 import { FlockStatusBadge } from '@/components/flock/FlockStatusBadge'
@@ -18,9 +18,11 @@ import SaudiRiyalIcon from '@/components/icons/SaudiRiyalIcon'
 import AppDialog from '@/components/ui/AppDialog'
 import { FlockStandardsGuide } from '@/components/flock/FlockStandardsGuide'
 import { FlockAnalyticsDashboard } from '@/components/flock/FlockAnalyticsDashboard'
-import type { BreedingEntry, PaginatedResponse, PoultryFeedBatch, ProductionEntry } from '@/lib/types'
+import type { BreedingEntry, FlockAttachment, PaginatedResponse, PoultryFeedBatch, ProductionEntry } from '@/lib/types'
 
 type DailyEntry = BreedingEntry | ProductionEntry
+
+type ApiError = Error
 
 const parseNumeric = (value: unknown) => {
   const parsed = Number(value)
@@ -50,7 +52,7 @@ export default function FlockDetailPage() {
   const { id } = useParams()
   const flockId = Number(id)
   const [showCloseDialog, setShowCloseDialog] = useState(false)
-  const [activeTab, setActiveTab] = useState<'daily' | 'analytics' | 'medical' | 'expenses'>('daily')
+  const [activeTab, setActiveTab] = useState<'daily' | 'analytics' | 'medical' | 'expenses' | 'attachments'>('daily')
   const [showAddModal, setShowAddModal] = useState(false)
 
   // Form states
@@ -109,8 +111,9 @@ export default function FlockDetailPage() {
       setAmount('')
       setDescription('')
       setExpenseDate(new Date().toISOString().split('T')[0])
-    } catch (err: any) {
-      setErrorMsg(err.message || 'فشل في حفظ المصروف')
+    } catch (err) {
+      const error = err as ApiError
+      setErrorMsg(error.message || 'فشل في حفظ المصروف')
     }
   }
 
@@ -299,6 +302,16 @@ export default function FlockDetailPage() {
           >
             المصروفات النثرية والتشغيلية
           </button>
+          <button
+            onClick={() => setActiveTab('attachments')}
+            className={`pb-3 text-base font-bold transition-colors relative ${
+              activeTab === 'attachments'
+                ? 'text-gray-900 border-b-2 border-gray-700'
+                : 'text-gray-400 hover:text-gray-600'
+            }`}
+          >
+            مرفقات الفوج
+          </button>
         </div>
 
         {activeTab === 'daily' && (
@@ -407,6 +420,10 @@ export default function FlockDetailPage() {
               </div>
             )}
           </div>
+        )}
+
+        {activeTab === 'attachments' && (
+          <FlockAttachmentsPanel flockId={flockId} isActive={flock.status === 'active'} />
         )}
       </div>
 
@@ -691,6 +708,131 @@ function FlockFeedBatchesTable({
       </div>
     </section>
   )
+}
+
+function FlockAttachmentsPanel({ flockId, isActive }: { flockId: number; isActive: boolean }) {
+  const attachmentsQuery = useFlockAttachments(flockId)
+  const uploadMutation = useUploadFlockAttachments(flockId)
+  const deleteMutation = useDeleteFlockAttachment(flockId)
+  const [description, setDescription] = useState('')
+  const [selectedFiles, setSelectedFiles] = useState<File[]>([])
+
+  const attachments = attachmentsQuery.data?.data ?? []
+
+  const handleUpload = async (event: React.FormEvent) => {
+    event.preventDefault()
+    if (selectedFiles.length === 0) return
+
+    const formData = new FormData()
+    selectedFiles.forEach((file) => formData.append('files[]', file))
+    if (description.trim()) formData.append('description', description.trim())
+
+    await uploadMutation.mutateAsync(formData)
+    setSelectedFiles([])
+    setDescription('')
+  }
+
+  return (
+    <section className="space-y-5" dir="rtl">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          <h2 className="text-lg font-bold text-gray-850">مرفقات الفوج</h2>
+          <p className="mt-1 text-sm text-gray-500">ملفات عامة مرتبطة بالفوج خارج السجلات الطبية والمصروفات.</p>
+        </div>
+      </div>
+
+      {isActive && (
+        <form onSubmit={handleUpload} className="rounded-2xl border border-gray-100 bg-gray-50 p-4">
+          <div className="grid gap-4 md:grid-cols-[1fr_1fr_auto] md:items-end">
+            <div>
+              <label className="mb-2 block text-sm font-semibold text-gray-700">الملفات</label>
+              <input
+                type="file"
+                multiple
+                onChange={(event) => setSelectedFiles(Array.from(event.target.files ?? []))}
+                className="w-full rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-farm-blue"
+              />
+              {selectedFiles.length > 0 && (
+                <p className="mt-1 text-xs font-semibold text-gray-500">تم اختيار {selectedFiles.length} ملف</p>
+              )}
+            </div>
+            <div>
+              <label className="mb-2 block text-sm font-semibold text-gray-700">وصف مختصر</label>
+              <input
+                type="text"
+                value={description}
+                onChange={(event) => setDescription(event.target.value)}
+                className="w-full rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-farm-blue"
+                placeholder="مثال: تقرير معمل أو مستند نقل"
+              />
+            </div>
+            <button
+              type="submit"
+              disabled={uploadMutation.isPending || selectedFiles.length === 0}
+              className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-farm-blue px-5 py-2.5 text-sm font-bold text-white transition-colors hover:bg-blue-800 disabled:opacity-50"
+            >
+              {uploadMutation.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Upload className="h-4 w-4" />}
+              رفع
+            </button>
+          </div>
+        </form>
+      )}
+
+      {attachmentsQuery.isLoading ? (
+        <div className="flex justify-center rounded-2xl border border-gray-100 bg-white py-10">
+          <Loader2 className="h-7 w-7 animate-spin text-farm-blue" />
+        </div>
+      ) : attachments.length === 0 ? (
+        <div className="flex min-h-52 flex-col items-center justify-center rounded-2xl border border-dashed border-gray-200 bg-white p-8 text-center">
+          <Paperclip className="h-10 w-10 text-gray-400" />
+          <h3 className="mt-3 text-base font-bold text-gray-700">لا توجد مرفقات</h3>
+          <p className="mt-1 text-sm text-gray-500">ستظهر مستندات الفوج العامة هنا بعد رفعها.</p>
+        </div>
+      ) : (
+        <div className="grid gap-3 md:grid-cols-2">
+          {attachments.map((attachment: FlockAttachment) => (
+            <article key={attachment.id} className="rounded-2xl border border-gray-100 bg-white p-4 shadow-sm">
+              <div className="flex items-start justify-between gap-3">
+                <div className="min-w-0">
+                  <a
+                    href={attachment.url}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="inline-flex max-w-full items-center gap-2 text-sm font-bold text-farm-blue hover:text-blue-800"
+                  >
+                    <FileText className="h-4 w-4 shrink-0" />
+                    <span className="truncate">{attachment.file_name || attachment.file_path}</span>
+                  </a>
+                  <p className="mt-2 text-sm text-gray-500">{attachment.description || 'بدون وصف'}</p>
+                  <p className="mt-2 text-xs font-semibold text-gray-400">
+                    {formatFileSize(attachment.file_size)} · {attachment.created_at || 'بدون تاريخ'}
+                  </p>
+                </div>
+                {isActive && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (confirm('هل تريد حذف هذا المرفق؟')) deleteMutation.mutate(attachment.id)
+                    }}
+                    disabled={deleteMutation.isPending}
+                    className="inline-flex min-h-10 min-w-10 items-center justify-center rounded-xl text-red-500 transition-colors hover:bg-red-50 disabled:opacity-50"
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </button>
+                )}
+              </div>
+            </article>
+          ))}
+        </div>
+      )}
+    </section>
+  )
+}
+
+function formatFileSize(bytes?: number | null): string {
+  if (!bytes || bytes <= 0) return 'حجم غير معروف'
+  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`
+  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`
 }
 
 function KpiCard({

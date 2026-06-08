@@ -481,6 +481,58 @@ export interface FlockMedicalRecord {
   medications: FlockMedication[]
 }
 
+export interface FlockVitalObservation {
+  id: number
+  flock_id: number
+  observation_date: string
+  source_type: 'production' | 'breeding'
+  production_entry_id?: number | null
+  breeding_entry_id?: number | null
+  water_intake_liters?: string | number | null
+  temperature_celsius?: string | number | null
+  humidity_percent?: string | number | null
+  weight_uniformity_percent?: string | number | null
+  symptoms_json?: unknown[]
+  ai_notes?: string | null
+  created_by?: number | null
+  created_at?: string
+}
+
+export interface PoultryAiReportMessage {
+  id: number
+  role: 'user' | 'model'
+  content: string
+  created_at?: string
+}
+
+export interface PoultryAiReport {
+  id: number
+  flock_id: number
+  title?: string | null
+  input_snapshot?: Record<string, unknown>
+  report_payload?: Record<string, unknown>
+  raw_response?: string | null
+  provider?: string | null
+  model?: string | null
+  status: 'completed' | 'failed' | string
+  created_by?: number | null
+  created_at?: string
+  messages?: PoultryAiReportMessage[]
+}
+
+export interface FlockAttachment {
+  id: number
+  flock_id: number
+  file_path: string
+  file_name?: string | null
+  mime_type?: string | null
+  file_size?: number | null
+  description?: string | null
+  url: string
+  uploaded_by?: number | null
+  created_at?: string
+}
+
 export interface EggWeightDistribution {
   summary: {
     total_eggs: number

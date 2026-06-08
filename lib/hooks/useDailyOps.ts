@@ -119,3 +119,50 @@ export function useBreedingEntry(flockId: number, entryId: number) {
     enabled: entryId > 0,
   })
 }
+
+export function useVitalObservations(flockId: number, page = 1) {
+  return useQuery({
+    queryKey: ['vital-observations', flockId, page],
+    queryFn: () => dailyOpsApi.listVitalObservations(flockId, page),
+    enabled: flockId > 0,
+  })
+}
+
+export function useCreateVitalObservation(flockId: number) {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: (data: Parameters<typeof dailyOpsApi.createVitalObservation>[1]) =>
+      dailyOpsApi.createVitalObservation(flockId, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['vital-observations', flockId] })
+    },
+  })
+}
+
+export function usePoultryAiReports(flockId: number, page = 1) {
+  return useQuery({
+    queryKey: ['poultry-ai-reports', flockId, page],
+    queryFn: () => dailyOpsApi.listAiReports(flockId, page),
+    enabled: flockId > 0,
+  })
+}
+
+export function useCreatePoultryAiReport(flockId: number) {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: () => dailyOpsApi.createAiReport(flockId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['poultry-ai-reports', flockId] })
+    },
+  })
+}
+
+export function useSendPoultryAiReportMessage(flockId: number, reportId: number) {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: (message: string) => dailyOpsApi.sendAiReportMessage(flockId, reportId, message),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['poultry-ai-reports', flockId] })
+    },
+  })
+}

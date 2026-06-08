@@ -2,10 +2,11 @@
 
 import { useMemo, useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
-import { AlertCircle, Loader2 } from 'lucide-react'
+import { AlertCircle, Download, Loader2 } from 'lucide-react'
 import { useFlockAnalytics } from '@/lib/hooks/useFlockAnalytics'
 import type { FlockAnalyticsResponse } from '@/lib/types'
 import { organizationApi } from '@/lib/api/organization'
+import { statisticsApi } from '@/lib/api/statistics'
 import {
   FlockAnalyticsFilters,
   type FlockAnalyticsFilterState,
@@ -98,8 +99,27 @@ export default function FlockAnalyticsPage() {
   )
 
   const analyticsQuery = useFlockAnalytics(params ?? {})
+  const [isExporting, setIsExporting] = useState(false)
 
   const analytics = analyticsQuery.data ?? bootstrap.data
+
+  const handleExport = async () => {
+    if (!params) return
+    setIsExporting(true)
+    try {
+      const blob = await statisticsApi.exportFlockAnalytics(params)
+      const url = URL.createObjectURL(blob)
+      const link = document.createElement('a')
+      link.href = url
+      link.download = `farmdata_statistics_${new Date().toISOString().slice(0, 10)}.csv`
+      document.body.appendChild(link)
+      link.click()
+      link.remove()
+      URL.revokeObjectURL(url)
+    } finally {
+      setIsExporting(false)
+    }
+  }
 
   if ((companiesQuery.isLoading || bootstrap.isLoading) && !analytics) {
     return (
@@ -150,6 +170,15 @@ export default function FlockAnalyticsPage() {
               </div>
             </div>
           </div>
+          <button
+            type="button"
+            onClick={handleExport}
+            disabled={isExporting || !params}
+            className="mt-5 inline-flex min-h-11 items-center justify-center gap-2 rounded-xl border border-line bg-surface px-4 py-2 text-sm font-bold text-ink-soft transition-colors hover:bg-surface-subtle hover:text-ink disabled:opacity-50"
+          >
+            {isExporting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Download className="h-4 w-4" />}
+            تصدير CSV
+          </button>
         </div>
       </section>
 

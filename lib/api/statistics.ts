@@ -1,4 +1,4 @@
-import { apiRequest } from './client'
+import { apiRequest, apiRequestRaw } from './client'
 import type {
   AnalyticsAggregation,
   AnalyticsAxis,
@@ -29,5 +29,19 @@ export const statisticsApi = {
     })
 
     return apiRequest<FlockAnalyticsResponse>(`/statistics?${search.toString()}`)
+  },
+
+  exportFlockAnalytics: async (params: FlockAnalyticsParams) => {
+    const search = new URLSearchParams()
+
+    Object.entries(params).forEach(([key, value]) => {
+      if (value === undefined || value === null || value === '') return
+      search.set(key, typeof value === 'boolean' ? (value ? '1' : '0') : String(value))
+    })
+
+    const response = await apiRequestRaw(`/statistics/export?${search.toString()}`)
+    if (!response.ok) throw new Error(`Export failed (${response.status})`)
+
+    return response.blob()
   },
 }

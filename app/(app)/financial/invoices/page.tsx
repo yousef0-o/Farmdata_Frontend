@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useEffect } from 'react'
+import React, { useState } from 'react'
 import { 
   Plus, 
   Loader2, 
@@ -8,7 +8,6 @@ import {
   Search, 
   DollarSign, 
   FileText, 
-  Building2, 
   Percent,
   Calendar,
   X,
@@ -22,7 +21,7 @@ import { useInvoices, useCreateInvoice, useDeleteInvoice } from '@/lib/hooks/use
 import { useWarehouses, useItems } from '@/lib/hooks/useInventory'
 import { useCustomers } from '@/lib/hooks/useCustomers'
 import { useSuppliers } from '@/lib/hooks/useSuppliers'
-import type { Invoice, InvoicePayload, InvoiceItemPayload } from '@/lib/api/financial'
+import type { Invoice, InvoicePayload } from '@/lib/api/financial'
 import type { Item, Warehouse, Customer, Supplier } from '@/lib/types'
 import SaudiRiyalIcon from '@/components/icons/SaudiRiyalIcon'
 import AppDialog from '@/components/ui/AppDialog'
@@ -32,6 +31,12 @@ interface FormItem {
   quantity: string
   unit_price: string
 }
+
+type ApiMutationError = Error & {
+  errors?: Record<string, string[]>
+}
+
+const defaultInvoiceDate = () => new Date().toISOString().split('T')[0]
 
 export default function InvoicesPage() {
   const [activeTab, setActiveTab] = useState<'sales' | 'purchase'>('sales')
@@ -68,9 +73,13 @@ export default function InvoicesPage() {
   const [warehouseId, setWarehouseId] = useState('')
   const [customerId, setCustomerId] = useState('')
   const [supplierId, setSupplierId] = useState('')
-  const [invoiceDate, setInvoiceDate] = useState(() => new Date().toISOString().split('T')[0])
+  const [invoiceDate, setInvoiceDate] = useState(defaultInvoiceDate)
   const [dueDate, setDueDate] = useState('')
   const [notes, setNotes] = useState('')
+  const [overrideSubtotal, setOverrideSubtotal] = useState('')
+  const [overrideTax, setOverrideTax] = useState('')
+  const [overrideTotal, setOverrideTotal] = useState('')
+  const [taxOverrideReason, setTaxOverrideReason] = useState('')
   const [formItems, setFormItems] = useState<FormItem[]>([{ item_id: '', quantity: '1', unit_price: '' }])
 
   // Form items helpers
@@ -102,19 +111,39 @@ export default function InvoicesPage() {
   }, 0)
   const calculatedTax = calculatedSubtotal * 0.15 // 15% VAT
   const calculatedTotal = calculatedSubtotal + calculatedTax
+  const hasTotalOverride = [overrideSubtotal, overrideTax, overrideTotal].some(value => value.trim() !== '')
 
-  // Reset form when modal toggles or tab changes
-  useEffect(() => {
+  const resetInvoiceForm = () => {
     setInvoiceNumber('')
     setWarehouseId('')
     setCustomerId('')
     setSupplierId('')
-    setInvoiceDate(new Date().toISOString().split('T')[0])
+    setInvoiceDate(defaultInvoiceDate())
     setDueDate('')
     setNotes('')
+    setOverrideSubtotal('')
+    setOverrideTax('')
+    setOverrideTotal('')
+    setTaxOverrideReason('')
     setFormItems([{ item_id: '', quantity: '1', unit_price: '' }])
     setFormErrors({})
-  }, [showCreateModal, activeTab])
+  }
+
+  const handleOpenCreateModal = () => {
+    resetInvoiceForm()
+    setShowCreateModal(true)
+  }
+
+  const handleCloseCreateModal = () => {
+    setShowCreateModal(false)
+    resetInvoiceForm()
+  }
+
+  const handleTabChange = (tab: 'sales' | 'purchase') => {
+    setActiveTab(tab)
+    setPage(1)
+    resetInvoiceForm()
+  }
 
   // Submit Handler
   const handleSubmitInvoice = (e: React.FormEvent) => {
@@ -133,6 +162,9 @@ export default function InvoicesPage() {
     const validItems = formItems.filter(item => item.item_id && parseFloat(item.quantity) > 0 && parseFloat(item.unit_price) >= 0)
     if (validItems.length === 0) {
       errors.items = 'يرجى إضافة صنف واحد على الأقل يحتوي على كمية وسعر صالحين'
+    }
+    if (hasTotalOverride && !taxOverrideReason.trim()) {
+      errors.tax_override_reason = 'يرجى إدخال سبب تعديل الإجماليات'
     }
 
     if (Object.keys(errors).length > 0) {
@@ -154,19 +186,24 @@ export default function InvoicesPage() {
         item_id: parseInt(item.item_id),
         quantity: parseFloat(item.quantity),
         unit_price: parseFloat(item.unit_price)
-      }))
+      })),
+      subtotal_amount: overrideSubtotal.trim() ? parseFloat(overrideSubtotal) : undefined,
+      tax_amount: overrideTax.trim() ? parseFloat(overrideTax) : undefined,
+      total_amount: overrideTotal.trim() ? parseFloat(overrideTotal) : undefined,
+      tax_override_reason: hasTotalOverride ? taxOverrideReason.trim() : undefined,
     }
 
     createInvoiceMutation.mutate(payload, {
       onSuccess: () => {
-        setShowCreateModal(false)
+        handleCloseCreateModal()
         refetch()
       },
-      onError: (err: any) => {
-        if (err.errors) {
+      onError: (err: ApiMutationError) => {
+        const validationErrors = err.errors
+        if (validationErrors) {
           const apiErrors: Record<string, string> = {}
-          Object.keys(err.errors).forEach(key => {
-            apiErrors[key] = err.errors[key][0]
+          Object.keys(validationErrors).forEach(key => {
+            apiErrors[key] = validationErrors[key][0]
           })
           setFormErrors(apiErrors)
         } else {
@@ -207,7 +244,7 @@ export default function InvoicesPage() {
           </div>
         </div>
         <button
-          onClick={() => setShowCreateModal(true)}
+          onClick={handleOpenCreateModal}
           className="flex items-center gap-2 bg-farm-blue hover:bg-farm-blue/90 text-white px-5 py-3 rounded-xl transition-colors font-semibold text-sm shadow-sm hover:scale-[1.01]"
         >
           <Plus className="w-5 h-5" />
@@ -260,7 +297,7 @@ export default function InvoicesPage() {
           {/* Tabs */}
           <div className="flex w-full max-w-full overflow-x-auto bg-gray-50 p-1.5 rounded-xl border border-gray-200 md:w-auto">
             <button
-              onClick={() => { setActiveTab('sales'); setPage(1) }}
+              onClick={() => handleTabChange('sales')}
               className={`min-h-11 shrink-0 px-5 py-2.5 rounded-lg text-sm font-bold transition-colors duration-200 ${
                 activeTab === 'sales'
                   ? 'bg-farm-blue text-white shadow-sm'
@@ -270,7 +307,7 @@ export default function InvoicesPage() {
               فواتير المبيعات
             </button>
             <button
-              onClick={() => { setActiveTab('purchase'); setPage(1) }}
+              onClick={() => handleTabChange('purchase')}
               className={`min-h-11 shrink-0 px-5 py-2.5 rounded-lg text-sm font-bold transition-colors duration-200 ${
                 activeTab === 'purchase'
                   ? 'bg-farm-blue text-white shadow-sm'
@@ -450,7 +487,7 @@ export default function InvoicesPage() {
 
       {/* CREATE MODAL */}
       {showCreateModal && (
-        <AppDialog open={showCreateModal} onClose={() => setShowCreateModal(false)} panelClassName="max-w-4xl">
+        <AppDialog open={showCreateModal} onClose={handleCloseCreateModal} panelClassName="max-w-4xl">
           <div className="flex max-h-[90vh] w-full flex-col rounded-3xl border border-gray-200 bg-white shadow-2xl">
             {/* Header */}
             <div className="p-6 border-b border-gray-200 flex justify-between items-center">
@@ -698,6 +735,65 @@ export default function InvoicesPage() {
                 </div>
               </div>
 
+              <div className="space-y-4 rounded-2xl border border-gray-200 bg-gray-50 p-4">
+                <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
+                  <h4 className="text-sm font-bold text-gray-900">تعديل إجماليات الفاتورة</h4>
+                  <span className="text-xs font-semibold text-gray-500">اترك الحقول فارغة لاستخدام الحساب الآلي</span>
+                </div>
+                <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+                  <div>
+                    <label className="mb-2 block text-xs font-bold text-gray-500">الإجمالي الفرعي اليدوي</label>
+                    <input
+                      type="number"
+                      min="0"
+                      step="any"
+                      className="w-full rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-farm-blue"
+                      value={overrideSubtotal}
+                      onChange={(e) => setOverrideSubtotal(e.target.value)}
+                      placeholder={calculatedSubtotal.toFixed(2)}
+                    />
+                  </div>
+                  <div>
+                    <label className="mb-2 block text-xs font-bold text-gray-500">ضريبة القيمة المضافة اليدوية</label>
+                    <input
+                      type="number"
+                      min="0"
+                      step="any"
+                      className="w-full rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-farm-blue"
+                      value={overrideTax}
+                      onChange={(e) => setOverrideTax(e.target.value)}
+                      placeholder={calculatedTax.toFixed(2)}
+                    />
+                  </div>
+                  <div>
+                    <label className="mb-2 block text-xs font-bold text-gray-500">الإجمالي النهائي اليدوي</label>
+                    <input
+                      type="number"
+                      min="0"
+                      step="any"
+                      className="w-full rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-farm-blue"
+                      value={overrideTotal}
+                      onChange={(e) => setOverrideTotal(e.target.value)}
+                      placeholder={calculatedTotal.toFixed(2)}
+                    />
+                  </div>
+                </div>
+                <div>
+                  <label className="mb-2 block text-xs font-bold text-gray-500">سبب التعديل</label>
+                  <textarea
+                    className={`h-20 w-full rounded-xl border bg-white px-4 py-2.5 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-farm-blue ${
+                      formErrors.tax_override_reason ? 'border-red-500' : 'border-gray-200'
+                    }`}
+                    value={taxOverrideReason}
+                    onChange={(e) => setTaxOverrideReason(e.target.value)}
+                    placeholder="سبب اعتماد قيمة يدوية بدلا من الحساب الآلي"
+                  />
+                  {formErrors.tax_override_reason && (
+                    <p className="mt-1 text-xs text-red-500">{formErrors.tax_override_reason}</p>
+                  )}
+                </div>
+              </div>
+
               {/* Notes */}
               <div>
                 <label className="block text-xs font-bold text-gray-500 dark:text-gray-400 mb-2">ملاحظات الفاتورة</label>
@@ -837,7 +933,7 @@ export default function InvoicesPage() {
                 <div className="space-y-1">
                   <span className="text-xs text-gray-400 block font-bold">المجموع الفرعي الخالي من الضريبة</span>
                   <span className="text-lg font-mono font-bold text-gray-900">
-                    {(parseFloat(selectedInvoice.total_amount) - parseFloat(selectedInvoice.tax_amount)).toLocaleString('ar-SA')} <SaudiRiyalIcon size={16} className="text-emerald-700 inline-block align-middle ml-1" />
+                    {parseFloat(selectedInvoice.subtotal_amount ?? String(parseFloat(selectedInvoice.total_amount) - parseFloat(selectedInvoice.tax_amount))).toLocaleString('ar-SA')} <SaudiRiyalIcon size={16} className="text-emerald-700 inline-block align-middle ml-1" />
                   </span>
                 </div>
                 <div className="space-y-1">
@@ -853,6 +949,15 @@ export default function InvoicesPage() {
                   </span>
                 </div>
               </div>
+
+              {selectedInvoice.tax_override_reason && (
+                <div className="rounded-2xl border border-amber-200 bg-amber-50 p-4">
+                  <span className="mb-1 flex items-center gap-1 text-xs font-bold text-amber-800">
+                    <Info className="h-3.5 w-3.5" /> سبب تعديل إجماليات الفاتورة
+                  </span>
+                  <p className="text-sm text-amber-900">{selectedInvoice.tax_override_reason}</p>
+                </div>
+              )}
 
               {/* Notes */}
               {selectedInvoice.notes && (

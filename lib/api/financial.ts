@@ -1,4 +1,5 @@
 import { apiRequest } from './client'
+import type { PaginatedResponse } from '../types'
 
 export interface InvoiceItemPayload {
   item_id: number
@@ -15,6 +16,10 @@ export interface InvoicePayload {
   invoice_date: string
   due_date?: string | null
   notes?: string | null
+  subtotal_amount?: number | null
+  tax_amount?: number | null
+  total_amount?: number | null
+  tax_override_reason?: string | null
   items: InvoiceItemPayload[]
 }
 
@@ -27,7 +32,9 @@ export interface Invoice {
   invoice_date: string
   due_date?: string | null
   total_amount: string
+  subtotal_amount?: string
   tax_amount: string
+  tax_override_reason?: string | null
   notes?: string | null
   created_at: string
   updated_at: string
@@ -81,13 +88,17 @@ export interface OpeningBalancesResponse {
   balance_date: string
 }
 
+export interface OpeningBalanceImportResult {
+  inserted_records?: number
+}
+
 export const financialApi = {
-  listInvoices(type: 'sales' | 'purchase', search?: string, page = 1): Promise<any> {
+  listInvoices(type: 'sales' | 'purchase', search?: string, page = 1): Promise<PaginatedResponse<Invoice>> {
     let url = `/financial/invoices?type=${type}&page=${page}`
     if (search) {
       url += `&search=${encodeURIComponent(search)}`
     }
-    return apiRequest<any>(url)
+    return apiRequest<PaginatedResponse<Invoice>>(url)
   },
 
   createInvoice(data: InvoicePayload): Promise<{ success: boolean; message: string; data: Invoice }> {
@@ -108,15 +119,15 @@ export const financialApi = {
     return apiRequest<OpeningBalancesResponse>(url)
   },
 
-  saveOpeningBalances(data: OpeningBalancePayload): Promise<{ success: boolean; message: string; data: any }> {
-    return apiRequest<{ success: boolean; message: string; data: any }>('/accounting/opening-balances', {
+  saveOpeningBalances(data: OpeningBalancePayload): Promise<{ success: boolean; message: string; data: OpeningBalancesResponse }> {
+    return apiRequest<{ success: boolean; message: string; data: OpeningBalancesResponse }>('/accounting/opening-balances', {
       method: 'POST',
       body: JSON.stringify(data),
     })
   },
 
-  importOpeningBalances(formData: FormData): Promise<{ success: boolean; message: string; data: any }> {
-    return apiRequest<{ success: boolean; message: string; data: any }>('/accounting/opening-balances/import', {
+  importOpeningBalances(formData: FormData): Promise<{ success: boolean; message: string; data: OpeningBalanceImportResult }> {
+    return apiRequest<{ success: boolean; message: string; data: OpeningBalanceImportResult }>('/accounting/opening-balances/import', {
       method: 'POST',
       body: formData,
       headers: {},

@@ -43,7 +43,7 @@ export const nurseryInvoicesApi = {
     wrapResponse<NurseryInvoiceSettings>(
       apiRequest('/nursery/invoices/settings', {
         method: 'PUT',
-        body: JSON.stringify(payload),
+        body: payload instanceof FormData ? payload : JSON.stringify(payload),
       })
     ),
 }

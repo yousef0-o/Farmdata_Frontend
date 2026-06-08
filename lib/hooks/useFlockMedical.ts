@@ -13,6 +13,7 @@ export function useFlockMedicalRecords(flockId: number, page = 1) {
       apiRequest<PaginatedResponse<FlockMedicalRecord>>(
         `/flocks/${flockId}/medical-records?page=${page}`
       ),
+    enabled: flockId > 0,
   })
 }
 
@@ -73,6 +74,21 @@ export function useDeleteFlockMedicalRecord(flockId: number) {
       }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['flock-medical-records', flockId] })
+    },
+  })
+}
+
+export function useRerunMedicalRecordOcr(flockId: number, recordId: number) {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: (path: string) =>
+      apiRequest<FlockMedicalRecord>(`/flocks/${flockId}/medical-records/${recordId}/rerun-ocr`, {
+        method: 'POST',
+        body: JSON.stringify({ path }),
+      }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['flock-medical-records', flockId] })
+      queryClient.invalidateQueries({ queryKey: ['flock-medical-record', flockId, recordId] })
     },
   })
 }

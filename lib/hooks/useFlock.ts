@@ -3,7 +3,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { flockApi } from '../api/organization'
 import { apiRequest } from '../api/client'
-import { PaginatedResponse, Flock, FlockDetail } from '../types'
+import { PaginatedResponse, FlockDetail } from '../types'
 
 export function useFlocks(status?: string, page = 1) {
   return useQuery({
@@ -68,3 +68,30 @@ export function useUpdateFlock(flockId: number) {
   })
 }
 
+export function useFlockAttachments(flockId: number, page = 1) {
+  return useQuery({
+    queryKey: ['flock-attachments', flockId, page],
+    queryFn: () => flockApi.listAttachments(flockId, page),
+    enabled: flockId > 0,
+  })
+}
+
+export function useUploadFlockAttachments(flockId: number) {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: (formData: FormData) => flockApi.uploadAttachments(flockId, formData),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['flock-attachments', flockId] })
+    },
+  })
+}
+
+export function useDeleteFlockAttachment(flockId: number) {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: (attachmentId: number) => flockApi.deleteAttachment(flockId, attachmentId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['flock-attachments', flockId] })
+    },
+  })
+}

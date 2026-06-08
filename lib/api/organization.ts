@@ -1,5 +1,5 @@
 import { apiRequest, wrapResponse } from './client'
-import type { Company, Project, Section, Barn, Flock, FlockDetail, FlockSummary, PaginatedResponse, ProductionEntry, BreedingEntry, FeedEntry, EntityStatistics, EggItemPayload, PoultryFeedBatch } from '../types'
+import type { Company, Project, Section, Barn, Flock, FlockDetail, FlockSummary, PaginatedResponse, ProductionEntry, BreedingEntry, FeedEntry, EntityStatistics, EggItemPayload, PoultryFeedBatch, FlockVitalObservation, PoultryAiReport, FlockAttachment } from '../types'
 
 export const organizationApi = {
   // Companies
@@ -127,13 +127,40 @@ export const flockApi = {
     id: number,
     data: {
       close_date: string
+      production_end_date?: string | null
       allocations: { label: string; bird_count: number; value?: number }[]
+      financial_rows?: {
+        account_id: number
+        reference_number?: string | null
+        transaction_date?: string | null
+        debit_amount?: number
+        credit_amount?: number
+        description?: string | null
+      }[]
+      asset_entries?: {
+        account_id: number
+        debit_amount?: number
+        credit_amount?: number
+        description?: string | null
+      }[]
     }
   ) =>
     wrapResponse<FlockDetail>(apiRequest(`/flocks/${id}/close`, {
       method: 'POST',
       body: JSON.stringify(data),
     })),
+
+  listAttachments: (id: number, page = 1) =>
+    apiRequest<PaginatedResponse<FlockAttachment>>(`/flocks/${id}/attachments?page=${page}`),
+
+  uploadAttachments: (id: number, formData: FormData) =>
+    apiRequest<{ data: FlockAttachment[] }>(`/flocks/${id}/attachments`, {
+      method: 'POST',
+      body: formData,
+    }),
+
+  deleteAttachment: (id: number, attachmentId: number) =>
+    apiRequest<void>(`/flocks/${id}/attachments/${attachmentId}`, { method: 'DELETE' }),
 }
 
 export const dailyOpsApi = {
@@ -244,6 +271,46 @@ export const dailyOpsApi = {
   getBreedingEntry: (flockId: number, entryId: number) =>
     wrapResponse<BreedingEntry>(
       apiRequest(`/flocks/${flockId}/breeding-entries/${entryId}`)
+    ),
+
+  listVitalObservations: (flockId: number, page = 1) =>
+    apiRequest<PaginatedResponse<FlockVitalObservation>>(
+      `/flocks/${flockId}/vital-observations?page=${page}`
+    ),
+
+  createVitalObservation: (flockId: number, data: Partial<FlockVitalObservation>) =>
+    apiRequest<{ data: FlockVitalObservation }>(
+      `/flocks/${flockId}/vital-observations`,
+      { method: 'POST', body: JSON.stringify(data) }
+    ),
+
+  updateVitalObservation: (flockId: number, observationId: number, data: Partial<FlockVitalObservation>) =>
+    apiRequest<{ data: FlockVitalObservation }>(
+      `/flocks/${flockId}/vital-observations/${observationId}`,
+      { method: 'PUT', body: JSON.stringify(data) }
+    ),
+
+  deleteVitalObservation: (flockId: number, observationId: number) =>
+    apiRequest<void>(
+      `/flocks/${flockId}/vital-observations/${observationId}`,
+      { method: 'DELETE' }
+    ),
+
+  listAiReports: (flockId: number, page = 1) =>
+    apiRequest<PaginatedResponse<PoultryAiReport>>(
+      `/flocks/${flockId}/ai-reports?page=${page}`
+    ),
+
+  createAiReport: (flockId: number) =>
+    apiRequest<{ data: PoultryAiReport }>(
+      `/flocks/${flockId}/ai-reports`,
+      { method: 'POST' }
+    ),
+
+  sendAiReportMessage: (flockId: number, reportId: number, message: string) =>
+    apiRequest<{ data: PoultryAiReport }>(
+      `/flocks/${flockId}/ai-reports/${reportId}/chat`,
+      { method: 'POST', body: JSON.stringify({ message }) }
     ),
 }
 
