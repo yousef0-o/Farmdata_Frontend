@@ -118,14 +118,14 @@ export default function AssetTable({
                   />
                 </td>
                 <td className="py-4 px-4">
-                  <Link href={`/assets/${asset.id}`} className="font-mono font-semibold text-action-primary hover:underline">
+                  <Link href={`/assets/${asset.id}`} className="block max-w-28 truncate font-mono font-semibold text-action-primary hover:underline" title={asset.asset_code}>
                     {asset.asset_code}
                   </Link>
                 </td>
                 <td className="py-4 px-4">
-                  <Link href={`/assets/${asset.id}`} className="block">
-                    <div className="font-semibold text-ink hover:text-action-primary">{asset.name}</div>
-                    {asset.name_en && <div className="mt-0.5 text-xs text-ink-muted">{asset.name_en}</div>}
+                  <Link href={`/assets/${asset.id}`} className="block max-w-56">
+                    <div className="truncate font-semibold text-ink hover:text-action-primary" title={asset.name}>{asset.name}</div>
+                    {asset.name_en && <div className="mt-0.5 truncate text-xs text-ink-muted" title={asset.name_en}>{asset.name_en}</div>}
                   </Link>
                 </td>
                 <td className="py-4 px-4"><AssetTypeBadge category={asset.category} /></td>
@@ -140,18 +140,22 @@ export default function AssetTable({
                 <td className="py-4 px-6 text-left">
                   <div className="flex items-center justify-end gap-2.5">
                     <button
+                      type="button"
                       onClick={() => onEdit(asset)}
-                      className="rounded-lg bg-surface-muted p-1.5 text-ink-soft transition-colors hover:bg-surface-subtle"
+                      className="inline-flex min-h-10 min-w-10 items-center justify-center rounded-lg bg-surface-muted text-ink-soft outline-none transition-colors hover:bg-surface-subtle focus-visible:ring-2 focus-visible:ring-action-primary/30"
+                      aria-label="تعديل الأصل"
                       title="تعديل"
                     >
-                      <Edit3 className="w-4 h-4" />
+                      <Edit3 className="h-4 w-4" aria-hidden="true" />
                     </button>
                     <button
+                      type="button"
                       onClick={() => onDelete(asset.id)}
-                      className="rounded-lg bg-danger-soft p-1.5 text-danger transition-colors hover:bg-red-200"
+                      className="inline-flex min-h-10 min-w-10 items-center justify-center rounded-lg bg-danger-soft text-danger outline-none transition-colors hover:bg-danger-soft focus-visible:ring-2 focus-visible:ring-danger/30"
+                      aria-label="حذف الأصل"
                       title="حذف"
                     >
-                      <Trash2 className="w-4 h-4" />
+                      <Trash2 className="h-4 w-4" aria-hidden="true" />
                     </button>
                   </div>
                 </td>
@@ -168,21 +172,21 @@ export default function AssetTable({
             className="rounded-2xl border border-line bg-surface p-4 shadow-sm"
           >
             <div className="flex items-start justify-between gap-3">
-              <div className="flex items-start gap-3">
+              <div className="flex min-w-0 items-start gap-3">
                 <input
                   type="checkbox"
                   className="mt-1 rounded border-line-strong bg-surface text-action-primary focus:ring-action-primary"
                   checked={selectedIds.includes(asset.id)}
                   onChange={(e) => onSelectRow(asset.id, e.target.checked)}
                 />
-                <div className="space-y-1">
-                  <Link href={`/assets/${asset.id}`} className="font-mono text-sm font-bold text-action-primary">
+                <div className="min-w-0 space-y-1">
+                  <Link href={`/assets/${asset.id}`} className="block truncate font-mono text-sm font-bold text-action-primary" title={asset.asset_code}>
                     {asset.asset_code}
                   </Link>
-                  <Link href={`/assets/${asset.id}`} className="block text-sm font-semibold text-ink">
+                  <Link href={`/assets/${asset.id}`} className="block truncate text-sm font-semibold text-ink" title={asset.name}>
                     {asset.name}
                   </Link>
-                  {asset.name_en ? <p className="text-xs text-ink-muted">{asset.name_en}</p> : null}
+                  {asset.name_en ? <p className="truncate text-xs text-ink-muted" title={asset.name_en}>{asset.name_en}</p> : null}
                 </div>
               </div>
               <div className="flex flex-col items-end gap-2">
@@ -212,6 +216,7 @@ export default function AssetTable({
 
             <div className="mt-4 flex items-center gap-3">
               <button
+                type="button"
                 onClick={() => onEdit(asset)}
                 className="flex min-h-11 flex-1 items-center justify-center rounded-xl border border-info-soft bg-info-soft px-4 py-2 text-sm font-semibold text-action-primary"
                 title="تعديل"
@@ -219,11 +224,13 @@ export default function AssetTable({
                 تعديل
               </button>
               <button
+                type="button"
                 onClick={() => onDelete(asset.id)}
                 className="flex min-h-11 min-w-11 items-center justify-center rounded-xl border border-danger-soft bg-danger-soft px-4 py-2 text-danger"
+                aria-label="حذف الأصل"
                 title="حذف"
               >
-                <Trash2 className="h-4 w-4" />
+                <Trash2 className="h-4 w-4" aria-hidden="true" />
               </button>
             </div>
           </article>

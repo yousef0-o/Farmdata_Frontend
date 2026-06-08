@@ -115,12 +115,12 @@ export default function SupplierTable({
                   />
                 </td>
                 <td className="py-4 px-4">
-                  <Link href={`/suppliers/${supplier.id}`} className="font-mono font-semibold text-action-primary hover:underline">
+                  <Link href={`/suppliers/${supplier.id}`} className="block max-w-28 truncate font-mono font-semibold text-action-primary hover:underline" title={supplier.supplier_code}>
                     {supplier.supplier_code}
                   </Link>
                 </td>
                 <td className="py-4 px-4 font-semibold text-ink">
-                  <Link href={`/suppliers/${supplier.id}`} className="hover:text-action-primary">
+                  <Link href={`/suppliers/${supplier.id}`} className="block max-w-56 truncate hover:text-action-primary" title={supplier.supplier_name}>
                     {supplier.supplier_name}
                   </Link>
                 </td>
@@ -136,28 +136,34 @@ export default function SupplierTable({
                   <div className="flex items-center justify-end gap-2.5">
                     <button
                       onClick={() => onToggleSuspend(supplier.id)}
-                      className={`rounded-lg p-1.5 transition-colors ${
+                      type="button"
+                      className={`inline-flex min-h-10 min-w-10 items-center justify-center rounded-lg outline-none transition-colors focus-visible:ring-2 focus-visible:ring-action-primary/30 ${
                         supplier.is_suspended
                           ? 'bg-success-soft hover:bg-success-soft text-success'
                           : 'bg-warning-soft hover:bg-warning-soft text-warning'
                       }`}
+                      aria-label={supplier.is_suspended ? 'تنشيط المورد' : 'إيقاف المورد مؤقتا'}
                       title={supplier.is_suspended ? 'تنشيط' : 'إيقاف مؤقت'}
                     >
-                      <ShieldAlert className="w-4 h-4" />
+                      <ShieldAlert className="h-4 w-4" aria-hidden="true" />
                     </button>
                     <button
+                      type="button"
                       onClick={() => onEdit(supplier)}
-                      className="rounded-lg bg-surface-muted p-1.5 text-ink-soft transition-colors hover:bg-surface-subtle"
+                      className="inline-flex min-h-10 min-w-10 items-center justify-center rounded-lg bg-surface-muted text-ink-soft outline-none transition-colors hover:bg-surface-subtle focus-visible:ring-2 focus-visible:ring-action-primary/30"
+                      aria-label="تعديل المورد"
                       title="تعديل"
                     >
-                      <Edit3 className="w-4 h-4" />
+                      <Edit3 className="h-4 w-4" aria-hidden="true" />
                     </button>
                     <button
+                      type="button"
                       onClick={() => onDelete(supplier.id)}
-                      className="rounded-lg bg-danger-soft p-1.5 text-danger transition-colors hover:bg-danger-soft"
+                      className="inline-flex min-h-10 min-w-10 items-center justify-center rounded-lg bg-danger-soft text-danger outline-none transition-colors hover:bg-danger-soft focus-visible:ring-2 focus-visible:ring-danger/30"
+                      aria-label="حذف المورد"
                       title="حذف"
                     >
-                      <Trash2 className="w-4 h-4" />
+                      <Trash2 className="h-4 w-4" aria-hidden="true" />
                     </button>
                   </div>
                 </td>
@@ -174,21 +180,21 @@ export default function SupplierTable({
             className="rounded-2xl border border-line bg-surface p-4 shadow-sm"
           >
             <div className="flex items-start justify-between gap-3">
-              <div className="flex items-start gap-3">
+              <div className="flex min-w-0 items-start gap-3">
                 <input
                   type="checkbox"
                   className="mt-1 rounded border-line-strong bg-surface text-action-primary focus:ring-action-primary"
                   checked={selectedIds.includes(supplier.id)}
                   onChange={(e) => onSelectRow(supplier.id, e.target.checked)}
                 />
-                <div className="space-y-1">
-                  <Link href={`/suppliers/${supplier.id}`} className="font-mono text-sm font-bold text-action-primary">
+                <div className="min-w-0 space-y-1">
+                  <Link href={`/suppliers/${supplier.id}`} className="block truncate font-mono text-sm font-bold text-action-primary" title={supplier.supplier_code}>
                     {supplier.supplier_code}
                   </Link>
-                  <Link href={`/suppliers/${supplier.id}`} className="block text-sm font-semibold text-ink">
+                  <Link href={`/suppliers/${supplier.id}`} className="block truncate text-sm font-semibold text-ink" title={supplier.supplier_name}>
                     {supplier.supplier_name}
                   </Link>
-                  <p className="text-xs text-ink-muted">{supplier.phone1 || '—'}</p>
+                  <p className="truncate text-xs text-ink-muted" title={supplier.phone1 || undefined}>{supplier.phone1 || '—'}</p>
                 </div>
               </div>
               <SupplierStatusBadge isSuspended={supplier.is_suspended} />
@@ -211,6 +217,7 @@ export default function SupplierTable({
 
             <div className="mt-4 flex items-center gap-3">
               <button
+                type="button"
                 onClick={() => onToggleSuspend(supplier.id)}
                 className={`flex min-h-11 flex-1 items-center justify-center rounded-xl px-4 py-2 text-sm font-semibold ${
                   supplier.is_suspended
@@ -222,6 +229,7 @@ export default function SupplierTable({
                 {supplier.is_suspended ? 'تنشيط' : 'إيقاف'}
               </button>
               <button
+                type="button"
                 onClick={() => onEdit(supplier)}
                 className="flex min-h-11 flex-1 items-center justify-center rounded-xl border border-info-soft bg-info-soft px-4 py-2 text-sm font-semibold text-action-primary"
                 title="تعديل"
@@ -229,11 +237,13 @@ export default function SupplierTable({
                 تعديل
               </button>
               <button
+                type="button"
                 onClick={() => onDelete(supplier.id)}
                 className="flex min-h-11 min-w-11 items-center justify-center rounded-xl border border-danger-soft bg-danger-soft px-4 py-2 text-danger"
+                aria-label="حذف المورد"
                 title="حذف"
               >
-                <Trash2 className="h-4 w-4" />
+                <Trash2 className="h-4 w-4" aria-hidden="true" />
               </button>
             </div>
           </article>

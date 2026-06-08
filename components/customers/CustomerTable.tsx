@@ -119,14 +119,14 @@ export default function CustomerTable({
                   />
                 </td>
                 <td className="py-4 px-4">
-                  <Link href={`/customers/${customer.id}`} className="font-mono font-semibold text-action-primary hover:underline">
+                  <Link href={`/customers/${customer.id}`} className="block max-w-28 truncate font-mono font-semibold text-action-primary hover:underline" title={customer.customer_code}>
                     {customer.customer_code}
                   </Link>
                 </td>
                 <td className="py-4 px-4">
-                  <Link href={`/customers/${customer.id}`} className="block">
-                    <div className="font-semibold text-ink hover:text-action-primary">{customer.customer_name}</div>
-                    {customer.company_name && <div className="mt-0.5 text-xs text-ink-muted">{customer.company_name}</div>}
+                  <Link href={`/customers/${customer.id}`} className="block max-w-56">
+                    <div className="truncate font-semibold text-ink hover:text-action-primary" title={customer.customer_name}>{customer.customer_name}</div>
+                    {customer.company_name && <div className="mt-0.5 truncate text-xs text-ink-muted" title={customer.company_name}>{customer.company_name}</div>}
                   </Link>
                 </td>
                 <td className="py-4 px-4"><CustomerTypeBadge type={customer.customer_type} /></td>
@@ -142,28 +142,34 @@ export default function CustomerTable({
                   <div className="flex items-center justify-end gap-2.5">
                     <button
                       onClick={() => onToggleSuspend(customer.id)}
-                      className={`rounded-lg p-1.5 transition-colors ${
+                      type="button"
+                      className={`inline-flex min-h-10 min-w-10 items-center justify-center rounded-lg outline-none transition-colors focus-visible:ring-2 focus-visible:ring-action-primary/30 ${
                         customer.is_suspended
                           ? 'bg-success-soft hover:bg-success-soft text-success'
                           : 'bg-warning-soft hover:bg-warning-soft text-warning'
                       }`}
+                      aria-label={customer.is_suspended ? 'تنشيط العميل' : 'إيقاف العميل مؤقتا'}
                       title={customer.is_suspended ? 'تنشيط' : 'إيقاف مؤقت'}
                     >
-                      <ShieldAlert className="w-4 h-4" />
+                      <ShieldAlert className="h-4 w-4" aria-hidden="true" />
                     </button>
                     <button
+                      type="button"
                       onClick={() => onEdit(customer)}
-                      className="rounded-lg bg-surface-muted p-1.5 text-ink-soft transition-colors hover:bg-surface-subtle"
+                      className="inline-flex min-h-10 min-w-10 items-center justify-center rounded-lg bg-surface-muted text-ink-soft outline-none transition-colors hover:bg-surface-subtle focus-visible:ring-2 focus-visible:ring-action-primary/30"
+                      aria-label="تعديل العميل"
                       title="تعديل"
                     >
-                      <Edit3 className="w-4 h-4" />
+                      <Edit3 className="h-4 w-4" aria-hidden="true" />
                     </button>
                     <button
+                      type="button"
                       onClick={() => onDelete(customer.id)}
-                      className="rounded-lg bg-danger-soft p-1.5 text-danger transition-colors hover:bg-danger-soft"
+                      className="inline-flex min-h-10 min-w-10 items-center justify-center rounded-lg bg-danger-soft text-danger outline-none transition-colors hover:bg-danger-soft focus-visible:ring-2 focus-visible:ring-danger/30"
+                      aria-label="حذف العميل"
                       title="حذف"
                     >
-                      <Trash2 className="w-4 h-4" />
+                      <Trash2 className="h-4 w-4" aria-hidden="true" />
                     </button>
                   </div>
                 </td>
@@ -180,22 +186,22 @@ export default function CustomerTable({
             className="rounded-2xl border border-line bg-surface p-4 shadow-sm"
           >
             <div className="flex items-start justify-between gap-3">
-              <div className="flex items-start gap-3">
+              <div className="flex min-w-0 items-start gap-3">
                 <input
                   type="checkbox"
                   className="mt-1 rounded border-line-strong bg-surface text-action-primary focus:ring-action-primary"
                   checked={selectedIds.includes(customer.id)}
                   onChange={(e) => onSelectRow(customer.id, e.target.checked)}
                 />
-                <div className="space-y-1">
-                  <Link href={`/customers/${customer.id}`} className="font-mono text-sm font-bold text-action-primary">
+                <div className="min-w-0 space-y-1">
+                  <Link href={`/customers/${customer.id}`} className="block truncate font-mono text-sm font-bold text-action-primary" title={customer.customer_code}>
                     {customer.customer_code}
                   </Link>
-                  <Link href={`/customers/${customer.id}`} className="block text-sm font-semibold text-ink">
+                  <Link href={`/customers/${customer.id}`} className="block truncate text-sm font-semibold text-ink" title={customer.customer_name}>
                     {customer.customer_name}
                   </Link>
                   {customer.company_name ? (
-                    <p className="text-xs text-ink-muted">{customer.company_name}</p>
+                    <p className="truncate text-xs text-ink-muted" title={customer.company_name}>{customer.company_name}</p>
                   ) : null}
                 </div>
               </div>
@@ -226,6 +232,7 @@ export default function CustomerTable({
 
             <div className="mt-4 flex items-center gap-3">
               <button
+                type="button"
                 onClick={() => onToggleSuspend(customer.id)}
                 className={`flex min-h-11 flex-1 items-center justify-center rounded-xl px-4 py-2 text-sm font-semibold ${
                   customer.is_suspended
@@ -237,6 +244,7 @@ export default function CustomerTable({
                 {customer.is_suspended ? 'تنشيط' : 'إيقاف'}
               </button>
               <button
+                type="button"
                 onClick={() => onEdit(customer)}
                 className="flex min-h-11 flex-1 items-center justify-center rounded-xl border border-info-soft bg-info-soft px-4 py-2 text-sm font-semibold text-action-primary"
                 title="تعديل"
@@ -244,11 +252,13 @@ export default function CustomerTable({
                 تعديل
               </button>
               <button
+                type="button"
                 onClick={() => onDelete(customer.id)}
                 className="flex min-h-11 min-w-11 items-center justify-center rounded-xl border border-danger-soft bg-danger-soft px-4 py-2 text-danger"
+                aria-label="حذف العميل"
                 title="حذف"
               >
-                <Trash2 className="h-4 w-4" />
+                <Trash2 className="h-4 w-4" aria-hidden="true" />
               </button>
             </div>
           </article>

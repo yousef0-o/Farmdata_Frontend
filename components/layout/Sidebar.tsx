@@ -281,10 +281,10 @@ export default function Sidebar({
           <button
             type="button"
             onClick={onClose}
-            className="flex min-h-11 min-w-11 items-center justify-center rounded-xl text-ink-muted transition-colors hover:bg-surface-muted hover:text-ink lg:hidden"
+            className="flex min-h-11 min-w-11 items-center justify-center rounded-xl text-ink-muted outline-none transition-colors hover:bg-surface-muted hover:text-ink focus-visible:ring-2 focus-visible:ring-action-primary/30 lg:hidden"
             aria-label="إغلاق القائمة"
           >
-            <X className="h-5 w-5" />
+            <X className="h-5 w-5" aria-hidden="true" />
           </button>
         ) : null}
       </div>
@@ -300,14 +300,14 @@ export default function Sidebar({
                 key={item.href}
                 href={item.href}
                 onClick={onNavigate}
-                className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 active:scale-[0.98] ${
+                className={`flex items-center gap-3 px-4 py-3 rounded-xl outline-none transition-all duration-200 focus-visible:ring-2 focus-visible:ring-action-primary/30 active:scale-[0.98] ${
                   active
-                    ? 'bg-farm-blue text-[#ffffff] shadow-sm font-semibold'
+                    ? 'bg-action-primary text-ink-inverse shadow-sm font-semibold hover:bg-action-primary-hover'
                     : 'text-gray-600 dark:text-gray-700 hover:bg-menu-hover-bg hover:text-menu-hover-text'
                 }`}
               >
-                <item.icon className={`w-5 h-5 ${active ? 'text-[#ffffff]' : ''}`} />
-                <span className="text-sm">{item.label}</span>
+                <item.icon className="h-5 w-5 shrink-0" aria-hidden="true" />
+                <span className="min-w-0 truncate text-sm">{item.label}</span>
               </Link>
             )
           })}
@@ -318,10 +318,10 @@ export default function Sidebar({
             <Link
               href="/dashboard"
               onClick={onNavigate}
-              className="flex items-center gap-3 px-4 py-3 rounded-xl text-brand-logo-icon bg-brand-logo-bg/50 hover:bg-brand-logo-bg transition-colors duration-200 active:scale-[0.98]"
+              className="flex items-center gap-3 rounded-xl bg-brand-logo-bg/50 px-4 py-3 text-brand-logo-icon outline-none transition-colors duration-200 hover:bg-brand-logo-bg focus-visible:ring-2 focus-visible:ring-action-primary/30 active:scale-[0.98]"
             >
-              <ArrowRight className="w-5 h-5 text-brand-logo-icon" />
-              <span className="text-sm font-bold">العودة للرئيسية</span>
+              <ArrowRight className="h-5 w-5 shrink-0 text-brand-logo-icon" aria-hidden="true" />
+              <span className="min-w-0 truncate text-sm font-bold">العودة للرئيسية</span>
             </Link>
           </div>
         )}

@@ -78,7 +78,7 @@ export default function TopBar({
             <button
               type="button"
               onClick={onMenuToggle}
-              className="flex min-h-10 min-w-10 items-center justify-center rounded-xl border border-line bg-surface-muted text-action-primary transition-colors hover:bg-surface-subtle lg:hidden"
+              className="flex min-h-11 min-w-11 items-center justify-center rounded-xl border border-line bg-surface-muted text-action-primary outline-none transition-colors hover:bg-surface-subtle focus-visible:ring-2 focus-visible:ring-action-primary/30 lg:hidden"
               aria-label={isDrawerOpen ? 'إغلاق القائمة' : 'فتح القائمة'}
               aria-expanded={isDrawerOpen}
               aria-controls="mobile-nav-drawer"
@@ -106,11 +106,13 @@ export default function TopBar({
         <div className="flex min-w-0 items-center gap-3">
           {/* زر تسجيل الخروج */}
           <button
+            type="button"
             onClick={() => logoutMutation.mutate()}
-            className="flex h-10 w-10 items-center justify-center rounded-xl text-ink-muted transition-colors hover:bg-danger-soft hover:text-danger active:scale-95 sm:h-10 sm:w-auto sm:px-3 sm:py-2 sm:gap-2 sm:text-sm"
+            className="flex min-h-11 min-w-11 items-center justify-center rounded-xl text-ink-muted outline-none transition-colors hover:bg-danger-soft hover:text-danger focus-visible:ring-2 focus-visible:ring-danger/30 active:scale-95 sm:w-auto sm:gap-2 sm:px-3 sm:py-2 sm:text-sm"
+            aria-label="تسجيل الخروج"
             title="تسجيل الخروج من النظام"
           >
-            <LogOut className="h-4 w-4" />
+            <LogOut className="h-4 w-4" aria-hidden="true" />
             <span className="hidden sm:inline font-bold">خروج</span>
           </button>
         </div>
