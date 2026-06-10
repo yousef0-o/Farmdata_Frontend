@@ -21,6 +21,7 @@ export default function FlockAiReportPage() {
     () => reports.find((report) => report.id === selectedReportId) ?? latestReport,
     [latestReport, reports, selectedReportId]
   )
+  const errorMessage = createReport.error instanceof Error ? createReport.error.message : null
 
   return (
     <div className="space-y-6" dir="rtl">
@@ -58,6 +59,12 @@ export default function FlockAiReportPage() {
           </div>
         </div>
       </header>
+
+      {errorMessage ? (
+        <div className="rounded-xl border border-danger/30 bg-danger-soft px-4 py-3 text-sm font-semibold text-danger">
+          {errorMessage}
+        </div>
+      ) : null}
 
       {isLoading ? (
         <div className="flex min-h-72 items-center justify-center rounded-2xl border border-line bg-surface">
@@ -104,9 +111,13 @@ export default function FlockAiReportPage() {
 
 function ReportSummary({ report }: { report: PoultryAiReport }) {
   const payload = report.report_payload ?? {}
-  const summary = textValue(payload.summary) || report.raw_response || 'لا يوجد ملخص نصي.'
-  const risks = listValue(payload.risks)
-  const recommendations = listValue(payload.recommendations)
+  const summary =
+    textValue(payload.executive_summary) ||
+    textValue(payload.summary) ||
+    report.raw_response ||
+    'لا يوجد ملخص نصي.'
+  const risks = listValue(payload.detected_anomalies ?? payload.risks)
+  const recommendations = listValue(payload.action_plan ?? payload.recommendations)
   const questions = listValue(payload.follow_up_questions)
 
   return (

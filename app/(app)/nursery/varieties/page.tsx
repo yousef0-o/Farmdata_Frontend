@@ -1371,7 +1371,7 @@ function GuideLedger({
               ) : (
                 <div className="flex flex-col items-center gap-2 text-emerald-600/40">
                   <ImageIcon className="h-12 w-12 stroke-[1.5]" />
-                  <span className="text-[11px] font-medium tracking-wide">لا توجد صورة</span>
+                  <span className="text-xs font-medium tracking-wide">لا توجد صورة</span>
                 </div>
               )}
               {/* Overlay Actions at top right */}

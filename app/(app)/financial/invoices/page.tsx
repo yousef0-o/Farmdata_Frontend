@@ -501,7 +501,7 @@ export default function InvoicesPage() {
               </div>
               <button
                 onClick={() => setShowCreateModal(false)}
-                className="p-2 hover:bg-gray-100 rounded-full transition-colors text-gray-400 hover:text-gray-600"
+                className="flex min-h-11 min-w-11 items-center justify-center rounded-full text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-600"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -523,7 +523,7 @@ export default function InvoicesPage() {
                   <input
                     type="text"
                     required
-                    className={`w-full border rounded-xl px-4 py-2.5 bg-gray-50 text-gray-900 text-sm focus:outline-none focus:ring-2 focus:ring-farm-blue ${
+                    className={`min-h-11 w-full rounded-xl border bg-gray-50 px-4 py-2.5 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-farm-blue ${
                       formErrors.invoice_number ? 'border-red-500' : 'border-gray-200'
                     }`}
                     value={invoiceNumber}
@@ -538,7 +538,7 @@ export default function InvoicesPage() {
                   <input
                     type="date"
                     required
-                    className={`w-full border rounded-xl px-4 py-2.5 bg-gray-50 text-gray-900 text-sm focus:outline-none focus:ring-2 focus:ring-farm-blue ${
+                    className={`min-h-11 w-full rounded-xl border bg-gray-50 px-4 py-2.5 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-farm-blue ${
                       formErrors.invoice_date ? 'border-red-500' : 'border-gray-200'
                     }`}
                     value={invoiceDate}
@@ -551,7 +551,7 @@ export default function InvoicesPage() {
                   <label className="block text-xs font-bold text-gray-500 dark:text-gray-400 mb-2">تاريخ الاستحقاق</label>
                   <input
                     type="date"
-                    className="w-full border border-gray-200 rounded-xl px-4 py-2.5 bg-gray-50 text-gray-900 text-sm focus:outline-none focus:ring-2 focus:ring-farm-blue"
+                    className="min-h-11 w-full rounded-xl border border-gray-200 bg-gray-50 px-4 py-2.5 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-farm-blue"
                     value={dueDate}
                     onChange={(e) => setDueDate(e.target.value)}
                   />
@@ -564,7 +564,7 @@ export default function InvoicesPage() {
                   <label className="block text-xs font-bold text-gray-500 dark:text-gray-400 mb-2">المستودع المحاسبي المولد للحركة *</label>
                   <select
                     required
-                    className={`w-full border rounded-xl px-4 py-2.5 bg-gray-50 text-gray-900 text-sm focus:outline-none focus:ring-2 focus:ring-farm-blue ${
+                    className={`min-h-11 w-full rounded-xl border bg-gray-50 px-4 py-2.5 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-farm-blue ${
                       formErrors.warehouse_id ? 'border-red-500' : 'border-gray-200'
                     }`}
                     value={warehouseId}
@@ -585,7 +585,7 @@ export default function InvoicesPage() {
                   {activeTab === 'sales' ? (
                     <select
                       required
-                      className={`w-full border rounded-xl px-4 py-2.5 bg-gray-50 text-gray-900 text-sm focus:outline-none focus:ring-2 focus:ring-farm-blue ${
+                      className={`min-h-11 w-full rounded-xl border bg-gray-50 px-4 py-2.5 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-farm-blue ${
                         formErrors.customer_id ? 'border-red-500' : 'border-gray-200'
                       }`}
                       value={customerId}
@@ -599,7 +599,7 @@ export default function InvoicesPage() {
                   ) : (
                     <select
                       required
-                      className={`w-full border rounded-xl px-4 py-2.5 bg-gray-50 text-gray-900 text-sm focus:outline-none focus:ring-2 focus:ring-farm-blue ${
+                      className={`min-h-11 w-full rounded-xl border bg-gray-50 px-4 py-2.5 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-farm-blue ${
                         formErrors.supplier_id ? 'border-red-500' : 'border-gray-200'
                       }`}
                       value={supplierId}
@@ -626,7 +626,7 @@ export default function InvoicesPage() {
                   <button
                     type="button"
                     onClick={handleAddItemRow}
-                    className="text-xs text-farm-blue font-bold flex items-center gap-1 hover:underline"
+                    className="flex min-h-11 items-center gap-1 rounded-xl px-3 text-xs font-bold text-farm-blue hover:bg-blue-50"
                   >
                     <Plus className="w-3.5 h-3.5" />
                     <span>إضافة صنف</span>
@@ -635,7 +635,76 @@ export default function InvoicesPage() {
 
                 {formErrors.items && <p className="text-xs text-red-500">{formErrors.items}</p>}
 
-                <div className="border border-gray-200 rounded-2xl overflow-hidden">
+                <div className="grid grid-cols-1 gap-3 lg:hidden">
+                  {formItems.map((item, index) => {
+                    const qty = parseFloat(item.quantity) || 0
+                    const price = parseFloat(item.unit_price) || 0
+                    return (
+                      <article key={index} className="rounded-2xl border border-gray-200 bg-white p-4 shadow-sm">
+                        <div className="space-y-3">
+                          <div>
+                            <label className="mb-2 block text-xs font-bold text-gray-500">الصنف</label>
+                            <select
+                              required
+                              className="min-h-11 w-full rounded-xl border border-gray-200 bg-gray-50 px-3 py-2 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-farm-blue"
+                              value={item.item_id}
+                              onChange={(e) => handleItemChange(index, 'item_id', e.target.value)}
+                            >
+                              <option value="">-- اختر الصنف --</option>
+                              {items.map((it: Item) => (
+                                <option key={it.id} value={it.id}>{it.name}</option>
+                              ))}
+                            </select>
+                          </div>
+                          <div className="grid grid-cols-2 gap-3">
+                            <div>
+                              <label className="mb-2 block text-xs font-bold text-gray-500">الكمية</label>
+                              <input
+                                type="number"
+                                required
+                                min="0.01"
+                                step="any"
+                                className="min-h-11 w-full rounded-xl border border-gray-200 bg-gray-50 px-3 py-2 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-farm-blue"
+                                value={item.quantity}
+                                onChange={(e) => handleItemChange(index, 'quantity', e.target.value)}
+                                placeholder="1"
+                              />
+                            </div>
+                            <div>
+                              <label className="mb-2 block text-xs font-bold text-gray-500">سعر الوحدة</label>
+                              <input
+                                type="number"
+                                required
+                                min="0"
+                                step="any"
+                                className="min-h-11 w-full rounded-xl border border-gray-200 bg-gray-50 px-3 py-2 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-farm-blue"
+                                value={item.unit_price}
+                                onChange={(e) => handleItemChange(index, 'unit_price', e.target.value)}
+                                placeholder="0.00"
+                              />
+                            </div>
+                          </div>
+                          <div className="flex items-center justify-between gap-3 rounded-xl bg-gray-50 px-3 py-2 text-sm">
+                            <span className="text-xs font-bold text-gray-500">الإجمالي</span>
+                            <span className="font-mono font-bold text-gray-900">
+                              {(qty * price).toLocaleString('ar-SA')} <SaudiRiyalIcon size={14} className="ml-1 inline-block align-middle text-emerald-700" />
+                            </span>
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() => handleRemoveItemRow(index)}
+                            className="flex min-h-11 w-full items-center justify-center gap-2 rounded-xl border border-red-100 bg-red-50 px-4 py-2 text-sm font-semibold text-red-600"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                            <span>حذف الصنف</span>
+                          </button>
+                        </div>
+                      </article>
+                    )
+                  })}
+                </div>
+
+                <div className="hidden overflow-hidden rounded-2xl border border-gray-200 lg:block">
                   <table className="w-full text-right border-collapse">
                     <thead>
                       <tr className="bg-gray-50 border-b border-gray-200 text-xs font-bold text-gray-500">
@@ -747,7 +816,7 @@ export default function InvoicesPage() {
                       type="number"
                       min="0"
                       step="any"
-                      className="w-full rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-farm-blue"
+                      className="min-h-11 w-full rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-farm-blue"
                       value={overrideSubtotal}
                       onChange={(e) => setOverrideSubtotal(e.target.value)}
                       placeholder={calculatedSubtotal.toFixed(2)}
@@ -759,7 +828,7 @@ export default function InvoicesPage() {
                       type="number"
                       min="0"
                       step="any"
-                      className="w-full rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-farm-blue"
+                      className="min-h-11 w-full rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-farm-blue"
                       value={overrideTax}
                       onChange={(e) => setOverrideTax(e.target.value)}
                       placeholder={calculatedTax.toFixed(2)}
@@ -771,7 +840,7 @@ export default function InvoicesPage() {
                       type="number"
                       min="0"
                       step="any"
-                      className="w-full rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-farm-blue"
+                      className="min-h-11 w-full rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-farm-blue"
                       value={overrideTotal}
                       onChange={(e) => setOverrideTotal(e.target.value)}
                       placeholder={calculatedTotal.toFixed(2)}
@@ -810,14 +879,14 @@ export default function InvoicesPage() {
                 <button
                   type="button"
                   onClick={() => setShowCreateModal(false)}
-                  className="px-5 py-2.5 text-sm font-semibold border border-gray-250 rounded-xl hover:bg-gray-100 text-gray-500 transition-colors"
+                  className="min-h-11 rounded-xl border border-gray-250 px-5 py-2.5 text-sm font-semibold text-gray-500 transition-colors hover:bg-gray-100"
                 >
                   إلغاء
                 </button>
                 <button
                   type="submit"
                   disabled={createInvoiceMutation.isPending}
-                  className="px-5 py-2.5 text-sm font-bold bg-farm-blue hover:bg-farm-blue/90 text-white rounded-xl transition-colors shadow-sm flex items-center gap-2 hover:scale-[1.01] disabled:opacity-50"
+                  className="flex min-h-11 items-center gap-2 rounded-xl bg-farm-blue px-5 py-2.5 text-sm font-bold text-white shadow-sm transition-colors hover:scale-[1.01] hover:bg-farm-blue/90 disabled:opacity-50"
                 >
                   {createInvoiceMutation.isPending ? (
                     <>
@@ -856,7 +925,7 @@ export default function InvoicesPage() {
               </div>
               <button
                 onClick={() => setShowDetailsModal(false)}
-                className="p-2 hover:bg-gray-100 rounded-full transition-colors text-gray-400 hover:text-gray-600"
+                className="flex min-h-11 min-w-11 items-center justify-center rounded-full text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-600"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -896,7 +965,42 @@ export default function InvoicesPage() {
               {/* Items Grid */}
               <div className="space-y-3">
                 <h4 className="text-sm font-bold text-gray-900">الأصناف الملحقة والقيود المخزنية</h4>
-                <div className="border border-gray-200 rounded-2xl overflow-hidden">
+                {selectedInvoice.items && selectedInvoice.items.length > 0 ? (
+                  <div className="grid grid-cols-1 gap-3 lg:hidden">
+                    {selectedInvoice.items.map((item) => (
+                      <article key={item.id} className="rounded-2xl border border-gray-200 bg-white p-4 shadow-sm">
+                        <div className="space-y-3">
+                          <div>
+                            <span className="block text-xs font-bold text-gray-500">الصنف</span>
+                            <p className="mt-1 text-sm font-semibold text-gray-900">{item.item?.name || 'صنف مجهول'}</p>
+                          </div>
+                          <div className="grid grid-cols-2 gap-3 text-sm">
+                            <div className="rounded-xl bg-gray-50 px-3 py-2">
+                              <span className="block text-xs font-bold text-gray-500">الكمية</span>
+                              <span className="mt-1 block font-mono text-gray-800">{parseFloat(item.quantity).toLocaleString('en-US')}</span>
+                            </div>
+                            <div className="rounded-xl bg-gray-50 px-3 py-2">
+                              <span className="block text-xs font-bold text-gray-500">سعر الوحدة</span>
+                              <span className="mt-1 block font-mono text-gray-800">
+                                {parseFloat(item.unit_price).toLocaleString('ar-SA')} <SaudiRiyalIcon size={14} className="ml-1 inline-block align-middle text-emerald-700" />
+                              </span>
+                            </div>
+                            <div className="col-span-2 rounded-xl bg-gray-50 px-3 py-2">
+                              <span className="block text-xs font-bold text-gray-500">الإجمالي</span>
+                              <span className="mt-1 block font-mono font-bold text-gray-900">
+                                {parseFloat(item.total).toLocaleString('ar-SA')} <SaudiRiyalIcon size={14} className="ml-1 inline-block align-middle text-emerald-700" />
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+                      </article>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="rounded-2xl bg-gray-50 p-6 text-center text-sm text-gray-500 lg:hidden">لا توجد تفاصيل أصناف لهذه الفاتورة</div>
+                )}
+
+                <div className="hidden overflow-hidden rounded-2xl border border-gray-200 lg:block">
                   <table className="w-full text-right border-collapse">
                     <thead>
                       <tr className="bg-gray-50 border-b border-gray-200 text-xs font-bold text-gray-500">
@@ -975,7 +1079,7 @@ export default function InvoicesPage() {
               <button
                 type="button"
                 onClick={() => setShowDetailsModal(false)}
-                className="px-6 py-2.5 text-sm font-semibold bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-xl transition-colors"
+                className="min-h-11 rounded-xl bg-gray-100 px-6 py-2.5 text-sm font-semibold text-gray-700 transition-colors hover:bg-gray-200"
               >
                 إغلاق
               </button>

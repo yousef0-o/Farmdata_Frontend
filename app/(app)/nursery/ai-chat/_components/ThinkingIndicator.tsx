@@ -52,7 +52,7 @@ export default function ThinkingIndicator({
             {telemetryEvents.map(event => (
               <span
                 key={event.id}
-                className="inline-flex items-center gap-1 rounded-lg border border-line bg-surface px-2 py-1 text-[10px] font-bold text-ink-muted shadow-sm"
+                className="inline-flex items-center gap-1 rounded-lg border border-line bg-surface px-2 py-1 text-xs font-bold text-ink-muted shadow-sm"
                 style={{ animation: 'slideUp 0.25s cubic-bezier(0.16, 1, 0.3, 1)' }}
               >
                 <Activity className="h-3 w-3 text-info" />

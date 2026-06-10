@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useState } from 'react'
-import { X, Plus, Trash2, Loader2, AlertCircle } from 'lucide-react'
+import { X, Plus, Trash2, AlertCircle } from 'lucide-react'
 import { z } from 'zod'
 import { useCloseFlock } from '@/lib/hooks/useFlock'
 import { useAccountingAccounts } from '@/lib/hooks/useArchive'
@@ -297,19 +297,19 @@ export default function CloseFlockDialog({
               {allocations.map((alloc, idx) => (
                 <div
                   key={idx}
-                  className="flex items-center gap-3 p-3 bg-gray-50 rounded-xl"
+                  className="grid gap-3 rounded-xl bg-gray-50 p-3 sm:grid-cols-[minmax(0,1fr)_7rem_7rem_2.75rem] sm:items-center"
                 >
                   <input
                     type="text"
                     placeholder="اسم الوجهة"
-                    className="flex-1 border border-gray-200 rounded-lg px-3 py-2 bg-white text-sm focus:outline-none focus:ring-1 focus:ring-farm-blue"
+                    className="min-h-11 min-w-0 rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-farm-blue"
                     value={alloc.label}
                     onChange={(e) => updateAllocation(idx, 'label', e.target.value)}
                   />
                   <input
                     type="number"
                     placeholder="عدد الطيور"
-                    className="w-28 border border-gray-200 rounded-lg px-3 py-2 bg-white text-sm focus:outline-none focus:ring-1 focus:ring-farm-blue"
+                    className="min-h-11 min-w-0 rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-farm-blue"
                     value={alloc.bird_count}
                     onChange={(e) =>
                       updateAllocation(idx, 'bird_count', e.target.value)
@@ -318,7 +318,7 @@ export default function CloseFlockDialog({
                   <input
                     type="number"
                     placeholder="القيمة"
-                    className="w-28 border border-gray-200 rounded-lg px-3 py-2 bg-white text-sm focus:outline-none focus:ring-1 focus:ring-farm-blue"
+                    className="min-h-11 min-w-0 rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-farm-blue"
                     value={alloc.value}
                     onChange={(e) =>
                       updateAllocation(idx, 'value', e.target.value)
@@ -380,7 +380,7 @@ export default function CloseFlockDialog({
                 {financialRows.map((row, idx) => (
                   <div key={idx} className="grid grid-cols-1 gap-3 rounded-xl bg-gray-50 p-3 md:grid-cols-6">
                     <select
-                      className="md:col-span-2 rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-farm-blue"
+                      className="min-h-11 rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-farm-blue md:col-span-2"
                       value={row.account_id}
                       onChange={(e) => updateFinancialRow(idx, 'account_id', e.target.value)}
                     >
@@ -392,13 +392,13 @@ export default function CloseFlockDialog({
                     <input
                       type="text"
                       placeholder="مرجع"
-                      className="rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-farm-blue"
+                      className="min-h-11 rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-farm-blue"
                       value={row.reference_number}
                       onChange={(e) => updateFinancialRow(idx, 'reference_number', e.target.value)}
                     />
                     <input
                       type="date"
-                      className="rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-farm-blue"
+                      className="min-h-11 rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-farm-blue"
                       value={row.transaction_date}
                       onChange={(e) => updateFinancialRow(idx, 'transaction_date', e.target.value)}
                     />
@@ -407,7 +407,7 @@ export default function CloseFlockDialog({
                       min="0"
                       step="any"
                       placeholder="مدين"
-                      className="rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-farm-blue"
+                      className="min-h-11 rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-farm-blue"
                       value={row.debit_amount}
                       onChange={(e) => updateFinancialRow(idx, 'debit_amount', e.target.value)}
                     />
@@ -416,14 +416,14 @@ export default function CloseFlockDialog({
                       min="0"
                       step="any"
                       placeholder="دائن"
-                      className="rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-farm-blue"
+                      className="min-h-11 rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-farm-blue"
                       value={row.credit_amount}
                       onChange={(e) => updateFinancialRow(idx, 'credit_amount', e.target.value)}
                     />
                     <input
                       type="text"
                       placeholder="وصف القيد"
-                      className="md:col-span-5 rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-farm-blue"
+                      className="min-h-11 rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-farm-blue md:col-span-5"
                       value={row.description}
                       onChange={(e) => updateFinancialRow(idx, 'description', e.target.value)}
                     />
@@ -468,7 +468,7 @@ export default function CloseFlockDialog({
                 {assetRows.map((row, idx) => (
                   <div key={idx} className="grid grid-cols-1 gap-3 rounded-xl bg-gray-50 p-3 md:grid-cols-5">
                     <select
-                      className="md:col-span-2 rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-farm-blue"
+                      className="min-h-11 rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-farm-blue md:col-span-2"
                       value={row.account_id}
                       onChange={(e) => updateAssetRow(idx, 'account_id', e.target.value)}
                     >
@@ -482,7 +482,7 @@ export default function CloseFlockDialog({
                       min="0"
                       step="any"
                       placeholder="مدين"
-                      className="rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-farm-blue"
+                      className="min-h-11 rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-farm-blue"
                       value={row.debit_amount}
                       onChange={(e) => updateAssetRow(idx, 'debit_amount', e.target.value)}
                     />
@@ -491,7 +491,7 @@ export default function CloseFlockDialog({
                       min="0"
                       step="any"
                       placeholder="دائن"
-                      className="rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-farm-blue"
+                      className="min-h-11 rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-farm-blue"
                       value={row.credit_amount}
                       onChange={(e) => updateAssetRow(idx, 'credit_amount', e.target.value)}
                     />
@@ -507,7 +507,7 @@ export default function CloseFlockDialog({
                     <input
                       type="text"
                       placeholder="وصف أصل القطيع"
-                      className="md:col-span-5 rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-farm-blue"
+                      className="min-h-11 rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-farm-blue md:col-span-5"
                       value={row.description}
                       onChange={(e) => updateAssetRow(idx, 'description', e.target.value)}
                     />
@@ -525,11 +525,12 @@ export default function CloseFlockDialog({
           </div>
 
           {/* Submit */}
-          <div className="flex gap-3 justify-end pt-4 border-t border-gray-100">
+          <div className="flex flex-col gap-3 border-t border-gray-100 pt-4 sm:flex-row sm:justify-end">
             <Button
               type="button"
               onClick={() => onOpenChange(false)}
               variant="outline"
+              className="w-full sm:w-auto"
             >
               إلغاء
             </Button>
@@ -537,6 +538,7 @@ export default function CloseFlockDialog({
               type="submit"
               disabled={closeFlock.isPending || exceedsCount}
               isLoading={closeFlock.isPending}
+              className="w-full sm:w-auto"
             >
               تأكيد الإغلاق
             </Button>

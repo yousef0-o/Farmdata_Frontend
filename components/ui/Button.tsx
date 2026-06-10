@@ -8,7 +8,7 @@ import { cn } from '@/lib/utils'
 
 export const buttonVariants = cva(
   [
-    'inline-flex min-h-11 items-center justify-center gap-2 rounded-xl px-4 py-2 text-sm font-medium whitespace-nowrap outline-none',
+    'inline-flex max-w-full min-h-11 items-center justify-center gap-2 rounded-xl px-4 py-2 text-sm font-medium whitespace-nowrap outline-none',
     'transition-[background-color,border-color,color,box-shadow,transform] duration-150 ease-out',
     'focus-visible:ring-2 focus-visible:ring-action-primary/30',
     'active:scale-[0.98]',
@@ -29,10 +29,10 @@ export const buttonVariants = cva(
           'bg-danger text-ink-inverse hover:bg-danger-strong focus-visible:ring-danger/30',
       },
       size: {
-        sm: 'min-h-9 rounded-lg px-3 py-1.5 text-xs',
+        sm: 'min-h-11 rounded-lg px-3 py-1.5 text-xs sm:min-h-9',
         default: 'min-h-11 rounded-xl px-4 py-2 text-sm',
         lg: 'min-h-12 rounded-xl px-6 py-3 text-sm',
-        icon: 'h-10 w-10 min-h-10 rounded-lg p-0',
+        icon: 'h-11 w-11 min-h-11 rounded-lg p-0 sm:h-10 sm:w-10 sm:min-h-10',
       },
     },
     defaultVariants: {
@@ -108,6 +108,43 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
     const isDisabled = disabled || isLoading
     const isIcon = size === 'icon'
     const label = isLoading && loadingText ? loadingText : children
+    const content = isIcon ? (
+      isLoading ? null : (
+        children
+      )
+    ) : asChild ? (
+      [
+        isLoading ? (
+          <span
+            key="spinner"
+            aria-hidden="true"
+            className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent"
+          />
+        ) : null,
+        !isLoading && leftIcon ? (
+          <React.Fragment key="left-icon">{leftIcon}</React.Fragment>
+        ) : null,
+        <Slottable key="label">{label}</Slottable>,
+        !isLoading && rightIcon ? (
+          <React.Fragment key="right-icon">{rightIcon}</React.Fragment>
+        ) : null,
+      ]
+    ) : (
+      <>
+        {isLoading ? (
+          <span
+            aria-hidden="true"
+            className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent"
+          />
+        ) : null}
+
+        {!isLoading && leftIcon ? leftIcon : null}
+
+        <span className="truncate">{label}</span>
+
+        {!isLoading && rightIcon ? rightIcon : null}
+      </>
+    )
 
     function handleClick(event: React.MouseEvent<HTMLButtonElement>) {
       if (isDisabled) {
@@ -135,30 +172,7 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
         onClick={handleClick}
         {...props}
       >
-        {isIcon ? (
-          isLoading ? null : (
-            children
-          )
-        ) : (
-          <>
-            {isLoading ? (
-              <span
-                aria-hidden="true"
-                className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent"
-              />
-            ) : null}
-
-            {!isLoading && leftIcon ? leftIcon : null}
-
-            {asChild ? (
-              <Slottable>{label}</Slottable>
-            ) : (
-              <span className="truncate">{label}</span>
-            )}
-
-            {!isLoading && rightIcon ? rightIcon : null}
-          </>
-        )}
+        {content}
       </Comp>
     )
   },

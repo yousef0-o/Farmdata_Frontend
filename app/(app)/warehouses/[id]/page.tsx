@@ -36,7 +36,7 @@ export default function WarehouseDetailPage() {
         <p className="text-sm text-gray-500 mb-6">يرجى التأكد من معرف المستودع والمحاولة مرة أخرى.</p>
         <Link
           href="/warehouses"
-          className="inline-flex items-center gap-2 bg-gray-100 hover:bg-gray-200 text-gray-600 px-5 py-2.5 rounded-xl font-medium transition-colors"
+          className="inline-flex min-h-11 items-center gap-2 rounded-xl bg-gray-100 px-5 py-2.5 font-medium text-gray-600 transition-colors hover:bg-gray-200"
         >
           <ArrowLeft className="w-4 h-4" />
           العودة للمستودعات
@@ -69,25 +69,25 @@ export default function WarehouseDetailPage() {
           </div>
         </div>
 
-        <div className="flex gap-3">
+        <div className="flex w-full flex-col gap-3 sm:w-auto sm:flex-row">
           <button
             type="button"
             onClick={() => setShowCreateDialog(true)}
-            className="flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white px-5 py-2.5 rounded-xl transition-colors font-medium text-sm"
+            className="flex min-h-11 items-center justify-center gap-2 rounded-xl bg-green-600 px-5 py-2.5 text-sm font-medium text-white transition-colors hover:bg-green-700"
           >
             <Plus className="w-4 h-4" />
             <span>إضافة حركة لهذا المستودع</span>
           </button>
           <Link
             href={`/inventory/movements?warehouse_id=${warehouseId}`}
-            className="flex items-center gap-2 bg-farm-blue hover:bg-blue-800 text-white px-5 py-2.5 rounded-xl transition-colors font-medium text-sm"
+            className="flex min-h-11 items-center justify-center gap-2 rounded-xl bg-farm-blue px-5 py-2.5 text-sm font-medium text-white transition-colors hover:bg-blue-800"
           >
             <ArrowLeftRight className="w-4 h-4" />
             <span>عرض حركات هذا المستودع</span>
           </Link>
           <Link
             href="/warehouses"
-            className="flex items-center gap-2 bg-gray-100 hover:bg-gray-200 text-gray-600 px-4 py-2.5 rounded-xl transition-colors font-medium text-sm"
+            className="flex min-h-11 items-center justify-center gap-2 rounded-xl bg-gray-100 px-4 py-2.5 text-sm font-medium text-gray-600 transition-colors hover:bg-gray-200"
           >
             <ArrowLeft className="w-4 h-4" />
             <span>العودة للقائمة</span>
@@ -121,30 +121,51 @@ export default function WarehouseDetailPage() {
             <p className="text-gray-500 text-sm font-medium">لا توجد أرصدة مسجلة لهذا المستودع</p>
           </div>
         ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="border-b border-gray-200 text-gray-500 bg-gray-50/50">
-                  <th className="text-right py-3 px-4 font-semibold">الصنف</th>
-                  <th className="text-right py-3 px-4 font-semibold">الكمية المتاحة</th>
-                  <th className="text-right py-3 px-4 font-semibold">آخر تحديث</th>
-                </tr>
-              </thead>
-              <tbody>
-                {balances.map((bal, idx) => (
-                  <tr key={idx} className="border-b border-gray-100 hover:bg-gray-50/50 transition-colors">
-                    <td className="py-3 px-4 font-medium text-gray-900">{bal.item_name}</td>
-                    <td className="py-3 px-4 font-bold text-farm-blue">
-                      {Number(bal.quantity_on_hand).toFixed(3)}
-                    </td>
-                    <td className="py-3 px-4 text-gray-500 text-xs">
-                      {bal.updated_at ? new Date(bal.updated_at).toLocaleString('ar-EG') : '—'}
-                    </td>
+          <>
+            <div className="grid grid-cols-1 gap-3 lg:hidden">
+              {balances.map((bal, idx) => (
+                <article key={idx} className="rounded-2xl border border-gray-100 bg-white p-4 shadow-sm">
+                  <h3 className="text-sm font-bold text-gray-900">{bal.item_name}</h3>
+                  <dl className="mt-3 grid grid-cols-2 gap-3 text-sm">
+                    <div className="rounded-xl bg-gray-50 px-3 py-2">
+                      <dt className="text-xs font-semibold text-gray-500">الكمية المتاحة</dt>
+                      <dd className="mt-1 font-bold text-farm-blue">{Number(bal.quantity_on_hand).toFixed(3)}</dd>
+                    </div>
+                    <div className="rounded-xl bg-gray-50 px-3 py-2">
+                      <dt className="text-xs font-semibold text-gray-500">آخر تحديث</dt>
+                      <dd className="mt-1 text-xs font-semibold text-gray-600">
+                        {bal.updated_at ? new Date(bal.updated_at).toLocaleString('ar-EG') : '—'}
+                      </dd>
+                    </div>
+                  </dl>
+                </article>
+              ))}
+            </div>
+            <div className="hidden overflow-x-auto lg:block">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b border-gray-200 text-gray-500 bg-gray-50/50">
+                    <th className="text-right py-3 px-4 font-semibold">الصنف</th>
+                    <th className="text-right py-3 px-4 font-semibold">الكمية المتاحة</th>
+                    <th className="text-right py-3 px-4 font-semibold">آخر تحديث</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+                </thead>
+                <tbody>
+                  {balances.map((bal, idx) => (
+                    <tr key={idx} className="border-b border-gray-100 hover:bg-gray-50/50 transition-colors">
+                      <td className="py-3 px-4 font-medium text-gray-900">{bal.item_name}</td>
+                      <td className="py-3 px-4 font-bold text-farm-blue">
+                        {Number(bal.quantity_on_hand).toFixed(3)}
+                      </td>
+                      <td className="py-3 px-4 text-gray-500 text-xs">
+                        {bal.updated_at ? new Date(bal.updated_at).toLocaleString('ar-EG') : '—'}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </>
         )}
       </div>
     </div>

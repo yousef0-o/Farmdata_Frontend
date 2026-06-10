@@ -61,7 +61,7 @@ export default function QuickFocusPanel({
         <h3 className="text-xs font-extrabold text-ink-muted mb-3">تركيز سريع</h3>
         <div className="space-y-2.5">
           <div>
-            <label className="text-[11px] font-bold text-ink-muted block mb-1">الحوض</label>
+            <label className="text-xs font-bold text-ink-muted block mb-1">الحوض</label>
             <select
               value={selectedBasinId || ''}
               onChange={e => setSelectedBasinId(e.target.value ? Number(e.target.value) : null)}
@@ -72,7 +72,7 @@ export default function QuickFocusPanel({
             </select>
           </div>
           <div>
-            <label className="text-[11px] font-bold text-ink-muted block mb-1">دورة الإنتاج</label>
+            <label className="text-xs font-bold text-ink-muted block mb-1">دورة الإنتاج</label>
             <select
               value={selectedCycleId || ''}
               onChange={e => setSelectedCycleId(e.target.value ? Number(e.target.value) : null)}
@@ -92,7 +92,7 @@ export default function QuickFocusPanel({
           <div className="rounded-2xl border border-line bg-surface-muted/30 p-4">
             <div className="flex items-center justify-between border-b border-line pb-2.5 mb-3">
               <span className="text-xs font-extrabold text-ink">بيانات الحوض</span>
-              <span className="inline-flex items-center gap-1 rounded-full bg-success-soft px-2 py-0.5 text-[9px] font-bold text-success ring-1 ring-success/20">
+              <span className="inline-flex items-center gap-1 rounded-full bg-success-soft px-2 py-0.5 text-xs font-bold text-success ring-1 ring-success/20">
                 <span className="h-1.5 w-1.5 rounded-full bg-success animate-pulse" />
                 متصل
               </span>
@@ -145,7 +145,7 @@ export default function QuickFocusPanel({
 
           {/* Quick operation shortcuts */}
           <div className="space-y-2">
-            <span className="text-[11px] font-bold text-ink-muted block mb-1">عمليات مباشرة</span>
+            <span className="text-xs font-bold text-ink-muted block mb-1">عمليات مباشرة</span>
             {shortcuts.map(s => (
               <button
                 key={s.action}
@@ -166,18 +166,18 @@ export default function QuickFocusPanel({
           {/* Recent activities */}
           {(basinStats?.recent_activities?.length ?? 0) > 0 && (
             <div className="space-y-2 pt-2 border-t border-line">
-              <span className="text-[11px] font-bold text-ink-muted block mb-1">أنشطة أخيرة</span>
+              <span className="text-xs font-bold text-ink-muted block mb-1">أنشطة أخيرة</span>
               <div className="space-y-2 max-h-48 overflow-y-auto">
                 {(basinStats?.recent_activities ?? []).slice(0, 4).map((activity, index) => (
                   <div
                     key={index}
-                    className="rounded-xl bg-surface-muted/50 border border-line/50 p-2.5 text-[10px] font-semibold text-ink-soft space-y-0.5"
+                    className="rounded-xl bg-surface-muted/50 border border-line/50 p-2.5 text-xs font-semibold text-ink-soft space-y-0.5"
                   >
                     <div className="flex justify-between">
                       <span className="font-extrabold text-ink">{activity.description || activity.type}</span>
-                      <span className="text-[9px] text-ink-muted">{activity.date}</span>
+                      <span className="text-xs text-ink-muted">{activity.date}</span>
                     </div>
-                    {activity.detail && <div className="text-[9px] text-ink-muted">{activity.detail}</div>}
+                    {activity.detail && <div className="text-xs text-ink-muted">{activity.detail}</div>}
                   </div>
                 ))}
               </div>

@@ -42,7 +42,7 @@ export function FlockAnalyticsChart({ analytics }: FlockAnalyticsChartProps) {
     <section className="rounded-[1.75rem] border border-line bg-surface p-5 shadow-sm">
       <div className="flex flex-col gap-2 md:flex-row md:items-end md:justify-between">
         <div>
-          <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-ink-muted">Chart Engine</p>
+          <p className="text-xs font-semibold uppercase text-ink-muted">Chart Engine</p>
           <h2 className="text-xl font-bold text-ink">الرسم التفاعلي للإنتاج والعلف</h2>
           <p className="text-sm text-ink-soft">
             {analytics.meta.aggregation === 'daily' ? 'عرض يومي' : analytics.meta.aggregation === 'weekly' ? 'تجميع أسبوعي' : 'تجميع كل 28 يوم'}
@@ -56,8 +56,8 @@ export function FlockAnalyticsChart({ analytics }: FlockAnalyticsChartProps) {
         </div>
       </div>
 
-      <div className="mt-5 overflow-x-auto">
-        <svg viewBox={`0 0 ${width} ${height + 34}`} className="min-w-[720px]">
+      <div className="mt-5 max-w-full overflow-hidden">
+        <svg viewBox={`0 0 ${width} ${height + 34}`} className="h-auto w-full">
           <g transform="translate(0 6)">
             {[0, 1, 2, 3].map((index) => {
               const y = 12 + (height - 24) * (index / 3)
@@ -105,7 +105,7 @@ export function FlockAnalyticsChart({ analytics }: FlockAnalyticsChartProps) {
               x={index * step}
               y={height + 26}
               textAnchor={index === 0 ? 'start' : index === points.length - 1 ? 'end' : 'middle'}
-              className="fill-current text-[11px] font-medium text-ink-soft"
+              className="fill-current text-xs font-medium text-ink-soft"
             >
               {point.label}
             </text>

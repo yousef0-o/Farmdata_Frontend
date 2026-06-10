@@ -338,7 +338,7 @@ export default function FlockDetailPage() {
 
         {activeTab === 'expenses' && (
           <div className="space-y-6">
-            <div className="flex justify-between items-center">
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
               <div>
                 <h2 className="text-lg font-bold text-gray-850">المصروفات النثرية والتشغيلية للفوج</h2>
                 <p className="text-sm text-gray-500 mt-1">تتبع كافة التكاليف النثرية والعمالة والنقل لهذا الفوج</p>
@@ -346,7 +346,7 @@ export default function FlockDetailPage() {
               {flock.status === 'active' && (
                 <button
                   onClick={() => setShowAddModal(true)}
-                  className="flex items-center gap-2 bg-farm-blue hover:bg-blue-700 text-white px-5 py-2.5 rounded-xl transition-colors font-medium"
+                  className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-farm-blue px-5 py-2.5 font-medium text-white transition-colors hover:bg-blue-700"
                 >
                   <Plus className="w-5 h-5" />
                   <span>إضافة مصروف للفوج</span>
@@ -365,7 +365,52 @@ export default function FlockDetailPage() {
               </div>
             ) : (
               <div className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden">
-                <div className="overflow-x-auto">
+                <div className="grid grid-cols-1 gap-3 p-3 lg:hidden">
+                  {expenses.map((exp) => (
+                    <article key={exp.id} className="rounded-2xl border border-gray-100 bg-gray-50/70 p-4">
+                      <div className="flex items-start justify-between gap-3">
+                        <div>
+                          <p className="text-xs font-bold text-gray-500">التاريخ</p>
+                          <h3 className="mt-1 text-sm font-bold text-gray-900">
+                            {new Date(exp.expense_date).toLocaleDateString('ar-EG', {
+                              year: 'numeric',
+                              month: 'long',
+                              day: 'numeric',
+                            })}
+                          </h3>
+                        </div>
+                        <span className="rounded-full bg-blue-50 px-2.5 py-1 text-xs font-bold text-blue-700">
+                          {exp.category}
+                        </span>
+                      </div>
+                      <div className="mt-4 rounded-xl bg-white px-3 py-2">
+                        <p className="text-xs font-bold text-gray-500">المبلغ</p>
+                        <p className="mt-1 font-bold text-gray-900">
+                          {Number(exp.amount).toLocaleString('ar-EG')}
+                          <SaudiRiyalIcon size={16} className="ml-1 inline-block align-middle text-emerald-700" />
+                        </p>
+                      </div>
+                      <p className="mt-3 text-sm text-gray-500">{exp.description || '-'}</p>
+                      {flock.status === 'active' && (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            if (confirm('هل أنت متأكد من حذف هذا المصروف؟')) {
+                              deleteExpenseMutation.mutate(exp.id)
+                            }
+                          }}
+                          disabled={deleteExpenseMutation.isPending}
+                          className="mt-4 inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-xl border border-red-100 bg-red-50 px-3 py-2 text-sm font-bold text-red-600 transition-colors hover:bg-red-100 disabled:opacity-60"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                          حذف المصروف
+                        </button>
+                      )}
+                    </article>
+                  ))}
+                </div>
+
+                <div className="hidden overflow-x-auto lg:block">
                   <table className="w-full text-right border-collapse">
                     <thead>
                       <tr className="bg-gray-50 border-b border-gray-100 text-gray-500 text-sm font-semibold">
@@ -406,7 +451,7 @@ export default function FlockDetailPage() {
                                   }
                                 }}
                                 disabled={deleteExpenseMutation.isPending}
-                                className="p-2 text-red-500 hover:bg-red-50 rounded-lg transition-colors inline-flex"
+                                className="inline-flex min-h-10 min-w-10 items-center justify-center rounded-lg p-2 text-red-500 transition-colors hover:bg-red-50"
                               >
                                 <Trash2 className="w-5 h-5" />
                               </button>
@@ -439,7 +484,39 @@ export default function FlockDetailPage() {
               تفاصيل الإغلاق والتوزيع
             </Link>
           </div>
-          <div className="overflow-x-auto">
+          <div className="grid grid-cols-1 gap-3 lg:hidden">
+            {flock.closing_allocations.map((alloc) => (
+              <article key={alloc.id} className="rounded-2xl border border-gray-100 bg-gray-50/70 p-4">
+                <div className="flex items-start justify-between gap-3">
+                  <div>
+                    <p className="text-xs font-bold text-gray-500">الوجهة</p>
+                    <h3 className="mt-1 text-sm font-bold text-gray-900">{alloc.allocation_label}</h3>
+                  </div>
+                  <span className="rounded-full bg-white px-2.5 py-1 text-xs font-bold text-gray-600 ring-1 ring-gray-100">
+                    {Number(alloc.percentage).toFixed(3)}%
+                  </span>
+                </div>
+                <div className="mt-4 grid grid-cols-2 gap-3 text-sm">
+                  <div className="rounded-xl bg-white px-3 py-2">
+                    <p className="text-xs font-bold text-gray-500">عدد الطيور</p>
+                    <p className="mt-1 font-bold text-gray-900">{alloc.bird_count.toLocaleString()}</p>
+                  </div>
+                  <div className="rounded-xl bg-white px-3 py-2">
+                    <p className="text-xs font-bold text-gray-500">القيمة</p>
+                    <p className="mt-1 font-bold text-gray-900">
+                      {alloc.value !== null && alloc.value !== undefined
+                        ? Number(alloc.value).toLocaleString(undefined, {
+                            minimumFractionDigits: 2,
+                          })
+                        : '—'}
+                    </p>
+                  </div>
+                </div>
+              </article>
+            ))}
+          </div>
+
+          <div className="hidden overflow-x-auto lg:block">
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b border-gray-200 text-gray-500">
@@ -668,7 +745,61 @@ function FlockFeedBatchesTable({
           {flockNumber}
         </span>
       </div>
-      <div className="overflow-x-auto rounded-xl border border-slate-100">
+      <div className="grid grid-cols-1 gap-3 lg:hidden">
+        {rows.length === 0 ? (
+          <div className="rounded-2xl border border-dashed border-slate-200 bg-slate-50 px-4 py-10 text-center text-sm font-semibold text-slate-500">
+            لا توجد دفعات علف مسجلة لهذا الفوج.
+          </div>
+        ) : (
+          rows.map((row) => (
+            <article key={row.id} className="rounded-2xl border border-slate-100 bg-slate-50/70 p-4">
+              <div className="flex items-start justify-between gap-3">
+                <div>
+                  <p className="text-xs font-bold text-slate-500">التاريخ</p>
+                  <h3 className="mt-1 font-mono text-sm font-bold text-slate-950">{row.entry.record_date}</h3>
+                </div>
+                <span className="rounded-full bg-white px-2.5 py-1 font-mono text-xs font-bold text-slate-700 ring-1 ring-slate-100">
+                  {row.logTime ?? '—'}
+                </span>
+              </div>
+              <div className="mt-4 grid grid-cols-2 gap-3 text-sm">
+                <div className="rounded-xl bg-white px-3 py-2">
+                  <p className="text-xs font-bold text-slate-500">العمر (يوم)</p>
+                  <p className="mt-1 font-mono font-bold text-slate-900">{formatNumber(row.entry.age_days)}</p>
+                </div>
+                <div className="rounded-xl bg-white px-3 py-2">
+                  <p className="text-xs font-bold text-slate-500">الأسبوع</p>
+                  <p className="mt-1 font-mono font-bold text-slate-900">
+                    {formatNumber('week_number' in row.entry ? row.entry.week_number : Math.max(1, Math.ceil((row.entry.age_days + 1) / 7)))}
+                  </p>
+                </div>
+                <div className="col-span-2 rounded-xl bg-white px-3 py-2">
+                  <p className="text-xs font-bold text-slate-500">نوع العلف</p>
+                  <p className="mt-1 font-bold text-slate-900">{row.feedType}</p>
+                </div>
+                <div className="rounded-xl bg-white px-3 py-2">
+                  <p className="text-xs font-bold text-slate-500">الكمية طن</p>
+                  <p className="mt-1 font-mono font-bold text-slate-900">{formatNumber(row.quantityTon, 3)}</p>
+                </div>
+                <div className="rounded-xl bg-white px-3 py-2">
+                  <p className="text-xs font-bold text-slate-500">الكمية كجم</p>
+                  <p className="mt-1 font-mono font-bold text-slate-900">{formatNumber(row.quantityKg, 2)}</p>
+                </div>
+                <div className="rounded-xl bg-white px-3 py-2">
+                  <p className="text-xs font-bold text-slate-500">السعر/طن</p>
+                  <p className="mt-1 font-mono font-bold text-slate-700">{row.pricePerTon > 0 ? formatCurrency(row.pricePerTon) : '—'}</p>
+                </div>
+                <div className="rounded-xl bg-white px-3 py-2">
+                  <p className="text-xs font-bold text-slate-500">المبلغ</p>
+                  <p className="mt-1 font-mono font-bold text-emerald-700">{row.amount > 0 ? formatCurrency(row.amount) : '—'}</p>
+                </div>
+              </div>
+            </article>
+          ))
+        )}
+      </div>
+
+      <div className="hidden overflow-x-auto rounded-xl border border-slate-100 lg:block">
         <table className="w-full min-w-[940px] text-right text-sm">
           <thead>
             <tr className="border-b border-slate-100 bg-slate-50 text-xs font-bold text-slate-500">

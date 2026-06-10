@@ -282,7 +282,7 @@ export default function ProductionEntryForm({ flockId, onSuccess, onCancel }: Pr
                 ))}
               </select>
               {!selectedEggWarehouseId && defaultProductionWarehouseId ? (
-                <p className="mt-1.5 text-[10px] font-semibold text-emerald-700 bg-emerald-50 px-2 py-1 rounded">سيتم استخدام مستودع الإنتاج الافتراضي من القسم.</p>
+                <p className="mt-1.5 rounded bg-emerald-50 px-2 py-1 text-xs font-semibold text-emerald-700">سيتم استخدام مستودع الإنتاج الافتراضي من القسم.</p>
               ) : null}
             </FormField>
           </div>
@@ -320,13 +320,13 @@ export default function ProductionEntryForm({ flockId, onSuccess, onCancel }: Pr
 
             <div className="grid gap-3 grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-7">
               {canonicalEggSizes.map((size, index) => (
-                <div key={size.code} className="rounded-xl border border-slate-100 bg-slate-50/50 p-3 hover:border-orange-200 transition-all duration-200">
+                <div key={size.code} className="rounded-xl border border-slate-100 bg-slate-50/50 p-3 transition-colors duration-200 hover:border-orange-200">
                   <div className="mb-2 flex items-center justify-between gap-2">
                     <span className="inline-flex items-center gap-1.5 text-xs font-bold text-slate-800">
                       <span className="h-2 w-2 rounded-full bg-terracotta" />
                       {size.label}
                     </span>
-                    <span className="rounded bg-slate-100 px-1.5 py-0.5 font-mono text-[10px] font-bold text-slate-500">
+                    <span className="rounded bg-slate-100 px-1.5 py-0.5 font-mono text-xs font-bold text-slate-500">
                       {size.code}
                     </span>
                   </div>
@@ -339,7 +339,7 @@ export default function ProductionEntryForm({ flockId, onSuccess, onCancel }: Pr
                       min="0"
                       inputMode="numeric"
                       disabled={isBusy}
-                      className="h-10 w-full rounded-xl border border-slate-100 bg-white px-3 text-left font-mono text-sm font-semibold text-slate-900 outline-none transition-all focus:border-terracotta focus:ring-2 focus:ring-orange-100"
+                      className="h-11 w-full rounded-xl border border-slate-100 bg-white px-3 text-left font-mono text-sm font-semibold text-slate-900 outline-none transition-[border-color,box-shadow] focus:border-terracotta focus:ring-2 focus:ring-orange-100"
                       placeholder="0"
                       {...register(`egg_items.${index}.quantity`)}
                     />
@@ -347,7 +347,7 @@ export default function ProductionEntryForm({ flockId, onSuccess, onCancel }: Pr
                       const itemId = watchedEggItems?.[index]?.item_id
                       const matchedItem = eggItems.find((it) => it.id === Number(itemId))
                       return (
-                        <p className="text-[10px] text-slate-400 font-semibold text-center truncate">
+                        <p className="truncate text-center text-xs font-semibold text-slate-400">
                           مخزون: {matchedItem?.name || size.label}
                         </p>
                       )
@@ -385,11 +385,11 @@ export default function ProductionEntryForm({ flockId, onSuccess, onCancel }: Pr
               {feedArray.fields.map((field, index) => (
                 <div key={field.id} className="relative rounded-2xl border border-slate-100 bg-slate-50/50 p-4 pt-8 lg:pt-4 grid gap-4 lg:grid-cols-[100px_1fr_100px_100px_1fr_40px] items-start hover:border-slate-200 transition-colors duration-200">
                   <FormField label="الوقت" error={errors.feed_batches?.[index]?.log_time?.message}>
-                    <input type="time" disabled={isBusy} className={`${fieldBase} bg-white h-10`} {...register(`feed_batches.${index}.log_time`)} />
+                    <input type="time" disabled={isBusy} className={`${fieldBase} h-11 bg-white`} {...register(`feed_batches.${index}.log_time`)} />
                   </FormField>
                   
                   <FormField label="صنف المخزون" error={errors.feed_batches?.[index]?.item_id?.message}>
-                    <select disabled={isBusy} className={`${fieldBase} bg-white h-10`} {...register(`feed_batches.${index}.item_id`)}>
+                    <select disabled={isBusy} className={`${fieldBase} h-11 bg-white`} {...register(`feed_batches.${index}.item_id`)}>
                       <option value="">اختر الصنف</option>
                       {feedItems.map((item) => (
                         <option key={item.id} value={item.id}>{item.name}</option>
@@ -398,15 +398,15 @@ export default function ProductionEntryForm({ flockId, onSuccess, onCancel }: Pr
                   </FormField>
                   
                   <FormField label="الكمية طن" error={errors.feed_batches?.[index]?.quantity_ton?.message}>
-                    <input type="number" min="0" step="0.001" disabled={isBusy} className={`${fieldBase} bg-white h-10 text-left font-mono`} {...register(`feed_batches.${index}.quantity_ton`)} />
+                    <input type="number" min="0" step="0.001" disabled={isBusy} className={`${fieldBase} h-11 bg-white text-left font-mono`} {...register(`feed_batches.${index}.quantity_ton`)} />
                   </FormField>
                   
                   <FormField label="السعر/طن" error={errors.feed_batches?.[index]?.price_per_ton?.message}>
-                    <input type="number" min="0" step="0.01" disabled={isBusy} className={`${fieldBase} bg-white h-10 text-left font-mono`} {...register(`feed_batches.${index}.price_per_ton`)} />
+                    <input type="number" min="0" step="0.01" disabled={isBusy} className={`${fieldBase} h-11 bg-white text-left font-mono`} {...register(`feed_batches.${index}.price_per_ton`)} />
                   </FormField>
                   
                   <FormField label="المستودع" error={errors.feed_batches?.[index]?.warehouse_id?.message}>
-                    <select disabled={isBusy} className={`${fieldBase} bg-white h-10`} {...register(`feed_batches.${index}.warehouse_id`)}>
+                    <select disabled={isBusy} className={`${fieldBase} h-11 bg-white`} {...register(`feed_batches.${index}.warehouse_id`)}>
                       <option value="">الافتراضي: {warehouseName(warehouses, defaultFeedWarehouseId)}</option>
                       {warehouses.map((warehouse) => (
                         <option key={warehouse.id} value={warehouse.id}>{warehouse.name}</option>
@@ -432,15 +432,15 @@ export default function ProductionEntryForm({ flockId, onSuccess, onCancel }: Pr
 
             <div className="grid gap-3 grid-cols-1 md:grid-cols-3 pt-2">
               <div className="rounded-xl border border-slate-100 bg-slate-50/50 p-3 flex flex-col justify-center">
-                <span className="text-[10px] font-bold text-slate-400">إجمالي العلف بالطن</span>
+                <span className="text-xs font-bold text-slate-400">إجمالي العلف بالطن</span>
                 <span className="mt-1 font-mono text-base font-bold text-slate-800">{totalFeedTon.toLocaleString('ar-EG', { maximumFractionDigits: 3 })} طن</span>
               </div>
               <div className="rounded-xl border border-slate-100 bg-slate-50/50 p-3 flex flex-col justify-center">
-                <span className="text-[10px] font-bold text-slate-400">إجمالي العلف بالكجم</span>
+                <span className="text-xs font-bold text-slate-400">إجمالي العلف بالكجم</span>
                 <span className="mt-1 font-mono text-base font-bold text-slate-800">{totalFeedKg.toLocaleString('ar-EG', { maximumFractionDigits: 2 })} كجم</span>
               </div>
               <div className="rounded-xl border border-slate-100 bg-slate-50/50 p-3 flex flex-col justify-center">
-                <span className="text-[10px] font-bold text-slate-400">إجمالي التكلفة</span>
+                <span className="text-xs font-bold text-slate-400">إجمالي التكلفة</span>
                 <span className="mt-1 font-mono text-base font-bold text-terracotta">{totalFeedCost.toLocaleString('ar-EG', { maximumFractionDigits: 2 })} ر.س</span>
               </div>
             </div>

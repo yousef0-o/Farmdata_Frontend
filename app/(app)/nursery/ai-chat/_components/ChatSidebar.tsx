@@ -115,7 +115,7 @@ export default function ChatSidebar({
         {loadingChats ? (
           <div className="flex flex-col items-center justify-center py-16 text-ink-muted">
             <Loader2 className="h-5 w-5 animate-spin text-action-primary mb-2" />
-            <span className="text-[11px] font-bold">جاري التحميل...</span>
+            <span className="text-xs font-bold">جاري التحميل...</span>
           </div>
         ) : groups.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-16 text-ink-muted space-y-3">
@@ -127,7 +127,7 @@ export default function ChatSidebar({
         ) : (
           groups.map(group => (
             <div key={group.label}>
-              <div className="px-2 py-2 text-[10px] font-bold text-ink-muted uppercase tracking-wider">
+              <div className="px-2 py-2 text-xs font-bold text-ink-muted uppercase tracking-wider">
                 {group.label}
               </div>
               {group.chats.map(chat => {
@@ -167,11 +167,11 @@ export default function ChatSidebar({
                           </div>
                           <div className="flex items-center gap-2 mt-0.5">
                             {(chat.context_basin_name || chat.context_cycle_name) && (
-                              <span className="text-[10px] font-semibold text-action-primary/70 truncate">
+                              <span className="text-xs font-semibold text-action-primary/70 truncate">
                                 {chat.context_basin_name || chat.context_cycle_name}
                               </span>
                             )}
-                            <span className="text-[9px] text-ink-muted">
+                            <span className="text-xs text-ink-muted">
                               {formatRelativeDate(chat.created_at)}
                             </span>
                           </div>

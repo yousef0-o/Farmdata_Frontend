@@ -2,19 +2,110 @@
 
 import React from 'react'
 import {
-  Plus, Receipt, Settings, Trash2, Eye, Edit3, Link, HelpCircle,
+  Plus, Settings, Trash2, Eye, Edit3, Link, HelpCircle,
   FileText, FolderPlus, Loader2, AlertCircle, FolderOpen, Search
 } from 'lucide-react'
 import AppDialog from '@/components/ui/AppDialog'
-import type { AccountingAccount } from '@/lib/types'
+import type { AccountingAccount, RecordSheet } from '@/lib/types'
+
+type BalanceInfo = { value: string; isPositive: boolean; raw: number }
+
+type FolderNode = {
+  id: number
+  name: string
+  meta?: {
+    link_type?: string
+    distribute_by_production?: boolean | number | string
+  }
+}
+
+type SheetRecord = RecordSheet & {
+  transactions_count?: number
+}
+
+type LinkedEntity = {
+  id: number | string
+  name: string
+}
+
+type SectionLinkType = 'none' | 'company' | 'project'
+
+type PendingMutation = {
+  isPending?: boolean
+}
+
+type SheetsTabContentProps = {
+  folderNodes: FolderNode[]
+  loadingFolders: boolean
+  sheetsGroupedByFolder: {
+    grouped: Record<number, SheetRecord[]>
+    uncategorized: SheetRecord[]
+  }
+  yearNodeId?: number | null
+  finInstId?: number | null
+  selectedYear: number | string
+  accounts: AccountingAccount[]
+  companies: LinkedEntity[]
+  projects: LinkedEntity[]
+  formatBalance: (sheet: SheetRecord) => BalanceInfo
+  openAddSectionModal: () => void
+  openEditSectionModal: (folder: FolderNode) => void
+  setDeletingSection: (folder: FolderNode | null) => void
+  openAddSheetModal: () => void
+  openEditSheetModal: (sheet: SheetRecord) => void
+  setDeletingSheet: (sheet: SheetRecord | null) => void
+  setActiveSheetId: (id: number) => void
+  sheetsSearch: string
+  setSheetsSearch: (value: string) => void
+  handleInitYear: () => void
+  createNodeMutation: PendingMutation
+  sectionModalOpen: boolean
+  setSectionModalOpen: (open: boolean) => void
+  editingSection: FolderNode | null
+  sectionName: string
+  setSectionName: (value: string) => void
+  sectionLinkType: SectionLinkType
+  setSectionLinkType: (value: SectionLinkType) => void
+  sectionCompanyId: number | null
+  setSectionCompanyId: (value: number | null) => void
+  sectionProjectId: number | null
+  setSectionProjectId: (value: number | null) => void
+  sectionDistribute: boolean
+  setSectionDistribute: (value: boolean) => void
+  sectionError?: string | null
+  sectionSubmitting: boolean
+  handleSaveSection: (event: React.FormEvent) => void
+  sheetModalOpen: boolean
+  setSheetModalOpen: (open: boolean) => void
+  editingSheet: SheetRecord | null
+  sheetModalTitle: string
+  setSheetModalTitle: (value: string) => void
+  sheetModalAccountId: number
+  setSheetModalAccountId: (value: number) => void
+  sheetModalFolderId: number | null
+  setSheetModalFolderId: (value: number | null) => void
+  sheetModalStart: string
+  setSheetModalStart: (value: string) => void
+  sheetModalEnd: string
+  setSheetModalEnd: (value: string) => void
+  sheetModalError?: string | null
+  sheetModalSubmitting: boolean
+  handleSaveSheet: (event: React.FormEvent) => void
+  deletingSection: FolderNode | null
+  handleDeleteSection: () => void
+  deleteNodeMutation: PendingMutation
+  deletingSheet: SheetRecord | null
+  handleDeleteSheet: () => void
+  deleteSheetMutation: PendingMutation
+}
 
 // --- Reusable Sheet Table ---
 function SheetTable({ records, formatBalance, onView, onEdit, onDelete }: {
-  records: any[]
-  formatBalance: (s: any) => { value: string; isPositive: boolean; raw: number }
-  onView: (s: any) => void
-  onEdit: (s: any) => void
-  onDelete: (s: any) => void
+  records: SheetRecord[]
+  formatBalance: (sheet: SheetRecord) => BalanceInfo
+  onView: (sheet: SheetRecord) => void
+  onEdit: (sheet: SheetRecord) => void
+  onDelete: (sheet: SheetRecord) => void
 }) {
   if (records.length === 0) {
     return (
@@ -24,64 +115,121 @@ function SheetTable({ records, formatBalance, onView, onEdit, onDelete }: {
     )
   }
   return (
-    <div className="overflow-x-auto rounded-xl border border-line">
-      <table className="w-full text-right border-collapse text-xs">
-        <thead>
-          <tr className="bg-surface-subtle border-b border-line text-ink-muted font-bold">
-            <th className="p-3 font-sans">اسم السجل</th>
-            <th className="p-3 font-sans">الحساب المحاسبي</th>
-            <th className="p-3 font-sans">الرصيد</th>
-            <th className="p-3 font-sans">الأوراق</th>
-            <th className="p-3 font-sans text-center">الإجراءات</th>
-          </tr>
-        </thead>
-        <tbody>
-          {records.map((sheet: any) => {
-            const bal = formatBalance(sheet)
-            const folderMeta = sheet.folder?.meta
-            const isDistributed = folderMeta?.distribute_by_production && folderMeta?.link_type === 'company'
-            return (
-              <tr key={sheet.id} className="border-b border-line hover:bg-surface-subtle/50 transition-colors">
-                <td className="p-3">
-                  <div className="flex items-center gap-2">
-                    <FileText className="w-4 h-4 text-action-primary flex-shrink-0" />
-                    <strong className="text-ink">{sheet.title}</strong>
+    <>
+      <div className="grid grid-cols-1 gap-3 lg:hidden">
+        {records.map((sheet) => {
+          const bal = formatBalance(sheet)
+          const folderMeta = sheet.folder?.meta
+          const isDistributed = folderMeta?.distribute_by_production && folderMeta?.link_type === 'company'
+          return (
+            <article key={sheet.id} className="rounded-2xl border border-line bg-surface p-4 shadow-sm">
+              <div className="flex items-start gap-2">
+                <FileText className="mt-0.5 h-4 w-4 flex-shrink-0 text-action-primary" />
+                <div className="min-w-0 flex-1">
+                  <strong className="block truncate text-sm text-ink">{sheet.title}</strong>
+                  <p className="mt-1 truncate text-xs text-ink-soft">
+                    {sheet.account?.name} ({sheet.account?.code})
+                  </p>
+                  <div className="mt-2 flex flex-wrap gap-2">
                     {isDistributed && (
-                      <span className="text-[10px] bg-info-soft text-info px-1.5 py-0.5 rounded font-bold">موزع</span>
+                      <span className="rounded bg-info-soft px-1.5 py-0.5 text-xs font-bold text-info">موزع</span>
                     )}
                     {sheet.status === 'closed' && (
-                      <span className="text-[10px] bg-surface-muted text-ink-muted px-1.5 py-0.5 rounded font-bold">مغلق</span>
+                      <span className="rounded bg-surface-muted px-1.5 py-0.5 text-xs font-bold text-ink-muted">مغلق</span>
                     )}
                   </div>
-                </td>
-                <td className="p-3 text-ink-soft">
-                  {sheet.account?.name} ({sheet.account?.code})
-                </td>
-                <td className={`p-3 font-bold ${bal.isPositive ? 'text-success' : 'text-danger'}`}>
-                  {bal.value} ر.س
-                </td>
-                <td className="p-3 text-ink-soft">
-                  {sheet.transactions_count ?? 0}
-                </td>
-                <td className="p-3">
-                  <div className="flex items-center justify-center gap-1">
-                    <button onClick={() => onView(sheet)} className="p-1.5 rounded-lg hover:bg-action-primary hover:text-ink-inverse text-ink-muted transition-colors" title="عرض">
-                      <Eye className="w-3.5 h-3.5" />
-                    </button>
-                    <button onClick={() => onEdit(sheet)} className="p-1.5 rounded-lg hover:bg-warning hover:text-ink-inverse text-ink-muted transition-colors" title="تعديل">
-                      <Edit3 className="w-3.5 h-3.5" />
-                    </button>
-                    <button onClick={() => onDelete(sheet)} className="p-1.5 rounded-lg hover:bg-danger hover:text-ink-inverse text-ink-muted transition-colors" title="حذف">
-                      <Trash2 className="w-3.5 h-3.5" />
-                    </button>
-                  </div>
-                </td>
-              </tr>
-            )
-          })}
-        </tbody>
-      </table>
-    </div>
+                </div>
+              </div>
+
+              <dl className="mt-4 grid grid-cols-2 gap-3 text-sm">
+                <div className="rounded-xl bg-surface-subtle px-3 py-2">
+                  <dt className="text-xs font-semibold text-ink-muted">الرصيد</dt>
+                  <dd className={`mt-1 font-bold ${bal.isPositive ? 'text-success' : 'text-danger'}`}>{bal.value} ر.س</dd>
+                </div>
+                <div className="rounded-xl bg-surface-subtle px-3 py-2">
+                  <dt className="text-xs font-semibold text-ink-muted">الأوراق</dt>
+                  <dd className="mt-1 font-bold text-ink-soft">{sheet.transactions_count ?? 0}</dd>
+                </div>
+              </dl>
+
+              <div className="mt-4 grid grid-cols-3 gap-2">
+                <button onClick={() => onView(sheet)} className="flex min-h-11 items-center justify-center gap-1 rounded-xl bg-info-soft px-3 text-xs font-bold text-info" title="عرض">
+                  <Eye className="h-4 w-4" />
+                  <span>عرض</span>
+                </button>
+                <button onClick={() => onEdit(sheet)} className="flex min-h-11 items-center justify-center gap-1 rounded-xl bg-warning-soft px-3 text-xs font-bold text-warning" title="تعديل">
+                  <Edit3 className="h-4 w-4" />
+                  <span>تعديل</span>
+                </button>
+                <button onClick={() => onDelete(sheet)} className="flex min-h-11 items-center justify-center gap-1 rounded-xl bg-danger-soft px-3 text-xs font-bold text-danger" title="حذف">
+                  <Trash2 className="h-4 w-4" />
+                  <span>حذف</span>
+                </button>
+              </div>
+            </article>
+          )
+        })}
+      </div>
+
+      <div className="hidden overflow-x-auto rounded-xl border border-line lg:block">
+        <table className="w-full text-right border-collapse text-xs">
+          <thead>
+            <tr className="bg-surface-subtle border-b border-line text-ink-muted font-bold">
+              <th className="p-3 font-sans">اسم السجل</th>
+              <th className="p-3 font-sans">الحساب المحاسبي</th>
+              <th className="p-3 font-sans">الرصيد</th>
+              <th className="p-3 font-sans">الأوراق</th>
+              <th className="p-3 font-sans text-center">الإجراءات</th>
+            </tr>
+          </thead>
+          <tbody>
+            {records.map((sheet) => {
+              const bal = formatBalance(sheet)
+              const folderMeta = sheet.folder?.meta
+              const isDistributed = folderMeta?.distribute_by_production && folderMeta?.link_type === 'company'
+              return (
+                <tr key={sheet.id} className="border-b border-line hover:bg-surface-subtle/50 transition-colors">
+                  <td className="p-3">
+                    <div className="flex items-center gap-2">
+                      <FileText className="w-4 h-4 text-action-primary flex-shrink-0" />
+                      <strong className="text-ink">{sheet.title}</strong>
+                      {isDistributed && (
+                        <span className="bg-info-soft text-info px-1.5 py-0.5 rounded text-xs font-bold">موزع</span>
+                      )}
+                      {sheet.status === 'closed' && (
+                        <span className="bg-surface-muted text-ink-muted px-1.5 py-0.5 rounded text-xs font-bold">مغلق</span>
+                      )}
+                    </div>
+                  </td>
+                  <td className="p-3 text-ink-soft">
+                    {sheet.account?.name} ({sheet.account?.code})
+                  </td>
+                  <td className={`p-3 font-bold ${bal.isPositive ? 'text-success' : 'text-danger'}`}>
+                    {bal.value} ر.س
+                  </td>
+                  <td className="p-3 text-ink-soft">
+                    {sheet.transactions_count ?? 0}
+                  </td>
+                  <td className="p-3">
+                    <div className="flex items-center justify-center gap-1">
+                      <button onClick={() => onView(sheet)} className="p-1.5 rounded-lg hover:bg-action-primary hover:text-ink-inverse text-ink-muted transition-colors" title="عرض">
+                        <Eye className="w-3.5 h-3.5" />
+                      </button>
+                      <button onClick={() => onEdit(sheet)} className="p-1.5 rounded-lg hover:bg-warning hover:text-ink-inverse text-ink-muted transition-colors" title="تعديل">
+                        <Edit3 className="w-3.5 h-3.5" />
+                      </button>
+                      <button onClick={() => onDelete(sheet)} className="p-1.5 rounded-lg hover:bg-danger hover:text-ink-inverse text-ink-muted transition-colors" title="حذف">
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              )
+            })}
+          </tbody>
+        </table>
+      </div>
+    </>
   )
 }
 
@@ -155,7 +303,7 @@ export default function SheetsTabContent({
   deletingSheet,
   handleDeleteSheet,
   deleteSheetMutation,
-}: any) {
+}: SheetsTabContentProps) {
   // If no year node and we have the institution
   if (finInstId && !yearNodeId) {
     return (
@@ -168,7 +316,7 @@ export default function SheetsTabContent({
         <button
           onClick={handleInitYear}
           disabled={createNodeMutation.isPending}
-          className="px-6 py-3 bg-action-primary text-ink-inverse font-bold rounded-xl shadow-md hover:scale-[1.01] transition-transform disabled:opacity-50"
+          className="min-h-11 rounded-xl bg-action-primary px-6 py-3 font-bold text-ink-inverse shadow-md transition-transform hover:scale-[1.01] disabled:opacity-50"
         >
           {createNodeMutation.isPending ? 'جاري التهيئة...' : `تهيئة السنة المالية ${selectedYear}`}
         </button>
@@ -181,11 +329,11 @@ export default function SheetsTabContent({
       {/* Top action bar */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
         <div className="flex items-center gap-2">
-          <button onClick={openAddSheetModal} className="flex items-center gap-1.5 px-4 py-2.5 bg-action-primary text-ink-inverse font-bold text-xs rounded-xl shadow-md hover:scale-[1.01] transition-transform">
+          <button onClick={openAddSheetModal} className="flex min-h-11 items-center gap-1.5 rounded-xl bg-action-primary px-4 py-2.5 text-xs font-bold text-ink-inverse shadow-md transition-transform hover:scale-[1.01]">
             <Plus className="w-4 h-4" />
             <span>إضافة سجل جديد</span>
           </button>
-          <button onClick={openAddSectionModal} className="flex items-center gap-1.5 px-4 py-2.5 bg-surface border border-line text-ink font-bold text-xs rounded-xl shadow-sm hover:bg-surface-muted transition-colors">
+          <button onClick={openAddSectionModal} className="flex min-h-11 items-center gap-1.5 rounded-xl border border-line bg-surface px-4 py-2.5 text-xs font-bold text-ink shadow-sm transition-colors hover:bg-surface-muted">
             <FolderPlus className="w-4 h-4" />
             <span>إضافة قسم جديد</span>
           </button>
@@ -196,7 +344,7 @@ export default function SheetsTabContent({
             placeholder="بحث في السجلات..."
             value={sheetsSearch}
             onChange={(e) => setSheetsSearch(e.target.value)}
-            className="w-full pl-3 pr-9 py-2.5 bg-surface-muted border border-line rounded-xl text-xs focus:outline-none"
+            className="min-h-11 w-full rounded-xl border border-line bg-surface-muted py-2.5 pl-3 pr-9 text-sm focus:outline-none sm:text-xs"
           />
           <Search className="absolute right-3.5 top-3 w-4 h-4 text-ink-muted" />
         </div>
@@ -208,7 +356,7 @@ export default function SheetsTabContent({
       ) : (
         <div className="space-y-6">
           {/* Section Cards */}
-          {folderNodes.map((folder: any) => {
+          {folderNodes.map((folder) => {
             const folderSheets = sheetsGroupedByFolder.grouped[folder.id] ?? []
             const linkType = folder.meta?.link_type
             return (
@@ -218,13 +366,13 @@ export default function SheetsTabContent({
                   <div className="flex items-center gap-2.5">
                     <h3 className="text-base font-bold text-ink">{folder.name}</h3>
                     {linkType && linkType !== 'none' && (
-                      <span className="flex items-center gap-1 text-[11px] bg-info-soft text-info px-2 py-0.5 rounded-md font-bold">
+                      <span className="flex items-center gap-1 rounded-md bg-info-soft px-2 py-0.5 text-xs font-bold text-info">
                         <Link className="w-3 h-3" />
                         {linkType === 'company' ? 'مرتبط بشركة' : 'مرتبط بمشروع'}
                       </span>
                     )}
                     {folder.meta?.distribute_by_production && (
-                      <span className="text-[11px] bg-warning-soft text-warning px-2 py-0.5 rounded-md font-bold">توزيع تناسبي</span>
+                      <span className="rounded-md bg-warning-soft px-2 py-0.5 text-xs font-bold text-warning">توزيع تناسبي</span>
                     )}
                   </div>
                   <div className="flex items-center gap-1">
@@ -300,7 +448,7 @@ export default function SheetsTabContent({
             </div>
             <div>
               <label className="block font-semibold text-ink-soft mb-1.5">نوع الربط الافتراضي</label>
-              <select value={sectionLinkType} onChange={(e) => setSectionLinkType(e.target.value as any)}
+              <select value={sectionLinkType} onChange={(e) => setSectionLinkType(e.target.value as SectionLinkType)}
                 className="w-full p-2.5 bg-surface-muted border border-line rounded-xl focus:outline-none">
                 <option value="none">بدون ربط</option>
                 <option value="company">ربط بشركة</option>
@@ -314,7 +462,7 @@ export default function SheetsTabContent({
                   <select value={sectionCompanyId ?? ''} onChange={(e) => setSectionCompanyId(e.target.value ? parseInt(e.target.value) : null)}
                     className="w-full p-2.5 bg-surface-muted border border-line rounded-xl focus:outline-none">
                     <option value="">اختر شركة...</option>
-                    {companies.map((c: any) => <option key={c.id} value={c.id}>{c.name}</option>)}
+                    {companies.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
                   </select>
                 </div>
                 <label className="flex items-center gap-2 cursor-pointer">
@@ -330,7 +478,7 @@ export default function SheetsTabContent({
                 <select value={sectionProjectId ?? ''} onChange={(e) => setSectionProjectId(e.target.value ? parseInt(e.target.value) : null)}
                   className="w-full p-2.5 bg-surface-muted border border-line rounded-xl focus:outline-none">
                   <option value="">اختر مشروع...</option>
-                  {projects.map((p: any) => <option key={p.id} value={p.id}>{p.name}</option>)}
+                  {projects.map((p) => <option key={p.id} value={p.id}>{p.name}</option>)}
                 </select>
               </div>
             )}
@@ -378,7 +526,7 @@ export default function SheetsTabContent({
               <select value={sheetModalFolderId ?? ''} onChange={(e) => setSheetModalFolderId(e.target.value ? parseInt(e.target.value) : null)}
                 className="w-full p-2.5 bg-surface-muted border border-line rounded-xl focus:outline-none">
                 <option value="">بدون قسم (غير مصنف)</option>
-                {folderNodes.map((f: any) => <option key={f.id} value={f.id}>{f.name}</option>)}
+                {folderNodes.map((f) => <option key={f.id} value={f.id}>{f.name}</option>)}
               </select>
             </div>
             <div className="flex items-center gap-2">

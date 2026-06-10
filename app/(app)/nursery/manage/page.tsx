@@ -394,7 +394,7 @@ function HierarchyPanel({
             </div>
             <a
               href={`/nursery/manage/general-operations?type=nursery&id=${nursery.id}`}
-              className="mr-auto inline-flex min-h-8 items-center justify-center gap-2 rounded-lg border border-terracotta/25 bg-white dark:bg-surface px-3 py-1 text-xs font-bold text-terracotta transition-all active:scale-[0.98] hover:bg-orange-50 dark:border-orange-900"
+              className="mr-auto inline-flex min-h-11 items-center justify-center gap-2 rounded-lg border border-terracotta/25 bg-white px-3 py-1 text-xs font-bold text-terracotta transition-all active:scale-[0.98] hover:bg-orange-50 dark:border-orange-900 dark:bg-surface"
             >
               <ClipboardList className="h-3.5 w-3.5" />
               عمليات عامة
@@ -404,20 +404,21 @@ function HierarchyPanel({
           <div className="pb-1">
             {nursery.locations.map((location, locationIndex) => {
               const theme = themes[(nurseryIndex + locationIndex) % themes.length]
+              const themeStyle: React.CSSProperties & Record<string, string> = {
+                borderColor: theme.border,
+                '--theme-bg-light': theme.bg,
+                '--theme-bg-dark': theme.bgDark,
+                '--theme-icon-light': theme.icon,
+                '--theme-icon-dark': theme.iconDark,
+                '--theme-text-light': theme.text,
+                '--theme-text-dark': theme.textDark,
+              }
 
               return (
                 <div
                   key={location.id}
-                  className="m-6 rounded-lg border-r-[3px] bg-white"
-                  style={{
-                    borderRightColor: theme.border,
-                    ['--theme-bg-light' as any]: theme.bg,
-                    ['--theme-bg-dark' as any]: theme.bgDark,
-                    ['--theme-icon-light' as any]: theme.icon,
-                    ['--theme-icon-dark' as any]: theme.iconDark,
-                    ['--theme-text-light' as any]: theme.text,
-                    ['--theme-text-dark' as any]: theme.textDark,
-                  }}
+                  className="m-6 rounded-lg border bg-white"
+                  style={themeStyle}
                 >
                   <div
                     className="flex min-h-14 flex-wrap items-center gap-3 px-4 py-3"
@@ -441,7 +442,7 @@ function HierarchyPanel({
                       </span>
                       <a
                         href={`/nursery/manage/general-operations?type=location&id=${location.id}`}
-                        className="inline-flex h-8 w-8 items-center justify-center rounded-lg border bg-white transition-all active:scale-[0.98]"
+                        className="inline-flex h-11 w-11 items-center justify-center rounded-lg border bg-white transition-all active:scale-[0.98]"
                         style={{ borderColor: theme.border, color: 'var(--theme-text)' }}
                         title="عمليات عامة على الموقع"
                       >
@@ -634,7 +635,7 @@ function LegacyHierarchyList({ hierarchy }: { hierarchy: NurseryManageHierarchyN
               <a
                 href={`/nursery/lines?nursery_id=${nursery.id}`}
                 onClick={(event) => event.stopPropagation()}
-                className="mr-auto inline-flex min-h-8 items-center justify-center gap-1 rounded-lg border border-slate-100 bg-white px-3 py-1 text-xs font-bold text-slate-700 transition-all active:scale-[0.98]"
+                className="mr-auto inline-flex min-h-11 items-center justify-center gap-1 rounded-lg border border-slate-100 bg-white px-3 py-1 text-xs font-bold text-slate-700 transition-all active:scale-[0.98]"
               >
                 عرض الخطوط
               </a>
@@ -664,7 +665,7 @@ function LegacyHierarchyList({ hierarchy }: { hierarchy: NurseryManageHierarchyN
                         <a
                           href={`/nursery/lines?location_id=${location.id}`}
                           onClick={(event) => event.stopPropagation()}
-                          className="mr-auto inline-flex min-h-8 items-center justify-center rounded-lg border border-slate-100 bg-white px-3 py-1 text-xs font-bold text-slate-700 transition-all active:scale-[0.98]"
+                          className="mr-auto inline-flex min-h-11 items-center justify-center rounded-lg border border-slate-100 bg-white px-3 py-1 text-xs font-bold text-slate-700 transition-all active:scale-[0.98]"
                         >
                           عرض الخطوط
                         </a>
@@ -699,14 +700,46 @@ function LegacyHierarchyList({ hierarchy }: { hierarchy: NurseryManageHierarchyN
                                   <a
                                     href={`/nursery/lines?section_id=${section.id}`}
                                     onClick={(event) => event.stopPropagation()}
-                                    className="mr-auto inline-flex min-h-8 items-center justify-center rounded-lg border border-slate-100 bg-white px-3 py-1 text-xs font-bold text-slate-700 transition-all active:scale-[0.98]"
+                                    className="mr-auto inline-flex min-h-11 items-center justify-center rounded-lg border border-slate-100 bg-white px-3 py-1 text-xs font-bold text-slate-700 transition-all active:scale-[0.98]"
                                   >
                                     عرض الخطوط
                                   </a>
                                 </button>
 
                                 {sectionOpen ? (
-                                  <div className="mt-3 overflow-x-auto rounded-xl border border-slate-100 bg-white">
+                                  <>
+                                  <div className="mt-3 grid grid-cols-1 gap-3 lg:hidden">
+                                    {section.basins.map((basin) => (
+                                      <article key={basin.id} className="rounded-xl border border-slate-100 bg-white p-4 shadow-sm">
+                                        <div className="flex items-start justify-between gap-3">
+                                          <div className="min-w-0">
+                                            <h4 className="truncate text-sm font-bold text-slate-900">{basin.name}</h4>
+                                            <p className="mt-1 text-xs font-semibold text-slate-500">
+                                              {formatNumber(basin.length, 2)}م x {formatNumber(basin.width, 2)}م
+                                            </p>
+                                          </div>
+                                          <span className="rounded-full bg-emerald-50 px-3 py-1 font-mono text-xs font-bold text-emerald-700 dark:text-emerald-300">
+                                            {formatNumber(basin.total_trees)}
+                                          </span>
+                                        </div>
+
+                                        <div className="mt-3 rounded-xl bg-slate-50 px-3 py-2">
+                                          <span className="block text-xs font-bold text-slate-500">نظام الري</span>
+                                          <span className="mt-1 block text-sm font-semibold text-slate-700">{basin.irrigation_method || '-'}</span>
+                                        </div>
+
+                                        <a
+                                          href={`/nursery/manage/basins/${basin.id}`}
+                                          className="mt-3 inline-flex min-h-11 w-full items-center justify-center gap-1 rounded-lg bg-sky-50 px-3 py-2 text-xs font-bold text-sky-700 transition-all active:scale-[0.98] hover:bg-sky-100 dark:bg-sky-950/40 dark:text-sky-300"
+                                        >
+                                          إدارة
+                                          <ChevronLeft className="h-3 w-3" />
+                                        </a>
+                                      </article>
+                                    ))}
+                                  </div>
+
+                                  <div className="mt-3 hidden overflow-x-auto rounded-xl border border-slate-100 bg-white lg:block">
                                     <table className="min-w-full divide-y divide-slate-100 text-right dark:divide-slate-800">
                                       <thead className="bg-slate-50">
                                         <tr>
@@ -735,7 +768,7 @@ function LegacyHierarchyList({ hierarchy }: { hierarchy: NurseryManageHierarchyN
                                             <td className="px-4 py-3">
                                               <a
                                                 href={`/nursery/manage/basins/${basin.id}`}
-                                                className="inline-flex min-h-8 items-center justify-center gap-1 rounded-lg bg-sky-50 px-3 py-1 text-xs font-bold text-sky-700 transition-all active:scale-[0.98] hover:bg-sky-100 dark:bg-sky-950/40 dark:text-sky-300"
+                                                className="inline-flex min-h-11 items-center justify-center gap-1 rounded-lg bg-sky-50 px-3 py-1 text-xs font-bold text-sky-700 transition-all active:scale-[0.98] hover:bg-sky-100 dark:bg-sky-950/40 dark:text-sky-300"
                                               >
                                                 إدارة
                                                 <ChevronLeft className="h-3 w-3" />
@@ -746,6 +779,7 @@ function LegacyHierarchyList({ hierarchy }: { hierarchy: NurseryManageHierarchyN
                                       </tbody>
                                     </table>
                                   </div>
+                                  </>
                                 ) : null}
                               </div>
                             )

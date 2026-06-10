@@ -88,7 +88,105 @@ export function FlockWatchlistTable({
         </span>
       </div>
 
-      <div className="overflow-x-auto">
+      <div className="grid grid-cols-1 gap-3 p-4 lg:hidden">
+        {watchlist.map((flock) => (
+          <article key={flock.flock_id} className="rounded-2xl border border-line bg-surface-subtle p-4">
+            <div className="flex min-w-0 items-start justify-between gap-3">
+              <div className="min-w-0">
+                <h3 className="truncate text-sm font-bold text-ink">
+                  {flock.barn_name ?? 'عنبر غير محدد'}
+                </h3>
+                <p className="mt-1 truncate text-xs text-ink-muted">
+                  {flock.section_name ?? flock.project_name ?? flock.company_name ?? 'نطاق غير محدد'}
+                </p>
+              </div>
+              <span className={`shrink-0 rounded-full px-2.5 py-1 text-xs font-bold ${riskClasses[flock.risk_level]}`}>
+                {riskLabel(flock.risk_level)}
+              </span>
+            </div>
+
+            <div className="mt-4 grid grid-cols-2 gap-3 text-sm">
+              <div>
+                <p className="text-xs font-bold text-ink-muted">الفوج</p>
+                <p className="mt-1 font-mono font-bold text-action-primary">
+                  {flock.flock_number ?? `#${flock.flock_id}`}
+                </p>
+              </div>
+              <div>
+                <p className="text-xs font-bold text-ink-muted">النوع</p>
+                <p className="mt-1 font-bold text-ink">{flockTypeLabels[flock.flock_type]}</p>
+              </div>
+              <div>
+                <p className="text-xs font-bold text-ink-muted">العمر</p>
+                <p className="mt-1 font-mono font-semibold text-ink">
+                  {flock.age_days === null ? 'غير متوفر' : `${formatNumber(flock.age_days)} يوم`}
+                </p>
+              </div>
+              <div>
+                <p className="text-xs font-bold text-ink-muted">الطيور الحالية</p>
+                <p className="mt-1 font-mono font-semibold text-ink">{formatNumber(flock.current_birds)}</p>
+              </div>
+              <div>
+                <p className="text-xs font-bold text-ink-muted">النفوق اليوم</p>
+                <p className="mt-1 font-mono font-semibold text-ink">
+                  {formatNumber(flock.mortality_today)}
+                  <span className="mr-1 text-xs text-ink-muted">
+                    ({formatNumber(flock.mortality_rate_today, 2)}%)
+                  </span>
+                </p>
+              </div>
+              <div>
+                <p className="text-xs font-bold text-ink-muted">معدل الإنتاج</p>
+                <p className="mt-1 font-mono font-semibold text-ink">
+                  {flock.flock_type === 'production' && flock.production_rate_today !== null
+                    ? `${formatNumber(flock.production_rate_today, 2)}%`
+                    : 'غير مطبق'}
+                </p>
+              </div>
+              <div>
+                <p className="text-xs font-bold text-ink-muted">العلف اليوم</p>
+                <p className="mt-1 font-mono font-semibold text-ink">
+                  {formatNumber(flock.feed_kg_today, 1)} كجم
+                </p>
+              </div>
+              <div>
+                <p className="text-xs font-bold text-ink-muted">آخر تسجيل</p>
+                <p className="mt-1 font-semibold text-ink">{flock.last_record_date ?? 'لا يوجد'}</p>
+              </div>
+            </div>
+
+            <div className="mt-4 flex flex-wrap gap-2">
+              {flock.missing_daily_log ? (
+                <span className="inline-flex items-center gap-1 rounded-full bg-warning-soft px-2.5 py-1 text-xs font-bold text-warning-strong">
+                  <AlertTriangle className="h-3.5 w-3.5" />
+                  ناقص {formatNumber(flock.missing_days)} يوم
+                </span>
+              ) : (
+                <span className="rounded-full bg-success-soft px-2.5 py-1 text-xs font-bold text-success-strong">
+                  السجل مكتمل
+                </span>
+              )}
+
+              {flock.health_severity ? (
+                <span className={`inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-bold ${severityClasses[flock.health_severity]}`}>
+                  <HeartPulse className="h-3.5 w-3.5" />
+                  صحة {severityLabel(flock.health_severity)}
+                </span>
+              ) : (
+                <span className="rounded-full bg-surface-muted px-2.5 py-1 text-xs font-bold text-ink-muted">
+                  لا توجد ملاحظة صحية
+                </span>
+              )}
+
+              <span className="rounded-full bg-surface-muted px-2.5 py-1 text-xs font-bold text-ink-muted">
+                {formatNumber(flock.risk_score)} نقطة
+              </span>
+            </div>
+          </article>
+        ))}
+      </div>
+
+      <div className="hidden overflow-x-auto lg:block">
         <table className="w-full min-w-[1120px] border-collapse text-right text-sm">
           <thead>
             <tr className="border-b border-line bg-surface-subtle text-xs font-bold text-ink-muted">

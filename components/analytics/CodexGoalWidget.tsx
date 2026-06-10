@@ -26,7 +26,7 @@ function ProgressRing({ percentage, tone }: { percentage: number; tone: string }
         strokeDashoffset={strokeDashoffset}
         transform="rotate(-90 50 50)"
       />
-      <text x="50" y="47" textAnchor="middle" className="fill-current text-[11px] font-semibold text-ink-soft">
+      <text x="50" y="47" textAnchor="middle" className="fill-current text-xs font-semibold text-ink-soft">
         Achieved
       </text>
       <text x="50" y="60" textAnchor="middle" className="fill-current text-lg font-bold text-ink">
@@ -41,10 +41,10 @@ export function CodexGoalWidget({ analytics }: CodexGoalWidgetProps) {
 
   return (
     <section className="grid gap-4 xl:grid-cols-[1.15fr_2fr]">
-      <article className="rounded-[1.75rem] border border-line bg-surface p-6 shadow-sm">
-        <div className="flex items-start justify-between gap-4">
+      <article className="rounded-[1.75rem] border border-line bg-surface p-5 shadow-sm sm:p-6">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
           <div className="space-y-2">
-            <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-ink-muted">Codex Goals</p>
+            <p className="text-xs font-semibold uppercase text-ink-muted">Codex Goals</p>
             <h2 className="text-xl font-bold text-ink">لوحة أهداف الأداء</h2>
             <p className="max-w-[28ch] text-sm text-ink-soft">
               مقارنة الأداء الفعلي مع أهداف FCR ونسبة الإنتاج وحجم الكرتون على نفس السياق التشغيلي.

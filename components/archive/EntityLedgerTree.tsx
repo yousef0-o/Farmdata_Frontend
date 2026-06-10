@@ -9,8 +9,6 @@ import {
   Eye,
   Search,
   BookOpen,
-  Calendar,
-  Layers,
   Scale,
   BarChart3
 } from 'lucide-react'
@@ -25,7 +23,43 @@ interface EntityLedgerTreeProps {
   entityId: number
   companyId?: number // Required for project type to resolve distributed company sheets
   companyProjectIds?: number[] // For company view, to map project sheets
-  annualMovement?: any[] // Egg production statistics per year
+  annualMovement?: AnnualMovementEntry[] // Egg production statistics per year
+}
+
+type AnnualMovementEntry = {
+  year: number | string
+  eggs_produced?: number
+}
+
+type YearlyStat = {
+  Year: number
+  TotalDebit: number
+  TotalCredit: number
+  TotalEggs: number
+}
+
+type LedgerMeta = {
+  link_type?: string
+  company_id?: number | string
+  project_id?: number | string
+  distribute_by_production?: boolean | number | string
+}
+
+type AccountNode = Pick<AccountingAccount, 'id' | 'parent_id' | 'code' | 'name' | 'type'> & {
+  children: AccountNode[]
+  TotalDebit: number
+  TotalCredit: number
+  is_linked: boolean
+}
+
+function getSubAccountIds(account: AccountNode): number[] {
+  const ids = [account.id]
+  if (account.children) {
+    for (const child of account.children) {
+      ids.push(...getSubAccountIds(child))
+    }
+  }
+  return ids
 }
 
 export default function EntityLedgerTree({
@@ -37,7 +71,7 @@ export default function EntityLedgerTree({
 }: EntityLedgerTreeProps) {
   const [searchQuery, setSearchQuery] = useState('')
   const [collapsedStates, setCollapsedStates] = useState<Record<number, boolean>>({})
-  const [detailsAccount, setDetailsAccount] = useState<any | null>(null)
+  const [detailsAccount, setDetailsAccount] = useState<AccountNode | null>(null)
 
   const toggleCollapse = (id: number) => {
     setCollapsedStates(prev => ({
@@ -60,13 +94,13 @@ export default function EntityLedgerTree({
   // 3. Compute Project production share ratio (all-time eggs)
   const projectAllTimeEggs = useMemo(() => {
     if (!annualMovement) return 0
-    return annualMovement.reduce((sum: number, m: any) => sum + (m.eggs_produced || 0), 0)
+    return annualMovement.reduce((sum, movement) => sum + (movement.eggs_produced || 0), 0)
   }, [annualMovement])
 
   const companyAllTimeEggs = useMemo(() => {
-    const compMovement = companyStatsRes?.annual_movement
+    const compMovement = companyStatsRes?.annual_movement as AnnualMovementEntry[] | undefined
     if (!compMovement) return 0
-    return compMovement.reduce((sum: number, m: any) => sum + (m.eggs_produced || 0), 0)
+    return compMovement.reduce((sum, movement) => sum + (movement.eggs_produced || 0), 0)
   }, [companyStatsRes])
 
   const shareRatio = useMemo(() => {
@@ -78,11 +112,11 @@ export default function EntityLedgerTree({
   const accountsTree = useMemo(() => {
     if (!accountsRes?.data || !sheetsRes?.data) return []
 
-    const rawAccounts = accountsRes.data
-    const rawSheets = sheetsRes.data
+    const rawAccounts = accountsRes.data as AccountingAccount[]
+    const rawSheets = sheetsRes.data as RecordSheet[]
 
     // Step A: Initialize Map
-    const map: Record<number, any> = {}
+    const map: Record<number, AccountNode> = {}
     for (const acc of rawAccounts) {
       map[acc.id] = {
         id: acc.id,
@@ -97,10 +131,12 @@ export default function EntityLedgerTree({
       }
     }
 
+    const getMeta = (sheet: RecordSheet): LedgerMeta | undefined => sheet.folder?.meta as LedgerMeta | undefined
+
     // Step B: Aggregate Sheet totals into Accounts with scale
     for (const sheet of rawSheets) {
       const folder = sheet.folder
-      const meta = folder?.meta
+      const meta = getMeta(sheet)
       if (!folder || !meta) continue
 
       let isIncluded = false
@@ -152,7 +188,7 @@ export default function EntityLedgerTree({
     }
 
     // Step D: Construct Roots and sort
-    const roots: any[] = []
+    const roots: AccountNode[] = []
     for (const id in map) {
       const acc = map[id]
       if (acc.parent_id === null) {
@@ -163,7 +199,7 @@ export default function EntityLedgerTree({
     }
 
     // Sort function by account code
-    const sortAccounts = (list: any[]) => {
+    const sortAccounts = (list: AccountNode[]) => {
       list.sort((a, b) => a.code.localeCompare(b.code, undefined, { numeric: true }))
       for (const item of list) {
         if (item.children.length > 0) {
@@ -177,21 +213,21 @@ export default function EntityLedgerTree({
   }, [accountsRes, sheetsRes, entityType, entityId, companyId, companyProjectIds, shareRatio])
 
   // Helper to determine if node or descendants match search query
-  const matchesSearch = (account: any, query: string): boolean => {
+  const matchesSearch = (account: AccountNode, query: string): boolean => {
     if (!query) return true
     const normalizedQuery = query.toLowerCase()
     const nameMatches = account.name.toLowerCase().includes(normalizedQuery)
     const codeMatches = account.code.toLowerCase().includes(normalizedQuery)
     if (nameMatches || codeMatches) return true
-    return account.children?.some((child: any) => matchesSearch(child, query)) ?? false
+    return account.children?.some((child) => matchesSearch(child, query)) ?? false
   }
 
   // Helper to check if node or descendants have non-zero data
-  const hasActiveData = (account: any): boolean => {
+  const hasActiveData = (account: AccountNode): boolean => {
     if (account.TotalDebit !== 0 || account.TotalCredit !== 0 || account.is_linked) {
       return true
     }
-    return account.children?.some((child: any) => hasActiveData(child)) ?? false
+    return account.children?.some((child) => hasActiveData(child)) ?? false
   }
 
   // Helper to compute account balance
@@ -218,27 +254,17 @@ export default function EntityLedgerTree({
   }
 
   // 5. Compute Yearly Statistics of specific Account and its child accounts
-  const getSubAccountIds = (account: any): number[] => {
-    const ids = [account.id]
-    if (account.children) {
-      for (const child of account.children) {
-        ids.push(...getSubAccountIds(child))
-      }
-    }
-    return ids
-  }
-
   const accountYearlyStats = useMemo(() => {
     if (!detailsAccount || !sheetsRes?.data) return []
     const subAccountIds = getSubAccountIds(detailsAccount)
-    const rawSheets = sheetsRes.data
-    const yearlyData: Record<number, { Year: number; TotalDebit: number; TotalCredit: number; TotalEggs: number }> = {}
+    const rawSheets = sheetsRes.data as RecordSheet[]
+    const yearlyData: Record<number, YearlyStat> = {}
 
     for (const sheet of rawSheets) {
       if (!subAccountIds.includes(sheet.account_id)) continue
 
       const folder = sheet.folder
-      const meta = folder?.meta
+      const meta = folder?.meta as LedgerMeta | undefined
       if (!folder || !meta) continue
 
       let isIncluded = false
@@ -273,10 +299,10 @@ export default function EntityLedgerTree({
     }
 
     if (annualMovement) {
-      for (const m of annualMovement) {
-        const year = Number(m.year)
+      for (const movement of annualMovement) {
+        const year = Number(movement.year)
         if (yearlyData[year]) {
-          yearlyData[year].TotalEggs = m.eggs_produced || 0
+          yearlyData[year].TotalEggs = movement.eggs_produced || 0
         }
       }
     }
@@ -287,12 +313,12 @@ export default function EntityLedgerTree({
   // 6. Compute Entity Yearly Statistics (all folders combined)
   const entityYearlyStats = useMemo(() => {
     if (!sheetsRes?.data) return []
-    const rawSheets = sheetsRes.data
-    const yearlyData: Record<number, { Year: number; TotalDebit: number; TotalCredit: number; TotalEggs: number }> = {}
+    const rawSheets = sheetsRes.data as RecordSheet[]
+    const yearlyData: Record<number, YearlyStat> = {}
 
     for (const sheet of rawSheets) {
       const folder = sheet.folder
-      const meta = folder?.meta
+      const meta = folder?.meta as LedgerMeta | undefined
       if (!folder || !meta) continue
 
       let isIncluded = false
@@ -327,10 +353,10 @@ export default function EntityLedgerTree({
     }
 
     if (annualMovement) {
-      for (const m of annualMovement) {
-        const year = Number(m.year)
+      for (const movement of annualMovement) {
+        const year = Number(movement.year)
         if (yearlyData[year]) {
-          yearlyData[year].TotalEggs = m.eggs_produced || 0
+          yearlyData[year].TotalEggs = movement.eggs_produced || 0
         }
       }
     }
@@ -343,8 +369,81 @@ export default function EntityLedgerTree({
     return new Intl.NumberFormat('ar-SA', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(num)
   }
 
+  const renderYearlyStatCards = (rows: YearlyStat[]) => (
+    <div className="grid grid-cols-1 gap-4 lg:hidden">
+      {rows.map((row) => {
+        const net = row.TotalDebit - row.TotalCredit
+        const netType = net >= 0 ? 'مدين' : 'دائن'
+        const absNet = Math.abs(net)
+
+        const eggs = row.TotalEggs
+        const plates = eggs / 30
+        const cartons = eggs / 360
+
+        const cartonCost = cartons > 0 ? absNet / cartons : 0
+        const plateCost = plates > 0 ? absNet / plates : 0
+        const eggCost = eggs > 0 ? absNet / eggs : 0
+
+        return (
+          <article key={row.Year} className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+            <div className="flex items-start justify-between gap-3">
+              <div>
+                <p className="text-xs font-semibold text-slate-500">السنة</p>
+                <h3 className="text-lg font-bold text-slate-800">{row.Year}</h3>
+              </div>
+              <span className={`rounded-lg px-2.5 py-1 text-xs font-bold ${net >= 0 ? 'bg-emerald-50 text-emerald-700' : 'bg-rose-50 text-rose-700'}`}>
+                {netType}
+              </span>
+            </div>
+
+            <dl className="mt-4 grid grid-cols-2 gap-3 text-sm">
+              <div className="rounded-xl bg-slate-50 px-3 py-2">
+                <dt className="text-xs font-semibold text-slate-500">إجمالي مدين</dt>
+                <dd className="mt-1 break-words font-mono font-semibold text-slate-700">{formatNum(row.TotalDebit)}</dd>
+              </div>
+              <div className="rounded-xl bg-slate-50 px-3 py-2">
+                <dt className="text-xs font-semibold text-slate-500">إجمالي دائن</dt>
+                <dd className="mt-1 break-words font-mono font-semibold text-slate-700">{formatNum(row.TotalCredit)}</dd>
+              </div>
+              <div className="col-span-2 rounded-xl bg-slate-50 px-3 py-2">
+                <dt className="text-xs font-semibold text-slate-500">الصافي</dt>
+                <dd className={`mt-1 break-words font-mono font-bold ${net >= 0 ? 'text-emerald-600' : 'text-rose-600'}`}>
+                  {formatNum(absNet)} ر.س
+                </dd>
+              </div>
+              <div className="rounded-xl bg-slate-50 px-3 py-2">
+                <dt className="text-xs font-semibold text-slate-500">عدد الكرتون</dt>
+                <dd className="mt-1 break-words font-mono font-semibold text-slate-700">{formatNum(cartons)}</dd>
+              </div>
+              <div className="rounded-xl bg-slate-50 px-3 py-2">
+                <dt className="text-xs font-semibold text-slate-500">ت.الكرتون</dt>
+                <dd className="mt-1 break-words font-mono font-semibold text-slate-700">{cartons > 0 ? `${formatNum(cartonCost)} ر.س` : '-'}</dd>
+              </div>
+              <div className="rounded-xl bg-slate-50 px-3 py-2">
+                <dt className="text-xs font-semibold text-slate-500">عدد الطبق</dt>
+                <dd className="mt-1 break-words font-mono font-semibold text-slate-700">{formatNum(plates)}</dd>
+              </div>
+              <div className="rounded-xl bg-slate-50 px-3 py-2">
+                <dt className="text-xs font-semibold text-slate-500">ت.الطبق</dt>
+                <dd className="mt-1 break-words font-mono font-semibold text-slate-700">{plates > 0 ? `${formatNum(plateCost)} ر.س` : '-'}</dd>
+              </div>
+              <div className="rounded-xl bg-slate-50 px-3 py-2">
+                <dt className="text-xs font-semibold text-slate-500">عدد البيض</dt>
+                <dd className="mt-1 break-words font-mono font-semibold text-slate-700">{formatNum(eggs)}</dd>
+              </div>
+              <div className="rounded-xl bg-slate-50 px-3 py-2">
+                <dt className="text-xs font-semibold text-slate-500">ت.البيضة</dt>
+                <dd className="mt-1 break-words font-mono font-semibold text-slate-700">{eggs > 0 ? `${formatNum(eggCost)} ر.س` : '-'}</dd>
+              </div>
+            </dl>
+          </article>
+        )
+      })}
+    </div>
+  )
+
   // 7. Recursive render row function
-  const renderAccountRow = (account: any, level: number = 0): React.ReactNode => {
+  const renderAccountRow = (account: AccountNode, level: number = 0): React.ReactNode => {
     // Skip if search pattern does not match this branch or if it has no data
     if (!matchesSearch(account, searchQuery)) return null
     if (!hasActiveData(account)) return null
@@ -367,7 +466,7 @@ export default function EntityLedgerTree({
                   onClick={() => toggleCollapse(account.id)}
                   variant="ghost"
                   size="icon"
-                  className="h-7 min-h-7 w-7 rounded-md"
+                  className="h-9 min-h-9 w-9 rounded-md"
                   aria-label={isCollapsed ? 'توسيع الحساب' : 'طي الحساب'}
                 >
                   {isCollapsed ? (
@@ -391,7 +490,7 @@ export default function EntityLedgerTree({
                 onClick={() => setDetailsAccount(account)}
                 variant="outline"
                 size="sm"
-                className="mr-auto h-7 min-h-7 rounded-md px-2 py-1 text-[10px]"
+                className="mr-auto h-9 min-h-9 rounded-md px-2 py-1 text-xs"
                 leftIcon={<Eye className="w-3 h-3" />}
               >
                 <span>تفاصيل</span>
@@ -410,7 +509,7 @@ export default function EntityLedgerTree({
                 {formatNum(balInfo.absBalance)} ر.س
               </span>
               <span
-                className={`text-[10px] font-bold px-1 rounded ${
+                className={`text-xs font-bold px-1 rounded ${
                   balInfo.isPositive
                     ? 'bg-emerald-50 text-emerald-700'
                     : 'bg-rose-50 text-rose-700'
@@ -421,7 +520,95 @@ export default function EntityLedgerTree({
             </div>
           </td>
         </tr>
-        {hasChildren && !isCollapsed && account.children.map((child: any) => renderAccountRow(child, level + 1))}
+        {hasChildren && !isCollapsed && account.children.map((child) => renderAccountRow(child, level + 1))}
+      </React.Fragment>
+    )
+  }
+
+  const renderAccountCard = (account: AccountNode, level: number = 0): React.ReactNode => {
+    if (!matchesSearch(account, searchQuery)) return null
+    if (!hasActiveData(account)) return null
+
+    const hasChildren = account.children && account.children.length > 0
+    const isCollapsed = collapsedStates[account.id] ?? false
+    const balInfo = getBalanceInfo(account.TotalDebit, account.TotalCredit, account.type)
+
+    return (
+      <React.Fragment key={account.id}>
+        <article
+          className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm"
+          style={{ marginRight: `${Math.min(level * 12, 48)}px` }}
+        >
+          <div className="flex items-start justify-between gap-3">
+            <div className="flex min-w-0 items-start gap-2">
+              {hasChildren ? (
+                <Button
+                  type="button"
+                  onClick={() => toggleCollapse(account.id)}
+                  variant="ghost"
+                  size="icon"
+                  aria-label={isCollapsed ? 'توسيع الحساب' : 'طي الحساب'}
+                >
+                  {isCollapsed ? (
+                    <ChevronRight className="w-4 h-4" />
+                  ) : (
+                    <ChevronDown className="w-4 h-4" />
+                  )}
+                </Button>
+              ) : null}
+              <div className="min-w-0 space-y-1">
+                <span className="inline-flex rounded bg-slate-100 px-1.5 py-0.5 font-mono text-xs font-bold text-slate-500">
+                  {account.code}
+                </span>
+                <div className="flex min-w-0 items-center gap-2">
+                  <strong className="truncate text-sm font-bold text-slate-800">{account.name}</strong>
+                  {account.is_linked && (
+                    <span className="h-2 w-2 shrink-0 rounded-full bg-emerald-500" title="حساب مباشر" />
+                  )}
+                </div>
+              </div>
+            </div>
+            <Button
+              type="button"
+              onClick={() => setDetailsAccount(account)}
+              variant="outline"
+              size="sm"
+              className="shrink-0"
+              leftIcon={<Eye className="w-4 h-4" />}
+            >
+              تفاصيل
+            </Button>
+          </div>
+
+          <dl className="mt-4 grid grid-cols-2 gap-3 text-sm">
+            <div className="rounded-xl bg-slate-50 px-3 py-2">
+              <dt className="text-xs font-semibold text-slate-500">إجمالي مدين</dt>
+              <dd className="mt-1 break-words font-mono font-semibold text-slate-700">{formatNum(account.TotalDebit)}</dd>
+            </div>
+            <div className="rounded-xl bg-slate-50 px-3 py-2">
+              <dt className="text-xs font-semibold text-slate-500">إجمالي دائن</dt>
+              <dd className="mt-1 break-words font-mono font-semibold text-slate-700">{formatNum(account.TotalCredit)}</dd>
+            </div>
+            <div className="col-span-2 rounded-xl bg-slate-50 px-3 py-2">
+              <dt className="text-xs font-semibold text-slate-500">الرصيد النهائي</dt>
+              <dd className="mt-1 flex flex-wrap items-center gap-2">
+                <span className="break-words font-mono text-sm font-bold text-slate-900">
+                  {formatNum(balInfo.absBalance)} ر.س
+                </span>
+                <span
+                  className={`rounded px-1.5 py-0.5 text-xs font-bold ${
+                    balInfo.isPositive
+                      ? 'bg-emerald-50 text-emerald-700'
+                      : 'bg-rose-50 text-rose-700'
+                  }`}
+                >
+                  {balInfo.label}
+                </span>
+              </dd>
+            </div>
+          </dl>
+        </article>
+        {hasChildren && !isCollapsed && account.children.map((child) => renderAccountCard(child, level + 1))}
       </React.Fragment>
     )
   }
@@ -450,7 +637,7 @@ export default function EntityLedgerTree({
               </div>
               <h2 className="text-base font-bold text-slate-800">قسم الدفاتر والسجلات الحسابية</h2>
             </div>
-            <p className="text-[11px] text-slate-500 mt-1 mr-10">
+            <p className="text-xs text-slate-500 mt-1 mr-10">
               {entityType === 'company'
                 ? 'عرض شجرة الحسابات والدفاتر المرتبطة بالشركة وفروع مشاريعها.'
                 : 'عرض شجرة الحسابات والدفاتر المرتبطة بالمشروع والأقسام الموزعة.'}
@@ -464,14 +651,24 @@ export default function EntityLedgerTree({
               placeholder="بحث في شجرة الحسابات..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-3 pr-9 py-2 bg-slate-100 border border-slate-200 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-emerald-500 text-slate-700"
+              className="min-h-11 w-full rounded-xl border border-slate-200 bg-slate-100 py-2 pl-3 pr-9 text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-emerald-500 sm:min-h-10 sm:text-xs"
             />
-            <Search className="absolute right-3 top-2.5 w-4 h-4 text-slate-400" />
+            <Search className="absolute right-3 top-3.5 w-4 h-4 text-slate-400 sm:top-3" />
           </div>
         </div>
 
         {/* Tree Table */}
-        <div className="overflow-x-auto">
+        <div className="grid grid-cols-1 gap-3 p-4 lg:hidden">
+          {accountsTree.length === 0 ? (
+            <div className="rounded-2xl bg-slate-50 p-6 text-center text-xs text-slate-400">
+              لا توجد حسابات أو حركات مالية مسجلة لهذا الكيان.
+            </div>
+          ) : (
+            accountsTree.map((root) => renderAccountCard(root, 0))
+          )}
+        </div>
+
+        <div className="hidden overflow-x-auto lg:block">
           <table className="w-full text-right border-collapse">
             <thead>
               <tr className="bg-slate-100/50 border-b border-slate-100 text-slate-500 text-xs font-bold">
@@ -505,7 +702,7 @@ export default function EntityLedgerTree({
             </div>
             <h2 className="text-base font-bold text-slate-800">نظرة عامة سنوية (إجمالي الكيان)</h2>
           </div>
-          <p className="text-[11px] text-slate-500 mt-1 mr-10">
+          <p className="text-xs text-slate-500 mt-1 mr-10">
             ملخص الحركات المالية والإنتاجية مع احتساب التكاليف لكل كرتونة وطبق طبقاً لإجمالي السجلات.
           </p>
         </div>
@@ -516,7 +713,9 @@ export default function EntityLedgerTree({
               لا توجد حركة مالية سنوية مسجلة.
             </div>
           ) : (
-            <div className="overflow-x-auto rounded-2xl border border-slate-200">
+            <>
+              {renderYearlyStatCards(entityYearlyStats)}
+              <div className="hidden overflow-x-auto rounded-2xl border border-slate-200 lg:block">
               <table className="w-full text-right border-collapse text-xs">
                 <thead>
                   <tr className="bg-slate-50 border-b border-slate-200 text-slate-500 font-bold">
@@ -552,7 +751,7 @@ export default function EntityLedgerTree({
                         <td className="p-3 text-left font-mono">{formatNum(row.TotalDebit)}</td>
                         <td className="p-3 text-left font-mono">{formatNum(row.TotalCredit)}</td>
                         <td className={`p-3 text-left font-bold font-mono ${net >= 0 ? 'text-emerald-600' : 'text-rose-600'}`}>
-                          {formatNum(absNet)} <span className="text-[10px] font-bold mr-1">({netType})</span>
+                          {formatNum(absNet)} <span className="text-xs font-bold mr-1">({netType})</span>
                         </td>
                         <td className="p-3 text-left font-mono">{formatNum(cartons)}</td>
                         <td className="p-3 text-left font-mono">{cartons > 0 ? `${formatNum(cartonCost)} ر.س` : '-'}</td>
@@ -565,7 +764,8 @@ export default function EntityLedgerTree({
                   })}
                 </tbody>
               </table>
-            </div>
+              </div>
+            </>
           )}
         </div>
       </div>
@@ -597,7 +797,9 @@ export default function EntityLedgerTree({
                 لا توجد حركة مالية مسجلة لهذا الحساب عبر السنوات المالية.
               </div>
             ) : (
-              <div className="overflow-x-auto rounded-2xl border border-slate-200">
+              <>
+                {renderYearlyStatCards(accountYearlyStats)}
+                <div className="hidden overflow-x-auto rounded-2xl border border-slate-200 lg:block">
                 <table className="w-full text-right border-collapse text-xs">
                   <thead>
                     <tr className="bg-slate-50 border-b border-slate-200 text-slate-500 font-bold">
@@ -633,7 +835,7 @@ export default function EntityLedgerTree({
                           <td className="p-3 text-left font-mono">{formatNum(row.TotalDebit)}</td>
                           <td className="p-3 text-left font-mono">{formatNum(row.TotalCredit)}</td>
                           <td className={`p-3 text-left font-bold font-mono ${net >= 0 ? 'text-emerald-600' : 'text-rose-600'}`}>
-                            {formatNum(absNet)} <span className="text-[10px] font-bold mr-1">({netType})</span>
+                            {formatNum(absNet)} <span className="text-xs font-bold mr-1">({netType})</span>
                           </td>
                           <td className="p-3 text-left font-mono">{formatNum(cartons)}</td>
                           <td className="p-3 text-left font-mono">{cartons > 0 ? `${formatNum(cartonCost)} ر.س` : '-'}</td>
@@ -646,7 +848,8 @@ export default function EntityLedgerTree({
                     })}
                   </tbody>
                 </table>
-              </div>
+                </div>
+              </>
             )}
 
             <div className="flex justify-end pt-2">

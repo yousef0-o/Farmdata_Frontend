@@ -43,31 +43,62 @@ function SkeletonRow() {
   )
 }
 
+function SkeletonCard() {
+  return (
+    <div className="animate-pulse rounded-2xl border border-line bg-surface p-4 shadow-sm">
+      <div className="flex items-start justify-between gap-3">
+        <div className="flex min-w-0 flex-1 items-start gap-3">
+          <div className="h-5 w-5 rounded bg-surface-muted" />
+          <div className="min-w-0 flex-1 space-y-2">
+            <div className="h-4 w-24 rounded bg-surface-muted" />
+            <div className="h-4 w-40 rounded bg-surface-muted" />
+            <div className="h-3 w-32 rounded bg-surface-muted" />
+          </div>
+        </div>
+        <div className="space-y-2">
+          <div className="h-6 w-16 rounded-full bg-surface-muted" />
+          <div className="h-6 w-20 rounded-full bg-surface-muted" />
+        </div>
+      </div>
+      <div className="mt-4 grid grid-cols-2 gap-3">
+        <div className="h-14 rounded-xl bg-surface-subtle" />
+        <div className="h-14 rounded-xl bg-surface-subtle" />
+        <div className="col-span-2 h-14 rounded-xl bg-surface-subtle" />
+      </div>
+    </div>
+  )
+}
+
 export default function AssetTable({
   assets, isLoading, selectedIds, onSelectAll, onSelectRow, onEdit, onDelete, meta, onPageChange
 }: AssetTableProps) {
   if (isLoading) {
     return (
-      <div className="overflow-x-auto">
-        <table className="w-full text-sm">
-          <thead>
-            <tr className="border-b border-line bg-surface-subtle text-ink-soft">
-              <th className="py-3.5 px-6 text-right w-10" />
-              <th className="py-3.5 px-4 text-right font-semibold">كود الأصل</th>
-              <th className="py-3.5 px-4 text-right font-semibold">الاسم</th>
-              <th className="py-3.5 px-4 text-right font-semibold">النوع</th>
-              <th className="py-3.5 px-4 text-right font-semibold">الموقع</th>
-              <th className="py-3.5 px-4 text-right font-semibold">قيمة الشراء</th>
-              <th className="py-3.5 px-4 text-right font-semibold">القيمة الدفترية</th>
-              <th className="py-3.5 px-4 text-right font-semibold">الحالة</th>
-              <th className="py-3.5 px-6 text-left font-semibold">إجراءات</th>
-            </tr>
-          </thead>
-          <tbody>
-            {[...Array(5)].map((_, i) => <SkeletonRow key={i} />)}
-          </tbody>
-        </table>
-      </div>
+      <>
+        <div className="grid grid-cols-1 gap-4 p-4 lg:hidden">
+          {[...Array(5)].map((_, i) => <SkeletonCard key={i} />)}
+        </div>
+        <div className="hidden overflow-x-auto lg:block">
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="border-b border-line bg-surface-subtle text-ink-soft">
+                <th className="py-3.5 px-6 text-right w-10" />
+                <th className="py-3.5 px-4 text-right font-semibold">كود الأصل</th>
+                <th className="py-3.5 px-4 text-right font-semibold">الاسم</th>
+                <th className="py-3.5 px-4 text-right font-semibold">النوع</th>
+                <th className="py-3.5 px-4 text-right font-semibold">الموقع</th>
+                <th className="py-3.5 px-4 text-right font-semibold">قيمة الشراء</th>
+                <th className="py-3.5 px-4 text-right font-semibold">القيمة الدفترية</th>
+                <th className="py-3.5 px-4 text-right font-semibold">الحالة</th>
+                <th className="py-3.5 px-6 text-left font-semibold">إجراءات</th>
+              </tr>
+            </thead>
+            <tbody>
+              {[...Array(5)].map((_, i) => <SkeletonRow key={i} />)}
+            </tbody>
+          </table>
+        </div>
+      </>
     )
   }
 

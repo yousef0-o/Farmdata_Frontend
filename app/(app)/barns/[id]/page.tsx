@@ -1257,7 +1257,50 @@ function BreedingLedgerTable({
 }) {
   return (
     <div className="overflow-hidden rounded-2xl border border-line">
-      <div className="overflow-x-auto">
+      <div className="grid grid-cols-1 gap-3 p-3 lg:hidden">
+        {rows.length === 0 ? (
+          <div className="rounded-2xl border border-dashed border-line-strong bg-surface-subtle px-4 py-10 text-center text-sm text-ink-muted">
+            لا توجد أفواج مسجلة لهذه الحظيرة.
+          </div>
+        ) : (
+          rows.map((row) => (
+            <article key={row.flock.id} className="rounded-2xl border border-line bg-surface-subtle p-4">
+              <div className="flex items-start justify-between gap-3">
+                <div>
+                  <p className="text-xs font-bold text-ink-muted">رقم الفوج</p>
+                  <h3 className="mt-1 font-mono text-base font-bold text-ink">{flockCode(row.flock)}</h3>
+                </div>
+                <p className="font-mono text-sm font-bold text-action-primary">{formatCurrency(row.birdValue)}</p>
+              </div>
+              <div className="mt-4 grid grid-cols-2 gap-3 text-sm">
+                <FlockCardInfo label="تاريخ دخول التربية" value={toDisplayDate(row.flock.rearing_entry_date ?? row.flock.entry_date)} />
+                <FlockCardInfo label="الداخل للتربية" value={formatNumber(row.flock.rearing_entered_count ?? row.flock.entry_birds)} />
+                <FlockCardInfo label="قيمة الصوص" value={formatCurrency(row.chickCost)} />
+                <FlockCardInfo label="قيمة الأعلاف" value={formatCurrency(row.feedCost)} />
+                <FlockCardInfo label="قيمة البيطرة" value={formatCurrency(row.vetCost)} />
+                <FlockCardInfo label="قيمة أخرى" value={formatCurrency(row.otherCost)} />
+                <div className="col-span-2">
+                  <FlockCardInfo label="قيمة الفوج" value={formatCurrency(row.totalValue)} />
+                </div>
+              </div>
+            </article>
+          ))
+        )}
+
+        <article className="rounded-2xl border border-line-strong bg-surface p-4">
+          <h3 className="text-sm font-bold text-ink">إجمالي دفتر التربية</h3>
+          <div className="mt-3 grid grid-cols-2 gap-3 text-sm">
+            <FlockCardInfo label="عدد الداخل" value={formatNumber(summary.entryBirds)} />
+            <FlockCardInfo label="قيمة الصوص" value={formatCurrency(summary.chickCost)} />
+            <FlockCardInfo label="الأعلاف" value={formatCurrency(summary.feedCost)} />
+            <FlockCardInfo label="البيطرة" value={formatCurrency(summary.vetCost)} />
+            <FlockCardInfo label="أخرى" value={formatCurrency(summary.otherCost)} />
+            <FlockCardInfo label="الإجمالي" value={formatCurrency(summary.totalValue)} />
+          </div>
+        </article>
+      </div>
+
+      <div className="hidden overflow-x-auto lg:block">
         <table className="w-full min-w-[980px] border-collapse text-right text-sm">
           <thead>
             <tr className="border-b border-line bg-surface-muted text-xs font-bold text-ink-soft">
@@ -1368,7 +1411,71 @@ function FlockEntrySummary({
       </div>
 
       <div className="overflow-hidden rounded-2xl border border-line">
-        <div className="overflow-x-auto">
+        <div className="grid grid-cols-1 gap-3 p-3 lg:hidden">
+          {flocks.length === 0 ? (
+            <div className="rounded-2xl border border-dashed border-line-strong bg-surface-subtle px-4 py-10 text-center text-sm text-ink-muted">
+              لا توجد أفواج {allFlocksCount === 0 ? 'مسجلة' : 'مطابقة للتصفية الحالية'}.
+            </div>
+          ) : (
+            flocks.map((flock) => {
+              const flockValue = parseNumeric(flock.chick_unit_cost) * flock.entry_birds
+              return (
+                <article key={flock.id} className="rounded-2xl border border-line bg-surface p-4">
+                  <div className="flex min-w-0 items-start justify-between gap-3">
+                    <div className="min-w-0">
+                      <Link href={`/flocks/${flock.id}`} className="font-mono text-base font-bold text-action-primary">
+                        {flockCode(flock)}
+                      </Link>
+                      <p className="mt-1 truncate text-xs font-semibold text-ink-muted">
+                        {flock.supplier || 'مورد غير محدد'}، {flock.breed || 'سلالة غير محددة'}
+                      </p>
+                    </div>
+                    <span className={`shrink-0 rounded-full border px-2.5 py-1 text-xs font-bold ${statusColors[flock.status] ?? statusColors.active}`}>
+                      {statusLabels[flock.status] ?? 'نشط'}
+                    </span>
+                  </div>
+
+                  <div className="mt-4 grid grid-cols-2 gap-3 text-sm">
+                    <FlockCardInfo label="تاريخ الدخول" value={toDisplayDate(flock.entry_date)} />
+                    <FlockCardInfo label="عدد الداخل" value={formatNumber(flock.entry_birds)} />
+                    <div className="col-span-2">
+                      <FlockCardInfo label="قيمة الفوج" value={formatCurrency(flockValue)} />
+                    </div>
+                  </div>
+
+                  <div className="mt-4 flex flex-wrap gap-2">
+                    {flock.status === 'active' || !flock.status ? (
+                      <Link
+                        href={`/flocks/${flock.id}/closure`}
+                        className="inline-flex min-h-11 flex-1 items-center justify-center gap-2 rounded-xl border border-warning-soft bg-warning-soft px-3 py-2 text-xs font-bold text-warning-strong transition-colors hover:bg-warning-soft/70"
+                      >
+                        <PowerOff className="h-4 w-4" />
+                        إغلاق الفوج
+                      </Link>
+                    ) : null}
+                    <Link
+                      href={`/flocks/${flock.id}/edit`}
+                      className="inline-flex min-h-11 flex-1 items-center justify-center gap-2 rounded-xl border border-line bg-surface-muted px-3 py-2 text-xs font-bold text-ink-soft transition-colors hover:bg-surface-subtle"
+                    >
+                      <Edit className="h-4 w-4" />
+                      تعديل
+                    </Link>
+                    <button
+                      type="button"
+                      onClick={() => onDeleteFlock(flock.id)}
+                      className="inline-flex min-h-11 flex-1 items-center justify-center gap-2 rounded-xl border border-danger-soft bg-danger-soft px-3 py-2 text-xs font-bold text-danger transition-colors hover:bg-danger-soft/70"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                      حذف
+                    </button>
+                  </div>
+                </article>
+              )
+            })
+          )}
+        </div>
+
+        <div className="hidden overflow-x-auto lg:block">
           <table className="w-full min-w-[900px] border-collapse text-right text-sm">
             <thead>
               <tr className="border-b border-line bg-surface-muted text-xs font-bold text-ink-soft">
@@ -1494,7 +1601,49 @@ function MortalityAccordion({
               <ChevronDown className={`h-5 w-5 text-ink-muted transition-transform ${isExpanded ? 'rotate-180' : ''}`} />
             </button>
             {isExpanded ? (
-              <div className="overflow-x-auto">
+              <>
+                <div className="grid grid-cols-1 gap-3 p-3 lg:hidden">
+                  {entries.length === 0 ? (
+                    <div className="rounded-2xl border border-dashed border-line-strong bg-surface-subtle px-4 py-8 text-center text-sm text-ink-muted">
+                      لا توجد سجلات نافق لهذا الفوج.
+                    </div>
+                  ) : (
+                    entries.map((entry, entryIndex) => {
+                      const cumulative = entries
+                        .slice(entryIndex)
+                        .reduce((total, item) => total + parseNumeric(item.mortality), 0)
+                      const mortalityRate = entry.bird_count > 0 ? (parseNumeric(entry.mortality) / entry.bird_count) * 100 : 0
+                      const cumulativeRate = flock.entry_birds > 0 ? (cumulative / flock.entry_birds) * 100 : 0
+
+                      return (
+                        <article key={entry.id} className="rounded-2xl border border-line bg-surface-subtle p-4">
+                          <div className="flex items-start justify-between gap-3">
+                            <div>
+                              <p className="text-xs font-bold text-ink-muted">التاريخ</p>
+                              <h3 className="mt-1 font-mono text-sm font-bold text-ink">{toDisplayDate(entry.record_date)}</h3>
+                            </div>
+                            <p className="font-mono text-sm font-bold text-danger">
+                              نافق {formatNumber(parseNumeric(entry.mortality))}
+                            </p>
+                          </div>
+                          <div className="mt-4 grid grid-cols-2 gap-3 text-sm">
+                            <FlockCardInfo label="العمر / باليوم" value={formatNumber(entry.age_days)} />
+                            <FlockCardInfo label="الأسبوع" value={formatNumber('week_number' in entry ? entry.week_number : Math.max(1, Math.ceil((entry.age_days + 1) / 7)))} />
+                            <FlockCardInfo label="العدد الحالي" value={formatNumber(entry.bird_count)} />
+                            <FlockCardInfo label="نسبة النافق" value={`${formatNumber(mortalityRate, 2)}%`} />
+                            <FlockCardInfo label="قيمة النافق" value={formatCurrency(parseNumeric(entry.mortality) * parseNumeric(flock.chick_unit_cost))} />
+                            <FlockCardInfo label="النافق تراكمي" value={formatNumber(cumulative)} />
+                            <div className="col-span-2">
+                              <FlockCardInfo label="نسبة النافق التراكمي" value={`${formatNumber(cumulativeRate, 2)}%`} />
+                            </div>
+                          </div>
+                        </article>
+                      )
+                    })
+                  )}
+                </div>
+
+                <div className="hidden overflow-x-auto lg:block">
                 <table className="w-full min-w-[980px] text-right text-sm">
                   <thead>
                     <tr className="border-y border-line bg-surface-subtle text-xs font-bold text-ink-soft">
@@ -1537,6 +1686,7 @@ function MortalityAccordion({
                   </tbody>
                 </table>
               </div>
+              </>
             ) : null}
           </article>
         )
@@ -1560,7 +1710,46 @@ function FeedLedgerTable({
 
   return (
     <div className="overflow-hidden rounded-2xl border border-line">
-      <div className="overflow-x-auto">
+      <div className="grid grid-cols-1 gap-3 p-3 lg:hidden">
+        {rows.length === 0 ? (
+          <div className="rounded-2xl border border-dashed border-line-strong bg-surface-subtle px-4 py-10 text-center text-sm text-ink-muted">
+            لا توجد سجلات أعلاف مسجلة بعد.
+          </div>
+        ) : (
+          rows.map((row) => {
+            const itemName = stockItems.find((item) => item.id === row.itemId)?.name ?? row.feedType
+            return (
+              <article key={row.id} className="rounded-2xl border border-line bg-surface-subtle p-4">
+                <div className="flex items-start justify-between gap-3">
+                  <div>
+                    <p className="text-xs font-bold text-ink-muted">رقم الفوج</p>
+                    <Link href={`/flocks/${row.flock.id}`} className="mt-1 inline-flex rounded-lg border border-orange-100 bg-orange-50 px-2.5 py-1 font-mono text-xs font-bold text-terracotta transition-colors hover:bg-orange-100">
+                      {flockCode(row.flock)}
+                    </Link>
+                  </div>
+                  <p className="font-mono text-sm font-bold text-ink">{formatNumber(row.quantityTon, 3)} طن</p>
+                </div>
+                <div className="mt-4 grid grid-cols-2 gap-3 text-sm">
+                  <FlockCardInfo label="التاريخ" value={toDisplayDate(row.entry.record_date)} />
+                  <FlockCardInfo label="الوقت" value={row.logTime ?? '—'} />
+                  <FlockCardInfo label="العمر (يوم)" value={formatNumber(row.entry.age_days)} />
+                  <FlockCardInfo label="الأسبوع" value={formatNumber('week_number' in row.entry ? row.entry.week_number : Math.max(1, Math.ceil((row.entry.age_days + 1) / 7)))} />
+                  <div className="col-span-2">
+                    <FlockCardInfo label="نوع العلف" value={itemName} />
+                  </div>
+                  <FlockCardInfo label="الكمية (كجم)" value={formatNumber(row.quantityKg, 2)} />
+                  <FlockCardInfo label="السعر / طن" value={row.pricePerTon > 0 ? formatCurrency(row.pricePerTon) : '—'} />
+                  <div className="col-span-2">
+                    <FlockCardInfo label="المبلغ" value={row.amount > 0 ? formatCurrency(row.amount) : '—'} />
+                  </div>
+                </div>
+              </article>
+            )
+          })
+        )}
+      </div>
+
+      <div className="hidden overflow-x-auto lg:block">
         <table className="w-full min-w-[1080px] text-right text-sm">
           <thead>
             <tr className="border-b border-line bg-surface-muted text-xs font-bold text-ink-soft">
@@ -1615,7 +1804,36 @@ function MedicineLedgerTable({
 }) {
   return (
     <div className="overflow-hidden rounded-2xl border border-line">
-      <div className="overflow-x-auto">
+      <div className="grid grid-cols-1 gap-3 p-3 lg:hidden">
+        {rows.length === 0 ? (
+          <div className="rounded-2xl border border-dashed border-line-strong bg-surface-subtle px-4 py-10 text-center text-sm text-ink-muted">
+            لا توجد سجلات أدوية مسجلة.
+          </div>
+        ) : (
+          rows.map(({ flock, record, medication }) => (
+            <article key={`${record.id}-${medication?.id ?? 'case'}`} className="rounded-2xl border border-line bg-surface-subtle p-4">
+              <div className="flex items-start justify-between gap-3">
+                <div>
+                  <p className="text-xs font-bold text-ink-muted">التاريخ</p>
+                  <h3 className="mt-1 font-mono text-sm font-bold text-ink">{toDisplayDate(record.record_date)}</h3>
+                </div>
+                <p className="rounded-full bg-surface px-2.5 py-1 text-xs font-bold text-ink-soft">
+                  {medication?.method_of_administration || record.severity || `فوج ${flockCode(flock)}`}
+                </p>
+              </div>
+              <div className="mt-4 grid grid-cols-2 gap-3 text-sm">
+                <div className="col-span-2">
+                  <FlockCardInfo label="الاسم" value={medication?.medicine_name || record.diagnosis || 'حالة طبية'} />
+                </div>
+                <FlockCardInfo label="العدد" value={medication?.quantity != null ? formatNumber(medication.quantity, 2) : '—'} />
+                <FlockCardInfo label="المبلغ" value="—" />
+              </div>
+            </article>
+          ))
+        )}
+      </div>
+
+      <div className="hidden overflow-x-auto lg:block">
         <table className="w-full min-w-[720px] text-right text-sm">
           <thead>
             <tr className="border-b border-line bg-surface-muted text-xs font-bold text-ink-soft">
@@ -1672,7 +1890,38 @@ function OtherLedgerTable({
         </button>
       </div>
       <div className="overflow-hidden rounded-2xl border border-line">
-        <div className="overflow-x-auto">
+        <div className="grid grid-cols-1 gap-3 p-3 lg:hidden">
+          {isLoading ? (
+            <div className="rounded-2xl border border-line bg-surface-subtle px-4 py-10 text-center">
+              <Loader2 className="mx-auto h-6 w-6 animate-spin text-action-primary" />
+            </div>
+          ) : rows.length === 0 ? (
+            <div className="rounded-2xl border border-dashed border-line-strong bg-surface-subtle px-4 py-10 text-center text-sm text-ink-muted">
+              لا توجد سجلات أخرى.
+            </div>
+          ) : (
+            rows.map((row) => (
+              <article key={row.id} className="rounded-2xl border border-line bg-surface-subtle p-4">
+                <div className="flex items-start justify-between gap-3">
+                  <div>
+                    <p className="text-xs font-bold text-ink-muted">التاريخ</p>
+                    <h3 className="mt-1 font-mono text-sm font-bold text-ink">{toDisplayDate(row.date)}</h3>
+                  </div>
+                  <p className="font-mono text-sm font-bold text-ink">{formatCurrency(row.amount)}</p>
+                </div>
+                <div className="mt-4 grid grid-cols-2 gap-3 text-sm">
+                  <div className="col-span-2">
+                    <FlockCardInfo label="اسم البند" value={row.name} />
+                  </div>
+                  <FlockCardInfo label="النوع" value={row.type} />
+                  <FlockCardInfo label="الكمية" value={row.quantity} />
+                </div>
+              </article>
+            ))
+          )}
+        </div>
+
+        <div className="hidden overflow-x-auto lg:block">
           <table className="w-full min-w-[720px] text-right text-sm">
             <thead>
               <tr className="border-b border-line bg-surface-muted text-xs font-bold text-ink-soft">

@@ -145,7 +145,7 @@ export default function FlockAnalyticsPage() {
     <div className="space-y-6" dir="rtl">
       <section className="overflow-hidden rounded-[2rem] border border-line bg-surface shadow-sm">
         <div className="bg-[radial-gradient(circle_at_top_left,rgba(194,65,12,0.14),transparent_32%),radial-gradient(circle_at_top_right,rgba(28,59,43,0.18),transparent_28%),linear-gradient(180deg,rgba(250,249,246,0.98),rgba(255,255,255,1))] px-6 py-7">
-          <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-ink-muted">Flock Statistics</p>
+          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-ink-muted">Flock Statistics</p>
           <div className="mt-3 flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
             <div>
               <h1 className="text-3xl font-bold text-ink">لوحة إحصائيات وتحليلات القطيع</h1>
@@ -201,7 +201,7 @@ export default function FlockAnalyticsPage() {
       <div className="grid gap-6 xl:grid-cols-[1.5fr_1fr]">
         <FlockAnalyticsChart analytics={analytics} />
         <section className="rounded-[1.75rem] border border-line bg-surface p-5 shadow-sm">
-          <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-ink-muted">Stage Router</p>
+          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-ink-muted">Stage Router</p>
           <h2 className="mt-2 text-xl font-bold text-ink">حالة المرحلة</h2>
           <div className="mt-4 space-y-3">
             <div className="rounded-2xl bg-surface-subtle px-4 py-4">

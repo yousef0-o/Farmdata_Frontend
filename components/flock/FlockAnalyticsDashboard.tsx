@@ -250,7 +250,45 @@ export function FlockAnalyticsDashboard({ flock }: FlockAnalyticsDashboardProps)
             <Layers className="w-5 h-5 text-farm-blue" />
             توزيع أوزان البيض (Benchmarks)
           </h3>
-          <div className="overflow-x-auto">
+          <div className="grid grid-cols-1 gap-3 lg:hidden">
+            {analytics.egg_weight_distribution.rows.map((row) => (
+              <article key={row.size_code} className="rounded-2xl border border-gray-100 bg-gray-50/70 p-4">
+                <div className="flex items-start justify-between gap-3">
+                  <div>
+                    <p className="text-xs font-bold text-gray-500">الحجم</p>
+                    <h4 className="mt-1 text-base font-bold text-gray-900">{row.size_code}</h4>
+                  </div>
+                  <span className="rounded-full bg-white px-2.5 py-1 text-xs font-bold text-gray-600 ring-1 ring-gray-100">
+                    {row.label_ar}
+                  </span>
+                </div>
+                <div className="mt-4 grid grid-cols-2 gap-3 text-sm">
+                  <div className="rounded-xl bg-white px-3 py-2">
+                    <p className="text-xs font-bold text-gray-500">عدد البيض</p>
+                    <p className="mt-1 font-bold text-gray-900">{row.eggs.toLocaleString()}</p>
+                  </div>
+                  <div className="rounded-xl bg-white px-3 py-2">
+                    <p className="text-xs font-bold text-gray-500">عدد الكراتين</p>
+                    <p className="mt-1 font-bold text-gray-900">{row.cartons}</p>
+                  </div>
+                </div>
+                <div className="mt-4">
+                  <div className="mb-2 flex items-center justify-between text-xs font-bold text-gray-500">
+                    <span>نسبة التحقيق</span>
+                    <span>{row.percentage}%</span>
+                  </div>
+                  <div className="h-2 overflow-hidden rounded-full bg-white">
+                    <div
+                      className="h-full rounded-full bg-farm-blue"
+                      style={{ width: `${Math.min(100, row.percentage)}%` }}
+                    />
+                  </div>
+                </div>
+              </article>
+            ))}
+          </div>
+
+          <div className="hidden overflow-x-auto lg:block">
             <table className="w-full text-right text-sm">
               <thead>
                 <tr className="bg-gray-50 text-gray-600">
@@ -294,7 +332,37 @@ export function FlockAnalyticsDashboard({ flock }: FlockAnalyticsDashboardProps)
             <Calendar className="w-5 h-5 text-farm-blue" />
             حركة الإنتاج السنوية
           </h3>
-          <div className="overflow-x-auto">
+          <div className="grid grid-cols-1 gap-3 lg:hidden">
+            {analytics.annual_movement.map((row) => (
+              <article key={row.year} className="rounded-2xl border border-gray-100 bg-gray-50/70 p-4">
+                <div className="flex items-start justify-between gap-3">
+                  <div>
+                    <p className="text-xs font-bold text-gray-500">السنة</p>
+                    <h4 className="mt-1 text-base font-bold text-gray-900">{row.year}</h4>
+                  </div>
+                  <span className={`rounded-full px-2.5 py-1 text-xs font-bold ${row.carton_difference >= 0 ? 'bg-emerald-50 text-emerald-700' : 'bg-red-50 text-red-700'}`}>
+                    {row.carton_difference > 0 ? '+' : ''}{row.carton_difference.toLocaleString()}
+                  </span>
+                </div>
+                <div className="mt-4 grid grid-cols-2 gap-3 text-sm">
+                  <div className="rounded-xl bg-white px-3 py-2">
+                    <p className="text-xs font-bold text-gray-500">الكراتين المنتجة</p>
+                    <p className="mt-1 font-bold text-gray-900">{row.cartons_produced.toLocaleString()}</p>
+                  </div>
+                  <div className="rounded-xl bg-white px-3 py-2">
+                    <p className="text-xs font-bold text-gray-500">نسبة الإنتاج</p>
+                    <p className="mt-1 font-bold text-gray-900">{row.production_rate}%</p>
+                  </div>
+                  <div className="col-span-2 rounded-xl bg-white px-3 py-2">
+                    <p className="text-xs font-bold text-gray-500">المستهدف السنوي (كرتون)</p>
+                    <p className="mt-1 font-bold text-gray-900">{row.annual_target_cartons.toLocaleString()}</p>
+                  </div>
+                </div>
+              </article>
+            ))}
+          </div>
+
+          <div className="hidden overflow-x-auto lg:block">
             <table className="w-full text-right text-sm">
               <thead>
                 <tr className="bg-gray-50 text-gray-600">

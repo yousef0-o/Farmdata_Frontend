@@ -866,7 +866,43 @@ export default function AccountingPage() {
               لا توجد حركة قيود أو دفاتر محاسبية مقيدة لعام {selectedYear} حتى الآن.
             </div>
           ) : (
-            <div className="overflow-x-auto border border-line rounded-xl">
+            <>
+            <div className="grid grid-cols-1 gap-3 lg:hidden">
+              {matrixData.map((row) => {
+                const monthlyValues = months.map((month) => ({
+                  ...month,
+                  value: row.months?.[month.num] ?? 0,
+                }))
+                const totalVal = monthlyValues.reduce((sum, month) => sum + month.value, 0)
+
+                return (
+                  <article key={row.account_id} className="rounded-2xl border border-line bg-surface p-4 shadow-sm">
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="min-w-0">
+                        <p className="font-mono text-xs font-bold text-ink-muted">{row.account_code}</p>
+                        <h4 className="mt-1 break-words text-sm font-bold text-ink">{row.account_name}</h4>
+                      </div>
+                      <span className={`rounded-xl bg-surface-subtle px-3 py-2 text-xs font-bold ${totalVal > 0 ? 'text-success' : totalVal < 0 ? 'text-danger' : 'text-ink-muted'}`}>
+                        {totalVal !== 0 ? totalVal.toLocaleString('ar-EG') : '0'}
+                      </span>
+                    </div>
+
+                    <dl className="mt-4 grid grid-cols-2 gap-2 text-sm sm:grid-cols-3">
+                      {monthlyValues.map((month) => (
+                        <div key={month.num} className="rounded-xl bg-surface-subtle px-3 py-2">
+                          <dt className="text-xs font-semibold text-ink-muted">{month.name}</dt>
+                          <dd className={`mt-1 font-medium ${month.value > 0 ? 'font-bold text-success' : month.value < 0 ? 'font-bold text-danger' : 'text-ink-muted'}`}>
+                            {month.value !== 0 ? month.value.toLocaleString('ar-EG') : '-'}
+                          </dd>
+                        </div>
+                      ))}
+                    </dl>
+                  </article>
+                )
+              })}
+            </div>
+
+            <div className="hidden overflow-x-auto border border-line rounded-xl lg:block">
               <table className="w-full text-right border-collapse text-xs">
                 <thead>
                   <tr className="bg-surface-subtle border-b border-line text-ink-muted font-bold">
@@ -903,6 +939,7 @@ export default function AccountingPage() {
                 </tbody>
               </table>
             </div>
+            </>
           )}
         </div>
       )}
@@ -1489,7 +1526,7 @@ export default function AccountingPage() {
                     </div>
 
                     {/* Summary Badges */}
-                    <div className="flex gap-2 text-[10px] font-bold">
+                    <div className="flex gap-2 text-xs font-bold">
                       <div className="px-2.5 py-1.5 rounded-lg border border-danger-soft bg-danger-soft text-danger">
                         إجمالي المدين: {totalDebit.toLocaleString('ar-EG', { minimumFractionDigits: 2 })}
                       </div>
@@ -1526,7 +1563,7 @@ export default function AccountingPage() {
                             const balanceVal = balanceMap[tx.id] ?? 0
                             return (
                               <tr key={tx.id} className="border-b border-line hover:bg-surface-subtle/50 transition-colors">
-                                <td className="p-2.5 font-mono text-[11px] text-ink-soft">{tx.transaction_date}</td>
+                                <td className="p-2.5 font-mono text-xs text-ink-soft">{tx.transaction_date}</td>
                                 <td className="p-2.5 text-ink-soft">
                                   {tx.account?.name} ({tx.account?.code})
                                 </td>
@@ -1567,7 +1604,7 @@ export default function AccountingPage() {
                   ) : (
                     <div className="space-y-4">
                       {/* Tab Navigation */}
-                      <div className="flex border border-line rounded-xl p-1 bg-surface-muted shrink-0 text-[11px] font-bold">
+                      <div className="flex border border-line rounded-xl p-1 bg-surface-muted shrink-0 text-xs font-bold">
                         <button
                           type="button"
                           onClick={() => setActiveSheetTab('transactions')}
@@ -1633,7 +1670,7 @@ export default function AccountingPage() {
                           {isAutoDistribute && (
                             <div className="p-3.5 bg-warning-soft border border-warning-soft text-warning-strong rounded-2xl">
                               <h5 className="font-bold mb-1">تنبيه الربط التلقائي للشركات:</h5>
-                              <p className="text-[11px] leading-relaxed">
+                              <p className="text-xs leading-relaxed">
                                 هذا الدفتر يتبع لقسم مرتبط بشركة ({currentSheet?.folder?.name}). سيقوم النظام تلقائياً بتوزيع جميع التكاليف والقيود المدخلة على مشاريع الشركة النشطة بناءً على إنتاج البيض خلال فترة الحركة.
                               </p>
                             </div>
@@ -1798,12 +1835,12 @@ export default function AccountingPage() {
                               {txFile ? (
                                 <div>
                                   <strong className="text-ink text-xs block truncate max-w-[200px]">{txFile.name}</strong>
-                                  <span className="text-[10px] text-ink-muted mt-1 block">{(txFile.size / 1024).toFixed(1)} KB</span>
+                                  <span className="text-xs text-ink-muted mt-1 block">{(txFile.size / 1024).toFixed(1)} KB</span>
                                 </div>
                               ) : (
                                 <div>
                                   <strong className="text-ink text-xs block">اسحب ملف Excel هنا أو اضغط للاختيار</strong>
-                                  <span className="text-[10px] text-ink-muted mt-1 block">يدعم الامتدادات .xlsx أو .xls حتى 10 ميجابايت</span>
+                                  <span className="text-xs text-ink-muted mt-1 block">يدعم الامتدادات .xlsx أو .xls حتى 10 ميجابايت</span>
                                 </div>
                               )}
                             </label>

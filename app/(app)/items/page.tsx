@@ -526,11 +526,11 @@ export default function ItemsPage() {
                     <div className="flex items-center gap-2">
                       <p className="text-sm font-semibold text-ink">{item.name}</p>
                       {item.is_active !== false ? (
-                        <span className="inline-flex items-center rounded-full bg-emerald-50 px-2 py-0.5 text-[10px] font-semibold text-emerald-700 animate-in fade-in duration-200">
+                        <span className="inline-flex items-center rounded-full bg-emerald-50 px-2 py-0.5 text-xs font-semibold text-emerald-700 animate-in fade-in duration-200">
                           نشط
                         </span>
                       ) : (
-                        <span className="inline-flex items-center rounded-full bg-gray-100 px-2 py-0.5 text-[10px] font-semibold text-gray-500 animate-in fade-in duration-200">
+                        <span className="inline-flex items-center rounded-full bg-gray-100 px-2 py-0.5 text-xs font-semibold text-gray-500 animate-in fade-in duration-200">
                           غير نشط
                         </span>
                       )}

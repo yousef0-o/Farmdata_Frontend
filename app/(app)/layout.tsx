@@ -6,10 +6,9 @@ import TopBar from '@/components/layout/TopBar'
 import { useMe } from '@/lib/hooks/useAuth'
 import { Loader2 } from 'lucide-react'
 import { useRouter } from 'next/navigation'
-import { usePathname } from 'next/navigation'
 
 function AuthGuard({ children }: { children: React.ReactNode }) {
-  const { data: user, isLoading, isError } = useMe()
+  const { isLoading, isError } = useMe()
   const router = useRouter()
 
   useEffect(() => {
@@ -40,14 +39,9 @@ function getFocusableElements(container: HTMLElement | null) {
 }
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
-  const pathname = usePathname()
   const [isDrawerOpen, setIsDrawerOpen] = useState(false)
   const drawerRef = useRef<HTMLDivElement>(null)
   const drawerTitleId = useId()
-
-  useEffect(() => {
-    setIsDrawerOpen(false)
-  }, [pathname])
 
   useEffect(() => {
     if (!isDrawerOpen) return
@@ -94,8 +88,8 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
 
   return (
     <AuthGuard>
-      <div className="min-h-screen bg-background font-sans text-foreground transition-colors duration-200" dir="rtl">
-        <div className="flex min-h-screen w-full lg:flex-row">
+      <div className="min-h-screen w-full max-w-full overflow-x-hidden bg-background font-sans text-foreground transition-colors duration-200" dir="rtl">
+        <div className="flex min-h-screen w-full min-w-0 max-w-full lg:flex-row">
           <Sidebar className="hidden lg:flex lg:w-64 xl:w-64 lg:sticky lg:top-0 lg:h-screen lg:shrink-0" />
 
           <div className="flex min-w-0 flex-1 flex-col overflow-hidden">
@@ -126,7 +120,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
               role="dialog"
               aria-modal="true"
               aria-labelledby={drawerTitleId}
-              className="absolute inset-y-0 right-0 flex h-full w-full max-w-sm flex-col bg-surface shadow-2xl"
+              className="absolute inset-y-0 right-0 flex h-full w-[min(100vw,24rem)] max-w-full flex-col bg-surface shadow-2xl"
             >
               <Sidebar
                 className="w-full"

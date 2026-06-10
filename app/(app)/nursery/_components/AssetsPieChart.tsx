@@ -86,7 +86,7 @@ export default function AssetsPieChart({ groupedAssets }: { groupedAssets: Nurse
             <span className="font-mono text-base font-extrabold text-slate-950 dark:text-slate-50 leading-none">
               {total.toLocaleString('ar-SA')}
             </span>
-            <span className="mt-1 text-[9px] font-bold text-slate-400 flex items-center gap-0.5 justify-center">
+            <span className="mt-1 text-xs font-bold text-slate-400 flex items-center gap-0.5 justify-center">
               <SaudiRiyalIcon size={10} className="text-emerald-700" />
               <span>أصول</span>
             </span>
@@ -112,7 +112,7 @@ export default function AssetsPieChart({ groupedAssets }: { groupedAssets: Nurse
                 </div>
                 <div className="text-left font-mono text-xs font-extrabold text-slate-950 dark:text-slate-50 flex items-center gap-1.5">
                   <span>{item.valueDisplay}</span>
-                  <span className="text-[10px] text-slate-400 font-semibold">({percent}%)</span>
+                  <span className="text-xs text-slate-400 font-semibold">({percent}%)</span>
                 </div>
               </div>
             )

@@ -2,6 +2,246 @@ import React, { useState } from 'react'
 import { ChevronDown, ChevronUp, Book } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
 
+type GuideCell = {
+  value: React.ReactNode
+  className?: string
+}
+
+type GuideRow = {
+  label: GuideCell
+  values: GuideCell[]
+}
+
+type GuideSection = {
+  title: string
+  columns: string[]
+  rows: GuideRow[]
+}
+
+const guideSections: GuideSection[] = [
+  {
+    title: 'مؤشرات الدورة الإنتاجية حسب إدارة المشاريع',
+    columns: ['المؤشر', 'من', 'إلى'],
+    rows: [
+      {
+        label: { value: 'غير محقق', className: 'bg-red-50 text-red-800 font-semibold' },
+        values: [{ value: '0%' }, { value: '50%' }],
+      },
+      {
+        label: { value: 'أدنى إنتاج', className: 'bg-red-50 text-red-800 font-semibold' },
+        values: [{ value: '51%' }, { value: '65%' }],
+      },
+      {
+        label: { value: 'ظروف متوسطة', className: 'bg-yellow-50 text-yellow-800 font-semibold' },
+        values: [{ value: '66%' }, { value: '74%' }],
+      },
+      {
+        label: { value: 'متوسط إنتاج', className: 'bg-blue-50 text-blue-800 font-semibold' },
+        values: [{ value: '75%' }, { value: '80%' }],
+      },
+      {
+        label: { value: 'ظروف مثالية', className: 'bg-emerald-50 text-emerald-800 font-semibold' },
+        values: [{ value: '81%' }, { value: '99%' }],
+      },
+      {
+        label: { value: 'غير معقول', className: 'font-semibold' },
+        values: [{ value: '100%' }, { value: 'فأكثر' }],
+      },
+    ],
+  },
+  {
+    title: 'تقدير مستوى الأداء (تصنيف جودة الإنتاج التجاري)',
+    columns: ['مستوى الأداء', 'معدل إنتاج البيض (٪)', 'التفسير', 'الملاحظة'],
+    rows: [
+      {
+        label: { value: 'ممتاز', className: 'bg-emerald-50 text-emerald-800 font-semibold' },
+        values: [
+          { value: '85 – 100 ٪' },
+          { value: 'إنتاج مرتفع جدًا ومطابق للسلالة' },
+          { value: 'أداء اقتصادي مثالي', className: 'text-gray-500' },
+        ],
+      },
+      {
+        label: { value: 'جيد جداً', className: 'bg-blue-50 text-blue-800 font-semibold' },
+        values: [
+          { value: '80 – 84 ٪' },
+          { value: 'قريب من المرجعية، خسارة بسيطة' },
+          { value: 'ضمن الحدود التجارية المجدية', className: 'text-gray-500' },
+        ],
+      },
+      {
+        label: { value: 'جيد', className: 'bg-yellow-50 text-yellow-800 font-semibold' },
+        values: [
+          { value: '70 – 79 ٪' },
+          { value: 'أداء متوسط، يحتاج تحسين بالتغذية' },
+          { value: 'قد يتأثر الربح التشغيلي', className: 'text-gray-500' },
+        ],
+      },
+      {
+        label: { value: 'ضعيف', className: 'bg-red-50 text-red-800 font-semibold' },
+        values: [
+          { value: 'أقل من 70 ٪' },
+          { value: 'دون المستوى الاقتصادي' },
+          { value: 'مشكلة صحية أو إدارية', className: 'text-gray-500' },
+        ],
+      },
+    ],
+  },
+  {
+    title: 'معامل التحويل العلفي (FCR)',
+    columns: ['الأداء', 'العلف/كرتون', 'معامل FCR', 'كرتون/طن علف', 'التفسير الفني'],
+    rows: [
+      {
+        label: { value: 'ممتاز', className: 'bg-emerald-50 text-emerald-800 font-semibold' },
+        values: [
+          { value: 'أقل من 55 كجم' },
+          { value: '< 2.30', className: 'font-mono' },
+          { value: '> 18' },
+          { value: 'إدارة تغذية ممتازة، صحة جيدة', className: 'text-gray-500' },
+        ],
+      },
+      {
+        label: { value: 'جيد جداً', className: 'bg-blue-50 text-blue-800 font-semibold' },
+        values: [
+          { value: '55 - 58 كجم' },
+          { value: '2.30 - 2.40', className: 'font-mono' },
+          { value: '17 - 18' },
+          { value: 'أداء ممتاز عملياً', className: 'text-gray-500' },
+        ],
+      },
+      {
+        label: { value: 'جيد', className: 'bg-yellow-50 text-yellow-800 font-semibold' },
+        values: [
+          { value: '58 - 61 كجم' },
+          { value: '2.40 - 2.55', className: 'font-mono' },
+          { value: '16.5 - 17' },
+          { value: 'أداء مستقر', className: 'text-gray-500' },
+        ],
+      },
+      {
+        label: { value: 'متوسط', className: 'font-semibold' },
+        values: [
+          { value: '61 - 65 كجم' },
+          { value: '2.55 - 2.70', className: 'font-mono' },
+          { value: '15.5 - 16.5' },
+          { value: 'مقبول ويحتاج ضبط', className: 'text-gray-500' },
+        ],
+      },
+      {
+        label: { value: 'ضعيف', className: 'bg-red-50 text-red-800 font-semibold' },
+        values: [
+          { value: 'أكثر من 65 كجم' },
+          { value: '> 2.70', className: 'font-mono' },
+          { value: '< 15.5' },
+          { value: 'هدر علف، مشكلة صحية', className: 'text-gray-500' },
+        ],
+      },
+    ],
+  },
+  {
+    title: 'توزيع الإنتاج حسب الأوزان (Benchmarks)',
+    columns: ['الفئة', 'وزن البيضة', 'النسبة من الإجمالي', 'التفسير'],
+    rows: [
+      {
+        label: { value: 'SSS / SS', className: 'font-semibold' },
+        values: [
+          { value: '< 18 جم', className: 'text-gray-500' },
+          { value: '0 – 2%', className: 'text-gray-500' },
+          { value: 'بداية الدورة أو ضعف تغذية', className: 'text-gray-500' },
+        ],
+      },
+      {
+        label: { value: 'S', className: 'font-semibold' },
+        values: [
+          { value: '18 – 20 جم', className: 'text-gray-500' },
+          { value: '3 – 6%', className: 'text-gray-500' },
+          { value: 'طبيعي في الأسابيع الأولى', className: 'text-gray-500' },
+        ],
+      },
+      {
+        label: { value: 'M', className: 'font-semibold' },
+        values: [
+          { value: '21 – 22 جم', className: 'text-gray-500' },
+          { value: '20 – 30%', className: 'text-gray-500' },
+          { value: 'معيار الإنتاج التجاري', className: 'text-gray-500' },
+        ],
+      },
+      {
+        label: { value: 'L1 / L2', className: 'bg-blue-50 text-blue-800 font-semibold' },
+        values: [
+          { value: '23 – 25 جم', className: 'text-gray-500' },
+          { value: '35 – 45%', className: 'text-gray-500' },
+          { value: 'البيض القياسي (أعلى ربحية)', className: 'text-gray-500' },
+        ],
+      },
+      {
+        label: { value: 'XL / XXL', className: 'bg-blue-50 text-blue-800 font-semibold' },
+        values: [
+          { value: '26 – 28 جم', className: 'text-gray-500' },
+          { value: '15 – 25%', className: 'text-gray-500' },
+          { value: 'مرحلة متقدمة من الإنتاج', className: 'text-gray-500' },
+        ],
+      },
+      {
+        label: { value: 'B / J', className: 'font-semibold' },
+        values: [
+          { value: '> 28 جم', className: 'text-gray-500' },
+          { value: '0 – 3%', className: 'text-gray-500' },
+          { value: 'طبيعي في نهاية الدورة', className: 'text-gray-500' },
+        ],
+      },
+    ],
+  },
+]
+
+function GuideTable({ section }: { section: GuideSection }) {
+  return (
+    <>
+      <div className="grid grid-cols-1 gap-3 lg:hidden">
+        {section.rows.map((row, rowIndex) => (
+          <article key={rowIndex} className="rounded-xl border border-gray-100 bg-white p-4 shadow-sm">
+            <div className={`inline-flex max-w-full items-center rounded-lg px-2.5 py-1 text-sm ${row.label.className || 'bg-gray-50 font-semibold text-gray-800'}`}>
+              {row.label.value}
+            </div>
+            <dl className="mt-3 grid grid-cols-1 gap-2 sm:grid-cols-2">
+              {row.values.map((cell, cellIndex) => (
+                <div key={cellIndex} className="min-w-0 rounded-lg bg-gray-50 px-3 py-2">
+                  <dt className="text-xs font-semibold text-gray-500">{section.columns[cellIndex + 1]}</dt>
+                  <dd className={`mt-1 break-words text-sm font-semibold text-gray-800 ${cell.className || ''}`}>
+                    {cell.value}
+                  </dd>
+                </div>
+              ))}
+            </dl>
+          </article>
+        ))}
+      </div>
+
+      <div className="hidden overflow-x-auto rounded-xl border border-gray-100 lg:block">
+        <table className="w-full text-right text-sm">
+          <thead>
+            <tr className="bg-gray-50 text-gray-600">
+              {section.columns.map((column) => (
+                <th key={column} className="p-3 border-b border-gray-100">{column}</th>
+              ))}
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-gray-50">
+            {section.rows.map((row, rowIndex) => (
+              <tr key={rowIndex}>
+                <td className={`p-3 ${row.label.className || 'font-semibold'}`}>{row.label.value}</td>
+                {row.values.map((cell, cellIndex) => (
+                  <td key={cellIndex} className={`p-3 ${cell.className || ''}`}>{cell.value}</td>
+                ))}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </>
+  )
+}
+
 export function FlockStandardsGuide() {
   const [isOpen, setIsOpen] = useState(false)
 
@@ -24,115 +264,20 @@ export function FlockStandardsGuide() {
 
       {isOpen && (
         <div className="p-6 space-y-8 animate-in slide-in-from-top-2 duration-300">
-          
-          {/* Section 1 */}
-          <div>
-            <h4 className="text-farm-blue font-bold text-lg mb-3 border-r-4 border-farm-blue pr-3 bg-blue-50 py-2 rounded-l-lg">
-              مؤشرات الدورة الإنتاجية حسب إدارة المشاريع
-            </h4>
-            <div className="overflow-x-auto rounded-xl border border-gray-100">
-              <table className="w-full text-right text-sm">
-                <thead>
-                  <tr className="bg-gray-50 text-gray-600">
-                    <th className="p-3 border-b border-gray-100">المؤشر</th>
-                    <th className="p-3 border-b border-gray-100">من</th>
-                    <th className="p-3 border-b border-gray-100">إلى</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-gray-50">
-                  <tr><td className="p-3 bg-red-50 text-red-800 font-semibold">غير محقق</td><td className="p-3">0%</td><td className="p-3">50%</td></tr>
-                  <tr><td className="p-3 bg-red-50 text-red-800 font-semibold">أدنى إنتاج</td><td className="p-3">51%</td><td className="p-3">65%</td></tr>
-                  <tr><td className="p-3 bg-yellow-50 text-yellow-800 font-semibold">ظروف متوسطة</td><td className="p-3">66%</td><td className="p-3">74%</td></tr>
-                  <tr><td className="p-3 bg-blue-50 text-blue-800 font-semibold">متوسط إنتاج</td><td className="p-3">75%</td><td className="p-3">80%</td></tr>
-                  <tr><td className="p-3 bg-emerald-50 text-emerald-800 font-semibold">ظروف مثالية</td><td className="p-3">81%</td><td className="p-3">99%</td></tr>
-                  <tr><td className="p-3 font-semibold">غير معقول</td><td className="p-3">100%</td><td className="p-3">فأكثر</td></tr>
-                </tbody>
-              </table>
+          {guideSections.map((section) => (
+            <div key={section.title}>
+              <h4 className="text-farm-blue font-bold text-lg mb-3 border-r-4 border-farm-blue pr-3 bg-blue-50 py-2 rounded-l-lg">
+                {section.title}
+              </h4>
+              {section.title === 'معامل التحويل العلفي (FCR)' ? (
+                <div className="bg-gray-50 p-4 rounded-xl text-sm text-gray-700 leading-relaxed mb-4">
+                  <strong>المعنى العلمي:</strong> مقدار العلف اللازم لإنتاج وحدة واحدة من المنتج (FCR = كمية العلف المستهلك ÷ كمية البيض المنتَج بالكجم).<br/>
+                  كلما قلّت قيمة FCR، كان التحويل أفضل (استفادة أعلى). وكلما زادت، كان هناك هدر أو ضعف.
+                </div>
+              ) : null}
+              <GuideTable section={section} />
             </div>
-          </div>
-
-          {/* Section 2 */}
-          <div>
-            <h4 className="text-farm-blue font-bold text-lg mb-3 border-r-4 border-farm-blue pr-3 bg-blue-50 py-2 rounded-l-lg">
-              تقدير مستوى الأداء (تصنيف جودة الإنتاج التجاري)
-            </h4>
-            <div className="overflow-x-auto rounded-xl border border-gray-100">
-              <table className="w-full text-right text-sm">
-                <thead>
-                  <tr className="bg-gray-50 text-gray-600">
-                    <th className="p-3 border-b border-gray-100">مستوى الأداء</th>
-                    <th className="p-3 border-b border-gray-100">معدل إنتاج البيض (٪)</th>
-                    <th className="p-3 border-b border-gray-100">التفسير</th>
-                    <th className="p-3 border-b border-gray-100">الملاحظة</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-gray-50">
-                  <tr><td className="p-3 bg-emerald-50 text-emerald-800 font-semibold">ممتاز</td><td className="p-3">85 – 100 ٪</td><td className="p-3">إنتاج مرتفع جدًا ومطابق للسلالة</td><td className="p-3 text-gray-500">أداء اقتصادي مثالي</td></tr>
-                  <tr><td className="p-3 bg-blue-50 text-blue-800 font-semibold">جيد جداً</td><td className="p-3">80 – 84 ٪</td><td className="p-3">قريب من المرجعية، خسارة بسيطة</td><td className="p-3 text-gray-500">ضمن الحدود التجارية المجدية</td></tr>
-                  <tr><td className="p-3 bg-yellow-50 text-yellow-800 font-semibold">جيد</td><td className="p-3">70 – 79 ٪</td><td className="p-3">أداء متوسط، يحتاج تحسين بالتغذية</td><td className="p-3 text-gray-500">قد يتأثر الربح التشغيلي</td></tr>
-                  <tr><td className="p-3 bg-red-50 text-red-800 font-semibold">ضعيف</td><td className="p-3">أقل من 70 ٪</td><td className="p-3">دون المستوى الاقتصادي</td><td className="p-3 text-gray-500">مشكلة صحية أو إدارية</td></tr>
-                </tbody>
-              </table>
-            </div>
-          </div>
-
-          {/* Section 3 */}
-          <div>
-            <h4 className="text-farm-blue font-bold text-lg mb-3 border-r-4 border-farm-blue pr-3 bg-blue-50 py-2 rounded-l-lg">
-              معامل التحويل العلفي (FCR)
-            </h4>
-            <div className="bg-gray-50 p-4 rounded-xl text-sm text-gray-700 leading-relaxed mb-4">
-              <strong>المعنى العلمي:</strong> مقدار العلف اللازم لإنتاج وحدة واحدة من المنتج (FCR = كمية العلف المستهلك ÷ كمية البيض المنتَج بالكجم).<br/>
-              كلما قلّت قيمة FCR، كان التحويل أفضل (استفادة أعلى). وكلما زادت، كان هناك هدر أو ضعف.
-            </div>
-            <div className="overflow-x-auto rounded-xl border border-gray-100">
-              <table className="w-full text-right text-sm">
-                <thead>
-                  <tr className="bg-gray-50 text-gray-600">
-                    <th className="p-3 border-b border-gray-100">الأداء</th>
-                    <th className="p-3 border-b border-gray-100">العلف/كرتون</th>
-                    <th className="p-3 border-b border-gray-100">معامل FCR</th>
-                    <th className="p-3 border-b border-gray-100">كرتون/طن علف</th>
-                    <th className="p-3 border-b border-gray-100">التفسير الفني</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-gray-50">
-                  <tr><td className="p-3 bg-emerald-50 text-emerald-800 font-semibold">ممتاز</td><td className="p-3">أقل من 55 كجم</td><td className="p-3 font-mono">{'<'} 2.30</td><td className="p-3">{'>'} 18</td><td className="p-3 text-gray-500">إدارة تغذية ممتازة، صحة جيدة</td></tr>
-                  <tr><td className="p-3 bg-blue-50 text-blue-800 font-semibold">جيد جداً</td><td className="p-3">55 - 58 كجم</td><td className="p-3 font-mono">2.30 - 2.40</td><td className="p-3">17 - 18</td><td className="p-3 text-gray-500">أداء ممتاز عملياً</td></tr>
-                  <tr><td className="p-3 bg-yellow-50 text-yellow-800 font-semibold">جيد</td><td className="p-3">58 - 61 كجم</td><td className="p-3 font-mono">2.40 - 2.55</td><td className="p-3">16.5 - 17</td><td className="p-3 text-gray-500">أداء مستقر</td></tr>
-                  <tr><td className="p-3 font-semibold">متوسط</td><td className="p-3">61 - 65 كجم</td><td className="p-3 font-mono">2.55 - 2.70</td><td className="p-3">15.5 - 16.5</td><td className="p-3 text-gray-500">مقبول ويحتاج ضبط</td></tr>
-                  <tr><td className="p-3 bg-red-50 text-red-800 font-semibold">ضعيف</td><td className="p-3">أكثر من 65 كجم</td><td className="p-3 font-mono">{'>'} 2.70</td><td className="p-3">{'<'} 15.5</td><td className="p-3 text-gray-500">هدر علف، مشكلة صحية</td></tr>
-                </tbody>
-              </table>
-            </div>
-          </div>
-
-          {/* Section 4 */}
-          <div>
-            <h4 className="text-farm-blue font-bold text-lg mb-3 border-r-4 border-farm-blue pr-3 bg-blue-50 py-2 rounded-l-lg">
-              توزيع الإنتاج حسب الأوزان (Benchmarks)
-            </h4>
-            <div className="overflow-x-auto rounded-xl border border-gray-100">
-              <table className="w-full text-right text-sm">
-                <thead>
-                  <tr className="bg-gray-50 text-gray-600">
-                    <th className="p-3 border-b border-gray-100">الفئة</th>
-                    <th className="p-3 border-b border-gray-100">وزن البيضة</th>
-                    <th className="p-3 border-b border-gray-100">النسبة من الإجمالي</th>
-                    <th className="p-3 border-b border-gray-100">التفسير</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-gray-50">
-                  <tr><td className="p-3 font-semibold">SSS / SS</td><td className="p-3 text-gray-500">{'<'} 18 جم</td><td className="p-3 text-gray-500">0 – 2%</td><td className="p-3 text-gray-500">بداية الدورة أو ضعف تغذية</td></tr>
-                  <tr><td className="p-3 font-semibold">S</td><td className="p-3 text-gray-500">18 – 20 جم</td><td className="p-3 text-gray-500">3 – 6%</td><td className="p-3 text-gray-500">طبيعي في الأسابيع الأولى</td></tr>
-                  <tr><td className="p-3 font-semibold">M</td><td className="p-3 text-gray-500">21 – 22 جم</td><td className="p-3 text-gray-500">20 – 30%</td><td className="p-3 text-gray-500">معيار الإنتاج التجاري</td></tr>
-                  <tr><td className="p-3 bg-blue-50 text-blue-800 font-semibold">L1 / L2</td><td className="p-3 text-gray-500">23 – 25 جم</td><td className="p-3 text-gray-500">35 – 45%</td><td className="p-3 text-gray-500">البيض القياسي (أعلى ربحية)</td></tr>
-                  <tr><td className="p-3 bg-blue-50 text-blue-800 font-semibold">XL / XXL</td><td className="p-3 text-gray-500">26 – 28 جم</td><td className="p-3 text-gray-500">15 – 25%</td><td className="p-3 text-gray-500">مرحلة متقدمة من الإنتاج</td></tr>
-                  <tr><td className="p-3 font-semibold">B / J</td><td className="p-3 text-gray-500">{'>'} 28 جم</td><td className="p-3 text-gray-500">0 – 3%</td><td className="p-3 text-gray-500">طبيعي في نهاية الدورة</td></tr>
-                </tbody>
-              </table>
-            </div>
-          </div>
+          ))}
 
         </div>
       )}

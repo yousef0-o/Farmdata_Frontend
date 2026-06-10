@@ -334,8 +334,91 @@ export default function UnifiedStatsCards({ stats, isBreedingOnly: propIsBreedin
                   </div>
                 </div>
 
-                <div className="rounded-2xl border border-line bg-surface p-4 shadow-sm overflow-x-auto">
-                  <table className="w-full text-sm border-collapse text-right">
+                <div className="grid grid-cols-1 gap-4 lg:hidden">
+                  {annualMovement.map((row) => {
+                    const isDiffPositive = row.cartons_difference >= 0
+                    const rateColor = row.production_rate >= 80 ? 'text-emerald-600' : (row.production_rate >= 70 ? 'text-amber-500' : 'text-rose-600')
+                    return (
+                      <article key={row.year} className="rounded-2xl border border-line bg-surface p-4 shadow-sm">
+                        <div className="flex items-start justify-between gap-3">
+                          <div>
+                            <p className="text-xs font-semibold text-slate-500">السنة</p>
+                            <h3 className="text-lg font-bold text-slate-800">{row.year}</h3>
+                          </div>
+                          <span className={`rounded-lg px-2.5 py-1 text-xs font-bold ${isDiffPositive ? 'bg-emerald-50 text-emerald-700' : 'bg-rose-50 text-rose-700'}`}>
+                            الفرق {!isDiffPositive && '-'}{formatNumber(Math.abs(row.cartons_difference))}
+                          </span>
+                        </div>
+
+                        <dl className="mt-4 grid grid-cols-2 gap-3 text-sm">
+                          <div className="rounded-xl bg-slate-50 px-3 py-2">
+                            <dt className="text-xs font-semibold text-slate-500">الكرتون المنتج</dt>
+                            <dd className="mt-1 font-bold text-slate-800">{formatNumber(row.cartons_produced)}</dd>
+                          </div>
+                          <div className="rounded-xl bg-slate-50 px-3 py-2">
+                            <dt className="text-xs font-semibold text-slate-500">البيض المنتج</dt>
+                            <dd className="mt-1 font-semibold text-slate-700">{formatNumber(row.eggs_produced)}</dd>
+                          </div>
+                          <div className="rounded-xl bg-slate-50 px-3 py-2">
+                            <dt className="text-xs font-semibold text-slate-500">عدد الطيور الداخل</dt>
+                            <dd className="mt-1 font-semibold text-slate-700">{formatNumber(row.birds_entering_production)}</dd>
+                          </div>
+                          <div className="rounded-xl bg-slate-50 px-3 py-2">
+                            <dt className="text-xs font-semibold text-slate-500">العدد التراكمي</dt>
+                            <dd className="mt-1 font-bold text-slate-800">{formatNumber(row.cumulative_birds)}</dd>
+                          </div>
+                          <div className="rounded-xl bg-slate-50 px-3 py-2">
+                            <dt className="text-xs font-semibold text-slate-500">نسبة الإنتاج</dt>
+                            <dd className={`mt-1 font-bold ${rateColor}`}>{row.production_rate.toFixed(2)}%</dd>
+                          </div>
+                          <div className="rounded-xl bg-slate-50 px-3 py-2">
+                            <dt className="text-xs font-semibold text-slate-500">النافق</dt>
+                            <dd className="mt-1 font-bold text-rose-600">{formatNumber(row.mortality_count)}</dd>
+                          </div>
+                          <div className="rounded-xl bg-slate-50 px-3 py-2">
+                            <dt className="text-xs font-semibold text-slate-500">الأعلاف (طن)</dt>
+                            <dd className="mt-1 font-semibold text-slate-700">{formatNumber(row.feed_consumption)}</dd>
+                          </div>
+                          <div className="rounded-xl bg-slate-50 px-3 py-2">
+                            <dt className="text-xs font-semibold text-slate-500">المستهدف</dt>
+                            <dd className="mt-1 font-semibold text-slate-700">{formatNumber(row.target_cartons)}</dd>
+                          </div>
+                        </dl>
+                      </article>
+                    )
+                  })}
+
+                  <article className="rounded-2xl border border-emerald-100 bg-emerald-50 p-4 shadow-sm">
+                    <h3 className="text-sm font-bold text-emerald-950">إجمالي الحركة السنوية</h3>
+                    <dl className="mt-3 grid grid-cols-2 gap-3 text-sm">
+                      <div>
+                        <dt className="text-xs font-semibold text-emerald-700">عدد الطيور الداخل</dt>
+                        <dd className="mt-1 font-bold text-emerald-950">{formatNumber(totalEntering)}</dd>
+                      </div>
+                      <div>
+                        <dt className="text-xs font-semibold text-emerald-700">العدد التراكمي</dt>
+                        <dd className="mt-1 font-bold text-emerald-950">{formatNumber(totalCumulativeBirds)}</dd>
+                      </div>
+                      <div>
+                        <dt className="text-xs font-semibold text-emerald-700">النافق</dt>
+                        <dd className="mt-1 font-bold text-rose-600">{formatNumber(totalMortality)}</dd>
+                      </div>
+                      <div>
+                        <dt className="text-xs font-semibold text-emerald-700">المستهدف</dt>
+                        <dd className="mt-1 font-bold text-emerald-950">{formatNumber(totalTarget)}</dd>
+                      </div>
+                      <div className="col-span-2">
+                        <dt className="text-xs font-semibold text-emerald-700">فرق المستهدف</dt>
+                        <dd className={`mt-1 font-bold ${totalDiff >= 0 ? 'text-emerald-700' : 'text-rose-700'}`}>
+                          {totalDiff < 0 && '-'}{formatNumber(Math.abs(totalDiff))}
+                        </dd>
+                      </div>
+                    </dl>
+                  </article>
+                </div>
+
+                <div className="hidden overflow-x-auto rounded-2xl border border-line bg-surface p-4 shadow-sm lg:block">
+                  <table className="w-full border-collapse text-right text-sm">
                     <thead>
                       <tr className="border-b border-line bg-slate-50 text-slate-700 font-bold">
                         <th className="p-3 text-center">السنة</th>

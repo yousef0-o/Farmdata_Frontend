@@ -103,7 +103,7 @@ export default function SpeciesDonutChart({ data }: { data: ChartDatum[] }) {
                 </div>
                 <div className="text-left font-mono text-xs font-extrabold text-slate-950 dark:text-slate-50 flex items-center gap-1.5">
                   <span>{item.valueDisplay}</span>
-                  <span className="text-[10px] text-slate-400 font-semibold">({percent}%)</span>
+                  <span className="text-xs text-slate-400 font-semibold">({percent}%)</span>
                 </div>
               </div>
             )

@@ -69,7 +69,7 @@ export function FeedRunwayWidget({
                     </div>
                     <p className="mt-1 text-sm text-ink-muted">{item.warehouse_name ?? 'مستودع غير محدد'}</p>
                   </div>
-                  <div className="grid grid-cols-3 gap-4 text-sm lg:min-w-[420px]">
+                  <div className="grid grid-cols-1 gap-3 text-sm sm:grid-cols-3 lg:min-w-[420px] lg:gap-4">
                     <div>
                       <p className="text-xs text-ink-muted">المخزون</p>
                       <p className="font-mono font-bold text-ink">{formatNumber(item.stock_kg)} كجم</p>

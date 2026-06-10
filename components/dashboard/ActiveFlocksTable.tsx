@@ -12,6 +12,8 @@ interface ActiveFlocksTableProps {
 }
 
 export function ActiveFlocksTable({ flocks, loading }: ActiveFlocksTableProps) {
+  const [currentTime] = React.useState(() => Date.now())
+
   if (loading) {
     return (
       <div className="space-y-3">
@@ -38,7 +40,7 @@ export function ActiveFlocksTable({ flocks, loading }: ActiveFlocksTableProps) {
 
   const calculateDays = (entryDate: string) => {
     try {
-      const diffTime = Date.now() - new Date(entryDate).getTime()
+      const diffTime = currentTime - new Date(entryDate).getTime()
       const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24))
       return diffDays < 0 ? 0 : diffDays
     } catch {
@@ -48,7 +50,54 @@ export function ActiveFlocksTable({ flocks, loading }: ActiveFlocksTableProps) {
 
   return (
     <div className="space-y-4">
-      <div className="overflow-x-auto border border-border rounded-2xl bg-surface shadow-sm">
+      <div className="grid grid-cols-1 gap-3 lg:hidden">
+        {displayedFlocks.map((flock) => {
+          const days = calculateDays(flock.entry_date)
+
+          return (
+            <Link
+              key={flock.id}
+              href={`/flocks/${flock.id}`}
+              className="rounded-2xl border border-border bg-surface p-4 shadow-sm transition-[background-color,border-color] duration-150 hover:bg-surface-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-action-primary/30"
+            >
+              <div className="flex min-w-0 items-start justify-between gap-3">
+                <div className="min-w-0">
+                  <p className="truncate text-sm font-bold text-farm-blue dark:text-terracotta">
+                    فوج #{flock.id}
+                  </p>
+                  <p className="mt-1 truncate text-xs font-medium text-gray-500 dark:text-gray-400">
+                    {flock.barn?.barn_name ?? 'عنبر غير محدد'}
+                  </p>
+                </div>
+                <FlockStatusBadge status={flock.status} />
+              </div>
+
+              <div className="mt-4 grid grid-cols-2 gap-3 text-sm">
+                <div className="rounded-xl bg-surface-muted p-3">
+                  <p className="text-xs font-bold text-ink-muted">النوع</p>
+                  <div className="mt-1">
+                    <FlockTypeBadge type={flock.flock_type} />
+                  </div>
+                </div>
+                <div className="rounded-xl bg-surface-muted p-3">
+                  <p className="text-xs font-bold text-ink-muted">الطيور الحالية</p>
+                  <p className="mt-1 font-mono font-bold text-ink">
+                    {flock.current_count.toLocaleString('en-US')}
+                  </p>
+                </div>
+                <div className="col-span-2 rounded-xl bg-surface-muted p-3">
+                  <p className="text-xs font-bold text-ink-muted">أيام من الدخول</p>
+                  <p className="mt-1 font-mono font-bold text-ink">
+                    {days.toLocaleString('en-US')} يوم
+                  </p>
+                </div>
+              </div>
+            </Link>
+          )
+        })}
+      </div>
+
+      <div className="hidden overflow-x-auto rounded-2xl border border-border bg-surface shadow-sm lg:block">
         <table className="w-full text-right border-collapse">
           <thead>
             <tr className="border-b border-gray-100 dark:border-gray-200 bg-gray-50/75 dark:bg-gray-950/75 text-xs text-gray-500 dark:text-gray-400 font-bold uppercase tracking-wider">

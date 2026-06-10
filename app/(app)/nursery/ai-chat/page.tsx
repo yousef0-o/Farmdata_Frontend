@@ -1458,7 +1458,7 @@ export default function NurseryAiChatPage() {
     return (
       <div className="mt-1 space-y-0.5 animate-fade-in-up">
         {errors.map((error, idx) => (
-          <p key={idx} className="text-[11px] font-bold text-red-500">{error}</p>
+          <p key={idx} className="text-xs font-bold text-red-500">{error}</p>
         ))}
       </div>
     )
@@ -1517,7 +1517,7 @@ export default function NurseryAiChatPage() {
           {loadingChats ? (
             <div className="flex flex-col items-center justify-center py-12 text-slate-400">
               <Loader2 className="h-5 w-5 animate-spin text-terracotta mb-2" />
-              <span className="text-[11px] font-bold">جاري تحميل الاستشارات...</span>
+              <span className="text-xs font-bold">جاري تحميل الاستشارات...</span>
             </div>
           ) : filteredChats.length === 0 ? (
             <div className="text-center py-12 text-xs text-slate-400">
@@ -1556,7 +1556,7 @@ export default function NurseryAiChatPage() {
                 .filter(g => g.items.length > 0)
                 .map(group => (
                   <div key={group.label} className="space-y-1">
-                    <div className="text-[10px] font-extrabold text-slate-400 dark:text-slate-500 px-2 py-1 select-none">
+                    <div className="text-xs font-extrabold text-slate-400 dark:text-slate-500 px-2 py-1 select-none">
                       {group.label}
                     </div>
                     {group.items.map(chat => {
@@ -1591,7 +1591,7 @@ export default function NurseryAiChatPage() {
                               <>
                                 <div className="text-xs font-bold truncate text-slate-800 dark:text-slate-200">{chat.title}</div>
                                 {(chat.context_basin_name || chat.context_cycle_name) && (
-                                  <div className="text-[10px] text-terracotta mt-0.5 truncate flex items-center gap-1 font-semibold">
+                                  <div className="text-xs text-terracotta mt-0.5 truncate flex items-center gap-1 font-semibold">
                                     <span>{chat.context_basin_name || chat.context_cycle_name}</span>
                                   </div>
                                 )}
@@ -1670,7 +1670,7 @@ export default function NurseryAiChatPage() {
                 </div>
                 <div>
                   <h1 className="text-sm font-extrabold text-slate-900 dark:text-white">{activeChat.title}</h1>
-                  <div className="flex items-center gap-2 mt-0.5 text-[11px] text-slate-400">
+                  <div className="flex items-center gap-2 mt-0.5 text-xs text-slate-400">
                     <span>البدء: {new Date(activeChat.created_at).toLocaleDateString('ar-SA')}</span>
                     <span className={`px-2 py-0.5 rounded-full text-xs font-bold ${
                       inferredContext?.last_response_type === 'clarification'
@@ -1769,7 +1769,7 @@ export default function NurseryAiChatPage() {
                       </div>
 
                       {/* Message Actions Toolbar */}
-                      <div className={`flex items-center gap-3 text-[10px] ${isModel ? 'justify-end' : 'justify-start'} text-slate-400 dark:text-slate-500 px-1`}>
+                      <div className={`flex items-center gap-3 text-xs ${isModel ? 'justify-end' : 'justify-start'} text-slate-400 dark:text-slate-500 px-1`}>
                         <button
                           onClick={() => handleCopyMessage(message.id, message.content)}
                           className="hover:text-slate-600 dark:hover:text-slate-350 transition-colors flex items-center gap-1 font-semibold select-none"
@@ -1813,7 +1813,7 @@ export default function NurseryAiChatPage() {
                               ) : (
                                 <FileText className="h-4 w-4 text-terracotta" />
                               )}
-                              <span className="text-[10px] font-bold truncate">{attach.name}</span>
+                              <span className="text-xs font-bold truncate">{attach.name}</span>
                             </a>
                           ))}
                         </div>
@@ -1872,7 +1872,7 @@ export default function NurseryAiChatPage() {
           
           {/* Active Context Indicators */}
           {(selectedBasinId || selectedCycleId) && (
-            <div className="flex flex-wrap items-center gap-2 mb-3 p-2 rounded-xl bg-white/60 border border-slate-200/50 dark:bg-slate-900/60 dark:border-slate-800 text-[11px] font-bold text-slate-505 shadow-sm animate-fade-in">
+            <div className="flex flex-wrap items-center gap-2 mb-3 p-2 rounded-xl bg-white/60 border border-slate-200/50 dark:bg-slate-900/60 dark:border-slate-800 text-xs font-bold text-slate-505 shadow-sm animate-fade-in">
               <span className="text-slate-400 select-none">التركيز الحالي:</span>
               {selectedBasinId && (
                 <>
@@ -1922,7 +1922,7 @@ export default function NurseryAiChatPage() {
             <div className="mb-3 p-3.5 rounded-xl bg-white border border-slate-100 dark:bg-slate-900 dark:border-slate-800 shadow-md animate-fade-in-up space-y-3">
               <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-2">
                 <span className="text-xs font-extrabold text-slate-800 dark:text-slate-200">البيانات الحية للحوض</span>
-                <span className="inline-flex items-center gap-1 rounded bg-orange-50 px-1.5 py-0.5 text-[9px] font-bold text-terracotta dark:bg-orange-950/40">متصل</span>
+                <span className="inline-flex items-center gap-1 rounded bg-orange-50 px-1.5 py-0.5 text-xs font-bold text-terracotta dark:bg-orange-950/40">متصل</span>
               </div>
               
               {loadingBasinStats ? (
@@ -1930,17 +1930,17 @@ export default function NurseryAiChatPage() {
                   <Loader2 className="h-5 w-5 animate-spin text-terracotta" />
                 </div>
               ) : basinStats ? (
-                <div className="grid grid-cols-2 md:grid-cols-5 gap-3.5 text-[11px] font-bold text-slate-600 dark:text-slate-300">
+                <div className="grid grid-cols-2 md:grid-cols-5 gap-3.5 text-xs font-bold text-slate-600 dark:text-slate-300">
                   <div className="flex flex-col bg-slate-50/50 dark:bg-slate-950/20 p-2 rounded-lg border border-slate-100 dark:border-slate-800">
-                    <span className="text-[10px] text-slate-400 font-semibold mb-0.5">طريقة الري</span>
+                    <span className="text-xs text-slate-400 font-semibold mb-0.5">طريقة الري</span>
                     <span className="text-slate-800 dark:text-slate-200">{basinStats.basin?.irrigation_method || 'غير محدد'}</span>
                   </div>
                   <div className="flex flex-col bg-slate-50/50 dark:bg-slate-950/20 p-2 rounded-lg border border-slate-100 dark:border-slate-800">
-                    <span className="text-[10px] text-slate-400 font-semibold mb-0.5">الأشجار القائمة</span>
+                    <span className="text-xs text-slate-400 font-semibold mb-0.5">الأشجار القائمة</span>
                     <span className="text-slate-800 dark:text-slate-200">{(basinStats.stats?.total_trees || 0).toLocaleString('ar-SA')} شجرة</span>
                   </div>
                   <div className="flex flex-col bg-slate-50/50 dark:bg-slate-950/20 p-2 rounded-lg border border-slate-100 dark:border-slate-800">
-                    <span className="text-[10px] text-slate-400 font-semibold mb-0.5">نسبة التشغيل</span>
+                    <span className="text-xs text-slate-400 font-semibold mb-0.5">نسبة التشغيل</span>
                     <span className="text-terracotta dark:text-orange-400 font-mono">
                       {(basinStats.basin?.capacity || 0) > 0 
                         ? `${Math.round(((basinStats.stats?.total_trees || 0) / (basinStats.basin?.capacity || 1)) * 100)}%`
@@ -1949,11 +1949,11 @@ export default function NurseryAiChatPage() {
                     </span>
                   </div>
                   <div className="flex flex-col bg-slate-50/50 dark:bg-slate-950/20 p-2 rounded-lg border border-slate-100 dark:border-slate-800">
-                    <span className="text-[10px] text-slate-400 font-semibold mb-0.5">آخر ري</span>
+                    <span className="text-xs text-slate-400 font-semibold mb-0.5">آخر ري</span>
                     <span className="text-slate-800 dark:text-slate-200 truncate">{basinStats.operations_stats?.last_irrigation || 'لا يوجد'}</span>
                   </div>
                   <div className="flex flex-col bg-slate-50/50 dark:bg-slate-950/20 p-2 rounded-lg border border-slate-100 dark:border-slate-800">
-                    <span className="text-[10px] text-slate-400 font-semibold mb-0.5">آخر تسميد</span>
+                    <span className="text-xs text-slate-400 font-semibold mb-0.5">آخر تسميد</span>
                     <span className="text-slate-800 dark:text-slate-200 truncate">{basinStats.operations_stats?.last_fertilization || 'لا يوجد'}</span>
                   </div>
                 </div>
@@ -1963,39 +1963,39 @@ export default function NurseryAiChatPage() {
 
               {/* Inline Quick Action Shortcuts */}
               <div className="pt-2 border-t border-slate-100 dark:border-slate-800 flex flex-wrap gap-2">
-                <span className="text-[10px] font-bold text-slate-400 flex items-center ml-2">تسجيل سريع:</span>
+                <span className="text-xs font-bold text-slate-400 flex items-center ml-2">تسجيل سريع:</span>
                 <button
                   type="button"
                   onClick={() => handleDirectShortcut('log_irrigation')}
-                  className="px-3 py-1.5 bg-blue-50 hover:bg-blue-100 text-blue-800 dark:bg-blue-950/40 dark:text-blue-300 dark:hover:bg-blue-900/40 rounded-lg text-[10px] font-extrabold transition-all"
+                  className="px-3 py-1.5 bg-blue-50 hover:bg-blue-100 text-blue-800 dark:bg-blue-950/40 dark:text-blue-300 dark:hover:bg-blue-900/40 rounded-lg text-xs font-extrabold transition-all"
                 >
                   💧 ري
                 </button>
                 <button
                   type="button"
                   onClick={() => handleDirectShortcut('log_fertilization')}
-                  className="px-3 py-1.5 bg-orange-50 hover:bg-orange-100 text-terracotta dark:bg-orange-950/40 dark:text-orange-300 dark:hover:bg-orange-900/40 rounded-lg text-[10px] font-extrabold transition-all"
+                  className="px-3 py-1.5 bg-orange-50 hover:bg-orange-100 text-terracotta dark:bg-orange-950/40 dark:text-orange-300 dark:hover:bg-orange-900/40 rounded-lg text-xs font-extrabold transition-all"
                 >
                   🌿 تسميد
                 </button>
                 <button
                   type="button"
                   onClick={() => handleDirectShortcut('log_mortality')}
-                  className="px-3 py-1.5 bg-red-50 hover:bg-red-100 text-red-800 dark:bg-red-950/40 dark:text-red-300 dark:hover:bg-red-900/40 rounded-lg text-[10px] font-extrabold transition-all"
+                  className="px-3 py-1.5 bg-red-50 hover:bg-red-100 text-red-800 dark:bg-red-950/40 dark:text-red-300 dark:hover:bg-red-900/40 rounded-lg text-xs font-extrabold transition-all"
                 >
                   ❌ نفوق
                 </button>
                 <button
                   type="button"
                   onClick={() => handleDirectShortcut('transfer_cycle')}
-                  className="px-3 py-1.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-300 dark:hover:bg-emerald-900/40 rounded-lg text-[10px] font-extrabold transition-all"
+                  className="px-3 py-1.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-300 dark:hover:bg-emerald-900/40 rounded-lg text-xs font-extrabold transition-all"
                 >
                   🔄 نقل دورة
                 </button>
                 <button
                   type="button"
                   onClick={() => handleDirectShortcut('start_cycle')}
-                  className="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-750 rounded-lg text-[10px] font-extrabold transition-all"
+                  className="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-750 rounded-lg text-xs font-extrabold transition-all"
                 >
                   🌱 بدء دورة
                 </button>
@@ -2007,7 +2007,7 @@ export default function NurseryAiChatPage() {
           {/* Autocomplete Quick Command Menu */}
           {showCommandMenu && filteredCommands.length > 0 && (
             <div className="absolute bottom-full mb-2 right-4 left-4 max-h-52 overflow-y-auto bg-white/95 dark:bg-slate-900/95 border border-slate-200/60 dark:border-slate-800 rounded-xl shadow-lg backdrop-blur-md p-1.5 z-20 animate-fade-in flex flex-col gap-0.5">
-              <div className="px-2.5 py-1 text-[10px] font-bold text-slate-400 border-b border-slate-100 dark:border-slate-800/60 mb-1">
+              <div className="px-2.5 py-1 text-xs font-bold text-slate-400 border-b border-slate-100 dark:border-slate-800/60 mb-1">
                 الأوامر المقترحة (اضغط لتسجيل الإجراء مباشرة)
               </div>
               {filteredCommands.map(cmd => (
@@ -2123,7 +2123,7 @@ export default function NurseryAiChatPage() {
 
             {isRecording && (
               <div className="flex items-center gap-1 px-3 py-1 bg-red-50/80 dark:bg-red-950/30 border border-red-100 dark:border-red-900/40 rounded-xl h-11 shrink-0">
-                <span className="text-[10px] font-bold text-red-500 animate-pulse ml-1 select-none">جاري التسجيل...</span>
+                <span className="text-xs font-bold text-red-500 animate-pulse ml-1 select-none">جاري التسجيل...</span>
                 <div className="flex items-center gap-0.5 h-5">
                   <div className="w-[2.5px] bg-red-500 dark:bg-red-400 rounded-full animate-bounce h-2" style={{ animationDelay: '0.1s' }} />
                   <div className="w-[2.5px] bg-red-500 dark:bg-red-400 rounded-full animate-bounce h-4" style={{ animationDelay: '0.2s' }} />
@@ -2844,7 +2844,7 @@ function ActionCard({
           <h4 className="text-sm font-extrabold text-slate-900 dark:text-white flex items-center gap-1.5">
             <span>{actionTitle}</span>
             {isExecuted && (
-              <span className="bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300 text-[10px] font-extrabold px-2 py-0.5 rounded-full select-none">تم التنفيذ</span>
+              <span className="bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300 text-xs font-extrabold px-2 py-0.5 rounded-full select-none">تم التنفيذ</span>
             )}
           </h4>
           {action.human_summary && (
@@ -2876,7 +2876,7 @@ function ActionCard({
           </div>
           
           {action.notes && (
-            <p className="text-[11px] text-slate-400 mt-1 italic">ملاحظة: {action.notes}</p>
+            <p className="text-xs text-slate-400 mt-1 italic">ملاحظة: {action.notes}</p>
           )}
         </div>
       </div>
@@ -2931,7 +2931,7 @@ function CodeBlock({ code }: { code: string }) {
 
   return (
     <div className="relative my-3.5 rounded-2xl overflow-hidden border border-slate-200/80 bg-slate-50 dark:border-slate-800 dark:bg-slate-950/60 shadow-sm" dir="ltr">
-      <div className="flex items-center justify-between px-4 py-2 bg-slate-100/70 border-b border-slate-200/80 text-[10px] text-slate-500 font-mono select-none dark:bg-slate-900/40 dark:border-slate-800" dir="rtl">
+      <div className="flex items-center justify-between px-4 py-2 bg-slate-100/70 border-b border-slate-200/80 text-xs text-slate-500 font-mono select-none dark:bg-slate-900/40 dark:border-slate-800" dir="rtl">
         <span className="font-sans font-bold">كتلة كود</span>
         <button
           onClick={handleCopy}

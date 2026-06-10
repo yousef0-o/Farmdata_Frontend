@@ -355,7 +355,57 @@ function InvoiceDialog({
           </Field>
         </div>
 
-        <div className="mt-6 overflow-x-auto rounded-2xl border border-line">
+        <div className="mt-6 grid grid-cols-1 gap-3 lg:hidden">
+          {lines.map((line) => (
+            <article key={line.id} className="rounded-2xl border border-line bg-surface p-4 shadow-sm">
+              <div className="space-y-3">
+                <Field label="الصنف">
+                  <select
+                    className={inputClass}
+                    value={line.treeId}
+                    required
+                    onChange={(event) => {
+                      const tree = selectedTree(event.target.value)
+                      updateLine(line.id, {
+                        treeId: event.target.value,
+                        name: tree ? `${tree.tree_name}${tree.pot_size ? ` (${tree.pot_size})` : ''}` : '',
+                      })
+                    }}
+                  >
+                    <option value="">اختر الصنف...</option>
+                    {data.tree_options.map((tree) => (
+                      <option key={tree.tree_id} value={tree.tree_id}>
+                        {tree.basin_name} / خط {tree.line_number} - {tree.tree_name}
+                        {tree.pot_size ? ` (${tree.pot_size})` : ''} - متوفر: {formatNumber(tree.quantity)}
+                      </option>
+                    ))}
+                  </select>
+                </Field>
+
+                <div className="grid grid-cols-2 gap-3">
+                  <Field label="الكمية">
+                    <input className={inputClass} type="number" min={1} value={line.qty} onChange={(event) => updateLine(line.id, { qty: Number(event.target.value) })} required />
+                  </Field>
+                  <Field label="سعر الوحدة">
+                    <input className={inputClass} type="number" min={0} step="0.01" value={line.price} onChange={(event) => updateLine(line.id, { price: Number(event.target.value) })} required />
+                  </Field>
+                </div>
+
+                <div className="flex items-center justify-between rounded-xl bg-surface-subtle px-3 py-2 text-sm">
+                  <span className="text-xs font-bold text-ink-muted">الإجمالي</span>
+                  <span className="font-mono font-bold text-ink">{(Number(line.qty || 0) * Number(line.price || 0)).toFixed(2)}</span>
+                </div>
+
+                <button type="button" onClick={() => setLines((current) => current.filter((item) => item.id !== line.id))} className="flex min-h-11 w-full items-center justify-center gap-2 rounded-xl bg-danger-soft px-4 py-2 text-sm font-bold text-danger">
+                  <Trash2 className="h-4 w-4" />
+                  حذف السطر
+                </button>
+              </div>
+            </article>
+          ))}
+        </div>
+
+        <div className="mt-6 hidden overflow-x-auto rounded-2xl border border-line lg:block">
           <table className="min-w-[760px] w-full text-right text-sm">
             <thead className="bg-surface-subtle text-xs font-bold text-ink-muted">
               <tr>
@@ -479,7 +529,7 @@ function InvoicePreview({
   return (
     <div
       id="nursery-invoice-print-area"
-      className="bg-surface p-8 text-ink"
+      className="max-w-full overflow-hidden bg-surface p-4 text-ink sm:p-8"
       dir="rtl"
       style={{
         border: Number(settings.frame_border_width || 0) > 0
@@ -715,10 +765,8 @@ function DesignTab({ settings }: { settings: NurseryInvoiceSettings }) {
           <Paintbrush className="h-5 w-5 text-action-primary" />
           معاينة مباشرة
         </h2>
-        <div className="overflow-x-auto">
-          <div className="min-w-[640px]">
-            <InvoicePreview invoice={sampleInvoice} settings={draft} livePreview />
-          </div>
+        <div className="overflow-hidden">
+          <InvoicePreview invoice={sampleInvoice} settings={draft} livePreview />
         </div>
       </section>
     </div>

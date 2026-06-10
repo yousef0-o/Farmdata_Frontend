@@ -197,7 +197,7 @@ function renderMarkdownBlocks(text: string, keyPrefix: string) {
         <ol key={`${keyPrefix}-ol-${key++}`} className="my-2 list-none space-y-1.5 pr-1">
           {listItems.map((item, i) => (
             <li key={i} className="flex items-start gap-2 text-sm leading-relaxed">
-              <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-action-primary/10 text-[10px] font-bold text-action-primary">
+              <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-action-primary/10 text-xs font-bold text-action-primary">
                 {i + 1}
               </span>
               <span>{renderInlineFormatting(item, `${keyPrefix}-oli-${key}-${i}`)}</span>

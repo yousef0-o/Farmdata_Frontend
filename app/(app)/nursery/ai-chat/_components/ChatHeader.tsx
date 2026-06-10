@@ -58,10 +58,10 @@ export default function ChatHeader({
         </div>
         <div>
           <h1 className="text-sm font-extrabold text-ink">{activeChat.title}</h1>
-          <div className="flex items-center gap-2 mt-0.5 text-[11px] text-ink-muted">
+          <div className="flex items-center gap-2 mt-0.5 text-xs text-ink-muted">
             <span>البدء: {new Date(activeChat.created_at).toLocaleDateString('ar-SA')}</span>
             <span
-              className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
+              className={`px-2 py-0.5 rounded-full text-xs font-bold ${
                 isClarification
                   ? 'bg-info-soft text-info ring-1 ring-info/20'
                   : 'bg-action-primary/10 text-action-primary ring-1 ring-action-primary/10'

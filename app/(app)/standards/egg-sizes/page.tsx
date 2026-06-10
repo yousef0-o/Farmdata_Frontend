@@ -295,7 +295,7 @@ function StandardsForm({ initialStandards }: { initialStandards: EggSizeStandard
               type="button"
               onClick={resetRows}
               disabled={!hasChanges || updateMutation.isPending}
-              className="inline-flex min-h-10 items-center justify-center gap-2 rounded-xl border border-line bg-surface px-4 text-sm font-bold text-ink-soft transition-colors hover:bg-surface-muted hover:text-ink disabled:cursor-not-allowed disabled:opacity-50"
+              className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl border border-line bg-surface px-4 text-sm font-bold text-ink-soft transition-colors hover:bg-surface-muted hover:text-ink disabled:cursor-not-allowed disabled:opacity-50"
             >
               <RotateCcw className="h-4 w-4" />
               إلغاء التغييرات
@@ -303,7 +303,7 @@ function StandardsForm({ initialStandards }: { initialStandards: EggSizeStandard
             <button
               type="submit"
               disabled={!hasChanges || updateMutation.isPending}
-              className="inline-flex min-h-10 items-center justify-center gap-2 rounded-xl bg-action-primary px-5 text-sm font-bold text-ink-inverse transition-colors hover:bg-action-primary-hover disabled:cursor-not-allowed disabled:opacity-60"
+              className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-action-primary px-5 text-sm font-bold text-ink-inverse transition-colors hover:bg-action-primary-hover disabled:cursor-not-allowed disabled:opacity-60"
             >
               {updateMutation.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
               حفظ التعديلات
@@ -343,7 +343,7 @@ function NumberInput({
       required={required}
       value={value}
       onChange={(event) => onChange(event.target.value)}
-      className="h-10 w-full rounded-xl border border-line bg-surface px-3 text-left font-mono text-sm text-ink outline-none transition-colors focus:border-action-primary focus:bg-surface-muted"
+      className="h-11 w-full rounded-xl border border-line bg-surface px-3 text-left font-mono text-sm text-ink outline-none transition-colors focus:border-action-primary focus:bg-surface-muted"
       dir="ltr"
     />
   )
@@ -355,13 +355,13 @@ function Toggle({ checked, onChange }: { checked: boolean; onChange: (checked: b
       type="button"
       onClick={() => onChange(!checked)}
       aria-pressed={checked}
-      className={`inline-flex h-8 w-14 items-center rounded-full p-1 transition-colors ${
+      className={`inline-flex h-11 w-[4.5rem] items-center rounded-full p-1 transition-colors ${
         checked ? 'bg-success' : 'bg-line-strong'
       }`}
     >
       <span
-        className={`h-6 w-6 rounded-full bg-surface shadow-sm transition-transform ${
-          checked ? '-translate-x-6' : 'translate-x-0'
+        className={`h-9 w-9 rounded-full bg-surface shadow-sm transition-transform ${
+          checked ? '-translate-x-7' : 'translate-x-0'
         }`}
       />
     </button>

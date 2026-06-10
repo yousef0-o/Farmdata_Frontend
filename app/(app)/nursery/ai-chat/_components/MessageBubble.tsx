@@ -96,7 +96,7 @@ export default function MessageBubble({
         </div>
 
         {/* Timestamp */}
-        <div className={`px-1 text-[10px] font-semibold text-ink-muted ${isModel ? '' : 'text-left'}`}>
+        <div className={`px-1 text-xs font-semibold text-ink-muted ${isModel ? '' : 'text-left'}`}>
           {formatTime(message.created_at)}
         </div>
 
@@ -124,7 +124,7 @@ export default function MessageBubble({
                 ) : (
                   <FileText className="h-4 w-4 text-action-primary" />
                 )}
-                <span className="text-[10px] font-bold truncate">{attach.name}</span>
+                <span className="text-xs font-bold truncate">{attach.name}</span>
               </a>
             ))}
           </div>
@@ -179,7 +179,7 @@ function ActionCardInline({ proposal, onExecute }: { proposal: ActionProposal; o
             {proposal.human_summary && (
               <p className="mt-1 text-xs font-semibold leading-relaxed text-ink-soft">{proposal.human_summary}</p>
             )}
-            <div className="mt-1.5 flex flex-wrap gap-x-4 gap-y-1 text-[11px] text-ink-muted font-semibold">
+            <div className="mt-1.5 flex flex-wrap gap-x-4 gap-y-1 text-xs text-ink-muted font-semibold">
               {proposal.target?.basin_name && <span>الحوض: {proposal.target.basin_name}</span>}
               {proposal.target?.cycle_name && <span>الدورة: {proposal.target.cycle_name}</span>}
             </div>

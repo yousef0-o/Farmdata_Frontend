@@ -417,15 +417,32 @@
 
 html {
   background: var(--background);
+  min-width: 0;
+  overflow-x: hidden;
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
   font-family: var(--font-sans), Arial, Helvetica, sans-serif;
+  min-width: 0;
+  overflow-x: hidden;
   transition:
     background-color var(--duration-page) ease,
     color var(--duration-page) ease;
+}
+
+*,
+::before,
+::after {
+  box-sizing: border-box;
+}
+
+img,
+svg,
+video,
+canvas {
+  max-width: 100%;
 }
 
 .border {

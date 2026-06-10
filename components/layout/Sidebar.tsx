@@ -300,7 +300,7 @@ export default function Sidebar({
                 key={item.href}
                 href={item.href}
                 onClick={onNavigate}
-                className={`flex items-center gap-3 px-4 py-3 rounded-xl outline-none transition-all duration-200 focus-visible:ring-2 focus-visible:ring-action-primary/30 active:scale-[0.98] ${
+                className={`flex min-h-11 items-center gap-3 rounded-xl px-4 py-3 outline-none transition-[background-color,color,box-shadow,transform] duration-200 focus-visible:ring-2 focus-visible:ring-action-primary/30 active:scale-[0.98] ${
                   active
                     ? 'bg-action-primary text-ink-inverse shadow-sm font-semibold hover:bg-action-primary-hover'
                     : 'text-gray-600 dark:text-gray-700 hover:bg-menu-hover-bg hover:text-menu-hover-text'

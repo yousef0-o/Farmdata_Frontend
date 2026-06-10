@@ -32,12 +32,12 @@ export default function AnnualProductionTable({ data }: AnnualProductionTablePro
   }
 
   return (
-    <div className="bg-white rounded-3xl p-6 border-2 border-slate-400 shadow-md">
-      <div className="flex items-center gap-3 mb-6 pb-3 border-b-2 border-slate-300">
-        <div className="p-3 bg-green-50 text-farm-green rounded-2xl border-2 border-green-300">
+    <div className="rounded-3xl border-2 border-slate-400 bg-white p-4 shadow-md sm:p-6">
+      <div className="mb-6 flex min-w-0 items-center gap-3 border-b-2 border-slate-300 pb-3">
+        <div className="shrink-0 rounded-2xl border-2 border-green-300 bg-green-50 p-3 text-farm-green">
           <Egg className="w-5 h-5" />
         </div>
-        <div>
+        <div className="min-w-0">
           <h3 className="text-lg font-black text-slate-900">حركة إنتاج البيض السنوية والشهرية</h3>
           <p className="text-xs text-slate-600 font-bold">توزيع الإنتاج الفعلي الكلي بالكرتون حسب الأشهر والأعوام</p>
         </div>
@@ -49,8 +49,35 @@ export default function AnnualProductionTable({ data }: AnnualProductionTablePro
           <p className="text-sm text-slate-500 font-bold">لا يوجد سجلات إنتاج سابقة متوفرة</p>
         </div>
       ) : (
-        <div className="overflow-hidden border-2 border-slate-400 rounded-2xl shadow-inner">
-          <table className="w-full text-right border-collapse">
+        <>
+          <div className="grid grid-cols-1 gap-3 lg:hidden">
+            {data.map((row, idx) => (
+              <article key={`${row.year}-${row.month}-${idx}`} className="rounded-2xl border-2 border-slate-300 bg-slate-50 p-4">
+                <div className="flex items-start justify-between gap-3">
+                  <div>
+                    <p className="text-xs font-bold text-slate-500">السنة المالية</p>
+                    <h4 className="mt-1 text-base font-black text-slate-950">{row.year}</h4>
+                  </div>
+                  <span className="rounded-full bg-white px-3 py-1 text-xs font-black text-slate-700 ring-1 ring-slate-200">
+                    {monthNames[row.month] || row.month}
+                  </span>
+                </div>
+                <div className="mt-4 grid grid-cols-2 gap-3 text-sm">
+                  <div>
+                    <p className="text-xs font-bold text-slate-500">الإنتاج بالكرتون</p>
+                    <p className="mt-1 font-black text-farm-green">{formatNumber(row.cartons)} كرتون</p>
+                  </div>
+                  <div>
+                    <p className="text-xs font-bold text-slate-500">مكافئ الحجم</p>
+                    <p className="mt-1 font-extrabold text-slate-700">{formatNumber(row.cartons * 12)} طبق</p>
+                  </div>
+                </div>
+              </article>
+            ))}
+          </div>
+
+          <div className="hidden overflow-hidden rounded-2xl border-2 border-slate-400 shadow-inner lg:block">
+            <table className="w-full border-collapse text-right">
             <thead>
               <tr className="bg-slate-100 text-slate-800 text-xs font-black border-b-2 border-slate-400">
                 <th className="px-6 py-4 border-l-2 border-slate-300">السنة المالية</th>
@@ -77,7 +104,8 @@ export default function AnnualProductionTable({ data }: AnnualProductionTablePro
               ))}
             </tbody>
           </table>
-        </div>
+          </div>
+        </>
       )}
     </div>
   )

@@ -34,7 +34,7 @@ type VitalForm = {
 }
 
 const today = new Date().toISOString().slice(0, 10)
-const fieldInputClass = 'w-full rounded-xl border border-line bg-surface px-3 py-2 text-sm text-ink focus:outline-none focus:ring-2 focus:ring-action-primary'
+const fieldInputClass = 'min-h-11 w-full rounded-xl border border-line bg-surface px-3 py-2 text-sm text-ink focus:outline-none focus:ring-2 focus:ring-action-primary'
 
 export default function BarnHealthLogPage() {
   const { id } = useParams()
@@ -238,7 +238,7 @@ export default function BarnHealthLogPage() {
                 </div>
                 <Link
                   href={`/flocks/${activeFlock.id}`}
-                  className="inline-flex min-h-10 items-center justify-center gap-2 rounded-xl border border-line bg-surface-muted px-3 py-2 text-sm font-semibold text-ink-soft transition-colors hover:bg-surface-subtle hover:text-ink"
+                  className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl border border-line bg-surface-muted px-3 py-2 text-sm font-semibold text-ink-soft transition-colors hover:bg-surface-subtle hover:text-ink"
                 >
                   <ClipboardPlus className="h-4 w-4" />
                   إدارة السجلات
@@ -261,7 +261,42 @@ export default function BarnHealthLogPage() {
 
           <section className="rounded-2xl border border-line bg-surface p-5 shadow-sm">
             <h2 className="text-lg font-bold text-ink">سجل المؤشرات المسجلة</h2>
-            <div className="mt-4 overflow-x-auto">
+            <div className="mt-4 grid grid-cols-1 gap-3 lg:hidden">
+              {isVitalsLoading ? (
+                <div className="rounded-2xl border border-line bg-surface-subtle px-4 py-8 text-center text-sm text-ink-muted">
+                  جاري تحميل المؤشرات...
+                </div>
+              ) : vitals.length === 0 ? (
+                <div className="rounded-2xl border border-dashed border-line-strong bg-surface-subtle px-4 py-8 text-center text-sm text-ink-muted">
+                  لا توجد مؤشرات مسجلة.
+                </div>
+              ) : (
+                vitals.map((vital) => (
+                  <article key={vital.id} className="rounded-2xl border border-line bg-surface-subtle p-4">
+                    <div className="flex items-start justify-between gap-3">
+                      <div>
+                        <p className="text-xs font-bold text-ink-muted">التاريخ</p>
+                        <h3 className="mt-1 font-mono text-sm font-bold text-ink">{vital.observation_date}</h3>
+                      </div>
+                      <span className="rounded-full bg-surface px-2.5 py-1 text-xs font-bold text-ink-soft">
+                        {vital.source_type === 'production' ? 'إنتاج' : 'تربية'}
+                      </span>
+                    </div>
+                    <div className="mt-4 grid grid-cols-2 gap-3 text-sm">
+                      <VitalTile label="المياه" value={vital.water_intake_liters == null ? '-' : String(vital.water_intake_liters)} />
+                      <VitalTile label="الحرارة" value={vital.temperature_celsius == null ? '-' : String(vital.temperature_celsius)} />
+                      <VitalTile label="الرطوبة" value={vital.humidity_percent == null ? '-' : String(vital.humidity_percent)} />
+                      <VitalTile label="انتظام الوزن" value={vital.weight_uniformity_percent == null ? '-' : String(vital.weight_uniformity_percent)} />
+                      <div className="col-span-2">
+                        <VitalTile label="ملاحظات" value={vital.ai_notes ?? '-'} />
+                      </div>
+                    </div>
+                  </article>
+                ))
+              )}
+            </div>
+
+            <div className="mt-4 hidden overflow-x-auto lg:block">
               <table className="w-full min-w-[720px] text-right text-sm">
                 <thead className="border-b border-line bg-surface-subtle text-xs font-bold text-ink-muted">
                   <tr>
@@ -343,7 +378,7 @@ function MedicalRecordRow({ flockId, record }: { flockId: number; record: FlockM
                   rerunOcr.mutate(attachment.path)
                 }}
                 disabled={rerunOcr.isPending && selectedPath === attachment.path}
-                className="inline-flex min-h-9 items-center justify-center gap-2 rounded-lg border border-line bg-surface-muted px-3 py-1.5 text-xs font-bold text-ink-soft transition-colors hover:bg-surface-subtle disabled:opacity-50"
+                className="inline-flex min-h-11 items-center justify-center gap-2 rounded-lg border border-line bg-surface-muted px-3 py-2 text-xs font-bold text-ink-soft transition-colors hover:bg-surface-subtle disabled:opacity-50"
               >
                 {rerunOcr.isPending && selectedPath === attachment.path ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Bot className="h-3.5 w-3.5" />}
                 إعادة OCR

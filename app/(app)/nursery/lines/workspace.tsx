@@ -8,7 +8,6 @@ import { useRouter } from 'next/navigation'
 import {
   CalendarDays,
   ChevronLeft,
-  Download,
   FileSpreadsheet,
   Filter,
   Home,
@@ -425,7 +424,75 @@ export default function NurseryLinesWorkspace({ initialFilters }: { initialFilte
       ) : null}
 
       <section className="overflow-hidden rounded-2xl border border-slate-100 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-950">
-        <div className="overflow-x-auto">
+        <div className="grid grid-cols-1 gap-3 p-4 lg:hidden">
+          {isLoading ? (
+            Array.from({ length: 4 }).map((_, index) => (
+              <div key={index} className="rounded-2xl border border-slate-100 bg-white p-4 shadow-sm dark:border-slate-800 dark:bg-slate-950">
+                <div className="h-5 w-24 animate-skeleton-shimmer rounded-lg" />
+                <div className="mt-3 grid grid-cols-2 gap-3">
+                  <div className="h-14 animate-skeleton-shimmer rounded-xl" />
+                  <div className="h-14 animate-skeleton-shimmer rounded-xl" />
+                  <div className="col-span-2 h-14 animate-skeleton-shimmer rounded-xl" />
+                </div>
+              </div>
+            ))
+          ) : payload?.lines.length === 0 ? (
+            <div className="rounded-2xl bg-slate-50 px-4 py-10 text-center text-sm font-bold text-slate-500 dark:bg-slate-900 dark:text-slate-300">
+              لا توجد نتائج مطابقة للبحث
+            </div>
+          ) : (
+            payload?.lines.map((line) => (
+              <article key={line.id} className="rounded-2xl border border-slate-100 bg-white p-4 shadow-sm dark:border-slate-800 dark:bg-slate-950">
+                <div className="flex items-start justify-between gap-3">
+                  <div className="min-w-0">
+                    <span className="inline-flex rounded-full bg-blue-50 px-3 py-1 text-xs font-bold text-blue-700">
+                      خط {formatNumber(line.line_number)}
+                    </span>
+                    <h3 className="mt-2 truncate text-sm font-bold text-slate-950 dark:text-slate-50">{line.variety_name}</h3>
+                  </div>
+                  <span className="inline-flex rounded-full bg-emerald-50 px-3 py-1 text-xs font-bold text-emerald-700">
+                    {formatNumber(line.quantity)}
+                  </span>
+                </div>
+
+                <dl className="mt-4 grid grid-cols-2 gap-3 text-sm">
+                  <div className="rounded-xl bg-slate-50 px-3 py-2 dark:bg-slate-900">
+                    <dt className="text-xs font-bold text-slate-500 dark:text-slate-400">المقاس</dt>
+                    <dd className="mt-1 font-semibold text-slate-700 dark:text-slate-200">{line.pot_size || '-'}</dd>
+                  </div>
+                  <div className="rounded-xl bg-slate-50 px-3 py-2 dark:bg-slate-900">
+                    <dt className="text-xs font-bold text-slate-500 dark:text-slate-400">تاريخ الميلاد</dt>
+                    <dd className="mt-1 font-semibold text-slate-700 dark:text-slate-200">{line.birth_date || '-'}</dd>
+                  </div>
+                  <div className="col-span-2 rounded-xl bg-slate-50 px-3 py-2 dark:bg-slate-900">
+                    <dt className="flex items-center gap-2 text-xs font-bold text-slate-500 dark:text-slate-400">
+                      <Ruler className="h-4 w-4" />
+                      المواصفات
+                    </dt>
+                    <dd className="mt-1 text-slate-700 dark:text-slate-200"><SpecsCell line={line} /></dd>
+                  </div>
+                  <div className="col-span-2 rounded-xl bg-slate-50 px-3 py-2 dark:bg-slate-900">
+                    <dt className="flex items-center gap-2 text-xs font-bold text-slate-500 dark:text-slate-400">
+                      <MapPin className="h-4 w-4 text-terracotta" />
+                      الموقع
+                    </dt>
+                    <dd className="mt-1 flex flex-wrap items-center gap-1 text-xs font-bold text-slate-600 dark:text-slate-300">
+                      <span>{line.nursery.name}</span>
+                      <ChevronLeft className="h-3 w-3" />
+                      <span>{line.location.name}</span>
+                      <ChevronLeft className="h-3 w-3" />
+                      <span>{line.section.name}</span>
+                      <ChevronLeft className="h-3 w-3" />
+                      <span className="text-slate-950 dark:text-slate-50">{line.basin.name}</span>
+                    </dd>
+                  </div>
+                </dl>
+              </article>
+            ))
+          )}
+        </div>
+
+        <div className="hidden overflow-x-auto lg:block">
           <table className="min-w-[1100px] w-full border-collapse">
             <thead>
               <tr className="bg-slate-50 text-right text-xs font-bold text-slate-500 dark:bg-slate-900 dark:text-slate-300">
