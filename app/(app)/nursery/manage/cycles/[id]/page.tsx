@@ -831,7 +831,15 @@ function ProcedureDialog({
         </button>
       </div>
 
-      <form onSubmit={handleSubmit(onSave)} className="mt-4 space-y-4">
+      <form
+        onSubmit={handleSubmit((values) => {
+          onSave({
+            ...values,
+            cycle_id: cycle.id,
+          })
+        })}
+        className="mt-4 space-y-4"
+      >
         <TextField
           label="تاريخ الإجراء"
           type="date"
