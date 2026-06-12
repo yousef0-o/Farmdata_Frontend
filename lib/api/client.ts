@@ -17,10 +17,13 @@ export async function apiRequestRaw(
     ...(options.headers as Record<string, string>),
   }
 
-  if (requestedMethod === 'DELETE') {
+  if (isMethodOverrideRequest(requestedMethod)) {
     requestOptions.method = 'POST'
-    requestOptions.body = deleteMethodOverrideBody(options.body).toString()
-    headers['Content-Type'] = 'application/x-www-form-urlencoded'
+    requestOptions.body = methodOverrideBody(requestedMethod, options.body)
+
+    if (!(requestOptions.body instanceof FormData)) {
+      headers['Content-Type'] = 'application/x-www-form-urlencoded'
+    }
   } else if (!(options.body instanceof FormData)) {
     headers['Content-Type'] = 'application/json'
   }
@@ -40,8 +43,17 @@ export async function apiRequestRaw(
   return res
 }
 
-function deleteMethodOverrideBody(body: BodyInit | null | undefined): URLSearchParams {
-  const params = new URLSearchParams({ _method: 'DELETE' })
+function isMethodOverrideRequest(method: string | undefined): method is 'PUT' | 'PATCH' | 'DELETE' {
+  return method === 'PUT' || method === 'PATCH' || method === 'DELETE'
+}
+
+function methodOverrideBody(method: 'PUT' | 'PATCH' | 'DELETE', body: BodyInit | null | undefined): BodyInit {
+  if (body instanceof FormData) {
+    body.set('_method', method)
+    return body
+  }
+
+  const params = new URLSearchParams({ _method: method })
 
   if (!body) return params
 
@@ -63,7 +75,12 @@ function deleteMethodOverrideBody(body: BodyInit | null | undefined): URLSearchP
 }
 
 function appendFormValue(params: URLSearchParams, key: string, value: unknown): void {
-  if (value === undefined || value === null) return
+  if (value === undefined) return
+
+  if (value === null) {
+    if (key) params.append(key, '')
+    return
+  }
 
   if (Array.isArray(value)) {
     value.forEach((item, index) => appendFormValue(params, `${key}[${index}]`, item))
