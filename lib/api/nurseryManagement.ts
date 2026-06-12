@@ -81,6 +81,11 @@ export const nurseryManagementApi = {
       body: JSON.stringify({ items }),
     }),
 
+  getCycle: (cycleId: number) =>
+    wrapResponse<NurseryCycle>(
+      apiRequest(`/nursery/manage/cycles/${cycleId}`)
+    ),
+
   createCycle: (payload: NurseryCyclePayload) =>
     wrapResponse<NurseryCycle>(
       apiRequest('/nursery/manage/cycles', {

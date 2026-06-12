@@ -1,6 +1,7 @@
 'use client'
 
 import React, { useMemo, useState } from 'react'
+import Link from 'next/link'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useFieldArray, useForm, useWatch } from 'react-hook-form'
 import { z } from 'zod'
@@ -26,6 +27,7 @@ import {
   Trees,
   Warehouse,
   Waves,
+  Settings,
 } from 'lucide-react'
 import AppDialog from '@/components/ui/AppDialog'
 import { nurseryManagementApi } from '@/lib/api/nurseryManagement'
@@ -837,7 +839,9 @@ function CycleTable({
             {cycles.map((cycle) => (
               <tr key={cycle.id} className="hover:bg-slate-50/70 /70">
                 <td className="px-4 py-3">
-                  <div className="font-bold text-slate-900">{cycle.name}</div>
+                  <Link href={`/nursery/manage/cycles/${cycle.id}`} className="font-bold text-slate-900 hover:text-terracotta transition-colors block">
+                    {cycle.name}
+                  </Link>
                   <div className="text-xs font-semibold text-slate-500">{cycle.source || '-'}</div>
                 </td>
                 <td className="px-4 py-3 text-sm font-semibold">{cycle.variety_name || '-'}</td>
@@ -862,6 +866,13 @@ function CycleTable({
                 </td>
                 <td className="px-4 py-3">
                   <div className="flex flex-wrap gap-2">
+                    <Link
+                      href={`/nursery/manage/cycles/${cycle.id}`}
+                      className="rounded-lg border border-slate-100 p-2 text-slate-600 transition-all hover:bg-slate-50 active:scale-[0.98] dark:border-slate-800 dark:hover:bg-slate-800"
+                      aria-label="إدارة"
+                    >
+                      <Settings className="h-4 w-4" />
+                    </Link>
                     <button className="rounded-lg border border-slate-100 p-2 text-slate-600 transition-all active:scale-[0.98]" onClick={() => onEdit(cycle)} aria-label="تعديل">
                       <Edit3 className="h-4 w-4" />
                     </button>
@@ -887,7 +898,9 @@ function CycleTable({
           <div key={cycle.id} className="p-4">
             <div className="flex items-start justify-between gap-3">
               <div>
-                <h3 className="text-sm font-bold text-slate-900">{cycle.name}</h3>
+                <Link href={`/nursery/manage/cycles/${cycle.id}`} className="text-sm font-bold text-slate-900 hover:text-terracotta transition-colors block">
+                  {cycle.name}
+                </Link>
                 <p className="mt-1 text-xs font-semibold text-slate-500">{cycle.variety_name || '-'}</p>
               </div>
               <StatusBadge status={cycle.status} />
@@ -899,6 +912,13 @@ function CycleTable({
               <span>{cycle.start_date || '-'}</span>
             </div>
             <div className="mt-4 flex flex-wrap gap-2">
+              <Link
+                href={`/nursery/manage/cycles/${cycle.id}`}
+                className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl border border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-800 px-4 py-2 text-sm font-bold text-slate-700 dark:text-slate-200 hover:bg-slate-50 transition-all active:scale-[0.98]"
+              >
+                <Settings className="h-4 w-4" />
+                إدارة
+              </Link>
               <Button type="button" tone="neutral" onClick={() => onEdit(cycle)}>
                 <Edit3 className="h-4 w-4" />
                 تعديل

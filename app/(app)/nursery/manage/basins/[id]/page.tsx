@@ -257,7 +257,16 @@ function ActivityRow({ activity, compact = false }: { activity: NurseryBasinActi
         <Icon className={compact ? 'h-4 w-4' : 'h-5 w-5'} />
       </span>
       <div className="min-w-0 flex-1">
-        <div className="truncate text-sm font-extrabold text-ink">{compact ? activity.detail : activity.title}</div>
+        {activity.type === 'cycle' ? (
+          <Link
+            href={`/nursery/manage/cycles/${activity.id}`}
+            className="truncate text-sm font-extrabold text-ink hover:text-terracotta transition-colors block"
+          >
+            {compact ? activity.detail : `${activity.title}: ${activity.detail}`}
+          </Link>
+        ) : (
+          <div className="truncate text-sm font-extrabold text-ink">{compact ? activity.detail : activity.title}</div>
+        )}
         <div className="mt-0.5 flex flex-wrap items-center gap-2 text-xs font-semibold text-ink-muted">
           <span>{formatDateRange(activity)}</span>
           {activity.created_at ? <span>({timeLabel(activity.created_at)})</span> : null}
@@ -833,7 +842,7 @@ export default function BasinManagementPage() {
   const basinId = Number(params.id)
   const queryClient = useQueryClient()
   const [dialog, setDialog] = useState<DialogState>(null)
-  const [feedback, setFeedback] = useState<{ type: 'success' | 'error'; message: string } | null>(null)
+  const [feedback, setFeedback] = useState<{ type: 'success' | 'error'; message: string; cycleId?: number } | null>(null)
 
   const query = useQuery({
     queryKey: ['nursery-basin-dashboard', basinId],
@@ -848,7 +857,16 @@ export default function BasinManagementPage() {
       queryClient.setQueryData(['nursery-basin-dashboard', basinId], response)
       await queryClient.invalidateQueries({ queryKey: ['nursery-basin-dashboard', basinId] })
       setDialog(null)
-      setFeedback({ type: 'success', message: 'تم حفظ العملية وتحديث بيانات الحوض.' })
+      const newCycleId = (response as any)?.cycle_id
+      if (newCycleId) {
+        setFeedback({
+          type: 'success',
+          message: 'تم إضافة دورة الإنتاج بنجاح وتحديث بيانات الحوض.',
+          cycleId: Number(newCycleId),
+        })
+      } else {
+        setFeedback({ type: 'success', message: 'تم حفظ العملية وتحديث بيانات الحوض.' })
+      }
     },
     onError: (error: unknown) => {
       const apiError = error as ApiError
@@ -920,8 +938,16 @@ export default function BasinManagementPage() {
         </Link>
       </header>
       {feedback ? (
-        <div className={`mb-5 rounded-xl border px-4 py-3 text-sm font-bold ${feedback.type === 'success' ? 'border-success-soft bg-success-soft text-success' : 'border-danger-soft bg-danger-soft text-danger'}`}>
-          {feedback.message}
+        <div className={`mb-5 rounded-xl border px-4 py-3 text-sm font-bold flex flex-wrap items-center justify-between gap-3 ${feedback.type === 'success' ? 'border-success-soft bg-success-soft text-success' : 'border-danger-soft bg-danger-soft text-danger'}`}>
+          <span>{feedback.message}</span>
+          {feedback.type === 'success' && feedback.cycleId ? (
+            <Link
+              href={`/nursery/manage/cycles/${feedback.cycleId}`}
+              className="inline-flex min-h-8 items-center gap-1.5 rounded-lg bg-action-primary px-3 text-xs font-bold text-white shadow-sm transition-colors hover:bg-action-primary/90"
+            >
+              إدارة الدورة الجديدة
+            </Link>
+          ) : null}
         </div>
       ) : null}
 
